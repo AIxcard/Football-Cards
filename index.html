@@ -454,22 +454,24 @@
             <button class="ghost-btn" onclick="quickSellRarity('Common')">Sell All Common</button>
             <button class="ghost-btn" onclick="quickSellRarity('Uncommon')">Sell All Uncommon</button>
             <button class="ghost-btn" onclick="quickSellDuplicates()">Sell Duplicates</button>
-            <button id="multiLockBtn" class="ghost-btn" onclick="toggleMultiLockMode()">🔒 Multi-Lock</button>
             <button id="multiSellBtn" class="ghost-btn" onclick="toggleMultiSellMode()">💰 Multi-Sell</button>
         </div>
     </div>
 
-    <!-- FLOATING MULTI-SELL ACTION BAR -->
+    <!-- IMPROVED FLOATING MULTI-SELL ACTION BAR -->
     <div id="multiSellBar" class="multi-select-bar hidden">
         <div class="multi-select-status">
-            <span id="multiSellCount">0 cards selected</span>
-            <strong id="multiSellValue">(+0 🪙)</strong>
+            <div class="bulk-title-tag">💰 BULK CARD SELLER</div>
+            <div class="bulk-payout-box">
+                <span id="multiSellCount">0 cards selected</span>
+                <b id="multiSellValue" class="bulk-gold-text">+0 🪙</b>
+            </div>
         </div>
         <div class="multi-select-actions">
             <button class="ghost-btn" onclick="multiSelectAllUnlocked()">Select All Unlocked</button>
             <button class="ghost-btn" onclick="multiSelectClear()">Clear</button>
-            <button class="danger-btn" onclick="confirmMultiSell()">💰 Confirm Sell</button>
-            <button class="ghost-btn" onclick="toggleMultiSellMode(false)">Cancel</button>
+            <button class="primary-btn confirm-bulk-sell-btn" onclick="confirmMultiSell()">💰 Confirm Sell &amp; Claim Gold</button>
+            <button class="ghost-btn" onclick="toggleMultiSellMode(false)">✕ Cancel</button>
         </div>
     </div>
 
