@@ -1,11 +1,11 @@
 /* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
-   CLOUD TRADING, TOURNAMENT DRAFT & PROFILE SEARCH ENGINE
+   CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
 
 "use strict";
 
-const SAVE_KEY = "footballCardsSave_v7";
+const SAVE_KEY = "footballCardsSave_v8";
 const CLOUD_STORAGE_KEY = "football_cards_cloud_accounts";
 const CLOUD_TRADES_KEY = "football_cards_cloud_trades";
 
@@ -144,15 +144,22 @@ const SoundFx = {
    ========================================================= */
 
 const PLAYERS = [
+// --- TOURNAMENT REWARD ---
 { name: "Emanuel", rating: 99, pos: "CAM", rarity: "Tournament", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+
+// --- WORLD CLASS (GOATS) ---
 { name: "Lionel Messi", rating: 97, pos: "RW", rarity: "World Class", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
 { name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+
+// --- SECRET ---
 { name: "Kylian Mbappé", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
 { name: "Erling Haaland", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
 { name: "Zlatan Ibrahimović", rating: 91, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
 { name: "Sergio Ramos", rating: 90, pos: "CB", rarity: "Secret", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
 { name: "Andrés Iniesta", rating: 93, pos: "CM", rarity: "Secret", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
 { name: "Xavi", rating: 92, pos: "CM", rarity: "Secret", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+
+// --- MYTHIC ---
 { name: "Neymar Jr", rating: 95, pos: "LW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
 { name: "Kevin De Bruyne", rating: 94, pos: "CM", rarity: "Mythic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
 { name: "Vinícius Júnior", rating: 94, pos: "LW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
@@ -160,6 +167,8 @@ const PLAYERS = [
 { name: "Mohamed Salah", rating: 93, pos: "RW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
 { name: "Robert Lewandowski", rating: 93, pos: "ST", rarity: "Mythic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
 { name: "Lamine Yamal", rating: 94, pos: "RW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+
+// --- LEGENDARY ---
 { name: "Harry Kane", rating: 93, pos: "ST", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
 { name: "Rodri", rating: 93, pos: "CDM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
 { name: "Pedri", rating: 91, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
@@ -178,6 +187,8 @@ const PLAYERS = [
 { name: "Harry Wilson", rating: 76, pos: "RW", rarity: "Common", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
 { name: "Dan Burn", rating: 78, pos: "LB", rarity: "Common", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
 { name: "Lewis Dunk", rating: 79, pos: "CB", rarity: "Common", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+
+// --- EXCLUSIVE (LEGENDS OF THE PAST) ---
 { name: "Pelé", rating: 98, pos: "ST", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80", odds: 5 },
 { name: "Diego Maradona", rating: 96, pos: "CAM", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80", odds: 15 },
 { name: "Ronaldo Nazário", rating: 97, pos: "ST", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80", odds: 20 },
@@ -198,7 +209,7 @@ starter: {
 premium: {
     name: "Premium Pack",
     cost: 25,
-    rates: { Uncommon: 65, Rare: 25, Epic: 8, Legendary: 2 }
+    rates: { Uncommon: 58, Rare: 28, Epic: 9, Legendary: 4, Mythic: 0.8, Secret: 0.2 }
 },
 champion: {
     name: "Champion Pack",
@@ -285,6 +296,20 @@ const TITLES = [
     unlock: () => true
 },
 {
+    id: "messi",
+    name: "The Greatest",
+    cssClass: "title-greatest",
+    requirement: "Own Lionel Messi",
+    unlock: () => ownsPlayer("Lionel Messi")
+},
+{
+    id: "ronaldo",
+    name: "The King",
+    cssClass: "title-king",
+    requirement: "Own Cristiano Ronaldo",
+    unlock: () => ownsPlayer("Cristiano Ronaldo")
+},
+{
     id: "world",
     name: "World Class Hunter",
     cssClass: "title-world",
@@ -302,17 +327,38 @@ const TITLES = [
     id: "top10",
     name: "Tournament Top 10",
     cssClass: "title-legend",
-    requirement: "Reach 250+ Tournament Score",
-    unlock: () => (state.stats.tournamentScore || 0) >= 250
+    requirement: "Reach Top 10 on Tournament Leaderboard",
+    unlock: () => {
+        const rank = getMyTournamentRank();
+        return rank > 0 && rank <= 10;
+    }
 },
 {
     id: "champion",
     name: "Season 1 Champion",
     cssClass: "title-champion",
-    requirement: "Reach Top 1 / 500+ Tournament Score",
-    unlock: () => (state.stats.tournamentScore || 0) >= 500
+    requirement: "Reach #1 Rank on Tournament Leaderboard",
+    unlock: () => getMyTournamentRank() === 1
 }
 ];
+
+function getMyTournamentRank() {
+    const accs = CloudSync.getAccounts();
+    const scores = [];
+    for (const k in accs) {
+        try {
+            const d = JSON.parse(accs[k].saveData);
+            if (d && d.stats) scores.push({ name: d.name || accs[k].username, score: d.stats.tournamentScore || 0 });
+        } catch (e) {}
+    }
+    if (state.accountUser && !scores.some(s => s.name.toLowerCase() === state.accountUser.toLowerCase())) {
+        scores.push({ name: state.name || state.accountUser, score: state.stats.tournamentScore || 0 });
+    }
+    scores.sort((a, b) => b.score - a.score);
+    const myName = (state.name || state.accountUser || "").toLowerCase();
+    const idx = scores.findIndex(s => s.name.toLowerCase() === myName);
+    return idx >= 0 ? idx + 1 : 0;
+}
 
 /* =========================================================
    STATE ENGINE
@@ -333,6 +379,7 @@ function freshState() {
         ownedFrames: ["default"],
         ownedBackgrounds: ["campnou"],
         unlockedCardNames: [],
+        serializedCounts: { "Lionel Messi": 0, "Cristiano Ronaldo": 0 },
 
         profileBackground: "campnou",
         profileFrame: "default",
@@ -400,6 +447,7 @@ function loadGame() {
             missionReset: { ...fresh.missionReset, ...(saved.missionReset || {}) },
             showcase: Array.isArray(saved.showcase) ? saved.showcase : fresh.showcase,
             unlockedCardNames: Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : [],
+            serializedCounts: saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 },
             redeemedCodes: Array.isArray(saved.redeemedCodes) ? saved.redeemedCodes : []
         };
     } catch (e) {
@@ -542,6 +590,66 @@ function syncCloud() {
     updateAuthUI();
 }
 
+function manualSyncCloud() {
+    syncCloud();
+    SoundFx.coin();
+    toast("☁️ Cloud state successfully saved!");
+}
+
+function openAuthModal() {
+    const modal = document.getElementById("authModal");
+    if (modal) modal.classList.remove("hidden");
+    setAuthTab("login");
+}
+
+function closeAuthModal() {
+    const modal = document.getElementById("authModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function setAuthTab(tab) {
+    currentAuthTab = tab;
+    const loginTab = document.getElementById("authTabLogin");
+    const signupTab = document.getElementById("authTabSignup");
+    const submitBtn = document.getElementById("authSubmitBtn");
+    const title = document.getElementById("authModalTitle");
+    const err = document.getElementById("authError");
+    if (err) err.textContent = "";
+
+    if (tab === "login") {
+        if (loginTab) loginTab.classList.add("active");
+        if (signupTab) signupTab.classList.remove("active");
+        if (submitBtn) submitBtn.textContent = "Log In";
+        if (title) title.textContent = "Log In to Cloud";
+    } else {
+        if (signupTab) signupTab.classList.add("active");
+        if (loginTab) loginTab.classList.remove("active");
+        if (submitBtn) submitBtn.textContent = "Create Account";
+        if (title) title.textContent = "Create Cloud Account";
+    }
+}
+
+function handleAuthSubmit() {
+    const uInput = document.getElementById("authUsername");
+    const pInput = document.getElementById("authPassword");
+    const err = document.getElementById("authError");
+    if (!uInput || !pInput) return;
+
+    const u = uInput.value;
+    const p = pInput.value;
+    const res = currentAuthTab === "signup" ? CloudSync.signUp(u, p) : CloudSync.login(u, p);
+
+    if (!res.success) {
+        if (err) err.textContent = res.msg;
+        return;
+    }
+
+    closeAuthModal();
+    SoundFx.levelUp();
+    toast(res.msg);
+    renderAll();
+}
+
 function updateAuthUI() {
     const user = state.accountUser;
     setText("topAuthName", user ? user : "Account");
@@ -581,17 +689,45 @@ function updateAuthUI() {
 
 document.addEventListener("DOMContentLoaded", () => {
     bindEvents();
+    init3DInspector();
     checkName();
     renderAll();
     updateTimers();
+
     setInterval(updateTimers, 1000);
     setInterval(checkMissionResets, 1000);
 });
 
 function bindEvents() {
     window.addEventListener("pointerdown", () => SoundFx.init(), { once: true });
+
     const confirm = document.getElementById("nameConfirm");
     if (confirm) confirm.addEventListener("click", () => { SoundFx.click(); confirmName(); });
+
+    const wc = document.getElementById("wcContinue");
+    if (wc) {
+        wc.addEventListener("click", () => {
+            SoundFx.click();
+            document.getElementById("worldClassOverlay").classList.add("hidden");
+            const card = state.cards.find(c => c.id === state.worldClassPending);
+            if (card) showCardResult(card, false, false);
+            state.worldClassPending = null;
+            saveGame();
+        });
+    }
+
+    const revealBtn = document.getElementById("revealCollectBtn");
+    if (revealBtn) {
+        revealBtn.addEventListener("click", () => {
+            SoundFx.click();
+            const overlay = document.getElementById("cardRevealOverlay");
+            if (overlay) overlay.classList.add("hidden");
+        });
+    }
+
+    document.querySelectorAll("button.nav").forEach(btn => {
+        btn.addEventListener("click", () => SoundFx.click());
+    });
 }
 
 function checkName() {
@@ -619,6 +755,7 @@ function renderAll() {
     updateCoinDisplay();
     renderHero();
     renderCards();
+    renderIndex();
     renderTradeHub();
     renderShop();
     renderProfile();
@@ -651,7 +788,7 @@ function renderHero() {
 }
 
 /* =========================================================
-   PACK OPENING & GACHA ROLLS
+   PACK OPENING & SERIALIZATION (MESSI & RONALDO FIRST 10)
    ========================================================= */
 
 function openPack(type) {
@@ -688,6 +825,20 @@ function openPack(type) {
         addCoins(bonus);
     }
 
+    // Check serialization for first 10 Messi / Ronaldo pulls
+    if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+    let serialNum = null;
+    let serialGrad = null;
+
+    if ((player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo") && (state.serializedCounts[player.name] < 10)) {
+        state.serializedCounts[player.name]++;
+        serialNum = state.serializedCounts[player.name];
+        const h1 = Math.floor(Math.random() * 360);
+        const h2 = (h1 + 60 + Math.floor(Math.random() * 180)) % 360;
+        const h3 = (h2 + 60 + Math.floor(Math.random() * 180)) % 360;
+        serialGrad = `linear-gradient(135deg, hsl(${h1}, 95%, 65%), hsl(${h2}, 100%, 75%), hsl(${h3}, 95%, 60%))`;
+    }
+
     const card = {
         id: Date.now() + "_" + Math.random().toString(36).slice(2),
         player: player.name,
@@ -696,6 +847,8 @@ function openPack(type) {
         rarity: rarity,
         image: player.image || "",
         frame: "default",
+        serialNumber: serialNum,
+        serialGradient: serialGrad,
         obtained: Date.now()
     };
 
@@ -763,6 +916,37 @@ function updateRarityStats(rarity, player) {
 }
 
 /* =========================================================
+   PACK ODDS MODAL
+   ========================================================= */
+
+function openPackOdds(packType) {
+    const pack = PACKS[packType];
+    if (!pack) return;
+
+    setText("oddsPackTitle", `Odds: ${pack.name}`);
+    setText("oddsPackCost", `Scouting Cost: ${pack.cost} 🪙`);
+
+    const list = document.getElementById("oddsRatesList");
+    if (list) {
+        list.innerHTML = Object.keys(pack.rates).map(r => `
+            <div class="odds-rate-row">
+                <span class="rarity ${rarityClassName(r)}">${escapeHTML(r)}</span>
+                <b>${pack.rates[r]}%</b>
+            </div>
+        `).join("");
+    }
+
+    const modal = document.getElementById("packOddsModal");
+    if (modal) modal.classList.remove("hidden");
+    SoundFx.click();
+}
+
+function closePackOddsModal() {
+    const modal = document.getElementById("packOddsModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+/* =========================================================
    WORLD CLASS SOL'S RNG CUTSCENES (MESSI & RONALDO)
    ========================================================= */
 
@@ -810,9 +994,15 @@ function showCardResult(card, duplicate, isFirstDiscovery) {
         const rClass = rarityClassName(card.rarity);
         revealCard.classList.add(`glow-${rClass}`);
 
+        if (card.serialGradient) {
+            revealCard.style.background = card.serialGradient;
+        } else {
+            revealCard.style.background = "";
+        }
+
         if (revealBadge) {
-            revealBadge.textContent = duplicate ? "DUPLICATE CARD" : "NEW CARD";
-            revealBadge.classList.toggle("duplicate", !!duplicate);
+            revealBadge.textContent = card.serialNumber ? `★ SERIALIZED #${card.serialNumber}/10 ★` : duplicate ? "DUPLICATE CARD" : "NEW CARD";
+            revealBadge.classList.toggle("duplicate", !!duplicate && !card.serialNumber);
         }
 
         if (revealBonus) {
@@ -843,6 +1033,159 @@ function showCardResult(card, duplicate, isFirstDiscovery) {
 }
 
 /* =========================================================
+   INTERACTIVE 3D CARD INSPECTOR
+   ========================================================= */
+
+function init3DInspector() {
+    const stage = document.getElementById("card3DStage");
+    const card = document.getElementById("card3DCard");
+    const shine = document.getElementById("card3DShine");
+    if (!stage || !card) return;
+
+    function handleMove(clientX, clientY) {
+        const rect = stage.getBoundingClientRect();
+        const x = (clientX - rect.left) / rect.width - 0.5;
+        const y = (clientY - rect.top) / rect.height - 0.5;
+
+        const rotX = -y * 32;
+        const rotY = x * 32;
+
+        card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.05, 1.05, 1.05)`;
+        if (shine) {
+            shine.style.opacity = Math.min(0.9, Math.abs(x) + Math.abs(y) + 0.3);
+            shine.style.transform = `translate(${x * 100}px, ${y * 100}px) rotate(${rotY * 2}deg)`;
+        }
+    }
+
+    stage.addEventListener("mousemove", (e) => handleMove(e.clientX, e.clientY));
+    stage.addEventListener("mouseleave", () => {
+        card.style.transform = "rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+        if (shine) shine.style.opacity = 0.5;
+    });
+
+    stage.addEventListener("touchmove", (e) => {
+        if (e.touches.length > 0) {
+            handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+    }, { passive: true });
+}
+
+function open3DCard(identifier) {
+    let pObj = PLAYERS.find(p => p.name === identifier);
+    let cardObj = state.cards.find(c => c.id === identifier || c.player === identifier);
+
+    const player = cardObj || pObj;
+    if (!player) return;
+
+    const modal = document.getElementById("card3DModal");
+    const cardEl = document.getElementById("card3DCard");
+    const photo = document.getElementById("card3DPhoto");
+    const rBadge = document.getElementById("card3DRarity");
+    const badgeWrap = document.getElementById("card3DBadgeWrap");
+
+    if (badgeWrap) {
+        if (cardObj && cardObj.serialNumber) {
+            badgeWrap.innerHTML = `<span class="serial-badge" style="background:${cardObj.serialGradient}">★ SERIAL #${cardObj.serialNumber}/10 ★</span>`;
+        } else {
+            badgeWrap.innerHTML = "";
+        }
+    }
+
+    const rClass = rarityClassName(player.rarity);
+    if (cardEl) {
+        cardEl.className = `card-3d-wrapper glow-${rClass}`;
+        if (cardObj && cardObj.serialGradient) {
+            cardEl.style.background = cardObj.serialGradient;
+        } else {
+            cardEl.style.background = "#0d1a26";
+        }
+    }
+
+    if (rBadge) {
+        rBadge.textContent = player.rarity.toUpperCase();
+        rBadge.className = `rarity ${rClass}`;
+    }
+
+    if (photo) photo.src = player.image || "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80";
+
+    setText("card3DRating", player.rating);
+    setText("card3DPos", player.pos);
+    setText("card3DName", player.player || player.name);
+    setText("card3DRaritySub", player.rarity);
+
+    setText("card3DStatsOvr", `OVR: ${player.rating}`);
+    setText("card3DStatsPos", `POS: ${player.pos}`);
+    setText("card3DStatsVal", `VALUE: ${DUPLICATE_VALUES[player.rarity] || 5} 🪙`);
+
+    if (modal) modal.classList.remove("hidden");
+    SoundFx.click();
+}
+
+function close3DCardModal() {
+    const modal = document.getElementById("card3DModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+/* =========================================================
+   INDEX / CATALOG SYSTEM
+   ========================================================= */
+
+function renderIndex() {
+    const grid = document.getElementById("indexGrid");
+    const filter = document.getElementById("indexFilter");
+    if (!grid) return;
+
+    let list = [...PLAYERS];
+    if (filter && filter.value !== "all") {
+        list = list.filter(p => p.rarity.toLowerCase() === filter.value.toLowerCase());
+    }
+
+    const total = PLAYERS.length;
+    const discoveredCount = PLAYERS.filter(p => state.unlockedCardNames.includes(p.name) || state.cards.some(c => c.player === p.name)).length;
+    const pct = Math.round((discoveredCount / total) * 100);
+
+    setText("indexProgressText", `${discoveredCount} / ${total} Players Discovered (${pct}%)`);
+    const pBar = document.getElementById("indexProgressBar");
+    if (pBar) pBar.style.width = `${pct}%`;
+
+    grid.innerHTML = list.map(player => {
+        const isUnlocked = state.unlockedCardNames.includes(player.name) || state.cards.some(c => c.player === player.name);
+        const rClass = rarityClassName(player.rarity);
+
+        if (!isUnlocked) {
+            return `
+            <article class="card index-card locked">
+                <span class="rarity ${rClass}">${escapeHTML(player.rarity)}</span>
+                <div class="card-image-wrap">
+                    <img class="card-photo" src="${player.image}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+                </div>
+                <div class="card-rating">??</div>
+                <div class="card-position">${escapeHTML(player.pos)}</div>
+                <h3>???</h3>
+                <small>🔒 Locked</small>
+            </article>
+            `;
+        }
+
+        return `
+        <article class="card index-card glow-${rClass}" onclick="open3DCard('${escapeHTML(player.name)}')">
+            <span class="rarity ${rClass}">${escapeHTML(player.rarity)}</span>
+            <div class="card-image-wrap">
+                <img class="card-photo" src="${player.image}" alt="${escapeHTML(player.name)}">
+            </div>
+            <div class="card-rating">${player.rating}</div>
+            <div class="card-position">${escapeHTML(player.pos)}</div>
+            <h3>${escapeHTML(player.name)}</h3>
+            <small style="color:var(--green);font-weight:800;">✓ Discovered</small>
+            <div style="margin-top:8px;">
+                <button class="primary-btn" style="padding:6px 12px;font-size:11px;" onclick="event.stopPropagation(); open3DCard('${escapeHTML(player.name)}')">🔍 3D View</button>
+            </div>
+        </article>
+        `;
+    }).join("");
+}
+
+/* =========================================================
    COLLECTION & HOVER STATS
    ========================================================= */
 
@@ -869,7 +1212,8 @@ function renderCards() {
         const value = DUPLICATE_VALUES[card.rarity] || 5;
 
         return `
-        <article class="card ${frame.css}" onclick="viewCard('${card.id}')">
+        <article class="card ${frame.css}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="open3DCard('${card.id}')">
+            ${card.serialNumber ? `<span class="serial-badge" style="background:${card.serialGradient}">★ #${card.serialNumber}/10 ★</span>` : ""}
             <div class="card-hover-stats">
                 <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <h4>${escapeHTML(card.player)}</h4>
@@ -879,7 +1223,7 @@ function renderCards() {
 
             <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
             <div class="card-image-wrap">
-                <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+                <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
             </div>
             <div class="card-rating">${card.rating}</div>
             <div class="card-position">${escapeHTML(card.pos)}</div>
@@ -887,7 +1231,7 @@ function renderCards() {
             <small>${escapeHTML(card.rarity)}</small>
 
             <div class="card-actions">
-                <button onclick="event.stopPropagation(); viewCard('${card.id}')">View</button>
+                <button onclick="event.stopPropagation(); open3DCard('${card.id}')">3D View</button>
                 <button class="sell" onclick="event.stopPropagation(); sellCard('${card.id}')">Sell ${value} 🪙</button>
             </div>
         </article>
@@ -897,12 +1241,6 @@ function renderCards() {
 
 function rarityClassName(rarity) {
     return rarity.toLowerCase().replaceAll(" ", "");
-}
-
-function viewCard(id) {
-    const card = state.cards.find(c => c.id === id);
-    if (!card) return;
-    toast(`${card.player} · OVR ${card.rating} · ${card.pos} · ${card.rarity}`);
 }
 
 function sellCard(id) {
@@ -925,7 +1263,7 @@ function sellCard(id) {
 }
 
 /* =========================================================
-   6-SLOT CARD SHOWCASE (TALLER 3x2 GRID)
+   6-SLOT CARD SHOWCASE (TALLER 3x2 GRID & VISUAL SELECTOR)
    ========================================================= */
 
 function renderShowcase() {
@@ -950,7 +1288,8 @@ function renderShowcase() {
         return `
         <div class="showcase-slot">
             <button class="showcase-slot-action" onclick="event.stopPropagation(); openShowcasePicker(${index})">Change</button>
-            <article class="card showcase-card ${frame.css}" onclick="viewCard('${card.id}')">
+            <article class="card showcase-card ${frame.css}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="open3DCard('${card.id}')">
+                ${card.serialNumber ? `<span class="serial-badge" style="background:${card.serialGradient}">★ #${card.serialNumber}/10 ★</span>` : ""}
                 <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <div class="card-image-wrap">
                     <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}">
@@ -974,13 +1313,17 @@ function openShowcasePicker(slotIndex) {
     if (!list || !modal) return;
 
     if (!state.cards.length) {
-        list.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted)">No cards in your collection yet.</p>`;
+        list.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px;">No cards in your collection yet. Open packs to collect cards!</p>`;
     } else {
         list.innerHTML = state.cards.map(card => `
-            <div class="showcase-picker-item" onclick="setShowcaseCard(${slotIndex}, '${card.id}')">
+            <div class="showcase-visual-card" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="setShowcaseCard(${slotIndex}, '${card.id}')">
+                ${card.serialNumber ? `<span class="serial-badge" style="background:${card.serialGradient}">★ #${card.serialNumber}/10 ★</span>` : ""}
                 <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
-                <b style="display:block;margin:4px 0;font-size:13px;">${escapeHTML(card.player)}</b>
-                <small>${card.rating} OVR · ${card.pos}</small>
+                <div class="card-image-wrap" style="height:110px;margin:6px 0;">
+                    <img class="card-photo" src="${card.image}">
+                </div>
+                <div style="font-weight:900;font-size:14px;color:#fff;">${escapeHTML(card.player)}</div>
+                <small style="color:var(--muted);">${card.rating} OVR · ${card.pos}</small>
             </div>
         `).join("");
     }
@@ -1318,6 +1661,10 @@ function equipTitle(titleName) {
     toast(`Equipped Title: ${titleName}!`);
 }
 
+function ownsPlayer(name) {
+    return state.cards.some(c => c.player === name);
+}
+
 /* =========================================================
    PROFILE & AVATAR CUSTOMIZATION
    ========================================================= */
@@ -1330,7 +1677,7 @@ function renderProfile() {
     setText("profilePlaytime", formatPlaytime(state.stats.playtime));
     setText("profileBest", state.stats.highestRarity || "Common");
     const avatarImg = document.getElementById("profileAvatarImg");
-    if (avatarImg) avatarImg.src = state.avatar;
+    if (avatarImg && state.avatar) avatarImg.src = state.avatar;
     const avatarWrap = document.getElementById("profileAvatarWrap");
     if (avatarWrap) {
         const frame = FRAMES.find(f => f.id === state.profileFrame) || FRAMES[0];
@@ -1399,14 +1746,47 @@ function setPresetAvatar(url) {
 function renderShop() {
     const frames = document.getElementById("frameShop");
     const backgrounds = document.getElementById("backgroundShop");
-    if (frames) frames.innerHTML = FRAMES.map(frame => `<div class="shop-item"><div class="shop-preview ${frame.css}"></div><h3>${frame.name}</h3><p>${frame.cost === 0 ? "Free" : frame.cost + " coins"}</p><button ${state.ownedFrames.includes(frame.id) ? "disabled" : ""} onclick="buyFrame('${frame.id}')">${state.ownedFrames.includes(frame.id) ? "Owned" : "Buy"}</button></div>`).join("");
-    if (backgrounds) backgrounds.innerHTML = BACKGROUNDS.map(bg => `<div class="shop-item"><div class="shop-preview" style="background:${bg.css}"></div><h3>${bg.name}</h3><p>${bg.cost === 0 ? "Free" : bg.cost + " coins"}</p><button ${state.ownedBackgrounds.includes(bg.id) ? "disabled" : ""} onclick="buyBackground('${bg.id}')">${state.ownedBackgrounds.includes(bg.id) ? "Owned" : "Buy"}</button></div>`).join("");
+
+    if (frames) {
+        frames.innerHTML = FRAMES.map(frame => {
+            const owned = state.ownedFrames.includes(frame.id);
+            return `
+            <div class="shop-item">
+                <div class="shop-preview ${frame.css}">
+                    <img class="shop-avatar-demo" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80" alt="Avatar">
+                </div>
+                <h3>${frame.name}</h3>
+                <p>${frame.cost === 0 ? "Free" : frame.cost + " coins"}</p>
+                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : ""}" onclick="buyFrame('${frame.id}')">
+                    ${owned ? "Owned" : "Buy Frame"}
+                </button>
+            </div>
+            `;
+        }).join("");
+    }
+
+    if (backgrounds) {
+        backgrounds.innerHTML = BACKGROUNDS.map(bg => {
+            const owned = state.ownedBackgrounds.includes(bg.id);
+            return `
+            <div class="shop-item">
+                <div class="shop-preview" style="background:${bg.css}"></div>
+                <h3>${bg.name}</h3>
+                <p>${bg.cost === 0 ? "Free" : bg.cost + " coins"}</p>
+                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : ""}" onclick="buyBackground('${bg.id}')">
+                    ${owned ? "Owned" : "Buy Stadium"}
+                </button>
+            </div>
+            `;
+        }).join("");
+    }
 }
 
 function buyFrame(id) {
     const frame = FRAMES.find(f => f.id === id);
     if (!frame || state.ownedFrames.includes(id)) return;
     if (!spendCoins(frame.cost)) return;
+
     state.ownedFrames.push(id);
     saveGame();
     renderShop();
@@ -1419,6 +1799,7 @@ function buyBackground(id) {
     const bg = BACKGROUNDS.find(b => b.id === id);
     if (!bg || state.ownedBackgrounds.includes(id)) return;
     if (!spendCoins(bg.cost)) return;
+
     state.ownedBackgrounds.push(id);
     saveGame();
     renderShop();
@@ -1436,10 +1817,12 @@ function openTournamentEnterModal() {
         openAuthModal();
         return;
     }
+
     if (state.tournamentAttempts <= 0) {
         toast("You have used all 5 weekly tournament draft attempts!");
         return;
     }
+
     setText("tournamentAttemptsDisplay", `${state.tournamentAttempts} / 5`);
     const modal = document.getElementById("tournamentEnterModal");
     if (modal) modal.classList.remove("hidden");
@@ -1453,6 +1836,7 @@ function closeTournamentEnterModal() {
 function confirmTournamentEntry() {
     closeTournamentEnterModal();
     if (state.tournamentAttempts <= 0) return;
+
     state.tournamentAttempts--;
     state.tournamentDraft = {
         gold: 1000,
@@ -1461,6 +1845,7 @@ function confirmTournamentEntry() {
         cards: [],
         active: true
     };
+
     state.stats.tournamentEntries++;
     saveGame();
     renderTournament();
@@ -1474,14 +1859,23 @@ function openTournamentPack() {
         toast("You have spent all 1,000 Tournament Gold for this run!");
         return;
     }
+
     draft.gold -= 100;
     draft.packsOpened++;
+
     SoundFx.packOpen();
+
     const rarity = rollRarity(PACKS.tournament.rates);
     const player = choosePlayer(rarity);
-    if (!player) { draft.gold += 100; return; }
+
+    if (!player) {
+        draft.gold += 100;
+        return;
+    }
+
     const points = TOURNAMENT_POINTS[rarity] || 1;
     draft.score += points;
+
     const draftCard = {
         id: Date.now() + "_" + Math.random().toString(36).slice(2),
         player: player.name,
@@ -1491,15 +1885,20 @@ function openTournamentPack() {
         image: player.image || "",
         points: points
     };
+
     draft.cards.unshift(draftCard);
+
     if (draft.score > state.stats.tournamentScore) {
         state.stats.tournamentScore = draft.score;
     }
+
     SoundFx.cardReveal(rarity);
     toast(`🏆 Drafted ${player.name} (+${points} pts)!`);
+
     if (draft.gold <= 0) {
         finishTournamentDraft();
     }
+
     saveGame();
     renderTournament();
 }
@@ -1508,6 +1907,7 @@ function finishTournamentDraft() {
     const draft = state.tournamentDraft;
     draft.active = false;
     SoundFx.levelUp();
+
     const ownsEmanuel = state.cards.some(c => c.player === "Emanuel" && c.rarity === "Tournament");
     if (!ownsEmanuel && draft.score >= 50) {
         const emanuelCard = {
@@ -1530,6 +1930,7 @@ function finishTournamentDraft() {
     } else {
         toast(`🏆 Draft Run Complete! Final Tournament Score: ${draft.score} pts.`);
     }
+
     saveGame();
     renderTournament();
     renderCards();
@@ -1540,14 +1941,17 @@ function renderTournament() {
     setText("tGoldDisplay", `${draft.gold} 🪙`);
     setText("tPacksDisplay", `${draft.packsOpened} / 10`);
     setText("tScoreDisplay", `${draft.score} pts`);
+
     const enterBtn = document.getElementById("enterTournamentModalBtn");
     const openBtn = document.getElementById("openTournamentPackBtn");
+
     if (enterBtn && openBtn) {
         const canOpen = draft.active && draft.gold > 0;
         enterBtn.style.display = canOpen ? "none" : "flex";
         openBtn.style.display = canOpen ? "flex" : "none";
         setText("attemptsLeftSubtitle", `${state.tournamentAttempts} / 5 Weekly Attempts Remaining`);
     }
+
     const draftGrid = document.getElementById("tournamentDraftGrid");
     if (draftGrid) {
         if (!draft.cards.length) {
@@ -1566,20 +1970,33 @@ function renderTournament() {
             `).join("");
         }
     }
+
     const accs = CloudSync.getAccounts();
     const realPlayers = [];
+
     for (const key in accs) {
         try {
             const d = JSON.parse(accs[key].saveData);
             if (d && d.stats) {
-                realPlayers.push({ name: d.name || accs[key].username, score: d.stats.tournamentScore || 0, level: d.level || 1 });
+                realPlayers.push({
+                    name: d.name || accs[key].username,
+                    score: d.stats.tournamentScore || 0,
+                    level: d.level || 1
+                });
             }
         } catch (e) {}
     }
+
     if (state.accountUser && !realPlayers.some(p => p.name.toLowerCase() === state.accountUser.toLowerCase())) {
-        realPlayers.push({ name: state.name || state.accountUser, score: state.stats.tournamentScore || 0, level: state.level || 1 });
+        realPlayers.push({
+            name: state.name || state.accountUser,
+            score: state.stats.tournamentScore || 0,
+            level: state.level || 1
+        });
     }
+
     realPlayers.sort((a, b) => b.score - a.score);
+
     const el = document.getElementById("tournamentLeaderboard");
     if (el) {
         if (!realPlayers.length) {
@@ -1607,13 +2024,16 @@ function getThailandTime() {
 
 function setMissionType(type) {
     currentMissionType = type;
-    document.querySelectorAll(".mission-tab").forEach(tab => tab.classList.toggle("active", tab.textContent.toLowerCase() === type));
+    document.querySelectorAll(".mission-tab").forEach(tab => {
+        tab.classList.toggle("active", tab.textContent.toLowerCase() === type);
+    });
     renderMissions();
 }
 
 function renderMissions() {
     const list = document.getElementById("missionList");
     const homeList = document.getElementById("homeMissionList");
+
     const missions = MISSION_TEMPLATES[currentMissionType];
     const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType]) || [false, false, false];
     const progress = (state.missionProgress && state.missionProgress[currentMissionType]) || [0, 0, 0];
@@ -1621,28 +2041,36 @@ function renderMissions() {
     function createMissionHTML(mission, i, type, isClaimed, amount) {
         const max = mission[1];
         const percent = Math.min(100, (amount / max) * 100);
+
         return `
         <div class="mission-item">
-            <div class="mission-head">
-                <b>${escapeHTML(mission[0])}</b>
-                <span>+${mission[2]} 🪙</span>
+            <div>
+                <div class="mission-head">
+                    <b>${escapeHTML(mission[0])}</b>
+                    <span>+${mission[2]} 🪙</span>
+                </div>
+                <p style="font-size:13px;color:var(--muted);margin:6px 0 2px;">Progress: ${Math.min(amount, max)} / ${max}</p>
+                <div class="mission-progress"><i style="width:${percent}%"></i></div>
             </div>
-            <p>${Math.min(amount, max)} / ${max}</p>
-            <div class="mission-progress"><i style="width:${percent}%"></i></div>
-            ${
-                amount >= max && !isClaimed ? `<button class="primary-btn" style="margin-top:10px" onclick="claimMission('${type}', ${i})">Claim +${mission[2]} 🪙</button>`
-                : isClaimed ? `<p style="color:var(--green);font-weight:800;margin-top:8px;">✓ Completed</p>` : ""
-            }
+            <div>
+                ${
+                    amount >= max && !isClaimed ? `<button class="mission-claim-btn" onclick="claimMission('${type}', ${i})">Claim +${mission[2]} 🪙</button>`
+                    : isClaimed ? `<p style="color:var(--green);font-weight:800;margin:0;">✓ Completed</p>` : `<span style="font-size:12px;color:var(--muted);">In Progress (${Math.round(percent)}%)</span>`
+                }
+            </div>
         </div>
         `;
     }
+
     if (list && missions) {
         list.innerHTML = missions.map((m, i) => createMissionHTML(m, i, currentMissionType, claimed[i], progress[i] || 0)).join("");
     }
+
     if (homeList) {
         const dailyMissions = MISSION_TEMPLATES.daily;
         const dailyProg = (state.missionProgress && state.missionProgress.daily) || [0, 0, 0];
         const dailyClaimed = (state.missionClaimed && state.missionClaimed.daily) || [false, false, false];
+
         homeList.innerHTML = dailyMissions.map((m, i) => createMissionHTML(m, i, "daily", dailyClaimed[i], dailyProg[i] || 0)).join("");
     }
 }
@@ -1650,9 +2078,11 @@ function renderMissions() {
 function progressMission(kind, amount) {
     const types = ["hourly", "daily", "weekly", "monthly"];
     let updated = false;
+
     types.forEach(type => {
         const missions = MISSION_TEMPLATES[type];
         if (!missions) return;
+
         missions.forEach((mission, i) => {
             if (mission[3] === kind) {
                 if (!state.missionProgress[type]) state.missionProgress[type] = [0, 0, 0];
@@ -1661,16 +2091,23 @@ function progressMission(kind, amount) {
             }
         });
     });
-    if (updated) { saveGame(); renderMissions(); }
+
+    if (updated) {
+        saveGame();
+        renderMissions();
+    }
 }
 
 function claimMission(type, index) {
     const mission = MISSION_TEMPLATES[type][index];
     const progress = (state.missionProgress[type] && state.missionProgress[type][index]) || 0;
+
     if (progress < mission[1]) return;
     if (state.missionClaimed[type] && state.missionClaimed[type][index]) return;
+
     if (!state.missionClaimed[type]) state.missionClaimed[type] = [false, false, false];
     state.missionClaimed[type][index] = true;
+
     SoundFx.coin();
     addCoins(mission[2]);
     addXP(Math.min(50, Math.floor(mission[2] / 2)));
@@ -1728,7 +2165,9 @@ function updateLimitedTimer() {
     const target = new Date(th);
     target.setDate(th.getDate() + daysUntilMon);
     target.setHours(7, 0, 0, 0);
-    timer.textContent = "Weekly Reset in " + formatCountdown(target.getTime() - th.getTime());
+
+    const diff = target.getTime() - th.getTime();
+    timer.textContent = "Weekly Reset in " + formatCountdown(diff);
 }
 
 function updateTournamentTimer() {
@@ -1740,15 +2179,19 @@ function updateTournamentTimer() {
     const target = new Date(th);
     target.setDate(th.getDate() + daysUntilMon);
     target.setHours(7, 0, 0, 0);
-    timer.textContent = "Resets Monday 7:00 AM (ICT) · " + formatCountdown(target.getTime() - th.getTime());
+
+    const diff = target.getTime() - th.getTime();
+    timer.textContent = "Resets Monday 7:00 AM (ICT) · " + formatCountdown(diff);
 }
 
 function updateDailyReward() {
     const text = document.getElementById("dailyRewardText");
     const btn = document.getElementById("dailyRewardBtn");
     if (!text || !btn) return;
+
     const last = state.dailyRewardClaimed || 0;
     const ready = Date.now() - last >= 86400000;
+
     btn.disabled = !ready;
     btn.textContent = ready ? "Claim (+100 🪙)" : "Claimed";
     text.textContent = ready ? "Your daily training reward is ready!" : "Next reward ready tomorrow at 7:00 AM (ICT).";
@@ -1757,6 +2200,7 @@ function updateDailyReward() {
 function claimDailyReward() {
     const last = state.dailyRewardClaimed || 0;
     if (Date.now() - last < 86400000) return;
+
     state.dailyRewardClaimed = Date.now();
     addCoins(100);
     addXP(10);
@@ -1817,10 +2261,12 @@ function redeemCode() {
     }
     const code = raw.toUpperCase();
     if (!state.redeemedCodes) state.redeemedCodes = [];
+
     if (state.redeemedCodes.includes(code)) {
         toast("You have already redeemed this code.");
         return;
     }
+
     if (code === "RELEASE") {
         state.redeemedCodes.push(code);
         addCoins(150);
@@ -1867,31 +2313,56 @@ function renderStatistics() {
         ["Best Rarity", s.highestRarity, "Peak rarity"],
         ["Tournament Score", s.tournamentScore, "Season peak pts"]
     ];
+
     const grid = document.getElementById("statisticsGrid");
-    if (grid) grid.innerHTML = data.map(x => `<div class="stat-box"><h3>${x[0]}</h3><b>${x[1]}</b><p>${x[2]}</p></div>`).join("");
+    if (grid) {
+        grid.innerHTML = data.map(x => `
+            <div class="stat-box">
+                <h3>${x[0]}</h3>
+                <b>${x[1]}</b>
+                <p>${x[2]}</p>
+            </div>
+        `).join("");
+    }
 }
 
 function renderLeaderboard() {
     const container = document.getElementById("globalLeaderboard");
     if (!container) return;
+
     const accs = CloudSync.getAccounts();
     const entries = [];
+
     for (const key in accs) {
         try {
             const d = JSON.parse(accs[key].saveData);
             if (d) {
-                entries.push({ name: d.name || accs[key].username, level: d.level || 1, cards: (d.cards || []).length, world: (d.stats && d.stats.worldClass) || 0 });
+                entries.push({
+                    name: d.name || accs[key].username,
+                    level: d.level || 1,
+                    cards: (d.cards || []).length,
+                    world: (d.stats && d.stats.worldClass) || 0
+                });
             }
         } catch (e) {}
     }
+
     if (state.accountUser && !entries.some(e => e.name.toLowerCase() === state.accountUser.toLowerCase())) {
-        entries.push({ name: state.name || state.accountUser, level: state.level, cards: state.cards.length, world: state.stats.worldClass || 0 });
+        entries.push({
+            name: state.name || state.accountUser,
+            level: state.level,
+            cards: state.cards.length,
+            world: state.stats.worldClass || 0
+        });
     }
+
     entries.sort((a, b) => b.level - a.level);
+
     if (!entries.length) {
         container.innerHTML = `<div class="empty-state">No players found yet. Create a Cloud Account to join!</div>`;
         return;
     }
+
     container.innerHTML = entries.map((e, i) => `
         <div class="rank-row">
             <b>#${i + 1}</b>
@@ -1915,7 +2386,10 @@ function addCoins(amount) {
 }
 
 function spendCoins(amount) {
-    if (state.coins < amount) { toast("Not enough coins."); return false; }
+    if (state.coins < amount) {
+        toast("Not enough coins.");
+        return false;
+    }
     state.coins -= amount;
     state.stats.coinsSpent += amount;
     updateCoinDisplay();
@@ -1927,6 +2401,7 @@ function spendCoins(amount) {
 function addXP(amount) {
     state.xp += amount;
     let needed = state.level * 50;
+
     while (state.xp >= needed) {
         state.xp -= needed;
         state.level++;
@@ -1934,6 +2409,7 @@ function addXP(amount) {
         SoundFx.levelUp();
         toast(`🎉 Level Up! Level ${state.level}!`);
     }
+
     renderHero();
     renderProfile();
     saveGame();
@@ -1943,7 +2419,10 @@ function changeName() {
     const newName = prompt("Enter your name:", state.name);
     if (!newName) return;
     const name = newName.trim();
-    if (name.length < 2) { toast("Name must be at least 2 characters."); return; }
+    if (name.length < 2) {
+        toast("Name must be at least 2 characters.");
+        return;
+    }
     state.name = name;
     if (state.accountUser) state.accountUser = name;
     saveGame();
@@ -1964,11 +2443,22 @@ function resetGame() {
 function showPage(pageId) {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active-page"));
     document.querySelectorAll("button.nav").forEach(n => n.classList.remove("active"));
+
     const targetPage = document.getElementById(pageId);
     if (targetPage) targetPage.classList.add("active-page");
+
     const targetNav = document.querySelector(`button.nav[data-page="${pageId}"]`);
     if (targetNav) targetNav.classList.add("active");
+
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar && window.innerWidth <= 768) sidebar.classList.remove("open");
+
     window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) sidebar.classList.toggle("open");
 }
 
 function toast(msg) {
