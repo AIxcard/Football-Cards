@@ -1485,6 +1485,7 @@ select,input{
    ========================================================= */
 
 .featured-popular-banner {
+    position: relative;
     margin: 20px 0 25px;
     padding: 24px;
     border-radius: 22px;
@@ -1557,244 +1558,442 @@ select,input{
 }
 
 /* =========================================================
-   TALLER 6-SLOT CARD SHOWCASE (3 TOP, 3 BOTTOM)
+   PACK INFO BUTTON & ODDS MODAL
    ========================================================= */
 
-.showcase-grid {
+.pack {
+    position: relative;
+}
+
+.pack-info-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    font-weight: 900;
+    font-size: 14px;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 5;
 }
 
-@media(max-width: 900px) {
-    .showcase-grid {
-        grid-template-columns: repeat(2, 1fr);
+.pack-info-btn:hover {
+    background: var(--blue);
+    transform: scale(1.12);
+}
+
+.odds-modal-box {
+    width: min(520px, 94vw);
+    text-align: left;
+}
+
+.odds-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+}
+
+.modal-close-x {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.modal-close-x:hover {
+    color: #fff;
+}
+
+.odds-rates-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.odds-rate-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+}
+
+.odds-rate-row b {
+    color: var(--gold);
+}
+
+/* =========================================================
+   MISSIONS BALANCED LAYOUT & SIZING
+   ========================================================= */
+
+.mission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 15px;
+}
+
+.mission-item {
+    background: rgba(14, 28, 44, 0.75);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.mission-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+}
+
+.mission-head span {
+    font-weight: 800;
+    color: var(--gold);
+    background: rgba(245, 206, 98, 0.15);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.mission-claim-btn {
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 10px;
+    border: none;
+    background: var(--green);
+    color: #04120c;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: transform 0.15s ease;
+}
+
+.mission-claim-btn:hover {
+    transform: scale(1.05);
+}
+
+/* =========================================================
+   INTERACTIVE 3D CARD INSPECTOR
+   ========================================================= */
+
+.inspector-modal {
+    background: rgba(4, 10, 16, 0.95);
+    backdrop-filter: blur(16px);
+}
+
+.inspector-box {
+    width: min(480px, 94vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: #0a1622;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.inspector-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inspector-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 4px 0 10px;
+}
+
+.card-3d-stage {
+    perspective: 1000px;
+    margin: 15px 0;
+    width: 280px;
+    height: 400px;
+    display: grid;
+    place-items: center;
+    cursor: grab;
+    touch-action: none;
+}
+
+.card-3d-stage:active {
+    cursor: grabbing;
+}
+
+.card-3d-wrapper {
+    width: 270px;
+    height: 390px;
+    border-radius: 18px;
+    transform-style: preserve-3d;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(50, 149, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #0d1a26;
+    border: 2px solid var(--border);
+    transition: box-shadow 0.1s ease;
+}
+
+.card-3d-shine {
+    position: absolute;
+    inset: -60%;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.3) 48%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.3) 52%, transparent 70%);
+    opacity: 0.6;
+    mix-blend-mode: overlay;
+    transform: rotate(0deg);
+}
+
+.inspector-stats-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+}
+
+.stat-pill {
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* =========================================================
+   SERIALIZED CARD HOLOGRAPHIC BADGE
+   ========================================================= */
+
+.serial-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    margin-bottom: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* =========================================================
+   VISUAL SHOWCASE PICKER MODAL (LARGE & PICTURES)
+   ========================================================= */
+
+.showcase-large-picker-box {
+    width: min(900px, 95vw);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    background: #0b1724;
+    border-radius: 24px;
+    padding: 24px;
+}
+
+.showcase-picker-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+}
+
+.showcase-visual-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    overflow-y: auto;
+    max-height: 55vh;
+    padding: 8px;
+}
+
+.showcase-visual-card {
+    border-radius: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    text-align: center;
+    position: relative;
+}
+
+.showcase-visual-card:hover {
+    transform: translateY(-4px) scale(1.03);
+    border-color: var(--blue);
+}
+
+.showcase-picker-footer {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* =========================================================
+   INDEX / CATALOG STYLES
+   ========================================================= */
+
+.index-summary-panel {
+    background: linear-gradient(135deg, #0e1e2d, #08131d);
+    margin-bottom: 20px;
+    border-radius: 18px;
+    padding: 20px;
+}
+
+.index-summary-content h3 {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+
+.index-progress-track {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.index-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3295ff, #38db8b, #f5ce62);
+    transition: width 0.4s ease;
+}
+
+.index-card {
+    position: relative;
+    border-radius: 16px;
+    padding: 12px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.index-card:hover {
+    transform: translateY(-4px);
+}
+
+.index-card.locked {
+    filter: grayscale(1) brightness(0.35);
+    opacity: 0.65;
+    border-style: dashed;
+}
+
+.index-card.locked .card-photo {
+    filter: blur(4px) contrast(0.5);
+}
+
+/* =========================================================
+   PROFILE HERO GLASSMORPHIC CARD & CONTRAST
+   ========================================================= */
+
+.profile-hero {
+    position: relative;
+    border-radius: 24px;
+    padding: 24px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background-size: cover !important;
+    background-position: center !important;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+}
+
+.profile-glass-card {
+    background: rgba(6, 16, 26, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================================
+   SHOP PREVIEW WITH DEMO AVATAR
+   ========================================================= */
+
+.shop-preview {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 12px;
+    overflow: hidden;
+    background: #0d1924;
+    padding: 3px;
+}
+
+.shop-avatar-demo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* =========================================================
+   MOBILE & TABLET RESPONSIVE OVERHAUL
+   ========================================================= */
+
+@media(max-width: 768px) {
+    body {
+        padding-bottom: 70px;
     }
-}
 
-@media(max-width: 520px) {
+    .topbar {
+        padding: 10px 16px;
+    }
+
+    .profile-glass-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
     .showcase-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pack-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mission-grid {
         grid-template-columns: 1fr;
     }
 }
 
-.showcase-slot {
-    min-height: 380px;
-    border-radius: 20px;
-    border: 2px dashed rgba(255, 255, 255, 0.18);
-    background: rgba(8, 20, 32, 0.5);
-    display: grid;
-    place-items: center;
-    position: relative;
-    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
-    overflow: hidden;
-    padding: 12px;
-}
-
-.showcase-slot:hover {
-    border-color: rgba(50, 149, 255, 0.6);
-    background: rgba(14, 30, 48, 0.7);
-}
-
-.showcase-card {
-    width: 100%;
-    height: 100%;
-    min-height: 360px;
-    margin: 0;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.showcase-card .card-image-wrap {
-    height: 180px;
-    width: 100%;
-}
-
-.showcase-slot-action {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.75);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: #fff;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.showcase-slot-action:hover {
-    background: var(--blue);
-}
-
-/* =========================================================
-   SEARCH PLAYER PROFILE & MODAL
-   ========================================================= */
-
-.search-player-panel {
-    margin-bottom: 20px;
-    background: #0d1824;
-    border-radius: 18px;
-}
-
-.searched-profile-box {
-    width: min(760px, 94vw);
-    max-height: 85vh;
-    overflow-y: auto;
-}
-
-.searched-profile-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 16px;
-}
-
-@media(max-width: 550px) {
-    .searched-profile-header {
-        flex-direction: column;
-        text-align: center;
-    }
-}
-
-/* =========================================================
-   PLAYER-TO-PLAYER TRADING HUB
-   ========================================================= */
-
-.trade-send-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-}
-
-.trade-inbox-list, .trade-history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.trade-card-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border);
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.trade-info-col h4 {
-    margin: 0 0 4px;
-    font-size: 16px;
-}
-
-.trade-info-col p {
-    margin: 0;
-    font-size: 13px;
-    color: var(--muted);
-}
-
-.trade-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.trade-actions button {
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-/* =========================================================
-   TOURNAMENT ATTEMPTS & ENTER MODAL
-   ========================================================= */
-
-.attempts-box {
-    margin: 16px 0;
-    padding: 14px;
-    border-radius: 14px;
-    background: rgba(245, 206, 98, 0.1);
-    border: 1px solid rgba(245, 206, 98, 0.4);
-    text-align: center;
-}
-
-.attempts-box span {
-    font-size: 11px;
-    font-weight: 800;
-    color: var(--muted);
-    letter-spacing: 1px;
-    display: block;
-}
-
-.attempts-box strong {
-    display: block;
-    font-size: 28px;
-    color: var(--gold);
-    margin-top: 4px;
-}
-
-/* =========================================================
-   GOAT SOL'S RNG CUTSCENES (MESSI & RONALDO)
-   ========================================================= */
-
-.goat-crest-badge {
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    padding: 6px 16px;
-    border-radius: 20px;
-    background: rgba(244, 196, 78, 0.25);
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    margin-bottom: 12px;
-}
-
-.sols-player-quote {
-    font-style: italic;
-    color: #e3f2fd;
-    font-size: 14px;
-    margin: 4px 0 14px;
-    font-weight: 600;
-}
-
-.reveal-bonus-tag {
-    background: rgba(244, 196, 78, 0.2);
-    color: var(--gold);
-    border: 1px solid var(--gold);
-    padding: 6px 14px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 900;
-    animation: bounceBonus 1s ease infinite alternate;
-}
-
-@keyframes bounceBonus {
-    0% { transform: scale(0.95); }
-    100% { transform: scale(1.05); }
-}
-
-/* Centered content & responsive padding */
-main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px;
-}
-
-.page {
-    text-align: left;
-}
-
-.modal-box {
-    text-align: center;
-}
 
 
