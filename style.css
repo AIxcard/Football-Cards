@@ -240,7 +240,7 @@ main{
     margin:15px 0;
 }
 
-.pack button,
+.pack > button:not(.pack-info-btn),
 .primary-btn,
 .daily-box button,
 .free-kick button{
@@ -400,16 +400,96 @@ main{
     letter-spacing:1px;
 }
 
-.common{color:#aeb8c1}
-.uncommon{color:#50d78a}
-.rare{color:#4aa8ff}
-.epic{color:#a65cff}
-.legendary{color:#f4c44e}
-.mythic{color:#ff6bc1}
-.secret{color:#ff596e}
-.worldclass{color:#fff;background:linear-gradient(90deg,#fff,#69c7ff,#b66cff,#fff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.limited{color:#ffcf5b}
-.tournament{color:#f5ce62;background:linear-gradient(90deg,#f5ce62,#ff8c00,#ff0077,#00f2fe,#f5ce62);background-size:200% auto;animation:textShimmer 3s linear infinite;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.common {
+    background: linear-gradient(135deg, #a0aec0, #e2e8f0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.uncommon {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.rare {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.epic {
+    background: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.legendary {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.exclusive {
+    background: linear-gradient(135deg, #b66cff 0%, #ffffff 50%, #9d4edd 100%);
+    background-size: 200% auto;
+    animation: textShimmer 3s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.mythic {
+    background: linear-gradient(135deg, #ff0844 0%, #ff4e50 50%, #d50000 100%);
+    background-size: 200% auto;
+    animation: textShimmer 2.5s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 5px rgba(255, 8, 68, 0.6));
+}
+.secret {
+    background: linear-gradient(135deg, #000000 0%, #555555 35%, #ffffff 70%, #111111 100%);
+    background-size: 200% auto;
+    animation: textShimmer 3s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+}
+.worldclass {
+    background: linear-gradient(90deg, #ffffff 0%, #69c7ff 40%, #b66cff 70%, #ffffff 100%);
+    background-size: 200% auto;
+    animation: textShimmer 2.5s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 8px rgba(105, 199, 255, 0.8));
+}
+.limited {
+    background: linear-gradient(135deg, #b66cff, #ffffff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.tournament {
+    background: linear-gradient(90deg, #f5ce62, #ff8c00, #ff0077, #00f2fe, #f5ce62);
+    background-size: 200% auto;
+    animation: textShimmer 3s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
 
 @keyframes textShimmer{
     0%{background-position:0 50%}
@@ -948,43 +1028,58 @@ select,input{
 
 /* Rarity specific glowing auras */
 .glow-worldclass {
-    box-shadow: 0 0 45px rgba(105, 199, 255, 0.7), 0 0 90px rgba(182, 108, 255, 0.4) !important;
+    box-shadow: 0 0 45px rgba(105, 199, 255, 0.85), 0 0 90px rgba(182, 108, 255, 0.5) !important;
     border-color: #69c7ff !important;
 }
 
 .glow-tournament {
-    box-shadow: 0 0 40px rgba(245, 206, 98, 0.7), 0 0 80px rgba(255, 0, 119, 0.4) !important;
+    box-shadow: 0 0 45px rgba(245, 206, 98, 0.9), 0 0 85px rgba(255, 0, 119, 0.5) !important;
     border-color: #f5ce62 !important;
 }
 
 .glow-secret {
-    box-shadow: 0 0 40px rgba(255, 89, 110, 0.6) !important;
-    border-color: #ff596e !important;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.85), 0 0 80px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(255, 255, 255, 0.4) !important;
+    border-color: #ffffff !important;
 }
 
 .glow-mythic {
-    box-shadow: 0 0 35px rgba(255, 107, 193, 0.55) !important;
-    border-color: #ff6bc1 !important;
+    box-shadow: 0 0 45px rgba(255, 8, 68, 0.85), 0 0 80px rgba(255, 78, 80, 0.5) !important;
+    border-color: #ff0844 !important;
 }
 
 .glow-legendary {
-    box-shadow: 0 0 30px rgba(244, 196, 78, 0.5) !important;
+    box-shadow: 0 0 35px rgba(244, 196, 78, 0.6) !important;
     border-color: #f4c44e !important;
 }
 
+.glow-exclusive {
+    box-shadow: 0 0 40px rgba(182, 108, 255, 0.75), 0 0 80px rgba(255, 255, 255, 0.45) !important;
+    border-color: #b66cff !important;
+}
+
 .glow-limited {
-    box-shadow: 0 0 35px rgba(255, 207, 91, 0.6) !important;
-    border-color: #ffcf5b !important;
+    box-shadow: 0 0 35px rgba(182, 108, 255, 0.6) !important;
+    border-color: #b66cff !important;
 }
 
 .glow-epic {
-    box-shadow: 0 0 25px rgba(166, 92, 255, 0.45) !important;
+    box-shadow: 0 0 28px rgba(166, 92, 255, 0.5) !important;
     border-color: #a65cff !important;
 }
 
 .glow-rare {
-    box-shadow: 0 0 20px rgba(74, 168, 255, 0.4) !important;
+    box-shadow: 0 0 22px rgba(74, 168, 255, 0.45) !important;
     border-color: #4aa8ff !important;
+}
+
+.glow-uncommon {
+    box-shadow: 0 0 20px rgba(80, 215, 138, 0.45) !important;
+    border-color: #50d78a !important;
+}
+
+.glow-common {
+    box-shadow: 0 0 15px rgba(160, 174, 192, 0.35) !important;
+    border-color: #a0aec0 !important;
 }
 
 .reveal-actions {
@@ -1409,7 +1504,7 @@ select,input{
     border: 1px solid var(--green);
 }
 
-/* Title Gradient Animations */
+/* Title Gradient Animations (Vibrant Shimmer for All Titles) */
 .title-collector {
     background: linear-gradient(90deg, #22c77a, #00ff87, #50d78a, #22c77a);
     background-size: 200% auto;
@@ -1417,16 +1512,18 @@ select,input{
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-weight: 900;
 }
 
 .title-greatest {
     background: linear-gradient(90deg, #00f2fe, #ffffff, #4facfe, #69c7ff, #00f2fe);
     background-size: 200% auto;
-    animation: textShimmer 3s linear infinite;
+    animation: textShimmer 2.5s linear infinite;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 6px rgba(0, 242, 254, 0.6));
+    font-weight: 900;
+    filter: drop-shadow(0 0 6px rgba(0, 242, 254, 0.7));
 }
 
 .title-king {
@@ -1436,6 +1533,8 @@ select,input{
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 6px rgba(255, 8, 68, 0.7));
 }
 
 .title-world {
@@ -1445,6 +1544,41 @@ select,input{
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 6px rgba(182, 108, 255, 0.7));
+}
+
+.title-legend {
+    background: linear-gradient(90deg, #f5ce62, #ff9a44, #ffd700, #ff6a00, #f5ce62);
+    background-size: 200% auto;
+    animation: textShimmer 2.5s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.7));
+}
+
+.title-top10 {
+    background: linear-gradient(90deg, #ff007f, #7928ca, #00dfd8, #ff007f);
+    background-size: 200% auto;
+    animation: textShimmer 2.5s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 6px rgba(0, 223, 216, 0.7));
+}
+
+.title-champion {
+    background: linear-gradient(90deg, #ffd700, #ff0055, #7928ca, #00dfd8, #ffd700);
+    background-size: 200% auto;
+    animation: textShimmer 2s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
 }
 
 /* =========================================================
@@ -1499,6 +1633,7 @@ select,input{
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
+    padding-right: 40px;
 }
 
 .popular-tag {
@@ -1567,26 +1702,35 @@ select,input{
 
 .pack-info-btn {
     position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    color: #fff;
-    font-weight: 900;
-    font-size: 14px;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-    z-index: 5;
+    top: 12px;
+    right: 12px;
+    width: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background 0.2s, transform 0.2s, border-color 0.2s;
+    z-index: 10 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
 .pack-info-btn:hover {
-    background: var(--blue);
-    transform: scale(1.12);
+    background: var(--blue) !important;
+    transform: scale(1.15) !important;
+    border-color: #ffffff !important;
 }
 
 .odds-modal-box {
@@ -1983,17 +2127,100 @@ select,input{
     }
 
     .showcase-grid {
-        grid-template-columns: 1fr;
-    }
+/* =========================================================
+   AVATAR FRAMES & BORDERS (MATCHING NAME DESIGNS)
+   ========================================================= */
 
-    .pack-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .mission-grid {
-        grid-template-columns: 1fr;
-    }
+.profile-avatar-wrapper,
+.shop-preview {
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
+
+/* 1. Classic Silver */
+.frame-default {
+    border: 3px solid #8fa3b5 !important;
+    box-shadow: 0 0 14px rgba(143, 163, 181, 0.45) !important;
+}
+
+/* 2. Pitch Blue Matrix */
+.frame-blue {
+    border: 3px solid #00f2fe !important;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.8), inset 0 0 10px rgba(0, 242, 254, 0.45) !important;
+    animation: bluePulse 2.5s ease-in-out infinite;
+}
+
+/* 3. Emerald Stadium */
+.frame-green {
+    border: 3px solid #00ff87 !important;
+    box-shadow: 0 0 20px rgba(0, 255, 135, 0.8), inset 0 0 10px rgba(0, 255, 135, 0.45) !important;
+    animation: greenPulse 2.5s ease-in-out infinite;
+}
+
+/* 4. Royal Crest Purple */
+.frame-purple {
+    border: 3px solid #b66cff !important;
+    box-shadow: 0 0 22px rgba(182, 108, 255, 0.85), inset 0 0 10px rgba(182, 108, 255, 0.45) !important;
+    animation: purplePulse 2.5s ease-in-out infinite;
+}
+
+/* 5. Golden Boot */
+.frame-gold {
+    border: 3px solid #ffd700 !important;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.9), inset 0 0 12px rgba(255, 215, 0, 0.5) !important;
+    animation: goldShine 3s linear infinite;
+}
+
+/* 6. Pyro Crimson Flame */
+.frame-red {
+    border: 3px solid #ff1744 !important;
+    box-shadow: 0 0 25px rgba(255, 23, 68, 0.9), 0 0 45px rgba(255, 82, 82, 0.55) !important;
+    animation: redFlame 2s ease-in-out infinite alternate;
+}
+
+/* 7. Animated Prism Star */
+.frame-rainbow {
+    border: 3px solid transparent !important;
+    background: linear-gradient(#09141f, #09141f) padding-box, conic-gradient(#ff0077, #ff9900, #39ff14, #00f2fe, #7928ca, #ff0077) border-box !important;
+    box-shadow: 0 0 25px rgba(255, 0, 119, 0.65), 0 0 40px rgba(0, 242, 254, 0.45) !important;
+}
+
+/* 8. Master Champion */
+.frame-champion {
+    border: 3px solid #ffd700 !important;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.95), 0 0 60px rgba(0, 242, 254, 0.65) !important;
+    animation: champAura 3s ease infinite;
+}
+
+@keyframes bluePulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.5); }
+    50% { box-shadow: 0 0 28px rgba(0, 242, 254, 0.95), 0 0 45px rgba(79, 172, 254, 0.65); }
+}
+
+@keyframes greenPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 135, 0.5); }
+    50% { box-shadow: 0 0 28px rgba(0, 255, 135, 0.95), 0 0 45px rgba(34, 199, 122, 0.65); }
+}
+
+@keyframes purplePulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(182, 108, 255, 0.5); }
+    50% { box-shadow: 0 0 28px rgba(182, 108, 255, 0.95), 0 0 50px rgba(225, 0, 255, 0.65); }
+}
+
+@keyframes goldShine {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+    50% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.98), 0 0 55px rgba(244, 196, 78, 0.75); }
+}
+
+@keyframes redFlame {
+    0% { box-shadow: 0 0 20px rgba(255, 23, 68, 0.6); }
+    100% { box-shadow: 0 0 35px rgba(255, 23, 68, 0.98), 0 0 55px rgba(255, 100, 0, 0.75); }
+}
+
+@keyframes champAura {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.7), 0 0 50px rgba(0, 242, 254, 0.45); }
+    50% { box-shadow: 0 0 40px rgba(255, 215, 0, 1), 0 0 75px rgba(0, 242, 254, 0.85); }
+}
+
 
 
 
