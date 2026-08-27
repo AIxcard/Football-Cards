@@ -155,6 +155,33 @@
     </div>
 </div>
 
+<!-- PACK OPENING ANIMATION OVERLAY -->
+<div id="packOpeningOverlay" class="modal hidden pack-opening-modal">
+    <div class="pack-anim-wrapper">
+        <div class="pack-anim-glow" id="packAnimGlow"></div>
+        <div class="pack-anim-box" id="packAnimBox">
+            <div class="pack-anim-icon" id="packAnimIcon">📦</div>
+            <h2 id="packAnimTitle">SCOUTING PLAYERS...</h2>
+            <p id="packAnimSubtitle">Searching the global transfer market</p>
+        </div>
+    </div>
+</div>
+
+<!-- SECRET RARITY SOL'S RNG CINEMATIC CUTSCENE -->
+<div id="secretOverlay" class="modal hidden sols-rng-overlay secret-cutscene-overlay">
+    <div class="sols-blackout"></div>
+    <div class="secret-lightning-flash"></div>
+    <div class="world-card sols-card secret-sols-card">
+        <div class="secret-glitch-badge">✦ SECRET PHENOMENON ✦</div>
+        <div class="world-glow sols-icon" id="secretIcon">💎</div>
+        <p id="secretRarityTag" class="rarity secret sols-rarity-tag">★ 1 IN 500 SECRET PULL ★</p>
+        <h1 id="secretPlayerName" class="sols-player-name">PLAYER</h1>
+        <p id="secretPlayerQuote" class="sols-player-quote">"Unstoppable Force · Elite Mastermind"</p>
+        <p id="secretPlayerMeta" class="sols-player-meta"></p>
+        <button id="secretContinue" class="primary-btn sols-btn secret-btn" onclick="closeSecretCutscene()">CLAIM SECRET CARD</button>
+    </div>
+</div>
+
 <!-- WORLD CLASS SOL'S RNG CINEMATIC CUTSCENE (MESSI & RONALDO GOATS) -->
 <div id="worldClassOverlay" class="modal hidden sols-rng-overlay">
     <div class="sols-blackout"></div>
@@ -394,19 +421,56 @@
             <p id="collectionCount">0 cards collected</p>
         </div>
 
-        <select id="cardFilter" onchange="renderCards()">
-            <option value="all">All Rarities</option>
-            <option>Common</option>
-            <option>Uncommon</option>
-            <option>Rare</option>
-            <option>Epic</option>
-            <option>Legendary</option>
-            <option>Mythic</option>
-            <option>Secret</option>
-            <option>World Class</option>
-            <option>Exclusive</option>
-            <option>Tournament</option>
-        </select>
+        <div class="collection-controls-row">
+            <select id="cardFilter" onchange="renderCards()">
+                <option value="all">All Rarities</option>
+                <option value="World Class">World Class</option>
+                <option value="Exclusive">Exclusive</option>
+                <option value="Secret">Secret</option>
+                <option value="Mythic">Mythic</option>
+                <option value="Legendary">Legendary</option>
+                <option value="Epic">Epic</option>
+                <option value="Rare">Rare</option>
+                <option value="Uncommon">Uncommon</option>
+                <option value="Common">Common</option>
+                <option value="Tournament">Tournament</option>
+                <option value="locked">🔒 Locked Only</option>
+                <option value="unlocked">🔓 Unlocked Only</option>
+            </select>
+
+            <select id="cardSorter" onchange="renderCards()">
+                <option value="rarity_desc">Sort: Highest Rarity</option>
+                <option value="rarity_asc">Sort: Lowest Rarity</option>
+                <option value="value_desc">Sort: Highest Value</option>
+                <option value="rating_desc">Sort: Highest Rating</option>
+                <option value="newest">Sort: Newest First</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- COLLECTION ACTION TOOLBAR -->
+    <div class="collection-action-toolbar">
+        <div class="quick-sell-group">
+            <button class="ghost-btn" onclick="quickSellRarity('Common')">Sell All Common</button>
+            <button class="ghost-btn" onclick="quickSellRarity('Uncommon')">Sell All Uncommon</button>
+            <button class="ghost-btn" onclick="quickSellDuplicates()">Sell Duplicates</button>
+        </div>
+        <button id="multiSelectToggleBtn" class="primary-btn" style="width:auto;padding:8px 18px;" onclick="toggleMultiSelectMode()">☑️ Multi-Select Mode</button>
+    </div>
+
+    <!-- FLOATING MULTI-SELECT ACTION BAR -->
+    <div id="multiSelectBar" class="multi-select-bar hidden">
+        <div class="multi-select-status">
+            <span id="multiSelectCount">0 cards selected</span>
+            <strong id="multiSelectValue">(0 🪙)</strong>
+        </div>
+        <div class="multi-select-actions">
+            <button class="ghost-btn" onclick="multiSelectAllUnlocked()">Select All Unlocked</button>
+            <button class="ghost-btn" onclick="multiSelectClear()">Clear</button>
+            <button class="primary-btn" onclick="multiLockSelected(true)">🔒 Multi-Lock</button>
+            <button class="ghost-btn" onclick="multiLockSelected(false)">🔓 Multi-Unlock</button>
+            <button class="danger-btn" onclick="multiSellSelected()">💰 Multi-Sell</button>
+        </div>
     </div>
 
     <div id="cardsGrid" class="cards-grid"></div>
