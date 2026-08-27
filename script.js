@@ -48,15 +48,107 @@ const DUPLICATE_VALUES = {
 };
 
 /* =========================================================
+   WEB AUDIO PROCEDURAL SOUND SYNTHESIZER
+   ========================================================= */
+
+const SoundFx = {
+    ctx: null,
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                this.ctx = new AudioCtx();
+            }
+        }
+        if (this.ctx && this.ctx.state === "suspended") {
+            this.ctx.resume();
+        }
+    },
+
+    playTone(freq, type = "sine", duration = 0.1, gainVal = 0.1, startDelay = 0) {
+        try {
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime + startDelay;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(gainVal, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+        } catch (e) {}
+    },
+
+    click() {
+        this.playTone(400, "triangle", 0.05, 0.05);
+    },
+
+    coin() {
+        this.playTone(987.77, "sine", 0.08, 0.1, 0);
+        this.playTone(1318.51, "sine", 0.15, 0.1, 0.06);
+    },
+
+    packOpen() {
+        this.playTone(180, "sawtooth", 0.25, 0.12);
+        this.playTone(320, "triangle", 0.2, 0.1, 0.05);
+        this.playTone(520, "sine", 0.3, 0.1, 0.1);
+    },
+
+    cardReveal(rarity) {
+        if (rarity === "World Class" || rarity === "Secret") {
+            const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+            notes.forEach((f, i) => {
+                this.playTone(f, "triangle", 0.45, 0.12, i * 0.08);
+                this.playTone(f * 1.5, "sine", 0.45, 0.06, i * 0.08 + 0.02);
+            });
+        } else if (rarity === "Mythic" || rarity === "Legendary" || rarity === "Limited") {
+            [440, 554.37, 659.25, 880].forEach((f, i) => {
+                this.playTone(f, "triangle", 0.35, 0.1, i * 0.07);
+            });
+        } else if (rarity === "Epic" || rarity === "Rare") {
+            [392, 523.25, 659.25].forEach((f, i) => {
+                this.playTone(f, "sine", 0.25, 0.08, i * 0.06);
+            });
+        } else {
+            this.playTone(523.25, "sine", 0.15, 0.06, 0);
+            this.playTone(659.25, "sine", 0.2, 0.06, 0.05);
+        }
+    },
+
+    levelUp() {
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+            this.playTone(f, "triangle", 0.3, 0.12, i * 0.09);
+        });
+    },
+
+    sell() {
+        this.playTone(784, "sine", 0.06, 0.08, 0);
+        this.playTone(1046.5, "sine", 0.12, 0.08, 0.05);
+    }
+};
+
+/* =========================================================
    PLAYERS
    ========================================================= */
 
 const PLAYERS = [
+// --- WORLD CLASS ---
 {name:"Lionel Messi",rating:97,pos:"RW",rarity:"World Class"},
 {name:"Cristiano Ronaldo",rating:97,pos:"ST",rarity:"World Class"},
 
+// --- SECRET ---
 {name:"Kylian Mbappé",rating:96,pos:"ST",rarity:"Secret"},
 {name:"Erling Haaland",rating:96,pos:"ST",rarity:"Secret"},
+{name:"Zlatan Ibrahimović",rating:91,pos:"ST",rarity:"Secret"},
+{name:"Sergio Ramos",rating:90,pos:"CB",rarity:"Secret"},
+{name:"Andrés Iniesta",rating:93,pos:"CM",rarity:"Secret"},
+{name:"Xavi",rating:92,pos:"CM",rarity:"Secret"},
+
+// --- MYTHIC ---
 {name:"Neymar Jr",rating:95,pos:"LW",rarity:"Mythic"},
 {name:"Kevin De Bruyne",rating:94,pos:"CM",rarity:"Mythic"},
 {name:"Vinícius Júnior",rating:94,pos:"LW",rarity:"Mythic"},
@@ -65,6 +157,7 @@ const PLAYERS = [
 {name:"Robert Lewandowski",rating:93,pos:"ST",rarity:"Mythic"},
 {name:"Lamine Yamal",rating:94,pos:"RW",rarity:"Mythic"},
 
+// --- LEGENDARY ---
 {name:"Harry Kane",rating:93,pos:"ST",rarity:"Legendary"},
 {name:"Rodri",rating:93,pos:"CDM",rarity:"Legendary"},
 {name:"Pedri",rating:91,pos:"CM",rarity:"Legendary"},
@@ -80,6 +173,7 @@ const PLAYERS = [
 {name:"Luka Modrić",rating:88,pos:"CM",rarity:"Legendary"},
 {name:"Toni Kroos",rating:88,pos:"CM",rarity:"Legendary"},
 
+// --- EPIC ---
 {name:"Rúben Dias",rating:89,pos:"CB",rarity:"Epic"},
 {name:"William Saliba",rating:89,pos:"CB",rarity:"Epic"},
 {name:"Achraf Hakimi",rating:89,pos:"RB",rarity:"Epic"},
@@ -94,6 +188,7 @@ const PLAYERS = [
 {name:"Jamal Musiala",rating:89,pos:"CAM",rarity:"Epic"},
 {name:"Florian Wirtz",rating:88,pos:"CAM",rarity:"Epic"},
 
+// --- RARE ---
 {name:"Federico Valverde",rating:88,pos:"CM",rarity:"Rare"},
 {name:"Eduardo Camavinga",rating:86,pos:"CM",rarity:"Rare"},
 {name:"Aurélien Tchouaméni",rating:86,pos:"CDM",rarity:"Rare"},
@@ -106,11 +201,51 @@ const PLAYERS = [
 {name:"Manuel Neuer",rating:88,pos:"GK",rarity:"Rare"},
 {name:"Mason Mount",rating:83,pos:"CM",rarity:"Rare"},
 
-{name:"Zlatan Ibrahimović",rating:91,pos:"ST",rarity:"Secret"},
-{name:"Sergio Ramos",rating:90,pos:"CB",rarity:"Secret"},
-{name:"Andrés Iniesta",rating:93,pos:"CM",rarity:"Secret"},
-{name:"Xavi",rating:92,pos:"CM",rarity:"Secret"},
+// --- UNCOMMON ---
+{name:"Richarlison",rating:81,pos:"ST",rarity:"Uncommon"},
+{name:"Lucas Paquetá",rating:82,pos:"CAM",rarity:"Uncommon"},
+{name:"Manuel Akanji",rating:83,pos:"CB",rarity:"Uncommon"},
+{name:"Conor Gallagher",rating:82,pos:"CM",rarity:"Uncommon"},
+{name:"Eberechi Eze",rating:82,pos:"CAM",rarity:"Uncommon"},
+{name:"Anthony Gordon",rating:82,pos:"LW",rarity:"Uncommon"},
+{name:"Pedro Porro",rating:83,pos:"RB",rarity:"Uncommon"},
+{name:"Micky van de Ven",rating:83,pos:"CB",rarity:"Uncommon"},
+{name:"Dominik Szoboszlai",rating:83,pos:"CM",rarity:"Uncommon"},
+{name:"Alexis Mac Allister",rating:84,pos:"CM",rarity:"Uncommon"},
+{name:"Moussa Diaby",rating:83,pos:"RM",rarity:"Uncommon"},
+{name:"Alexander Isak",rating:84,pos:"ST",rarity:"Uncommon"},
+{name:"Jarrod Bowen",rating:83,pos:"RW",rarity:"Uncommon"},
+{name:"Pape Matar Sarr",rating:80,pos:"CM",rarity:"Uncommon"},
+{name:"Guglielmo Vicario",rating:84,pos:"GK",rarity:"Uncommon"},
+{name:"David Raya",rating:84,pos:"GK",rarity:"Uncommon"},
+{name:"Kieran Trippier",rating:83,pos:"RB",rarity:"Uncommon"},
+{name:"Youri Tielemans",rating:82,pos:"CM",rarity:"Uncommon"},
+{name:"Darwin Núñez",rating:82,pos:"ST",rarity:"Uncommon"},
+{name:"Ollie Watkins",rating:84,pos:"ST",rarity:"Uncommon"},
 
+// --- COMMON ---
+{name:"Oliver Skipp",rating:75,pos:"CDM",rarity:"Common"},
+{name:"Rob Holding",rating:74,pos:"CB",rarity:"Common"},
+{name:"Sean Longstaff",rating:77,pos:"CM",rarity:"Common"},
+{name:"Dwight McNeil",rating:76,pos:"LM",rarity:"Common"},
+{name:"Dominic Calvert-Lewin",rating:78,pos:"ST",rarity:"Common"},
+{name:"Tyrone Mings",rating:77,pos:"CB",rarity:"Common"},
+{name:"Fraser Forster",rating:75,pos:"GK",rarity:"Common"},
+{name:"Harry Wilson",rating:76,pos:"RW",rarity:"Common"},
+{name:"Che Adams",rating:75,pos:"ST",rarity:"Common"},
+{name:"Josh Brownhill",rating:76,pos:"CM",rarity:"Common"},
+{name:"Antonee Robinson",rating:78,pos:"LB",rarity:"Common"},
+{name:"Timothy Castagne",rating:77,pos:"RB",rarity:"Common"},
+{name:"Dan Burn",rating:78,pos:"LB",rarity:"Common"},
+{name:"Lewis Dunk",rating:79,pos:"CB",rarity:"Common"},
+{name:"Alex Iwobi",rating:78,pos:"RM",rarity:"Common"},
+{name:"Michail Antonio",rating:77,pos:"ST",rarity:"Common"},
+{name:"Bernd Leno",rating:79,pos:"GK",rarity:"Common"},
+{name:"Matheus Cunha",rating:79,pos:"ST",rarity:"Common"},
+{name:"Vitaliy Mykolenko",rating:76,pos:"LB",rarity:"Common"},
+{name:"Jacob Murphy",rating:76,pos:"RW",rarity:"Common"},
+
+// --- LIMITED (LEGENDS OF THE PAST) ---
 {name:"Ronaldinho",rating:94,pos:"LW",rarity:"Limited"},
 {name:"Zinedine Zidane",rating:95,pos:"CAM",rarity:"Limited"},
 {name:"Diego Maradona",rating:96,pos:"CAM",rarity:"Limited"},
@@ -422,30 +557,46 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 function bindEvents(){
+    window.addEventListener("pointerdown", () => SoundFx.init(), { once: true });
 
-    const confirm=document.getElementById("nameConfirm");
-
+    const confirm = document.getElementById("nameConfirm");
     if(confirm){
-        confirm.addEventListener("click",confirmName);
+        confirm.addEventListener("click", () => {
+            SoundFx.click();
+            confirmName();
+        });
     }
 
-    const wc=document.getElementById("wcContinue");
-
+    const wc = document.getElementById("wcContinue");
     if(wc){
-        wc.addEventListener("click",()=>{
+        wc.addEventListener("click", () => {
+            SoundFx.click();
             document.getElementById("worldClassOverlay")
                 .classList.add("hidden");
 
-            const card=state.cards.find(
-                c=>c.id===state.worldClassPending
+            const card = state.cards.find(
+                c => c.id === state.worldClassPending
             );
 
-            if(card)showCardResult(card,false);
+            if(card) showCardResult(card, false);
 
-            state.worldClassPending=null;
+            state.worldClassPending = null;
             saveGame();
         });
     }
+
+    const revealBtn = document.getElementById("revealCollectBtn");
+    if(revealBtn){
+        revealBtn.addEventListener("click", () => {
+            SoundFx.click();
+            const overlay = document.getElementById("cardRevealOverlay");
+            if(overlay) overlay.classList.add("hidden");
+        });
+    }
+
+    document.querySelectorAll("button.nav").forEach(btn => {
+        btn.addEventListener("click", () => SoundFx.click());
+    });
 }
 
 function checkName(){
@@ -646,6 +797,8 @@ function addCoins(amount){
     state.coins+=amount;
     state.stats.coinsEarned+=amount;
 
+    SoundFx.coin();
+
     progressMission("coins",amount);
 
     saveGame();
@@ -765,6 +918,7 @@ function addXP(amount){
         state.xp-=50;
         state.level++;
 
+        SoundFx.levelUp();
         toast(`⭐ Level ${state.level}!`);
     }
 
@@ -787,6 +941,8 @@ function openPack(type){
     }
 
     if(!spendCoins(pack.cost))return;
+
+    SoundFx.packOpen();
 
     state.stats.packsOpened++;
 
@@ -932,7 +1088,7 @@ function updateRarityStats(rarity,player){
 }
 
 /* =========================================================
-   WORLD CLASS
+   WORLD CLASS & CARD REVEAL
    ========================================================= */
 
 function showWorldClass(card){
@@ -954,12 +1110,53 @@ function showWorldClass(card){
 
     overlay.classList.remove("hidden");
 
+    SoundFx.cardReveal("World Class");
+
     state.worldClassPending=card.id;
 
     saveGame();
 }
 
 function showCardResult(card,duplicate){
+
+    const overlay = document.getElementById("cardRevealOverlay");
+    const revealCard = document.getElementById("revealCard");
+    const revealBadge = document.getElementById("revealBadge");
+    const revealRarity = document.getElementById("revealRarity");
+    const revealEmoji = document.getElementById("revealEmoji");
+    const revealRating = document.getElementById("revealRating");
+    const revealPos = document.getElementById("revealPos");
+    const revealName = document.getElementById("revealName");
+    const revealRaritySub = document.getElementById("revealRaritySub");
+
+    if (overlay && revealCard) {
+        revealCard.className = "card reveal-card-body";
+        const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
+        revealCard.classList.add(frame.css);
+
+        const rClass = rarityClassName(card.rarity);
+        revealCard.classList.add(`glow-${rClass}`);
+
+        if (revealBadge) {
+            revealBadge.textContent = duplicate ? "DUPLICATE CARD" : "NEW CARD";
+            revealBadge.classList.toggle("duplicate", !!duplicate);
+        }
+
+        if (revealRarity) {
+            revealRarity.textContent = card.rarity.toUpperCase();
+            revealRarity.className = `rarity ${rClass}`;
+        }
+
+        if (revealEmoji) revealEmoji.textContent = playerEmoji(card);
+        if (revealRating) revealRating.textContent = card.rating;
+        if (revealPos) revealPos.textContent = card.pos;
+        if (revealName) revealName.textContent = card.player;
+        if (revealRaritySub) revealRaritySub.textContent = card.rarity;
+
+        overlay.classList.remove("hidden");
+    }
+
+    SoundFx.cardReveal(card.rarity);
 
     toast(
         `${card.player} — ${card.rarity}`+
@@ -1110,6 +1307,8 @@ function sellCard(id){
     state.cards.splice(index,1);
 
     state.stats.cardsSold++;
+
+    SoundFx.sell();
 
     addCoins(value);
 
@@ -1643,70 +1842,58 @@ function setMissionType(type){
 
 function renderMissions(){
 
+    const list=document.getElementById("missionList");
+    const homeList=document.getElementById("homeMissionList");
+
     const missions=
-        MISSION_TEMPLATES[currentMissionType];
+        MISSION_TEMPLATES[currentMissionType] || MISSION_TEMPLATES.hourly;
 
     const progress=
-        state.missionProgress[currentMissionType];
+        state.missionProgress[currentMissionType] || [0,0,0];
 
     const claimed=
-        state.missionClaimed[currentMissionType];
+        state.missionClaimed[currentMissionType] || [false,false,false];
 
-    const list=
-        document.getElementById("missionList");
+    function createMissionHTML(mission, i, type, isClaimed, amount) {
+        const max = mission[1];
+        const percent = Math.min(100, (amount / max) * 100);
 
-    if(!list)return;
-
-    list.innerHTML=
-        missions.map((mission,i)=>{
-
-            const amount=
-                progress[i]||0;
-
-            const max=mission[1];
-
-            const percent=Math.min(
-                100,
-                amount/max*100
-            );
-
-            return`
-            <div class="mission ${claimed[i]?"completed":""}">
-
-                <div class="mission-top">
-                    <b>${mission[0]}</b>
-                    <span>+${mission[2]} 🪙</span>
-                </div>
-
-                <p>
-                    ${Math.min(amount,max)} / ${max}
-                </p>
-
-                <div class="mission-progress">
-                    <i style="width:${percent}%"></i>
-                </div>
-
-                ${
-                    amount>=max&&!claimed[i]
-                    ?
-                    `<button
-                        class="primary-btn"
-                        style="margin-top:10px"
-                        onclick=
-                        "claimMission('${currentMissionType}',${i})">
-                        Claim
-                    </button>`
-                    :
-                    claimed[i]
-                    ?
-                    `<p>✓ Completed</p>`
-                    :""
-                }
-
+        return `
+        <div class="mission ${isClaimed ? "completed" : ""}">
+            <div class="mission-top">
+                <b>${escapeHTML(mission[0])}</b>
+                <span>+${mission[2]} 🪙</span>
             </div>
-            `;
+            <p>${Math.min(amount, max)} / ${max}</p>
+            <div class="mission-progress">
+                <i style="width:${percent}%"></i>
+            </div>
+            ${
+                amount >= max && !isClaimed
+                ? `<button class="primary-btn" style="margin-top:10px" onclick="claimMission('${type}', ${i})">Claim</button>`
+                : isClaimed
+                ? `<p>✓ Completed</p>`
+                : ""
+            }
+        </div>
+        `;
+    }
 
-        }).join("");
+    if(list){
+        list.innerHTML = missions.map((mission, i) =>
+            createMissionHTML(mission, i, currentMissionType, claimed[i], progress[i] || 0)
+        ).join("");
+    }
+
+    if(homeList){
+        const dailyMissions = MISSION_TEMPLATES.daily;
+        const dailyProg = state.missionProgress.daily;
+        const dailyClaimed = state.missionClaimed.daily;
+
+        homeList.innerHTML = dailyMissions.map((mission, i) =>
+            createMissionHTML(mission, i, "daily", dailyClaimed[i], dailyProg[i] || 0)
+        ).join("");
+    }
 }
 
 function progressMission(type,amount){
@@ -1746,6 +1933,8 @@ function claimMission(type,index){
     }
 
     state.missionClaimed[type][index]=true;
+
+    SoundFx.coin();
 
     addCoins(mission[2]);
     addXP(
