@@ -1,347 +1,662 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Football Cards</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Ultimate</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div id="toast"></div>
-
-<!-- NAME MODAL -->
-<div id="nameModal" class="modal hidden">
-    <div class="modal-box">
-        <div class="football-icon">⚽</div>
-        <h1>Football Cards</h1>
-        <p>Create your collector name.</p>
-        <input id="nameInput" maxlength="20" placeholder="Your name">
-        <p id="nameError" class="error"></p>
-        <button id="nameConfirm" class="primary-btn">Start Collecting</button>
-    </div>
-</div>
-
-<!-- WORLD CLASS -->
-<div id="worldClassOverlay" class="modal hidden world-modal">
-    <div class="world-card">
-        <div class="world-glow">🌎</div>
-        <p class="rarity worldclass">WORLD CLASS</p>
-        <h1 id="wcPlayerName">PLAYER</h1>
-        <p id="wcPlayerMeta"></p>
-        <button id="wcContinue" class="primary-btn">Continue</button>
-    </div>
-</div>
-
 <header class="topbar">
-    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="logo">⚽ <span>Football Cards</span></div>
-    <div class="coins">🪙 <b id="coinDisplay">100</b></div>
+    <div class="logo">
+        ⚽ <span>FOOTBALL ULTIMATE</span>
+    </div>
+
+    <div class="coins">
+        🪙 <strong id="coinDisplay">1,000</strong>
+    </div>
+
+    <button class="menu-btn" id="menuBtn">☰</button>
 </header>
 
 <aside id="sidebar">
-    <button class="nav active" data-page="home" onclick="showPage('home')">🏠 Home</button>
-    <button class="nav" data-page="cards" onclick="showPage('cards')">🎴 Collection</button>
-    <button class="nav" data-page="shop" onclick="showPage('shop')">🛒 Shop</button>
-    <button class="nav" data-page="profile" onclick="showPage('profile')">👤 Profile</button>
-    <button class="nav" data-page="statistics" onclick="showPage('statistics')">📊 Statistics</button>
-    <button class="nav" data-page="leaderboard" onclick="showPage('leaderboard')">🌎 Leaderboard</button>
-    <button class="nav" data-page="tournament" onclick="showPage('tournament')">🏆 Tournament</button>
-    <button class="nav" data-page="missions" onclick="showPage('missions')">🎯 Missions</button>
-    <button class="nav" data-page="settings" onclick="showPage('settings')">⚙️ Settings</button>
+    <button class="nav active" data-page="home">🏠 Home</button>
+    <button class="nav" data-page="packs">🎁 Packs</button>
+    <button class="nav" data-page="collection">🃏 Collection</button>
+    <button class="nav" data-page="shop">🛒 Shop</button>
+    <button class="nav" data-page="missions">🎯 Missions</button>
+    <button class="nav" data-page="tournament">🏆 Tournament</button>
+    <button class="nav" data-page="profile">👤 Profile</button>
+    <button class="nav" data-page="stats">📊 Statistics</button>
+    <button class="nav" data-page="settings">⚙️ Settings</button>
 </aside>
 
 <main>
 
-<section id="home" class="page active-page">
+    <!-- HOME -->
+    <section id="home" class="page active-page">
 
-    <div class="hero">
-        <div>
-            <p class="eyebrow">WELCOME BACK</p>
-            <h1 id="homeName">Football Collector</h1>
-            <p>Build the ultimate football card collection.</p>
+        <div class="hero">
+            <div>
+                <p class="eyebrow">WELCOME BACK, MANAGER</p>
+                <h1>Build Your Ultimate XI</h1>
+                <p>Open packs, collect football legends and build the strongest squad.</p>
+            </div>
+
+            <div class="level-card">
+                <span>LEVEL</span>
+                <strong id="levelDisplay">1</strong>
+                <div class="xp-bar">
+                    <i id="xpBar"></i>
+                </div>
+                <small id="xpDisplay">0 / 100 XP</small>
+            </div>
         </div>
 
-        <div class="level-card">
-            <span>LEVEL</span>
-            <strong id="homeLevel">1</strong>
-            <div class="xp-bar"><i id="homeXPBar"></i></div>
-            <small><span id="homeXP">25</span> / 50 XP</small>
-        </div>
-    </div>
-
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">PACK STORE</p>
-            <h2>Open Packs</h2>
-        </div>
-    </div>
-
-    <div class="pack-grid">
-
-        <article class="pack starter-pack">
-            <div class="pack-ball">⚽</div>
-            <p class="rarity common">STARTER</p>
-            <h2>Starter Pack</h2>
-            <p>Reliable cards for beginning your collection.</p>
-            <div class="pack-rate">Common-heavy</div>
-            <button onclick="openPack('starter')">10 🪙 · OPEN</button>
-        </article>
-
-        <article class="pack premium-pack">
-            <div class="pack-ball">💎</div>
-            <p class="rarity uncommon">PREMIUM</p>
-            <h2>Premium Pack</h2>
-            <p>Common cards are completely removed.</p>
-            <div class="pack-rate">Uncommon → Legendary</div>
-            <button onclick="openPack('premium')">25 🪙 · OPEN</button>
-        </article>
-
-        <article class="pack elite-pack">
-            <div class="pack-ball">🔥</div>
-            <p class="rarity epic">MEGA</p>
-            <h2>Mega Pack</h2>
-            <p>Only Rare and above can appear.</p>
-            <div class="pack-rate">Rare → World Class</div>
-            <button onclick="openPack('elite')">45 🪙 · OPEN</button>
-        </article>
-
-        <article id="limitedPackCard" class="pack limited-pack">
-            <div class="pack-ball">👑</div>
-            <p class="rarity limited">LIMITED</p>
-            <h2>Legends of the Past</h2>
-            <p>Historic football icons.</p>
-            <div id="limitedTimer" class="pack-rate">Loading...</div>
-            <button onclick="openPack('limited')">60 🪙 · OPEN</button>
-        </article>
-
-    </div>
-
-    <div class="daily-box">
-        <div>
-            <h2>🎁 Daily Reward</h2>
-            <p id="dailyRewardText">Your daily reward is ready.</p>
-        </div>
-        <button id="dailyRewardBtn" onclick="claimDailyReward()">Claim</button>
-    </div>
-
-    <div id="freeKickBox" class="free-kick">
-        <div>
-            <h2>🆘 Free Kick</h2>
-            <p>You have reached 0 coins. Here's your emergency kick.</p>
-        </div>
-        <button onclick="freeKick()">+5 🪙</button>
-    </div>
-
-    <div class="mission-panel">
         <div class="section-head">
             <div>
-                <p class="eyebrow">PROGRESS</p>
-                <h2>Missions</h2>
+                <p class="eyebrow">DAILY REWARD</p>
+                <h2>Come back every day</h2>
             </div>
-            <button class="ghost-btn" onclick="showPage('missions')">View All</button>
-        </div>
-        <div id="missionList"></div>
-    </div>
-
-</section>
-
-
-<section id="cards" class="page">
-
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">COLLECTION</p>
-            <h1>My Cards</h1>
-            <p id="collectionCount">0 cards collected</p>
         </div>
 
-        <select id="cardFilter" onchange="renderCards()">
-            <option value="all">All Rarities</option>
-            <option>Common</option>
-            <option>Uncommon</option>
-            <option>Rare</option>
-            <option>Epic</option>
-            <option>Legendary</option>
-            <option>Mythic</option>
-            <option>Secret</option>
-            <option>World Class</option>
-            <option>Limited</option>
-        </select>
-    </div>
-
-    <div id="cardsGrid" class="cards-grid"></div>
-
-</section>
-
-
-<section id="shop" class="page">
-
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">CUSTOMIZATION</p>
-            <h1>Shop</h1>
+        <div class="daily-box">
+            <div>
+                <h3>🎁 Daily Bonus</h3>
+                <p>Claim your daily coins and XP.</p>
+            </div>
+            <button id="dailyBtn">CLAIM REWARD</button>
         </div>
-    </div>
 
-    <h2>Card Frames</h2>
-    <div id="frameShop" class="shop-grid"></div>
-
-    <h2>Football Backgrounds</h2>
-    <div id="backgroundShop" class="shop-grid"></div>
-
-</section>
-
-
-<section id="profile" class="page">
-
-    <div id="profileHero" class="profile-hero">
-        <div id="profileAvatar" class="avatar">⚽</div>
-        <div>
-            <p class="eyebrow">COLLECTOR</p>
-            <h1 id="profileName">Football Collector</h1>
-            <p>Level <b id="profileLevel">1</b></p>
+        <div class="free-kick">
+            <div>
+                <h3>⚡ Free Kick Challenge</h3>
+                <p>Take a shot and earn bonus rewards.</p>
+            </div>
+            <button id="freeKickBtn">TAKE SHOT</button>
         </div>
-    </div>
 
-    <div class="profile-stats">
-        <div><b id="profileCards">0</b><span>Cards</span></div>
-        <div><b id="profilePacks">0</b><span>Packs</span></div>
-        <div><b id="profilePlaytime">0s</b><span>Playtime</span></div>
-        <div><b id="profileBest">Common</b><span>Best Rarity</span></div>
-    </div>
-
-    <div class="panel">
-        <h2>Customization</h2>
-
-        <label>Profile Background</label>
-        <select id="profileBackgroundSelect"
-                onchange="setProfileBackground(this.value)"></select>
-
-        <label>Avatar</label>
-        <select id="avatarSelect" onchange="setAvatar(this.value)">
-            <option>⚽</option>
-            <option>🔥</option>
-            <option>👑</option>
-            <option>🐐</option>
-            <option>🌎</option>
-            <option>🏆</option>
-            <option>⭐</option>
-        </select>
-
-        <button class="primary-btn" onclick="changeName()">Change Name</button>
-    </div>
-
-    <div class="panel">
-        <h2>Titles</h2>
-        <div id="titleList" class="title-list"></div>
-    </div>
-
-    <div class="panel">
-        <h2>Card Frames</h2>
-        <div id="profileCardsGrid" class="profile-cards"></div>
-    </div>
-
-</section>
-
-
-<section id="statistics" class="page">
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">RECORDS</p>
-            <h1>Statistics</h1>
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">FEATURED</p>
+                <h2>Popular Packs</h2>
+            </div>
+            <button class="ghost-btn" data-page-link="packs">View All</button>
         </div>
-    </div>
-    <div id="statisticsGrid" class="statistics-grid"></div>
-</section>
 
+        <div class="pack-grid">
 
-<section id="leaderboard" class="page">
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">ONLINE</p>
-            <h1>Global Leaderboard</h1>
-            <p>Local mode works immediately. Online mode connects when a backend is configured.</p>
+            <div class="pack">
+                <div class="pack-ball">⚽</div>
+                <p class="rarity common">STARTER</p>
+                <h2>Starter Pack</h2>
+                <p>A basic pack for new managers.</p>
+                <div class="pack-rate">5 cards • Beginner friendly</div>
+                <button data-pack="starter">OPEN • 50 🪙</button>
+            </div>
+
+            <div class="pack">
+                <div class="pack-ball">🥇</div>
+                <p class="rarity rare">PREMIUM</p>
+                <h2>Premium Pack</h2>
+                <p>Better players with Common rarity removed.</p>
+                <div class="pack-rate">5 cards • Rare+ guaranteed</div>
+                <button data-pack="premium">OPEN • 150 🪙</button>
+            </div>
+
+            <div class="pack">
+                <div class="pack-ball">💎</div>
+                <p class="rarity legendary">MEGA</p>
+                <h2>Mega Pack</h2>
+                <p>Only Rare and above. World Class can appear.</p>
+                <div class="pack-rate">5 cards • High rarity</div>
+                <button data-pack="mega">OPEN • 300 🪙</button>
+            </div>
+
+            <div class="pack">
+                <div class="pack-ball">🌟</div>
+                <p class="rarity worldclass">WORLD CLASS</p>
+                <h2>World Class Pack</h2>
+                <p>Your best chance at elite footballers.</p>
+                <div class="pack-rate">3 cards • World Class possible</div>
+                <button data-pack="world">OPEN • 500 🪙</button>
+            </div>
+
         </div>
-    </div>
-
-    <div id="onlineStatus" class="online-status">● Checking online service...</div>
-    <div id="globalLeaderboard" class="leaderboard"></div>
-</section>
+    </section>
 
 
-<section id="tournament" class="page">
+    <!-- PACKS -->
+    <section id="packs" class="page">
 
-    <div class="tournament-hero">
-        <p class="eyebrow">SEASON 1</p>
-        <h1>World Football Championship</h1>
-        <p>Compete with your collection.</p>
-        <div id="tournamentTimer">Loading...</div>
-        <button class="primary-btn" onclick="enterTournament()">Enter Tournament</button>
-    </div>
-
-    <div class="panel">
-        <h2>🏆 Tournament Leaderboard</h2>
-        <div id="tournamentLeaderboard"></div>
-    </div>
-
-</section>
-
-
-<section id="missions" class="page">
-
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">OBJECTIVES</p>
-            <h1>Missions</h1>
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">PACK MARKET</p>
+                <h1>Football Packs</h1>
+                <p>Use coins to discover new players.</p>
+            </div>
         </div>
-    </div>
 
-    <div class="mission-tabs">
-        <button class="mission-tab active" onclick="setMissionType('hourly')">Hourly</button>
-        <button class="mission-tab" onclick="setMissionType('daily')">Daily</button>
-        <button class="mission-tab" onclick="setMissionType('weekly')">Weekly</button>
-        <button class="mission-tab" onclick="setMissionType('monthly')">Monthly</button>
-    </div>
+        <div class="pack-grid">
 
-    <div id="missionList"></div>
+            <div class="pack">
+                <div class="pack-ball">⚽</div>
+                <p class="rarity common">STARTER</p>
+                <h2>Starter Pack</h2>
+                <p>Perfect for building your first collection.</p>
+                <div class="pack-rate">
+                    Common • Uncommon • Rare • Epic
+                </div>
+                <button data-pack="starter">OPEN • 50 🪙</button>
+            </div>
 
-</section>
+            <div class="pack">
+                <div class="pack-ball">🥇</div>
+                <p class="rarity rare">PREMIUM</p>
+                <h2>Premium Pack</h2>
+                <p>Common players cannot appear.</p>
+                <div class="pack-rate">
+                    Uncommon • Rare • Epic • Legendary • Mythic
+                </div>
+                <button data-pack="premium">OPEN • 150 🪙</button>
+            </div>
 
+            <div class="pack">
+                <div class="pack-ball">💎</div>
+                <p class="rarity legendary">MEGA</p>
+                <h2>Mega Pack</h2>
+                <p>Common and Uncommon players cannot appear.</p>
+                <div class="pack-rate">
+                    Rare • Epic • Legendary • Mythic • Secret • World Class
+                </div>
+                <button data-pack="mega">OPEN • 300 🪙</button>
+            </div>
 
-<section id="settings" class="page">
+            <div class="pack">
+                <div class="pack-ball">🌍</div>
+                <p class="rarity worldclass">WORLD CLASS</p>
+                <h2>World Class Pack</h2>
+                <p>Extremely rare elite players.</p>
+                <div class="pack-rate">
+                    Legendary • Mythic • Secret • World Class
+                </div>
+                <button data-pack="world">OPEN • 500 🪙</button>
+            </div>
 
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">GAME</p>
-            <h1>Settings</h1>
         </div>
-    </div>
+    </section>
 
-    <div class="panel">
-        <h2>Account</h2>
-        <p>Current name: <b id="settingsCurrentName">Football Collector</b></p>
-        <button class="primary-btn" onclick="changeName()">Change Name</button>
-    </div>
 
-    <div class="panel">
-        <h2>Save</h2>
-        <p>Your progress is automatically saved on this device.</p>
-        <button class="danger-btn" onclick="resetGame()">Reset Game</button>
-    </div>
+    <!-- COLLECTION -->
+    <section id="collection" class="page">
 
-    <div class="panel online-panel">
-        <h2>🌎 Online Mode</h2>
-        <p id="onlineInfo">
-            Online services are optional. Your game will continue working offline.
-        </p>
-    </div>
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">YOUR PLAYERS</p>
+                <h1>Collection</h1>
+                <p id="collectionCount">0 players collected</p>
+            </div>
+        </div>
 
-</section>
+        <div id="collectionGrid" class="cards-grid">
+            <div class="empty-state">
+                <div class="football-icon">⚽</div>
+                <h2>Your collection is empty</h2>
+                <p>Open a pack to start collecting players.</p>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- SHOP -->
+    <section id="shop" class="page">
+
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">STORE</p>
+                <h1>Shop</h1>
+                <p>Spend coins on useful upgrades.</p>
+            </div>
+        </div>
+
+        <h2>Boosters</h2>
+
+        <div class="shop-grid">
+
+            <div class="shop-item">
+                <div class="shop-preview booster-green"></div>
+                <h3>Lucky Manager</h3>
+                <p>Increase your luck for the next pack.</p>
+                <button data-shop="luck">100 🪙</button>
+            </div>
+
+            <div class="shop-item">
+                <div class="shop-preview booster-blue"></div>
+                <h3>XP Boost</h3>
+                <p>Gain bonus XP from your next action.</p>
+                <button data-shop="xp">100 🪙</button>
+            </div>
+
+            <div class="shop-item">
+                <div class="shop-preview booster-gold"></div>
+                <h3>Coin Boost</h3>
+                <p>Increase your next reward.</p>
+                <button data-shop="coins">150 🪙</button>
+            </div>
+
+        </div>
+
+        <h2>Frames</h2>
+
+        <div class="shop-grid">
+
+            <div class="shop-item">
+                <div class="shop-preview frame-blue"></div>
+                <h3>Blue Frame</h3>
+                <p>Give your cards a blue glow.</p>
+                <button data-frame="blue">250 🪙</button>
+            </div>
+
+            <div class="shop-item">
+                <div class="shop-preview frame-purple"></div>
+                <h3>Purple Frame</h3>
+                <p>Give your cards a purple glow.</p>
+                <button data-frame="purple">400 🪙</button>
+            </div>
+
+            <div class="shop-item">
+                <div class="shop-preview frame-gold"></div>
+                <h3>Gold Frame</h3>
+                <p>A premium golden card frame.</p>
+                <button data-frame="gold">600 🪙</button>
+            </div>
+
+            <div class="shop-item">
+                <div class="shop-preview frame-rainbow"></div>
+                <h3>Rainbow Frame</h3>
+                <p>An animated rainbow frame.</p>
+                <button data-frame="rainbow">1,000 🪙</button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MISSIONS -->
+    <section id="missions" class="page">
+
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">OBJECTIVES</p>
+                <h1>Missions</h1>
+                <p>Complete missions to earn rewards.</p>
+            </div>
+        </div>
+
+        <div class="mission-tabs">
+            <button class="mission-tab active">Daily</button>
+            <button class="mission-tab">Weekly</button>
+        </div>
+
+        <div class="mission-panel">
+
+            <div class="mission">
+                <div class="mission-top">
+                    <strong>Open 3 Packs</strong>
+                    <span>0 / 3</span>
+                </div>
+                <p>Open football packs.</p>
+                <div class="mission-progress">
+                    <i style="width:0%"></i>
+                </div>
+                <small>Reward: 150 🪙</small>
+            </div>
+
+            <div class="mission">
+                <div class="mission-top">
+                    <strong>Collect 5 Players</strong>
+                    <span>0 / 5</span>
+                </div>
+                <p>Add players to your collection.</p>
+                <div class="mission-progress">
+                    <i style="width:0%"></i>
+                </div>
+                <small>Reward: 200 🪙</small>
+            </div>
+
+            <div class="mission">
+                <div class="mission-top">
+                    <strong>Earn 500 Coins</strong>
+                    <span>0 / 500</span>
+                </div>
+                <p>Earn coins through gameplay.</p>
+                <div class="mission-progress">
+                    <i style="width:0%"></i>
+                </div>
+                <small>Reward: 250 🪙</small>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- TOURNAMENT -->
+    <section id="tournament" class="page">
+
+        <div class="tournament-hero">
+            <p class="eyebrow">LIMITED EVENT</p>
+            <h1>🏆 Champions Tournament</h1>
+            <p>Compete for massive rewards.</p>
+
+            <div id="tournamentTimer">23:59:59</div>
+
+            <button class="primary-btn" id="tournamentBtn">
+                ENTER TOURNAMENT
+            </button>
+        </div>
+
+        <div class="panel">
+
+            <h2>Leaderboard</h2>
+
+            <div class="rank-row">
+                <strong>#1</strong>
+                <div>
+                    <b>Football King</b>
+                    <span>World Class</span>
+                </div>
+                <strong>12,450</strong>
+            </div>
+
+            <div class="rank-row">
+                <strong>#2</strong>
+                <div>
+                    <b>Goal Machine</b>
+                    <span>Legendary</span>
+                </div>
+                <strong>10,850</strong>
+            </div>
+
+            <div class="rank-row">
+                <strong>#3</strong>
+                <div>
+                    <b>Elite XI</b>
+                    <span>Mythic</span>
+                </div>
+                <strong>9,620</strong>
+            </div>
+
+            <div class="online-status">
+                🟢 Tournament servers online
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PROFILE -->
+    <section id="profile" class="page">
+
+        <div class="profile-hero">
+
+            <div class="avatar" id="profileAvatar">
+                ⚽
+            </div>
+
+            <div>
+                <p class="eyebrow">MANAGER PROFILE</p>
+                <h1 id="profileName">Football Manager</h1>
+                <p>Level <span id="profileLevel">1</span> Manager</p>
+            </div>
+
+        </div>
+
+        <div class="profile-stats">
+
+            <div>
+                <b id="profilePlayers">0</b>
+                <span>Players</span>
+            </div>
+
+            <div>
+                <b id="profilePacks">0</b>
+                <span>Packs Opened</span>
+            </div>
+
+            <div>
+                <b id="profileCoins">1,000</b>
+                <span>Coins</span>
+            </div>
+
+            <div>
+                <b id="profileRating">0</b>
+                <span>Squad Rating</span>
+            </div>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>Manager Settings</h2>
+
+            <label for="nameInput">Manager Name</label>
+            <input id="nameInput" type="text" maxlength="20" placeholder="Enter manager name">
+
+            <label for="avatarSelect">Avatar</label>
+            <select id="avatarSelect">
+                <option value="⚽">⚽ Football</option>
+                <option value="🧑">🧑 Manager</option>
+                <option value="🔥">🔥 Fire</option>
+                <option value="👑">👑 King</option>
+                <option value="🐐">🐐 GOAT</option>
+            </select>
+
+            <button class="primary-btn" id="saveProfile">
+                SAVE PROFILE
+            </button>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>Titles</h2>
+
+            <div class="title-list">
+                <div class="title unlocked">⚽ Rookie</div>
+                <div class="title">🥉 Rising Star</div>
+                <div class="title">🥈 Elite Manager</div>
+                <div class="title">🥇 Champion</div>
+                <div class="title">👑 Football King</div>
+            </div>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>Featured Cards</h2>
+
+            <div class="profile-cards">
+
+                <div class="profile-card-mini">
+                    <div class="mini-card-art">⚽</div>
+                    <b>Featured Card</b>
+                    <select>
+                        <option>No player selected</option>
+                    </select>
+                </div>
+
+                <div class="profile-card-mini">
+                    <div class="mini-card-art">⭐</div>
+                    <b>Featured Card</b>
+                    <select>
+                        <option>No player selected</option>
+                    </select>
+                </div>
+
+                <div class="profile-card-mini">
+                    <div class="mini-card-art">🏆</div>
+                    <b>Featured Card</b>
+                    <select>
+                        <option>No player selected</option>
+                    </select>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- STATISTICS -->
+    <section id="stats" class="page">
+
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">YOUR PROGRESS</p>
+                <h1>Statistics</h1>
+            </div>
+        </div>
+
+        <div class="statistics-grid">
+
+            <div class="stat-box">
+                <b id="statPacks">0</b>
+                <p>Packs Opened</p>
+            </div>
+
+            <div class="stat-box">
+                <b id="statPlayers">0</b>
+                <p>Players Collected</p>
+            </div>
+
+            <div class="stat-box">
+                <b id="statCoins">1,000</b>
+                <p>Total Coins</p>
+            </div>
+
+            <div class="stat-box">
+                <b id="statBestRating">0</b>
+                <p>Best Player Rating</p>
+            </div>
+
+            <div class="stat-box">
+                <b id="statWorldClass">0</b>
+                <p>World Class Players</p>
+            </div>
+
+            <div class="stat-box">
+                <b id="statMissions">0</b>
+                <p>Missions Completed</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- SETTINGS -->
+    <section id="settings" class="page">
+
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">GAME SETTINGS</p>
+                <h1>Settings</h1>
+            </div>
+        </div>
+
+        <div class="panel">
+
+            <h2>Appearance</h2>
+
+            <label for="backgroundSelect">Background</label>
+
+            <select id="backgroundSelect">
+                <option value="default">Football Night</option>
+                <option value="stadium">Stadium</option>
+                <option value="pitch">Football Pitch</option>
+                <option value="dark">Dark</option>
+            </select>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>Account</h2>
+
+            <button class="danger-btn" id="resetGame">
+                RESET GAME
+            </button>
+
+        </div>
+
+    </section>
 
 </main>
 
+
+<!-- PACK MODAL -->
+<div id="packModal" class="modal hidden">
+
+    <div class="modal-box">
+
+        <div class="football-icon">⚽</div>
+
+        <h2 id="packModalTitle">Pack Opened!</h2>
+
+        <p id="packModalText">
+            Your players have been added to your collection.
+        </p>
+
+        <div id="packResults" class="cards-grid"></div>
+
+        <button class="primary-btn" id="closePackModal">
+            CONTINUE
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- WORLD CLASS MODAL -->
+<div id="worldModal" class="modal world-modal hidden">
+
+    <div class="world-card">
+
+        <div class="world-glow">🌍</div>
+
+        <p class="rarity worldclass">WORLD CLASS</p>
+
+        <h1 id="worldPlayerName">
+            WORLD CLASS!
+        </h1>
+
+        <p id="worldPlayerInfo">
+            You discovered an elite player.
+        </p>
+
+        <button class="primary-btn" id="closeWorldModal">
+            AMAZING
+        </button>
+
+    </div>
+
+</div>
+
+
+<div id="toast">
+    Reward claimed!
+</div>
+
+
 <script src="script.js"></script>
+
 </body>
 </html>
