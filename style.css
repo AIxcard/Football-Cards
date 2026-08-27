@@ -330,18 +330,167 @@ main{
     position:relative;
     min-height:300px;
     padding:18px;
-    border:2px solid rgba(255,255,255,.08);
+    border:2px solid rgba(255,255,255,.12);
     border-radius:18px;
     background:linear-gradient(145deg,#182733,#0c151d);
     overflow:hidden;
     transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
     cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .card:hover{
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(50, 149, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 25px rgba(50, 149, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Card Rarity Animated Theme Gradients */
+.card.theme-common {
+    background: linear-gradient(145deg, #1c2732, #0d1720);
+    border-color: rgba(160, 174, 192, 0.3);
+}
+
+.card.theme-uncommon {
+    background: radial-gradient(circle at 50% 0%, rgba(0, 255, 135, 0.15), transparent 70%), linear-gradient(145deg, #0f2d1f, #071911);
+    border-color: rgba(80, 215, 138, 0.35);
+}
+
+.card.theme-rare {
+    background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.18), transparent 70%), linear-gradient(145deg, #0b253a, #051421);
+    border-color: rgba(74, 168, 255, 0.4);
+}
+
+.card.theme-epic {
+    background: radial-gradient(circle at 50% 0%, rgba(182, 108, 255, 0.2), transparent 70%), linear-gradient(145deg, #261138, #11071c);
+    border-color: rgba(166, 92, 255, 0.45);
+}
+
+.card.theme-legendary {
+    background: radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.22), transparent 70%), linear-gradient(145deg, #382907, #1c1403);
+    border-color: rgba(244, 196, 78, 0.5);
+}
+
+.card.theme-exclusive {
+    background: radial-gradient(circle at 50% 0%, rgba(182, 108, 255, 0.25), transparent 70%), linear-gradient(145deg, #2b0e3f, #12051d);
+    border-color: rgba(182, 108, 255, 0.55);
+}
+
+.card.theme-mythic {
+    background: radial-gradient(circle at 50% 0%, rgba(255, 23, 68, 0.28), transparent 70%), linear-gradient(145deg, #3d0c15, #1c050a);
+    border-color: rgba(255, 23, 68, 0.55);
+}
+
+.card.theme-secret {
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.25), transparent 70%), linear-gradient(145deg, #252525, #080808 60%, #1a1a1a);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
+}
+
+/* Messi World Class: Animated Blue & White Albiceleste Gradient */
+.card.theme-messi {
+    background: linear-gradient(135deg, #003b7a 0%, #0099ff 35%, #ffffff 60%, #0099ff 80%, #003b7a 100%);
+    background-size: 250% 250%;
+    animation: bgGradientShift 4s ease infinite;
+    border-color: #69c7ff;
+    box-shadow: 0 0 30px rgba(0, 153, 255, 0.4);
+}
+
+/* Ronaldo World Class: Animated Red & White CR7 Gradient */
+.card.theme-ronaldo {
+    background: linear-gradient(135deg, #8b0014 0%, #ff1744 35%, #ffffff 60%, #ff1744 80%, #8b0014 100%);
+    background-size: 250% 250%;
+    animation: bgGradientShift 4s ease infinite;
+    border-color: #ff5252;
+    box-shadow: 0 0 30px rgba(255, 23, 68, 0.4);
+}
+
+/* Emanuel Tournament Card: Animated Cosmic Gold & Cyan Gradient */
+.card.theme-tournament {
+    background: linear-gradient(135deg, #785206 0%, #ffd700 30%, #00f2fe 60%, #7928ca 85%, #785206 100%);
+    background-size: 250% 250%;
+    animation: bgGradientShift 3.5s ease infinite;
+    border-color: #ffd700;
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes bgGradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+}
+
+.card-rarity-pill {
+    background: rgba(0, 0, 0, 0.72) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    padding: 3px 10px !important;
+    border-radius: 10px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    letter-spacing: 1px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+    text-shadow: none !important;
+}
+
+.card-lock-btn {
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.card-lock-btn:hover {
+    transform: scale(1.15);
+    border-color: var(--gold);
+}
+
+.card-lock-btn.locked {
+    background: rgba(244, 196, 78, 0.35);
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 10px rgba(244, 196, 78, 0.5);
+}
+
+.card-rating,
+.card-position,
+.card h3,
+.card small {
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 0, 0, 0.85);
+    position: relative;
+    z-index: 2;
+}
+
+.card h3 {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.card-rating {
+    color: #ffffff;
+}
+
+.card-position {
+    color: #e2e8f0;
+    font-weight: 800;
 }
 
 .card-hover-stats {
@@ -2219,6 +2368,205 @@ select,input{
 @keyframes champAura {
     0%, 100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.7), 0 0 50px rgba(0, 242, 254, 0.45); }
     50% { box-shadow: 0 0 40px rgba(255, 215, 0, 1), 0 0 75px rgba(0, 242, 254, 0.85); }
+}
+
+/* =========================================================
+   NEW OP TITLES (OWNER, ADMIN, STAFF)
+   ========================================================= */
+
+.title-owner {
+    background: linear-gradient(90deg, #ff0844, #ffd700, #ffffff, #ff0055, #ffd700, #ff0844);
+    background-size: 200% auto;
+    animation: textShimmer 2s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 8px rgba(255, 8, 68, 0.8));
+}
+
+.title-admin {
+    background: linear-gradient(90deg, #ff1744, #ff9100, #ffff00, #ff3d00, #ff1744);
+    background-size: 200% auto;
+    animation: textShimmer 2s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 8px rgba(255, 145, 0, 0.8));
+}
+
+.title-staff {
+    background: linear-gradient(90deg, #00f2fe, #4facfe, #b66cff, #69c7ff, #00f2fe);
+    background-size: 200% auto;
+    animation: textShimmer 2.5s linear infinite;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+    filter: drop-shadow(0 0 6px rgba(0, 242, 254, 0.7));
+}
+
+/* =========================================================
+   DRAGGABLE OP ADMIN PANEL (CODE: sixseven67)
+   ========================================================= */
+
+.admin-draggable-panel {
+    position: fixed;
+    top: 90px;
+    right: 30px;
+    width: min(380px, 94vw);
+    background: rgba(8, 18, 30, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 2px solid var(--gold);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(244, 196, 78, 0.35);
+    border-radius: 20px;
+    z-index: 1200;
+    overflow: hidden;
+    touch-action: none;
+    animation: slideInDown 0.25s ease;
+}
+
+@keyframes slideInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-header {
+    background: linear-gradient(90deg, #182a3c, #1a2216);
+    border-bottom: 1px solid var(--gold);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: grab;
+    user-select: none;
+}
+
+.admin-header:active {
+    cursor: grabbing;
+}
+
+.admin-title {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.admin-body {
+    padding: 16px 18px 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.admin-section {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.admin-section label {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #69c7ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.admin-btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.admin-action-btn {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #142636;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+}
+
+.admin-action-btn:hover {
+    transform: translateY(-2px);
+    background: #1c354d;
+    border-color: var(--blue);
+}
+
+.admin-action-btn.gold {
+    background: rgba(244, 196, 78, 0.18);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.admin-action-btn.gold:hover {
+    background: var(--gold);
+    color: #000;
+}
+
+.admin-action-btn.rainbow {
+    background: linear-gradient(135deg, rgba(255, 0, 119, 0.2), rgba(0, 242, 254, 0.2));
+    border-color: #00f2fe;
+    color: #fff;
+}
+
+.admin-action-btn.emanuel {
+    background: linear-gradient(135deg, #c58a2a, #ffd700);
+    border: none;
+    color: #120c02;
+    font-weight: 900;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.admin-action-btn.emanuel:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
+}
+
+.admin-floating-pill {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 999;
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: 2px solid var(--gold);
+    background: rgba(9, 20, 32, 0.95);
+    color: var(--gold);
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    box-shadow: 0 0 25px rgba(244, 196, 78, 0.4), 0 8px 20px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.admin-floating-pill:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 35px rgba(244, 196, 78, 0.7);
 }
 
 
