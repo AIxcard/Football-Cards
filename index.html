@@ -454,22 +454,22 @@
             <button class="ghost-btn" onclick="quickSellRarity('Common')">Sell All Common</button>
             <button class="ghost-btn" onclick="quickSellRarity('Uncommon')">Sell All Uncommon</button>
             <button class="ghost-btn" onclick="quickSellDuplicates()">Sell Duplicates</button>
+            <button id="multiLockBtn" class="ghost-btn" onclick="toggleMultiLockMode()">🔒 Multi-Lock</button>
+            <button id="multiSellBtn" class="ghost-btn" onclick="toggleMultiSellMode()">💰 Multi-Sell</button>
         </div>
-        <button id="multiSelectToggleBtn" class="primary-btn" style="width:auto;padding:8px 18px;" onclick="toggleMultiSelectMode()">☑️ Multi-Select Mode</button>
     </div>
 
-    <!-- FLOATING MULTI-SELECT ACTION BAR -->
-    <div id="multiSelectBar" class="multi-select-bar hidden">
+    <!-- FLOATING MULTI-SELL ACTION BAR -->
+    <div id="multiSellBar" class="multi-select-bar hidden">
         <div class="multi-select-status">
-            <span id="multiSelectCount">0 cards selected</span>
-            <strong id="multiSelectValue">(0 🪙)</strong>
+            <span id="multiSellCount">0 cards selected</span>
+            <strong id="multiSellValue">(+0 🪙)</strong>
         </div>
         <div class="multi-select-actions">
             <button class="ghost-btn" onclick="multiSelectAllUnlocked()">Select All Unlocked</button>
             <button class="ghost-btn" onclick="multiSelectClear()">Clear</button>
-            <button class="primary-btn" onclick="multiLockSelected(true)">🔒 Multi-Lock</button>
-            <button class="ghost-btn" onclick="multiLockSelected(false)">🔓 Multi-Unlock</button>
-            <button class="danger-btn" onclick="multiSellSelected()">💰 Multi-Sell</button>
+            <button class="danger-btn" onclick="confirmMultiSell()">💰 Confirm Sell</button>
+            <button class="ghost-btn" onclick="toggleMultiSellMode(false)">Cancel</button>
         </div>
     </div>
 
@@ -784,7 +784,7 @@
         <h2>🎁 Redeem Promo Codes</h2>
         <p>Enter promo codes to receive free rewards & unlock features!</p>
         <div style="display:flex;gap:10px;margin-top:12px;">
-            <input id="codeInput" placeholder="Enter code (e.g. RELEASE, sixseven67)" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;text-transform:uppercase;">
+            <input id="codeInput" placeholder="Enter code (e.g. RELEASE)" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;text-transform:uppercase;">
             <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="redeemCode()">Redeem</button>
         </div>
     </div>
@@ -805,52 +805,6 @@
 
 </main>
 
-<!-- ==================== OP ADMIN PANEL (CODE: sixseven67) ==================== -->
-<div id="adminPanel" class="admin-draggable-panel hidden">
-    <div class="admin-header" id="adminHeader">
-        <div class="admin-title">⚡ OP ADMIN CONTROL PANEL</div>
-        <button class="admin-close-btn" onclick="toggleAdminPanel()">✕</button>
-    </div>
-    <div class="admin-body">
-        <div class="admin-section">
-            <label>💰 Instant Money Generator</label>
-            <div class="admin-btn-grid">
-                <button class="admin-action-btn" onclick="adminAddCoins(10000)">+10,000 🪙</button>
-                <button class="admin-action-btn" onclick="adminAddCoins(100000)">+100,000 🪙</button>
-                <button class="admin-action-btn" onclick="adminAddCoins(1000000)">+1,000,000 🪙</button>
-                <button class="admin-action-btn gold" onclick="adminMaxCoins()">Max Gold (9.9M)</button>
-            </div>
-        </div>
-
-        <div class="admin-section">
-            <label>🎴 Player Card Spawner</label>
-            <select id="adminPlayerSelect" style="width:100%;margin-bottom:8px;"></select>
-            <div class="admin-btn-grid">
-                <button class="admin-action-btn gold" onclick="adminSpawnSelectedCard(false)">Spawn Regular Card</button>
-                <button class="admin-action-btn rainbow" onclick="adminSpawnSelectedCard(true)">Spawn Serialized #1/10</button>
-            </div>
-            <div style="margin-top:8px;">
-                <button class="admin-action-btn emanuel" style="width:100%;padding:10px;" onclick="adminSpawnEmanuel()">🏆 Instant Spawn Emanuel (99 OVR Tournament)</button>
-            </div>
-        </div>
-
-        <div class="admin-section">
-            <label>👑 Titles & Account OP</label>
-            <div class="admin-btn-grid">
-                <button class="admin-action-btn" onclick="adminUnlockAllTitles()">Unlock All Titles</button>
-                <button class="admin-action-btn" onclick="adminAddLevels(10)">+10 Levels</button>
-                <button class="admin-action-btn" onclick="adminUnlockAllIndex()">Unlock Full Index</button>
-                <button class="admin-action-btn" onclick="adminResetTournament()">Reset 5 Attempts</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Persistent Floating Admin Toggle Button (Visible when unlocked) -->
-<button id="adminFloatingBtn" class="admin-floating-pill hidden" onclick="toggleAdminPanel()">
-    ⚡ Admin Panel
-</button>
-
-<script src="script.js?v=6.0"></script>
+<script src="script.js?v=7.0"></script>
 </body>
 </html>
