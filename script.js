@@ -1,700 +1,2006 @@
-/* ==========================================
-   FOOTBALL CARDS
-   Core game system
-========================================== */
+/* =========================================================
+   FOOTBALL LEGENDS
+   Main game script
+   ========================================================= */
 
 
-/* ---------- PLAYER DATABASE ---------- */
+/* =========================
+   PLAYER DATABASE
+   ========================= */
 
-const players = [
-    { name: "Harry Kane", rating: 90, position: "ST", club: "Bayern Munich", rarity: "Legendary" },
-    { name: "Kevin De Bruyne", rating: 91, position: "CM", club: "Manchester City", rarity: "Legendary" },
-    { name: "Mohamed Salah", rating: 90, position: "RW", club: "Liverpool", rarity: "Legendary" },
-    { name: "Vinícius Jr.", rating: 91, position: "LW", club: "Real Madrid", rarity: "Epic" },
-    { name: "Jude Bellingham", rating: 91, position: "CM", club: "Real Madrid", rarity: "Epic" },
-    { name: "Kylian Mbappé", rating: 92, position: "ST", club: "Real Madrid", rarity: "Mythic" },
-    { name: "Erling Haaland", rating: 91, position: "ST", club: "Manchester City", rarity: "Epic" },
-    { name: "Lamine Yamal", rating: 89, position: "RW", club: "Barcelona", rarity: "Epic" },
-    { name: "Rodri", rating: 90, position: "CDM", club: "Manchester City", rarity: "Legendary" },
-    { name: "Virgil van Dijk", rating: 89, position: "CB", club: "Liverpool", rarity: "Rare" },
-    { name: "Bukayo Saka", rating: 88, position: "RW", club: "Arsenal", rarity: "Rare" },
-    { name: "Pedri", rating: 88, position: "CM", club: "Barcelona", rarity: "Rare" },
-    { name: "Phil Foden", rating: 88, position: "CAM", club: "Manchester City", rarity: "Rare" },
-    { name: "Cole Palmer", rating: 87, position: "CAM", club: "Chelsea", rarity: "Rare" },
-    { name: "Son Heung-min", rating: 87, position: "LW", club: "Tottenham", rarity: "Uncommon" },
-    { name: "Bernardo Silva", rating: 88, position: "CM", club: "Manchester City", rarity: "Uncommon" },
-    { name: "Martin Ødegaard", rating: 87, position: "CAM", club: "Arsenal", rarity: "Uncommon" },
-    { name: "Alisson", rating: 89, position: "GK", club: "Liverpool", rarity: "Rare" },
-    { name: "Thibaut Courtois", rating: 89, position: "GK", club: "Real Madrid", rarity: "Epic" },
-    { name: "Achraf Hakimi", rating: 86, position: "RB", club: "PSG", rarity: "Uncommon" },
+const PLAYERS = [
 
-    /* SECRET */
-    { name: "Diego Maradona", rating: 98, position: "CAM", club: "Argentina", rarity: "Secret" },
-    { name: "Pelé", rating: 98, position: "ST", club: "Brazil", rarity: "Secret" },
+  {
+    id:1,
+    name:"Lionel Messi",
+    position:"RW",
+    club:"Inter Miami",
+    nation:"🇦🇷",
+    rating:97,
+    rarity:"World Class"
+  },
 
-    /* WORLD CLASS */
-    { name: "Lionel Messi", rating: 99, position: "RW", club: "Argentina", rarity: "World Class" },
-    { name: "Cristiano Ronaldo", rating: 99, position: "ST", club: "Portugal", rarity: "World Class" }
+  {
+    id:2,
+    name:"Cristiano Ronaldo",
+    position:"ST",
+    club:"Al Nassr",
+    nation:"🇵🇹",
+    rating:97,
+    rarity:"World Class"
+  },
+
+  {
+    id:3,
+    name:"Kylian Mbappé",
+    position:"ST",
+    club:"Real Madrid",
+    nation:"🇫🇷",
+    rating:95,
+    rarity:"Secret"
+  },
+
+  {
+    id:4,
+    name:"Erling Haaland",
+    position:"ST",
+    club:"Manchester City",
+    nation:"🇳🇴",
+    rating:95,
+    rarity:"Secret"
+  },
+
+  {
+    id:5,
+    name:"Lamine Yamal",
+    position:"RW",
+    club:"Barcelona",
+    nation:"🇪🇸",
+    rating:93,
+    rarity:"Mythic"
+  },
+
+  {
+    id:6,
+    name:"Vinícius Júnior",
+    position:"LW",
+    club:"Real Madrid",
+    nation:"🇧🇷",
+    rating:93,
+    rarity:"Mythic"
+  },
+
+  {
+    id:7,
+    name:"Jude Bellingham",
+    position:"CM",
+    club:"Real Madrid",
+    nation:"🏴",
+    rating:92,
+    rarity:"Legendary"
+  },
+
+  {
+    id:8,
+    name:"Rodri",
+    position:"CDM",
+    club:"Manchester City",
+    nation:"🇪🇸",
+    rating:91,
+    rarity:"Legendary"
+  },
+
+  {
+    id:9,
+    name:"Mohamed Salah",
+    position:"RW",
+    club:"Liverpool",
+    nation:"🇪🇬",
+    rating:91,
+    rarity:"Legendary"
+  },
+
+  {
+    id:10,
+    name:"Harry Kane",
+    position:"ST",
+    club:"Bayern Munich",
+    nation:"🏴",
+    rating:90,
+    rarity:"Legendary"
+  },
+
+  {
+    id:11,
+    name:"Kevin De Bruyne",
+    position:"CM",
+    club:"Napoli",
+    nation:"🇧🇪",
+    rating:90,
+    rarity:"Epic"
+  },
+
+  {
+    id:12,
+    name:"Neymar Jr",
+    position:"LW",
+    club:"Santos",
+    nation:"🇧🇷",
+    rating:90,
+    rarity:"Epic"
+  },
+
+  {
+    id:13,
+    name:"Robert Lewandowski",
+    position:"ST",
+    club:"Barcelona",
+    nation:"🇵🇱",
+    rating:90,
+    rarity:"Epic"
+  },
+
+  {
+    id:14,
+    name:"Bukayo Saka",
+    position:"RW",
+    club:"Arsenal",
+    nation:"🏴",
+    rating:89,
+    rarity:"Epic"
+  },
+
+  {
+    id:15,
+    name:"Son Heung-min",
+    position:"LW",
+    club:"LAFC",
+    nation:"🇰🇷",
+    rating:89,
+    rarity:"Epic"
+  },
+
+  {
+    id:16,
+    name:"Virgil van Dijk",
+    position:"CB",
+    club:"Liverpool",
+    nation:"🇳🇱",
+    rating:89,
+    rarity:"Rare"
+  },
+
+  {
+    id:17,
+    name:"Rúben Dias",
+    position:"CB",
+    club:"Manchester City",
+    nation:"🇵🇹",
+    rating:88,
+    rarity:"Rare"
+  },
+
+  {
+    id:18,
+    name:"Thibaut Courtois",
+    position:"GK",
+    club:"Real Madrid",
+    nation:"🇧🇪",
+    rating:89,
+    rarity:"Rare"
+  },
+
+  {
+    id:19,
+    name:"Alisson",
+    position:"GK",
+    club:"Liverpool",
+    nation:"🇧🇷",
+    rating:89,
+    rarity:"Rare"
+  },
+
+  {
+    id:20,
+    name:"Pedri",
+    position:"CM",
+    club:"Barcelona",
+    nation:"🇪🇸",
+    rating:88,
+    rarity:"Rare"
+  },
+
+  {
+    id:21,
+    name:"Federico Valverde",
+    position:"CM",
+    club:"Real Madrid",
+    nation:"🇺🇾",
+    rating:88,
+    rarity:"Rare"
+  },
+
+  {
+    id:22,
+    name:"Martin Ødegaard",
+    position:"CM",
+    club:"Arsenal",
+    nation:"🇳🇴",
+    rating:87,
+    rarity:"Uncommon"
+  },
+
+  {
+    id:23,
+    name:"Cole Palmer",
+    position:"AM",
+    club:"Chelsea",
+    nation:"🏴",
+    rating:87,
+    rarity:"Uncommon"
+  },
+
+  {
+    id:24,
+    name:"Declan Rice",
+    position:"CDM",
+    club:"Arsenal",
+    nation:"🏴",
+    rating:87,
+    rarity:"Uncommon"
+  },
+
+  {
+    id:25,
+    name:"William Saliba",
+    position:"CB",
+    club:"Arsenal",
+    nation:"🇫🇷",
+    rating:86,
+    rarity:"Uncommon"
+  },
+
+  {
+    id:26,
+    name:"Achraf Hakimi",
+    position:"RB",
+    club:"PSG",
+    nation:"🇲🇦",
+    rating:86,
+    rarity:"Uncommon"
+  },
+
+  {
+    id:27,
+    name:"Nuno Mendes",
+    position:"LB",
+    club:"PSG",
+    nation:"🇵🇹",
+    rating:85,
+    rarity:"Common"
+  },
+
+  {
+    id:28,
+    name:"Dani Carvajal",
+    position:"RB",
+    club:"Real Madrid",
+    nation:"🇪🇸",
+    rating:85,
+    rarity:"Common"
+  },
+
+  {
+    id:29,
+    name:"Bernardo Silva",
+    position:"AM",
+    club:"Manchester City",
+    nation:"🇵🇹",
+    rating:86,
+    rarity:"Common"
+  },
+
+  {
+    id:30,
+    name:"Ousmane Dembélé",
+    position:"RW",
+    club:"PSG",
+    nation:"🇫🇷",
+    rating:86,
+    rarity:"Common"
+  },
+
+  {
+    id:31,
+    name:"Jamal Musiala",
+    position:"AM",
+    club:"Bayern Munich",
+    nation:"🇩🇪",
+    rating:86,
+    rarity:"Common"
+  },
+
+  {
+    id:32,
+    name:"Florian Wirtz",
+    position:"AM",
+    club:"Liverpool",
+    nation:"🇩🇪",
+    rating:86,
+    rarity:"Common"
+  }
+
 ];
 
 
-/* ---------- GAME DATA ---------- */
+/* =========================
+   ECONOMY
+   ========================= */
 
-const defaultData = {
-    coins: 100000,
-    packsOpened: 0,
-    coinsSpent: 0,
-    cards: [],
-    featured: [],
-    ownedItems: [],
-    bestRating: 0,
-    bestPlayer: null
+const SELL_VALUES = {
+
+  Common:2,
+
+  Uncommon:3,
+
+  Rare:5,
+
+  Epic:8,
+
+  Legendary:15,
+
+  Mythic:30,
+
+  Secret:75,
+
+  "World Class":0
+
 };
 
-let gameData = loadGame();
+
+const PACKS = {
+
+  starter:{
+    cost:10,
+
+    odds:{
+      Common:38.95,
+      Uncommon:30,
+      Rare:20,
+      Epic:10,
+      Legendary:1,
+      Mythic:0.05,
+      Secret:0,
+      "World Class":0
+    }
+  },
+
+  premium:{
+    cost:25,
+
+    odds:{
+      Common:30.85,
+      Uncommon:30,
+      Rare:25,
+      Epic:12,
+      Legendary:2,
+      Mythic:.15,
+      Secret:0,
+      "World Class":0
+    }
+  },
+
+  mega:{
+    cost:50,
+
+    odds:{
+      Common:20.49,
+      Uncommon:30,
+      Rare:30,
+      Epic:15,
+      Legendary:4,
+      Mythic:.5,
+      Secret:.01,
+      "World Class":0
+    }
+  },
+
+  world:{
+    cost:1,
+
+    odds:{
+      "World Class":100
+    }
+  }
+
+};
 
 
-function loadGame() {
-    try {
-        const saved = localStorage.getItem("footballCardsSave");
+/* =========================
+   MISSIONS
+   ========================= */
 
-        if (saved) {
-            return {
-                ...defaultData,
-                ...JSON.parse(saved)
-            };
+const MISSION_TEMPLATE = [
+
+  {
+    id:"packs",
+    text:"Open 2 packs",
+    goal:2,
+    reward:5
+  },
+
+  {
+    id:"rare",
+    text:"Pull a Rare+ card",
+    goal:1,
+    reward:5
+  },
+
+  {
+    id:"collect",
+    text:"Collect 3 cards",
+    goal:3,
+    reward:8
+  }
+
+];
+
+
+/* =========================
+   SAVE DATA
+   ========================= */
+
+const SAVE_KEY = "footballLegendsSave";
+
+
+function createNewGame(){
+
+  return {
+
+    coins:100,
+
+    coinsEarned:0,
+
+    packsOpened:0,
+
+    collection:[],
+
+    squad:[],
+
+    xp:0,
+
+    dailyClaim:0,
+
+    freeKickUsed:false,
+
+    missions:createMissions(),
+
+    shopItems:[],
+
+    settings:{
+      animation:"normal",
+      compact:false
+    }
+
+  };
+
+}
+
+
+function createMissions(){
+
+  return MISSION_TEMPLATE.map(m => ({
+
+    id:m.id,
+
+    text:m.text,
+
+    goal:m.goal,
+
+    reward:m.reward,
+
+    progress:0,
+
+    done:false
+
+  }));
+
+}
+
+
+let game;
+
+
+function loadGame(){
+
+  try{
+
+    const saved =
+      JSON.parse(localStorage.getItem(SAVE_KEY));
+
+    if(saved){
+
+      game = {
+
+        ...createNewGame(),
+
+        ...saved,
+
+        settings:{
+          ...createNewGame().settings,
+          ...(saved.settings || {})
         }
-    } catch (error) {
-        console.log("Save could not be loaded.");
+
+      };
+
+    }else{
+
+      game = createNewGame();
+
     }
 
-    return JSON.parse(JSON.stringify(defaultData));
+  }catch(error){
+
+    game = createNewGame();
+
+  }
+
 }
 
 
-function saveGame() {
-    localStorage.setItem(
-        "footballCardsSave",
-        JSON.stringify(gameData)
-    );
+function saveGame(){
+
+  localStorage.setItem(
+    SAVE_KEY,
+    JSON.stringify(game)
+  );
+
 }
 
 
-/* ---------- NAVIGATION ---------- */
+/* =========================
+   NAVIGATION
+   ========================= */
 
-function openPage(pageName) {
+function showPage(pageName){
 
-    document.querySelectorAll(".page").forEach(page => {
-        page.classList.remove("active-page");
+  document
+    .querySelectorAll(".page")
+    .forEach(page => {
+
+      page.classList.remove("active");
+
     });
 
-    const page = document.getElementById(pageName);
 
-    if (page) {
-        page.classList.add("active-page");
-    }
+  const page =
+    document.getElementById(pageName);
 
-    document.querySelectorAll(".nav-btn").forEach(button => {
-        button.classList.toggle(
-            "active",
-            button.dataset.page === pageName
-        );
-    });
+  if(page){
 
-    updateUI();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    page.classList.add("active");
+
+  }
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+
+  renderAll();
+
 }
 
 
-document.querySelectorAll(".nav-btn").forEach(button => {
-    button.addEventListener("click", () => {
-        openPage(button.dataset.page);
-    });
-});
+/* =========================
+   COINS
+   ========================= */
 
+function addCoins(amount){
 
-/* ---------- CURRENCY ---------- */
+  game.coins += amount;
 
-function updateCoins() {
-    document.getElementById("coinDisplay").textContent =
-        gameData.coins.toLocaleString();
+  if(amount > 0){
+
+    game.coinsEarned += amount;
+
+  }
+
 }
 
 
-/* ---------- RNG ---------- */
+function spendCoins(amount){
 
-function rollRarity(packType) {
+  if(game.coins < amount){
 
-    let random = Math.random() * 100;
+    toast("You don't have enough coins.");
 
-    let chances;
+    return false;
 
-    if (packType === "mega") {
+  }
 
-        chances = [
-            ["World Class", 0.02],
-            ["Secret", 0.4],
-            ["Mythic", 3],
-            ["Legendary", 10],
-            ["Epic", 18],
-            ["Rare", 25],
-            ["Uncommon", 23.56],
-            ["Common", 20.02]
-        ];
+  game.coins -= amount;
 
-    } else if (packType === "premium") {
+  return true;
 
-        chances = [
-            ["World Class", 0.01],
-            ["Secret", 0.2],
-            ["Mythic", 1.8],
-            ["Legendary", 7],
-            ["Epic", 12],
-            ["Rare", 20],
-            ["Uncommon", 25],
-            ["Common", 34.99]
-        ];
-
-    } else {
-
-        chances = [
-            ["World Class", 0.01],
-            ["Secret", 0.19],
-            ["Mythic", 1.8],
-            ["Legendary", 5],
-            ["Epic", 8],
-            ["Rare", 15],
-            ["Uncommon", 25],
-            ["Common", 45]
-        ];
-    }
-
-    let total = 0;
-
-    for (const [rarity, chance] of chances) {
-
-        total += chance;
-
-        if (random <= total) {
-            return rarity;
-        }
-    }
-
-    return "Common";
 }
 
 
-/* ---------- PLAYER SELECTION ---------- */
+/* =========================
+   DAILY CLAIM
+   ========================= */
 
-function getPlayer(rarity) {
+function claimDaily(){
 
-    const matching = players.filter(
-        player => player.rarity === rarity
+  const now = Date.now();
+
+  if(game.dailyClaim !== 0){
+
+    const difference =
+      now - game.dailyClaim;
+
+    if(difference < 86400000){
+
+      toast("Daily reward already claimed.");
+
+      return;
+
+    }
+
+  }
+
+
+  addCoins(15);
+
+  game.dailyClaim = now;
+
+  saveGame();
+
+  toast("+15 coins!");
+
+  renderAll();
+
+}
+
+
+/* =========================
+   FREE KICK
+   ========================= */
+
+function freeKick(){
+
+  if(game.coins !== 0){
+
+    toast("Free Kick is only available at 0 coins.");
+
+    return;
+
+  }
+
+
+  if(game.freeKickUsed){
+
+    toast("Free Kick already used today.");
+
+    return;
+
+  }
+
+
+  addCoins(5);
+
+  game.freeKickUsed = true;
+
+  saveGame();
+
+  toast("+5 coins! You're back in the game.");
+
+  renderAll();
+
+}
+
+
+/* =========================
+   RARITY ROLL
+   ========================= */
+
+function rollRarity(odds){
+
+  let random =
+    Math.random() * 100;
+
+
+  for(const rarity in odds){
+
+    random -= odds[rarity];
+
+    if(random <= 0){
+
+      return rarity;
+
+    }
+
+  }
+
+
+  return "Common";
+
+}
+
+
+/* =========================
+   PLAYER ROLL
+   ========================= */
+
+function getPlayerByRarity(rarity){
+
+  const players =
+    PLAYERS.filter(
+      player => player.rarity === rarity
     );
 
-    if (matching.length > 0) {
-        return matching[
-            Math.floor(Math.random() * matching.length)
-        ];
-    }
 
-    const fallback = players.filter(
-        player => player.rarity === "Common"
-    );
+  if(players.length === 0){
 
-    return fallback[
-        Math.floor(Math.random() * fallback.length)
+    return PLAYERS[
+      Math.floor(
+        Math.random() * PLAYERS.length
+      )
     ];
+
+  }
+
+
+  return players[
+    Math.floor(
+      Math.random() * players.length
+    )
+  ];
+
 }
 
 
-/* ---------- PACK OPENING ---------- */
+/* =========================
+   PACK OPENING
+   ========================= */
 
-document.querySelectorAll(".pack-open").forEach(button => {
+function openPack(packName){
 
-    button.addEventListener("click", () => {
-
-        const cost = Number(button.dataset.cost);
-
-        if (gameData.coins < cost) {
-            showToast("Not enough coins!");
-            return;
-        }
-
-        let packType = "starter";
-
-        if (cost === 15000) {
-            packType = "premium";
-        }
-
-        if (cost === 35000) {
-            packType = "mega";
-        }
-
-        gameData.coins -= cost;
-        gameData.coinsSpent += cost;
-        gameData.packsOpened++;
-
-        const rarity = rollRarity(packType);
-        const player = getPlayer(rarity);
-
-        gameData.cards.push({
-            ...player,
-            id: Date.now() + Math.random()
-        });
-
-        if (player.rating > gameData.bestRating) {
-            gameData.bestRating = player.rating;
-            gameData.bestPlayer = player.name;
-        }
-
-        saveGame();
-        updateUI();
-        showReveal(player);
-    });
-});
+  const pack =
+    PACKS[packName];
 
 
-/* ---------- REVEAL ---------- */
+  if(!pack){
 
-function showReveal(player) {
+    return;
 
-    const overlay = document.getElementById("revealOverlay");
-    const card = document.getElementById("revealCard");
+  }
 
-    const rarityClass = player.rarity
-        .toLowerCase()
-        .replaceAll(" ", "-");
 
-    overlay.className = "reveal-overlay show " + rarityClass;
+  if(!spendCoins(pack.cost)){
 
-    card.className =
-        "reveal-card card-" +
-        player.rarity.replaceAll(" ", "-");
+    return;
 
-    document.querySelector(".reveal-rarity").textContent =
-        player.rarity.toUpperCase();
+  }
 
-    document.querySelector(".reveal-rarity").className =
-        "reveal-rarity rarity " + rarityClass;
 
-    document.querySelector(".reveal-number").textContent =
-        player.rating;
+  const rarity =
+    rollRarity(pack.odds);
 
-    document.querySelector(".reveal-player").textContent =
-        getPlayerEmoji(player.position);
 
-    document.querySelector(".reveal-info h2").textContent =
-        player.name;
+  const player =
+    getPlayerByRarity(rarity);
 
-    document.querySelector(".reveal-position").textContent =
-        player.position;
 
-    document.querySelector(".reveal-club").textContent =
-        player.club;
+  game.packsOpened++;
 
-    document.querySelector(".reveal-rating").textContent =
-        player.rating;
+  game.collection.push(player.id);
 
-    const message = document.getElementById("revealMessage");
+  game.xp += 5;
 
-    message.textContent =
-        getRevealMessage(player.rarity);
 
-    message.style.opacity = "1";
+  updateMission("packs",1);
 
-    card.classList.remove("revealing");
 
-    void card.offsetWidth;
+  if([
+    "Rare",
+    "Epic",
+    "Legendary",
+    "Mythic",
+    "Secret",
+    "World Class"
 
-    card.classList.add("revealing");
+  ].includes(player.rarity)){
 
-    const continueButton =
-        document.getElementById("revealContinue");
+    updateMission("rare",1);
 
-    continueButton.classList.remove("visible");
+  }
 
-    setTimeout(() => {
-        continueButton.classList.add("visible");
-    }, player.rarity === "World Class" ? 1800 : 1300);
+
+  updateMission("collect",1);
+
+
+  saveGame();
+
+
+  showPackAnimation(
+    player,
+    packName
+  );
+
+
+  renderAll();
+
 }
 
 
-function closeReveal() {
+/* =========================
+   PACK ANIMATION
+   ========================= */
 
-    const overlay = document.getElementById("revealOverlay");
+function showPackAnimation(player,packName){
 
-    overlay.className = "reveal-overlay";
+  const modal =
+    document.getElementById("packModal");
 
-    document.getElementById("revealCard")
-        .classList.remove("revealing");
+  const animation =
+    document.getElementById("packAnimation");
 
-    document.getElementById("revealContinue")
-        .classList.remove("visible");
+  const reveal =
+    document.getElementById("cardReveal");
 
-    updateUI();
+
+  modal.classList.add("show");
+
+
+  animation.classList.remove("hidden");
+
+  reveal.classList.add("hidden");
+
+
+  const speed =
+    game.settings.animation === "fast"
+      ? 500
+      : 1800;
+
+
+  setTimeout(() => {
+
+    animation.classList.add("hidden");
+
+    reveal.classList.remove("hidden");
+
+
+    reveal.innerHTML = `
+
+      <div class="small-title">
+        NEW CARD
+      </div>
+
+      <div class="reveal-card">
+
+        ${createCardHTML(player)}
+
+      </div>
+
+      <h2>${player.name}</h2>
+
+      <p>
+        ${player.rarity}
+        · ${player.rating} OVR
+      </p>
+
+      <button
+        class="main-btn"
+        onclick="closeModal()"
+      >
+        CONTINUE
+      </button>
+
+    `;
+
+  },speed);
+
 }
 
 
-function getRevealMessage(rarity) {
+function closeModal(){
 
-    switch (rarity) {
+  document
+    .getElementById("packModal")
+    .classList.remove("show");
 
-        case "Common":
-            return "NOT BAD...";
-
-        case "Uncommon":
-            return "NICE PULL!";
-
-        case "Rare":
-            return "RARE PULL!";
-
-        case "Epic":
-            return "EPIC!";
-
-        case "Legendary":
-            return "LEGENDARY!";
-
-        case "Mythic":
-            return "MYTHIC PULL!";
-
-        case "Secret":
-            return "SECRET!";
-
-        case "World Class":
-            return "WORLD CLASS!";
-
-        default:
-            return "PULL!";
-    }
 }
 
 
-function getPlayerEmoji(position) {
+/* =========================
+   CARD HTML
+   ========================= */
 
-    if (position === "GK") return "🧤";
-    if (position === "CB" || position === "RB") return "🛡️";
-    if (position === "CM" || position === "CAM" || position === "CDM") return "⚽";
-    return "👟";
+function createCardHTML(player){
+
+  const rarityClass =
+    player.rarity.replaceAll(" ","-");
+
+
+  return `
+
+    <div class="football-card rarity-${rarityClass}">
+
+      <div class="card-rating">
+        ${player.rating}
+      </div>
+
+      <div class="card-position">
+        ${player.position}
+      </div>
+
+      <div class="card-flag">
+        ${player.nation}
+      </div>
+
+      <div class="card-player">
+        ${player.name}
+      </div>
+
+      <div class="card-club">
+        ${player.club}
+      </div>
+
+      <div class="card-rarity">
+        ${player.rarity.toUpperCase()}
+      </div>
+
+    </div>
+
+  `;
+
 }
 
 
-/* ---------- COLLECTION ---------- */
+/* =========================
+   COLLECTION
+   ========================= */
 
 let currentFilter = "all";
 
 
-document.querySelectorAll(".filter").forEach(button => {
+function filterCards(filter,button){
 
-    button.addEventListener("click", () => {
+  currentFilter = filter;
 
-        document.querySelectorAll(".filter")
-            .forEach(btn => btn.classList.remove("active"));
 
-        button.classList.add("active");
+  document
+    .querySelectorAll(".filter")
+    .forEach(btn => {
 
-        currentFilter = button.dataset.filter;
+      btn.classList.remove("active");
 
-        renderCollection();
     });
-});
 
 
-function renderCollection() {
+  button.classList.add("active");
 
-    const grid = document.getElementById("collectionGrid");
 
-    let cards = [...gameData.cards];
+  renderCollection();
 
-    if (currentFilter !== "all") {
-        cards = cards.filter(
-            card => card.rarity === currentFilter
-        );
-    }
-
-    grid.innerHTML = "";
-
-    if (cards.length === 0) {
-
-        grid.innerHTML = `
-            <div style="
-                grid-column:1/-1;
-                padding:70px;
-                text-align:center;
-                color:#8d96a5;
-            ">
-                <div style="font-size:45px;">🃏</div>
-                <h3 style="color:white;margin:15px 0 8px;">
-                    No cards here yet
-                </h3>
-                <p>Open some packs to start your collection.</p>
-            </div>
-        `;
-
-        return;
-    }
-
-    cards.forEach(card => {
-
-        const element =
-            document.createElement("div");
-
-        element.innerHTML =
-            createPlayerCard(card);
-
-        const cardElement =
-            element.firstElementChild;
-
-        cardElement.addEventListener("click", () => {
-            toggleFeatured(card.id);
-        });
-
-        grid.appendChild(cardElement);
-    });
 }
 
 
-function createPlayerCard(card) {
+function getCounts(){
 
-    const rarityClass =
-        card.rarity.replaceAll(" ", "-");
+  const counts = {};
 
-    return `
-        <div class="player-card card-${rarityClass}">
-            <div class="small-rarity ${rarityClass.toLowerCase()}">
-                ${card.rarity.toUpperCase()}
-            </div>
+  game.collection.forEach(id => {
 
-            <div class="rating">
-                ${card.rating}
-            </div>
+    counts[id] =
+      (counts[id] || 0) + 1;
 
-            <div class="number">
-                ${card.position}
-            </div>
+  });
 
-            <div class="face">
-                ${getPlayerEmoji(card.position)}
-            </div>
 
-            <div class="name">
-                ${card.name}
-            </div>
+  return counts;
 
-            <div class="details">
-                ${card.club}
-            </div>
-        </div>
+}
+
+
+function renderCollection(){
+
+  const grid =
+    document.getElementById(
+      "collectionGrid"
+    );
+
+
+  if(!grid){
+
+    return;
+
+  }
+
+
+  const counts =
+    getCounts();
+
+
+  let ids =
+    Object.keys(counts)
+      .map(Number);
+
+
+  if(currentFilter !== "all"){
+
+    ids = ids.filter(id => {
+
+      const player =
+        PLAYERS.find(p => p.id === id);
+
+      return player &&
+        player.rarity === currentFilter;
+
+    });
+
+  }
+
+
+  if(ids.length === 0){
+
+    grid.innerHTML = `
+
+      <div style="
+        grid-column:1/-1;
+        text-align:center;
+        padding:60px 10px;
+        color:#77849a;
+      ">
+
+        No cards here yet.<br>
+        Open a pack to start your collection.
+
+      </div>
+
     `;
+
+    return;
+
+  }
+
+
+  grid.innerHTML =
+    ids.map(id => {
+
+      const player =
+        PLAYERS.find(p => p.id === id);
+
+
+      return `
+
+        <div class="card-wrapper">
+
+          ${createCardHTML(player)}
+
+          <div style="
+            margin-top:5px;
+            text-align:center;
+            color:#8996aa;
+            font-size:11px;
+          ">
+            Owned ×${counts[id]}
+          </div>
+
+        </div>
+
+      `;
+
+    }).join("");
+
 }
 
 
-/* ---------- PROFILE ---------- */
+/* =========================
+   MISSIONS
+   ========================= */
 
-function toggleFeatured(id) {
+function updateMission(id,amount){
 
-    const index = gameData.featured.indexOf(id);
+  const mission =
+    game.missions.find(
+      m => m.id === id
+    );
 
-    if (index !== -1) {
 
-        gameData.featured.splice(index, 1);
+  if(!mission || mission.done){
 
-        showToast("Removed from featured cards.");
+    return;
 
-    } else {
+  }
 
-        if (gameData.featured.length >= 6) {
-            showToast("You can only feature 6 cards!");
-            return;
+
+  mission.progress =
+    Math.min(
+      mission.goal,
+      mission.progress + amount
+    );
+
+
+  if(
+    mission.progress >=
+    mission.goal
+  ){
+
+    mission.done = true;
+
+    addCoins(mission.reward);
+
+    toast(
+      `Mission complete! +${mission.reward} coins`
+    );
+
+  }
+
+}
+
+
+function renderMissions(){
+
+  const container =
+    document.getElementById("missions");
+
+
+  if(!container){
+
+    return;
+
+  }
+
+
+  let completed = 0;
+
+
+  container.innerHTML =
+    game.missions.map(mission => {
+
+      if(mission.done){
+
+        completed++;
+
+      }
+
+
+      const percentage =
+        Math.min(
+          100,
+          mission.progress /
+          mission.goal * 100
+        );
+
+
+      return `
+
+        <div class="mission">
+
+          <div>
+            ${mission.done ? "✅" : "🎯"}
+          </div>
+
+          <div class="mission-info">
+
+            <strong>
+              ${mission.text}
+            </strong>
+
+            <div class="progress">
+
+              <div
+                class="progress-bar"
+                style="
+                  width:${percentage}%;
+                "
+              ></div>
+
+            </div>
+
+            <small>
+              ${mission.progress}/${mission.goal}
+            </small>
+
+          </div>
+
+          <strong>
+            +${mission.reward}
+          </strong>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+
+  document.getElementById(
+    "missionCounter"
+  ).textContent =
+    `${completed}/3`;
+
+}
+
+
+/* =========================
+   SQUAD
+   ========================= */
+
+function autoBuildSquad(){
+
+  const counts =
+    getCounts();
+
+
+  const ownedPlayers =
+    PLAYERS
+      .filter(player => counts[player.id])
+      .sort(
+        (a,b) =>
+          b.rating - a.rating
+      );
+
+
+  if(ownedPlayers.length === 0){
+
+    toast("Collect some players first.");
+
+    return;
+
+  }
+
+
+  const selected = [];
+
+
+  const positions = [
+    "GK",
+    "LB",
+    "CB",
+    "CB",
+    "RB",
+    "CDM",
+    "CM",
+    "AM",
+    "LW",
+    "ST",
+    "RW"
+  ];
+
+
+  positions.forEach(position => {
+
+    const player =
+      ownedPlayers.find(
+        p =>
+          p.position === position &&
+          !selected.includes(p.id)
+      );
+
+
+    if(player){
+
+      selected.push(player.id);
+
+    }
+
+  });
+
+
+  ownedPlayers.forEach(player => {
+
+    if(
+      selected.length < 11 &&
+      !selected.includes(player.id)
+    ){
+
+      selected.push(player.id);
+
+    }
+
+  });
+
+
+  game.squad =
+    selected.slice(0,11);
+
+
+  saveGame();
+
+  toast("Squad updated!");
+
+  renderSquad();
+
+}
+
+
+function renderSquad(){
+
+  const squad =
+    game.squad || [];
+
+
+  for(let i=0;i<11;i++){
+
+    const slot =
+      document.getElementById(
+        `slot${i}`
+      );
+
+
+    if(!slot){
+
+      continue;
+
+    }
+
+
+    const player =
+      PLAYERS.find(
+        p => p.id === squad[i]
+      );
+
+
+    if(!player){
+
+      slot.innerHTML = `
+
+        <button>
+          +
+        </button>
+
+        <small>
+          Empty
+        </small>
+
+      `;
+
+      continue;
+
+    }
+
+
+    slot.innerHTML = `
+
+      <button>
+        ${player.rating}
+      </button>
+
+      <small>
+        ${player.name.split(" ").pop()}
+      </small>
+
+    `;
+
+  }
+
+
+  const list =
+    document.getElementById(
+      "squadPlayers"
+    );
+
+
+  if(!list){
+
+    return;
+
+  }
+
+
+  list.innerHTML =
+    Array.from(
+      {length:11},
+      (_,index) => {
+
+        const player =
+          PLAYERS.find(
+            p => p.id === squad[index]
+          );
+
+
+        if(!player){
+
+          return `
+
+            <div class="squad-player">
+
+              <span>
+                ${index+1}. Empty
+              </span>
+
+              <small>
+                —
+              </small>
+
+            </div>
+
+          `;
+
         }
 
-        gameData.featured.push(id);
 
-        showToast("Added to your profile!");
-    }
+        return `
 
-    saveGame();
-    renderFeatured();
-}
+          <div class="squad-player">
 
+            <span>
+              ${index+1}. ${player.name}
+            </span>
 
-function renderFeatured() {
+            <small>
+              ${player.rating}
+            </small>
 
-    const container =
-        document.getElementById("featuredCards");
+          </div>
 
-    container.innerHTML = "";
-
-    const featuredCards =
-        gameData.featured
-            .map(id =>
-                gameData.cards.find(card => card.id === id)
-            )
-            .filter(Boolean);
-
-    if (featuredCards.length === 0) {
-
-        container.innerHTML = `
-            <div style="
-                grid-column:1/-1;
-                padding:50px;
-                text-align:center;
-                color:#8d96a5;
-            ">
-                Open packs and click cards in your collection
-                to feature them here.
-            </div>
         `;
 
-        return;
-    }
+      }
+    ).join("");
 
-    featuredCards.forEach(card => {
-
-        const element =
-            document.createElement("div");
-
-        element.innerHTML =
-            createPlayerCard(card);
-
-        const cardElement =
-            element.firstElementChild;
-
-        cardElement.style.height = "250px";
-
-        cardElement.addEventListener("click", () => {
-            toggleFeatured(card.id);
-        });
-
-        container.appendChild(cardElement);
-    });
 }
 
 
-/* ---------- SHOP ---------- */
+/* =========================
+   PROFILE / SELL
+   ========================= */
 
-document.querySelectorAll(".shop-buy")
-    .forEach(button => {
+function renderSellList(){
 
-        button.addEventListener("click", () => {
-
-            const item = button.dataset.item;
-            const price = Number(button.dataset.price);
-
-            if (gameData.ownedItems.includes(item)) {
-                showToast("You already own this!");
-                return;
-            }
-
-            if (gameData.coins < price) {
-                showToast("Not enough coins!");
-                return;
-            }
-
-            gameData.coins -= price;
-            gameData.ownedItems.push(item);
-
-            button.textContent = "OWNED";
-            button.disabled = true;
-
-            saveGame();
-            updateUI();
-
-            showToast(item + " purchased!");
-        });
-    });
+  const container =
+    document.getElementById(
+      "sellList"
+    );
 
 
-/* ---------- UI ---------- */
+  if(!container){
 
-function updateUI() {
+    return;
 
-    updateCoins();
+  }
 
-    document.getElementById("homePacks").textContent =
-        gameData.packsOpened.toLocaleString();
 
-    document.getElementById("homeCards").textContent =
-        gameData.cards.length.toLocaleString();
+  const counts =
+    getCounts();
 
-    document.getElementById("homeBest").textContent =
-        gameData.bestPlayer
-            ? `${gameData.bestPlayer} (${gameData.bestRating})`
-            : "None";
 
-    document.getElementById("collectionCount").textContent =
-        `${gameData.cards.length} cards collected`;
+  const ids =
+    Object.keys(counts)
+      .map(Number);
 
-    document.getElementById("profileBest").textContent =
-        gameData.bestPlayer
-            ? `${gameData.bestPlayer} (${gameData.bestRating})`
-            : "None";
 
-    document.getElementById("statPacks").textContent =
-        gameData.packsOpened.toLocaleString();
+  if(ids.length === 0){
 
-    document.getElementById("statSpent").textContent =
-        gameData.coinsSpent.toLocaleString();
+    container.innerHTML = `
 
-    document.getElementById("statCards").textContent =
-        gameData.cards.length.toLocaleString();
+      <p style="color:#77849a">
+        You don't have any cards yet.
+      </p>
 
-    document.getElementById("statBest").textContent =
-        gameData.bestPlayer
-            ? `${gameData.bestPlayer} (${gameData.bestRating})`
-            : "None";
+    `;
 
-    const legendaryPlus =
-        gameData.cards.filter(card =>
-            ["Legendary", "Mythic", "Secret", "World Class"]
-                .includes(card.rarity)
-        ).length;
+    return;
 
-    const rarePlus =
-        gameData.cards.filter(card =>
-            ["Rare", "Epic", "Legendary", "Mythic", "Secret", "World Class"]
-                .includes(card.rarity)
-        ).length;
+  }
 
-    document.getElementById("statLegendary").textContent =
-        legendaryPlus;
 
-    document.getElementById("statRare").textContent =
-        rarePlus;
+  container.innerHTML =
+    ids.map(id => {
 
-    renderCollection();
-    renderFeatured();
+      const player =
+        PLAYERS.find(
+          p => p.id === id
+        );
 
-    document.querySelectorAll(".shop-buy")
-        .forEach(button => {
 
-            if (gameData.ownedItems.includes(button.dataset.item)) {
-                button.textContent = "OWNED";
-                button.disabled = true;
-            }
-        });
+      const amount =
+        counts[id];
+
+
+      const value =
+        SELL_VALUES[player.rarity];
+
+
+      if(value === 0){
+
+        return `
+
+          <div class="sell-row">
+
+            <span>
+              ${player.name}
+              · ${player.rarity}
+              · ×${amount}
+            </span>
+
+            <small>
+              CANNOT SELL
+            </small>
+
+          </div>
+
+        `;
+
+      }
+
+
+      return `
+
+        <div class="sell-row">
+
+          <span>
+            ${player.name}
+            · ${player.rarity}
+            · ×${amount}
+          </span>
+
+          <button
+            onclick="sellCard(${player.id})"
+          >
+            SELL 1 · +${value}
+          </button>
+
+        </div>
+
+      `;
+
+    }).join("");
+
 }
 
 
-/* ---------- TOAST ---------- */
+function sellCard(playerId){
 
-function showToast(message) {
+  const index =
+    game.collection.indexOf(
+      playerId
+    );
 
-    const toast =
-        document.getElementById("toast");
 
-    toast.textContent = message;
-    toast.classList.add("show");
+  if(index === -1){
 
-    clearTimeout(window.toastTimer);
+    return;
 
-    window.toastTimer =
-        setTimeout(() => {
-            toast.classList.remove("show");
-        }, 2500);
+  }
+
+
+  const player =
+    PLAYERS.find(
+      p => p.id === playerId
+    );
+
+
+  const value =
+    SELL_VALUES[player.rarity];
+
+
+  if(!value){
+
+    toast("This card cannot be sold.");
+
+    return;
+
+  }
+
+
+  game.collection.splice(
+    index,
+    1
+  );
+
+
+  addCoins(value);
+
+
+  game.squad =
+    game.squad.filter(
+      id => id !== playerId
+    );
+
+
+  saveGame();
+
+  toast(
+    `${player.name} sold for +${value} coins`
+  );
+
+  renderAll();
+
 }
 
 
-/* ---------- START ---------- */
+/* =========================
+   SHOP
+   ========================= */
 
-updateUI();
+function buyItem(item,cost){
+
+  if(game.shopItems.includes(item)){
+
+    toast("You already own this.");
+
+    return;
+
+  }
+
+
+  if(!spendCoins(cost)){
+
+    return;
+
+  }
+
+
+  game.shopItems.push(item);
+
+  saveGame();
+
+  toast(`${item} purchased!`);
+
+  renderAll();
+
+}
+
+
+/* =========================
+   SETTINGS
+   ========================= */
+
+function changeAnimationSpeed(value){
+
+  game.settings.animation =
+    value;
+
+  saveGame();
+
+}
+
+
+function toggleCompact(enabled){
+
+  game.settings.compact =
+    enabled;
+
+
+  document.body.classList.toggle(
+    "compact",
+    enabled
+  );
+
+
+  saveGame();
+
+}
+
+
+/* =========================
+   RESET
+   ========================= */
+
+function resetGame(){
+
+  const answer =
+    confirm(
+      "Are you sure you want to delete ALL Football Legends progress?"
+    );
+
+
+  if(!answer){
+
+    return;
+
+  }
+
+
+  game =
+    createNewGame();
+
+
+  saveGame();
+
+  showPage("home");
+
+  toast("Save reset.");
+
+}
+
+
+/* =========================
+   TIMER
+   ========================= */
+
+function updateTimer(){
+
+  const timer =
+    document.getElementById(
+      "dailyTimer"
+    );
+
+
+  const button =
+    document.getElementById(
+      "dailyButton"
+    );
+
+
+  if(!timer || !button){
+
+    return;
+
+  }
+
+
+  if(game.dailyClaim === 0){
+
+    timer.textContent = "READY";
+
+    button.disabled = false;
+
+    button.textContent = "CLAIM";
+
+    return;
+
+  }
+
+
+  const remaining =
+    86400000 -
+    (Date.now() - game.dailyClaim);
+
+
+  if(remaining <= 0){
+
+    game.dailyClaim = 0;
+
+    game.freeKickUsed = false;
+
+    game.missions =
+      createMissions();
+
+
+    saveGame();
+
+    timer.textContent = "READY";
+
+    button.disabled = false;
+
+    button.textContent = "CLAIM";
+
+    return;
+
+  }
+
+
+  const hours =
+    Math.floor(
+      remaining / 3600000
+    );
+
+
+  const minutes =
+    Math.floor(
+      (remaining % 3600000) /
+      60000
+    );
+
+
+  const seconds =
+    Math.floor(
+      (remaining % 60000) /
+      1000
+    );
+
+
+  timer.textContent =
+    `${hours}h ${minutes}m ${seconds}s`;
+
+
+  button.disabled = true;
+
+  button.textContent = "USED";
+
+}
+
+
+/* =========================
+   MAIN RENDER
+   ========================= */
+
+function renderAll(){
+
+  document.getElementById(
+    "coinAmount"
+  ).textContent =
+    game.coins;
+
+
+  document.getElementById(
+    "packCoins"
+  ).textContent =
+    game.coins;
+
+
+  const unique =
+    new Set(
+      game.collection
+    );
+
+
+  document.getElementById(
+    "uniqueCards"
+  ).textContent =
+    `${unique.size}/${PLAYERS.length}`;
+
+
+  document.getElementById(
+    "packsOpened"
+  ).textContent =
+    game.packsOpened;
+
+
+  const level =
+    Math.min(
+      100,
+      1 +
+      Math.floor(
+        game.xp / 50
+      )
+    );
+
+
+  document.getElementById(
+    "playerLevel"
+  ).textContent =
+    level;
+
+
+  document.getElementById(
+    "profileLevel"
+  ).textContent =
+    level;
+
+
+  document.getElementById(
+    "xpText"
+  ).textContent =
+    `${game.xp % 50}/50 XP`;
+
+
+  document.getElementById(
+    "coinsEarned"
+  ).textContent =
+    game.coinsEarned;
+
+
+  document.getElementById(
+    "profilePacks"
+  ).textContent =
+    game.packsOpened;
+
+
+  document.getElementById(
+    "cardsOwned"
+  ).textContent =
+    game.collection.length;
+
+
+  document.getElementById(
+    "collectionAmount"
+  ).textContent =
+    `${game.collection.length} cards`;
+
+
+  const freeKick =
+    document.getElementById(
+      "freeKickCard"
+    );
+
+
+  if(freeKick){
+
+    freeKick.style.display =
+      game.coins === 0 &&
+      !game.freeKickUsed
+        ? "flex"
+        : "none";
+
+  }
+
+
+  const compact =
+    document.getElementById(
+      "compactCards"
+    );
+
+
+  if(compact){
+
+    compact.checked =
+      game.settings.compact;
+
+  }
+
+
+  const animation =
+    document.getElementById(
+      "animationSpeed"
+    );
+
+
+  if(animation){
+
+    animation.value =
+      game.settings.animation;
+
+  }
+
+
+  document.body.classList.toggle(
+    "compact",
+    game.settings.compact
+  );
+
+
+  renderMissions();
+
+  renderCollection();
+
+  renderSquad();
+
+  renderSellList();
+
+  updateTimer();
+
+}
+
+
+/* =========================
+   TOAST
+   ========================= */
+
+function toast(message){
+
+  const element =
+    document.getElementById(
+      "toast"
+    );
+
+
+  element.textContent =
+    message;
+
+
+  element.classList.add(
+    "show"
+  );
+
+
+  setTimeout(() => {
+
+    element.classList.remove(
+      "show"
+    );
+
+  },1800);
+
+}
+
+
+/* =========================
+   START GAME
+   ========================= */
+
+loadGame();
+
+renderAll();
+
+setInterval(
+  updateTimer,
+  1000
+);
