@@ -328,8 +328,8 @@ main{
 
 .card{
     position:relative;
-    min-height:300px;
-    padding:18px;
+    min-height:380px;
+    padding:16px 14px 16px;
     border:2px solid rgba(255,255,255,.12);
     border-radius:18px;
     background:linear-gradient(145deg,#182733,#0c151d);
@@ -337,6 +337,8 @@ main{
     transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover{
@@ -644,21 +646,37 @@ main{
 
 .card-actions{
     display:flex;
-    gap:6px;
-    margin-top:14px;
+    gap:8px;
+    margin-top:auto;
+    padding-top:14px;
+    width: 100%;
 }
 
 .card-actions button{
     flex:1;
-    padding:8px;
+    padding:8px 10px;
     border:1px solid var(--border);
-    border-radius:8px;
+    border-radius:10px;
     background:#152532;
     color:white;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+}
+
+.card-actions button:hover{
+    transform: scale(1.03);
+    background: #1c3345;
 }
 
 .card-actions .sell{
     background:#163d2d;
+    border-color: rgba(34, 199, 122, 0.4);
+}
+
+.card-actions .sell:hover{
+    background:#1d4d38;
 }
 
 .shop-grid{
@@ -2432,7 +2450,7 @@ select,input{
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 12px 16px;
-    margin-bottom: 20px;
+    margin-bottom: 28px;
     flex-wrap: wrap;
     gap: 10px;
 }
@@ -2446,7 +2464,7 @@ select,input{
 .quick-sell-group button {
     font-size: 12px;
     font-weight: 700;
-    padding: 8px 12px;
+    padding: 8px 14px;
 }
 
 .multi-select-bar {
@@ -2455,48 +2473,88 @@ select,input{
     left: 50%;
     transform: translateX(-50%);
     z-index: 800;
-    background: rgba(6, 16, 26, 0.96);
-    backdrop-filter: blur(16px);
-    border: 2px solid var(--green);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(34, 199, 122, 0.4);
-    border-radius: 20px;
-    padding: 12px 20px;
+    background: rgba(6, 16, 26, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid var(--gold);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), 0 0 35px rgba(244, 196, 78, 0.4);
+    border-radius: 22px;
+    padding: 14px 24px;
     display: flex;
     align-items: center;
-    gap: 18px;
-    width: min(720px, 94vw);
+    gap: 20px;
+    width: min(780px, 94vw);
     justify-content: space-between;
     flex-wrap: wrap;
-    animation: slideUpBar 0.3s ease;
+    animation: slideUpBar 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes slideUpBar {
-    from { opacity: 0; transform: translate(-50%, 20px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
+    from { opacity: 0; transform: translate(-50%, 30px) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 
 .multi-select-status {
-    font-size: 14px;
-    font-weight: 800;
     display: flex;
-    gap: 8px;
-    align-items: center;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.multi-select-status strong {
+.bulk-title-tag {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
     color: var(--gold);
+    text-transform: uppercase;
+}
+
+.bulk-payout-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bulk-payout-box span {
+    font-size: 14px;
+    color: #cbd5e1;
+    font-weight: 700;
+}
+
+.bulk-gold-text {
+    color: #ffd700;
+    font-size: 18px;
+    font-weight: 900;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
 }
 
 .multi-select-actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
+    align-items: center;
     flex-wrap: wrap;
 }
 
 .multi-select-actions button {
     font-size: 12px;
-    padding: 8px 14px;
-    border-radius: 8px;
+    padding: 9px 15px;
+    border-radius: 10px;
+}
+
+.confirm-bulk-sell-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    font-size: 13px !important;
+    padding: 10px 20px !important;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.45) !important;
+    border: none !important;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.confirm-bulk-sell-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.7) !important;
 }
 
 /* =========================================================
