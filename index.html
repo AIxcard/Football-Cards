@@ -1,532 +1,1020 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Football Legends</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#080b12">
+    <title>Football Cards</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header class="topbar">
-  <button class="logo" onclick="showPage('home')">
-    ⚽ <span>FOOTBALL</span> LEGENDS
-  </button>
+    <!-- ================= TOP BAR ================= -->
 
-  <div class="top-right">
-    <div class="coins">
-      🪙 <span id="coinAmount">100</span>
-    </div>
-    <button class="settings-btn" onclick="showPage('settings')">⚙</button>
-  </div>
-</header>
+    <header class="topbar">
 
-<main>
-
-<!-- HOME -->
-<section id="home" class="page active">
-
-  <div class="hero">
-    <div class="hero-text">
-      <div class="small-title">FOOTBALL CARD COLLECTOR</div>
-      <h1>BUILD YOUR<br><span>LEGACY.</span></h1>
-      <p>
-        Collect football legends, open packs, build your squad
-        and chase the rarest cards in the game.
-      </p>
-
-      <div class="hero-buttons">
-        <button class="main-btn" onclick="showPage('packs')">
-          📦 OPEN PACKS
+        <button class="brand" onclick="navigate('home')">
+            <span class="brand-ball">⚽</span>
+            <span>FOOTBALL <b>CARDS</b></span>
         </button>
 
-        <button class="dark-btn" onclick="showPage('squad')">
-          👥 MY SQUAD
+        <div class="top-actions">
+
+            <div class="coin-display">
+                <span>🪙</span>
+                <strong id="coinDisplay">100</strong>
+            </div>
+
+            <button class="icon-button" onclick="navigate('settings')" aria-label="Settings">
+                ⚙
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main id="app">
+
+
+        <!-- ================= HOME ================= -->
+
+        <section id="page-home" class="page active">
+
+            <div class="hero">
+
+                <div class="hero-content">
+
+                    <div class="eyebrow">
+                        FOOTBALL CARD COLLECTOR
+                    </div>
+
+                    <h1>
+                        BUILD YOUR
+                        <span>COLLECTION.</span>
+                    </h1>
+
+                    <p>
+                        Open packs, collect real football stars,
+                        discover rare cards and build the ultimate collection.
+                    </p>
+
+                    <div class="hero-buttons">
+
+                        <button class="primary-button" onclick="navigate('cards')">
+                            🃏 VIEW CARDS
+                        </button>
+
+                        <button class="secondary-button" onclick="navigate('packs')">
+                            📦 OPEN PACKS
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="hero-ball">
+                    ⚽
+                </div>
+
+            </div>
+
+
+            <!-- QUICK STATS -->
+
+            <div class="quick-stats">
+
+                <div class="quick-stat">
+                    <span>COLLECTED</span>
+                    <strong id="homeCollected">0</strong>
+                </div>
+
+                <div class="quick-stat">
+                    <span>PACKS OPENED</span>
+                    <strong id="homePacks">0</strong>
+                </div>
+
+                <div class="quick-stat">
+                    <span>LEVEL</span>
+                    <strong id="homeLevel">1</strong>
+                </div>
+
+                <div class="quick-stat">
+                    <span>PLAYTIME</span>
+                    <strong id="homePlaytime">0m</strong>
+                </div>
+
+            </div>
+
+
+            <!-- DAILY -->
+
+            <div class="section-heading">
+
+                <div>
+                    <div class="eyebrow">REWARDS</div>
+                    <h2>Daily Rewards</h2>
+                </div>
+
+                <span id="dailyCountdown">READY</span>
+
+            </div>
+
+
+            <div class="reward-grid">
+
+                <div class="reward-card">
+
+                    <div class="reward-icon">🎁</div>
+
+                    <div class="reward-info">
+                        <strong>Daily Claim</strong>
+                        <span>Receive 15 coins every 24 hours.</span>
+                    </div>
+
+                    <button id="dailyClaimButton" onclick="claimDaily()">
+                        CLAIM
+                    </button>
+
+                </div>
+
+
+                <div id="freeKickReward" class="reward-card free-kick">
+
+                    <div class="reward-icon">🆘</div>
+
+                    <div class="reward-info">
+                        <strong>Free Kick</strong>
+                        <span>Emergency coins when you reach 0.</span>
+                    </div>
+
+                    <button onclick="claimFreeKick()">
+                        +5
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- MISSIONS -->
+
+            <div class="section-heading">
+
+                <div>
+                    <div class="eyebrow">TODAY</div>
+                    <h2>Daily Missions</h2>
+                </div>
+
+                <span id="missionProgressText">0 / 3</span>
+
+            </div>
+
+            <div id="missionList"></div>
+
+
+            <!-- RARITIES -->
+
+            <div class="section-heading">
+                <div>
+                    <div class="eyebrow">DISCOVER</div>
+                    <h2>Rarities</h2>
+                </div>
+            </div>
+
+            <div class="rarity-strip">
+
+                <div class="rarity-chip common">COMMON</div>
+                <div class="rarity-chip uncommon">UNCOMMON</div>
+                <div class="rarity-chip rare">RARE</div>
+                <div class="rarity-chip epic">EPIC</div>
+                <div class="rarity-chip legendary">LEGENDARY</div>
+                <div class="rarity-chip mythic">MYTHIC</div>
+                <div class="rarity-chip secret">SECRET</div>
+                <div class="rarity-chip world-class">WORLD CLASS</div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= PACKS ================= -->
+
+        <section id="page-packs" class="page">
+
+            <div class="page-title-row">
+
+                <div>
+                    <div class="eyebrow">COLLECT</div>
+                    <h1>PACKS</h1>
+                </div>
+
+                <div class="big-coins">
+                    🪙 <span id="packCoinDisplay">100</span>
+                </div>
+
+            </div>
+
+
+            <div class="pack-grid">
+
+
+                <!-- STARTER -->
+
+                <article class="pack-card starter-pack">
+
+                    <div class="pack-art starter-art">
+                        <span>🟦</span>
+                    </div>
+
+                    <div class="pack-label starter-label">
+                        STARTER
+                    </div>
+
+                    <h2>Starter Pack</h2>
+
+                    <p>
+                        A cheap way to start building your collection.
+                    </p>
+
+                    <div class="pack-cost">
+                        10 🪙
+                    </div>
+
+                    <button class="primary-button full" onclick="openPack('starter')">
+                        OPEN PACK
+                    </button>
+
+                    <div class="pack-odds">
+                        <b>Odds</b>
+                        <span>Common 38.95%</span>
+                        <span>Uncommon 30%</span>
+                        <span>Rare 20%</span>
+                        <span>Epic 10%</span>
+                        <span>Legendary 1%</span>
+                        <span>Mythic 0.05%</span>
+                    </div>
+
+                </article>
+
+
+                <!-- PREMIUM -->
+
+                <article class="pack-card premium-pack">
+
+                    <div class="pack-art premium-art">
+                        <span>🟪</span>
+                    </div>
+
+                    <div class="pack-label premium-label">
+                        PREMIUM
+                    </div>
+
+                    <h2>Premium Pack</h2>
+
+                    <p>
+                        Better odds for the rarer cards.
+                    </p>
+
+                    <div class="pack-cost">
+                        25 🪙
+                    </div>
+
+                    <button class="primary-button full" onclick="openPack('premium')">
+                        OPEN PACK
+                    </button>
+
+                    <div class="pack-odds">
+                        <b>Odds</b>
+                        <span>Common 30.85%</span>
+                        <span>Uncommon 30%</span>
+                        <span>Rare 25%</span>
+                        <span>Epic 12%</span>
+                        <span>Legendary 2%</span>
+                        <span>Mythic 0.15%</span>
+                    </div>
+
+                </article>
+
+
+                <!-- MEGA -->
+
+                <article class="pack-card mega-pack">
+
+                    <div class="pack-art mega-art">
+                        <span>🟨</span>
+                    </div>
+
+                    <div class="pack-label mega-label">
+                        MEGA
+                    </div>
+
+                    <h2>Mega Pack</h2>
+
+                    <p>
+                        High-level pack with strong rarity odds.
+                    </p>
+
+                    <div class="pack-cost">
+                        50 🪙
+                    </div>
+
+                    <button class="primary-button full" onclick="openPack('mega')">
+                        OPEN PACK
+                    </button>
+
+                    <div class="pack-odds">
+                        <b>Odds</b>
+                        <span>Common 20.49%</span>
+                        <span>Uncommon 30%</span>
+                        <span>Rare 30%</span>
+                        <span>Epic 15%</span>
+                        <span>Legendary 4%</span>
+                        <span>Mythic 0.5%</span>
+                        <span>Secret 0.01%</span>
+                    </div>
+
+                </article>
+
+
+                <!-- WORLD CLASS TEST -->
+
+                <article class="pack-card world-pack">
+
+                    <div class="pack-art world-art">
+                        <span>🌟</span>
+                    </div>
+
+                    <div class="pack-label world-label">
+                        TESTING
+                    </div>
+
+                    <h2>World Class Test</h2>
+
+                    <p>
+                        Developer testing pack. Always gives a World Class card.
+                    </p>
+
+                    <div class="pack-cost">
+                        1 🪙
+                    </div>
+
+                    <button class="primary-button full" onclick="openPack('world')">
+                        TEST PACK
+                    </button>
+
+                    <div class="pack-odds">
+                        <b>Odds</b>
+                        <span class="world-text">WORLD CLASS 100%</span>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= CARDS ================= -->
+
+        <section id="page-cards" class="page">
+
+            <div class="page-title-row">
+
+                <div>
+                    <div class="eyebrow">YOUR COLLECTION</div>
+                    <h1>CARDS</h1>
+                </div>
+
+                <div class="collection-counter">
+                    <strong id="collectionCount">0</strong>
+                    <span>/ 32</span>
+                </div>
+
+            </div>
+
+
+            <div class="collection-tools">
+
+                <div class="filter-row">
+
+                    <button class="filter active" onclick="setCardFilter('all', this)">
+                        ALL
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('Common', this)">
+                        COMMON
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('Uncommon', this)">
+                        UNCOMMON
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('Rare', this)">
+                        RARE
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('Epic', this)">
+                        EPIC
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('Legendary', this)">
+                        LEGENDARY
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('Mythic', this)">
+                        MYTHIC
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('Secret', this)">
+                        SECRET
+                    </button>
+
+                    <button class="filter" onclick="setCardFilter('World Class', this)">
+                        WORLD CLASS
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-note">
+                Duplicate cards can be sold here. World Class cards cannot be sold.
+            </div>
+
+
+            <div id="cardGrid" class="card-grid"></div>
+
+        </section>
+
+
+        <!-- ================= SHOP ================= -->
+
+        <section id="page-shop" class="page">
+
+            <div class="page-title-row">
+
+                <div>
+                    <div class="eyebrow">CUSTOMIZATION</div>
+                    <h1>SHOP</h1>
+                </div>
+
+                <div class="big-coins">
+                    🪙 <span id="shopCoinDisplay">100</span>
+                </div>
+
+            </div>
+
+
+            <div class="shop-background-preview" id="shopBackgroundPreview">
+
+                <div>
+                    <div class="eyebrow">CURRENT BACKGROUND</div>
+                    <h2 id="currentBackgroundName">Stellar</h2>
+                </div>
+
+                <span>✦</span>
+
+            </div>
+
+
+            <div class="section-heading compact-heading">
+                <div>
+                    <div class="eyebrow">BACKGROUNDS</div>
+                    <h2>Collection Backgrounds</h2>
+                </div>
+            </div>
+
+
+            <div class="background-grid">
+
+                <button class="background-item stellar-bg" onclick="buyBackground('Stellar', 0)">
+                    <span>✦</span>
+                    <strong>Stellar</strong>
+                    <small>Owned</small>
+                </button>
+
+                <button class="background-item nebula-bg" onclick="buyBackground('Nebula', 50)">
+                    <span>☄</span>
+                    <strong>Nebula</strong>
+                    <small>50 🪙</small>
+                </button>
+
+                <button class="background-item singularity-bg" onclick="buyBackground('Singularity', 100)">
+                    <span>◉</span>
+                    <strong>Singularity</strong>
+                    <small>100 🪙</small>
+                </button>
+
+                <button class="background-item abyss-bg" onclick="buyBackground('Abyss', 200)">
+                    <span>◆</span>
+                    <strong>Abyss</strong>
+                    <small>200 🪙</small>
+                </button>
+
+                <button class="background-item grid-bg" onclick="buyBackground('Grid', 300)">
+                    <span>▦</span>
+                    <strong>Grid</strong>
+                    <small>300 🪙</small>
+                </button>
+
+            </div>
+
+
+            <div class="section-heading">
+                <div>
+                    <div class="eyebrow">COSMETICS</div>
+                    <h2>Frames</h2>
+                </div>
+            </div>
+
+
+            <div class="shop-grid">
+
+                <article class="shop-item">
+                    <div class="shop-icon">⬜</div>
+                    <h3>Common Frame</h3>
+                    <p>Simple frame for your cards.</p>
+                    <strong>20 🪙</strong>
+                    <button onclick="buyCosmetic('Common Frame',20)">BUY</button>
+                </article>
+
+                <article class="shop-item">
+                    <div class="shop-icon">💎</div>
+                    <h3>Rare Frame</h3>
+                    <p>A cleaner rare-looking frame.</p>
+                    <strong>50 🪙</strong>
+                    <button onclick="buyCosmetic('Rare Frame',50)">BUY</button>
+                </article>
+
+                <article class="shop-item">
+                    <div class="shop-icon">🔷</div>
+                    <h3>Epic Frame</h3>
+                    <p>For serious collectors.</p>
+                    <strong>100 🪙</strong>
+                    <button onclick="buyCosmetic('Epic Frame',100)">BUY</button>
+                </article>
+
+                <article class="shop-item">
+                    <div class="shop-icon">👑</div>
+                    <h3>Legendary Frame</h3>
+                    <p>A premium golden frame.</p>
+                    <strong>200 🪙</strong>
+                    <button onclick="buyCosmetic('Legendary Frame',200)">BUY</button>
+                </article>
+
+                <article class="shop-item">
+                    <div class="shop-icon">✨</div>
+                    <h3>Animated Frame</h3>
+                    <p>A moving cosmetic frame.</p>
+                    <strong>500 🪙</strong>
+                    <button onclick="buyCosmetic('Animated Frame',500)">BUY</button>
+                </article>
+
+                <article class="shop-item">
+                    <div class="shop-icon">🌌</div>
+                    <h3>Ultra-Rare Frame</h3>
+                    <p>The ultimate collection frame.</p>
+                    <strong>1,000 🪙</strong>
+                    <button onclick="buyCosmetic('Ultra-Rare Frame',1000)">BUY</button>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= PROFILE ================= -->
+
+        <section id="page-profile" class="page">
+
+            <div class="profile-header">
+
+                <div class="profile-avatar" id="profileAvatar">
+                    ⚽
+                </div>
+
+                <div class="profile-info">
+
+                    <div class="eyebrow">PLAYER PROFILE</div>
+
+                    <h1>Football Collector</h1>
+
+                    <p>
+                        Level <strong id="profileLevel">1</strong>
+                        · <span id="profileXP">0 / 50 XP</span>
+                    </p>
+
+                    <div class="xp-bar">
+                        <div id="profileXPBar"></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- IMPORTANT MAIN PROFILE STATS -->
+
+            <div class="section-heading">
+                <div>
+                    <div class="eyebrow">OVERVIEW</div>
+                    <h2>Main Statistics</h2>
+                </div>
+            </div>
+
+
+            <div class="profile-stat-grid">
+
+                <div class="profile-stat">
+                    <span>PLAYTIME</span>
+                    <strong id="profilePlaytime">0m</strong>
+                </div>
+
+                <div class="profile-stat">
+                    <span>CARDS COLLECTED</span>
+                    <strong id="profileCards">0</strong>
+                </div>
+
+                <div class="profile-stat">
+                    <span>PACKS OPENED</span>
+                    <strong id="profilePacks">0</strong>
+                </div>
+
+                <div class="profile-stat">
+                    <span>COINS EARNED</span>
+                    <strong id="profileCoinsEarned">0</strong>
+                </div>
+
+            </div>
+
+
+            <!-- PROFILE CUSTOMIZATION -->
+
+            <div class="section-heading">
+                <div>
+                    <div class="eyebrow">CUSTOMIZE</div>
+                    <h2>Profile Background</h2>
+                </div>
+
+                <button class="secondary-button small" onclick="navigate('shop')">
+                    OPEN SHOP
+                </button>
+            </div>
+
+
+            <div id="profileBackgroundChoices" class="profile-background-choices"></div>
+
+
+            <div class="section-heading">
+                <div>
+                    <div class="eyebrow">PROGRESS</div>
+                    <h2>Rarity Collection</h2>
+                </div>
+            </div>
+
+
+            <div id="profileRarityStats" class="rarity-stat-list"></div>
+
+
+            <button class="statistics-link" onclick="navigate('statistics')">
+                📊 VIEW FULL STATISTICS
+            </button>
+
+        </section>
+
+
+        <!-- ================= STATISTICS ================= -->
+
+        <section id="page-statistics" class="page">
+
+            <div class="page-title-row">
+
+                <div>
+                    <div class="eyebrow">DETAILED</div>
+                    <h1>STATISTICS</h1>
+                </div>
+
+            </div>
+
+
+            <div class="statistics-section">
+
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">GENERAL</div>
+                        <h2>Account</h2>
+                    </div>
+                </div>
+
+                <div class="detailed-stat-grid">
+
+                    <div class="detail-stat">
+                        <span>Total Playtime</span>
+                        <strong id="statPlaytime">0m</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Current Level</span>
+                        <strong id="statLevel">1</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Total XP</span>
+                        <strong id="statXP">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Coins Earned</span>
+                        <strong id="statCoinsEarned">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Coins Spent</span>
+                        <strong id="statCoinsSpent">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Highest Coins Held</span>
+                        <strong id="statHighestCoins">100</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="statistics-section">
+
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">PACKS</div>
+                        <h2>Pack Statistics</h2>
+                    </div>
+                </div>
+
+                <div class="detailed-stat-grid">
+
+                    <div class="detail-stat">
+                        <span>Total Packs Opened</span>
+                        <strong id="statPacks">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Starter Packs</span>
+                        <strong id="statStarter">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Premium Packs</span>
+                        <strong id="statPremium">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Mega Packs</span>
+                        <strong id="statMega">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>World Class Tests</span>
+                        <strong id="statWorld">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Best Pull</span>
+                        <strong id="statBestPull">None</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="statistics-section">
+
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">RARITIES</div>
+                        <h2>Cards By Rarity</h2>
+                    </div>
+                </div>
+
+                <div id="detailedRarityStats" class="detailed-rarity-list"></div>
+
+            </div>
+
+
+            <div class="statistics-section">
+
+                <div class="section-heading">
+                    <div>
+                        <div class="eyebrow">ACTIVITY</div>
+                        <h2>Collection Statistics</h2>
+                    </div>
+                </div>
+
+                <div class="detailed-stat-grid">
+
+                    <div class="detail-stat">
+                        <span>Total Cards Owned</span>
+                        <strong id="statCardsOwned">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Unique Cards</span>
+                        <strong id="statUniqueCards">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Duplicates</span>
+                        <strong id="statDuplicates">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Cards Sold</span>
+                        <strong id="statCardsSold">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Daily Claims</span>
+                        <strong id="statDailyClaims">0</strong>
+                    </div>
+
+                    <div class="detail-stat">
+                        <span>Missions Completed</span>
+                        <strong id="statMissions">0</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= SETTINGS ================= -->
+
+        <section id="page-settings" class="page">
+
+            <div class="page-title-row">
+
+                <div>
+                    <div class="eyebrow">GAME</div>
+                    <h1>SETTINGS</h1>
+                </div>
+
+            </div>
+
+
+            <div class="settings-list">
+
+                <div class="setting-row">
+
+                    <div>
+                        <strong>Pack Animation</strong>
+                        <span>Choose how quickly cards reveal.</span>
+                    </div>
+
+                    <select id="animationSetting" onchange="changeAnimation(this.value)">
+                        <option value="normal">Normal</option>
+                        <option value="fast">Fast</option>
+                    </select>
+
+                </div>
+
+
+                <div class="setting-row">
+
+                    <div>
+                        <strong>Compact Cards</strong>
+                        <span>Make collection cards smaller.</span>
+                    </div>
+
+                    <label class="toggle">
+                        <input id="compactSetting" type="checkbox" onchange="toggleCompact(this.checked)">
+                        <span></span>
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- TEMPORARY TESTING -->
+
+            <div class="developer-panel">
+
+                <div class="developer-title">
+                    <span>🛠</span>
+                    <div>
+                        <strong>Developer Testing</strong>
+                        <small>Temporary testing tools.</small>
+                    </div>
+                </div>
+
+                <button class="developer-button" onclick="developerAddCoins()">
+                    +1,000 COINS
+                </button>
+
+            </div>
+
+
+            <div class="danger-zone">
+
+                <div>
+                    <strong>Reset Progress</strong>
+                    <span>This permanently removes your local save.</span>
+                </div>
+
+                <button onclick="resetGame()">
+                    RESET GAME
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= BOTTOM NAV ================= -->
+
+    <nav class="bottom-nav">
+
+        <button class="nav-button active" data-page="home" onclick="navigate('home')">
+            <span>⌂</span>
+            <small>Home</small>
         </button>
-      </div>
-    </div>
 
-    <div class="football">
-      ⚽
-    </div>
-  </div>
+        <button class="nav-button" data-page="packs" onclick="navigate('packs')">
+            <span>▣</span>
+            <small>Packs</small>
+        </button>
 
-  <div class="stats">
-    <div class="stat-box">
-      <small>UNIQUE CARDS</small>
-      <strong id="uniqueCards">0</strong>
-    </div>
+        <button class="nav-button" data-page="cards" onclick="navigate('cards')">
+            <span>◆</span>
+            <small>Cards</small>
+        </button>
 
-    <div class="stat-box">
-      <small>PACKS OPENED</small>
-      <strong id="packsOpened">0</strong>
-    </div>
+        <button class="nav-button" data-page="shop" onclick="navigate('shop')">
+            <span>◇</span>
+            <small>Shop</small>
+        </button>
 
-    <div class="stat-box">
-      <small>LEVEL</small>
-      <strong id="playerLevel">1</strong>
-    </div>
-  </div>
+        <button class="nav-button" data-page="profile" onclick="navigate('profile')">
+            <span>○</span>
+            <small>Profile</small>
+        </button>
 
-  <div class="section-title">
-    <h2>Daily Rewards</h2>
-    <span id="dailyTimer">READY</span>
-  </div>
+        <button class="nav-button" data-page="statistics" onclick="navigate('statistics')">
+            <span>▤</span>
+            <small>Stats</small>
+        </button>
 
-  <div class="daily-container">
-
-    <div class="daily-card">
-      <div class="daily-icon">🎁</div>
-
-      <div class="daily-info">
-        <strong>Daily Claim</strong>
-        <span>Receive 15 coins every 24 hours.</span>
-      </div>
-
-      <button id="dailyButton" onclick="claimDaily()">
-        CLAIM
-      </button>
-    </div>
-
-    <div class="daily-card emergency" id="freeKickCard">
-      <div class="daily-icon">🆘</div>
-
-      <div class="daily-info">
-        <strong>Free Kick</strong>
-        <span>Emergency coins when you're completely broke.</span>
-      </div>
-
-      <button onclick="freeKick()">
-        +5
-      </button>
-    </div>
-
-  </div>
-
-  <div class="section-title">
-    <h2>Daily Missions</h2>
-    <span id="missionCounter">0/3</span>
-  </div>
-
-  <div id="missions"></div>
-
-</section>
+    </nav>
 
 
-<!-- PACKS -->
-<section id="packs" class="page">
+    <!-- ================= PACK MODAL ================= -->
 
-  <div class="page-header">
-    <div>
-      <div class="small-title">OPEN</div>
-      <h1>PACKS</h1>
-    </div>
+    <div id="packModal" class="modal">
 
-    <div class="large-coins">
-      🪙 <span id="packCoins">100</span>
-    </div>
-  </div>
+        <div class="pack-modal">
 
-  <div class="packs-grid">
+            <button class="modal-close" onclick="closePackModal()">
+                ×
+            </button>
 
-    <div class="pack starter">
-      <div class="pack-icon">🟦</div>
-      <h2>Starter Pack</h2>
-      <p>Basic pack with a chance at higher rarities.</p>
+            <div id="packOpening">
 
-      <div class="pack-price">10 🪙</div>
+                <div class="opening-pack">
+                    📦
+                </div>
 
-      <button onclick="openPack('starter')" class="main-btn">
-        OPEN
-      </button>
+                <div class="eyebrow">
+                    OPENING PACK
+                </div>
 
-      <div class="odds">
-        Common · 38.95%<br>
-        Uncommon · 30%<br>
-        Rare · 20%<br>
-        Epic · 10%<br>
-        Legendary · 1%
-      </div>
+                <h2>Good luck...</h2>
+
+            </div>
+
+            <div id="cardReveal" class="card-reveal hidden"></div>
+
+        </div>
+
     </div>
 
 
-    <div class="pack premium">
-      <div class="pack-icon">🟪</div>
-      <h2>Premium Pack</h2>
-      <p>Improved odds for rare and epic cards.</p>
+    <!-- ================= TOAST ================= -->
 
-      <div class="pack-price">25 🪙</div>
+    <div id="toast"></div>
 
-      <button onclick="openPack('premium')" class="main-btn">
-        OPEN
-      </button>
 
-      <div class="odds">
-        Common · 30.85%<br>
-        Uncommon · 30%<br>
-        Rare · 25%<br>
-        Epic · 12%<br>
-        Legendary · 2%
-      </div>
-    </div>
-
-
-    <div class="pack mega">
-      <div class="pack-icon">🟨</div>
-      <h2>Mega Pack</h2>
-      <p>Your best normal pack for high rarity cards.</p>
-
-      <div class="pack-price">50 🪙</div>
-
-      <button onclick="openPack('mega')" class="main-btn">
-        OPEN
-      </button>
-
-      <div class="odds">
-        Common · 20.49%<br>
-        Uncommon · 30%<br>
-        Rare · 30%<br>
-        Epic · 15%<br>
-        Legendary · 4%
-      </div>
-    </div>
-
-
-    <div class="pack world">
-      <div class="pack-icon">🌟</div>
-      <h2>World Class Test</h2>
-      <p>Testing pack. Always produces a World Class card.</p>
-
-      <div class="pack-price">1 🪙</div>
-
-      <button onclick="openPack('world')" class="main-btn">
-        TEST
-      </button>
-
-      <div class="odds">
-        WORLD CLASS · 100%
-      </div>
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- COLLECTION -->
-<section id="collection" class="page">
-
-  <div class="page-header">
-    <div>
-      <div class="small-title">YOUR</div>
-      <h1>COLLECTION</h1>
-    </div>
-
-    <span id="collectionAmount">0 cards</span>
-  </div>
-
-  <div class="filters">
-
-    <button class="filter active" onclick="filterCards('all',this)">
-      ALL
-    </button>
-
-    <button class="filter" onclick="filterCards('World Class',this)">
-      WORLD CLASS
-    </button>
-
-    <button class="filter" onclick="filterCards('Secret',this)">
-      SECRET
-    </button>
-
-    <button class="filter" onclick="filterCards('Mythic',this)">
-      MYTHIC
-    </button>
-
-    <button class="filter" onclick="filterCards('Legendary',this)">
-      LEGENDARY
-    </button>
-
-    <button class="filter" onclick="filterCards('Epic',this)">
-      EPIC
-    </button>
-
-    <button class="filter" onclick="filterCards('Rare',this)">
-      RARE
-    </button>
-
-  </div>
-
-  <div id="collectionGrid" class="card-grid"></div>
-
-</section>
-
-
-<!-- SQUAD -->
-<section id="squad" class="page">
-
-  <div class="page-header">
-    <div>
-      <div class="small-title">YOUR</div>
-      <h1>SQUAD</h1>
-    </div>
-
-    <button class="dark-btn" onclick="autoBuildSquad()">
-      AUTO BUILD
-    </button>
-  </div>
-
-  <div class="squad-layout">
-
-    <div class="pitch">
-
-      <div class="pitch-line"></div>
-
-      <div class="player-slot slot-gk" id="slot0"></div>
-
-      <div class="player-slot slot-lb" id="slot1"></div>
-      <div class="player-slot slot-cb1" id="slot2"></div>
-      <div class="player-slot slot-cb2" id="slot3"></div>
-      <div class="player-slot slot-rb" id="slot4"></div>
-
-      <div class="player-slot slot-cm1" id="slot5"></div>
-      <div class="player-slot slot-cm2" id="slot6"></div>
-      <div class="player-slot slot-cm3" id="slot7"></div>
-
-      <div class="player-slot slot-lw" id="slot8"></div>
-      <div class="player-slot slot-st" id="slot9"></div>
-      <div class="player-slot slot-rw" id="slot10"></div>
-
-    </div>
-
-    <div class="squad-list">
-
-      <h2>Starting XI</h2>
-
-      <div id="squadPlayers"></div>
-
-      <p class="hint">
-        Your highest-rated collected players are automatically selected.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- SHOP -->
-<section id="shop" class="page">
-
-  <div class="page-header">
-    <div>
-      <div class="small-title">CUSTOMIZE</div>
-      <h1>SHOP</h1>
-    </div>
-  </div>
-
-  <div class="shop-grid">
-
-    <div class="shop-item">
-      <div class="shop-icon">⬜</div>
-      <h2>Common Frame</h2>
-      <p>Simple collection frame.</p>
-      <strong>20 🪙</strong>
-      <button onclick="buyItem('Common Frame',20)">BUY</button>
-    </div>
-
-    <div class="shop-item">
-      <div class="shop-icon">💎</div>
-      <h2>Rare Frame</h2>
-      <p>Give your cards a rare look.</p>
-      <strong>50 🪙</strong>
-      <button onclick="buyItem('Rare Frame',50)">BUY</button>
-    </div>
-
-    <div class="shop-item">
-      <div class="shop-icon">🔷</div>
-      <h2>Epic Frame</h2>
-      <p>A stronger frame for your collection.</p>
-      <strong>100 🪙</strong>
-      <button onclick="buyItem('Epic Frame',100)">BUY</button>
-    </div>
-
-    <div class="shop-item">
-      <div class="shop-icon">👑</div>
-      <h2>Legendary Frame</h2>
-      <p>A premium legendary frame.</p>
-      <strong>200 🪙</strong>
-      <button onclick="buyItem('Legendary Frame',200)">BUY</button>
-    </div>
-
-    <div class="shop-item">
-      <div class="shop-icon">✨</div>
-      <h2>Animated Frame</h2>
-      <p>Animated cosmetic frame.</p>
-      <strong>500 🪙</strong>
-      <button onclick="buyItem('Animated Frame',500)">BUY</button>
-    </div>
-
-    <div class="shop-item">
-      <div class="shop-icon">🌌</div>
-      <h2>Ultra-Rare Frame</h2>
-      <p>The ultimate collection frame.</p>
-      <strong>1,000 🪙</strong>
-      <button onclick="buyItem('Ultra-Rare Frame',1000)">BUY</button>
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- PROFILE -->
-<section id="profile" class="page">
-
-  <div class="profile">
-
-    <div class="avatar">⚽</div>
-
-    <div>
-      <div class="small-title">PLAYER PROFILE</div>
-      <h1>Football Manager</h1>
-      <p>
-        Level <strong id="profileLevel">1</strong>
-        · <span id="xpText">0 XP</span>
-      </p>
-    </div>
-
-  </div>
-
-  <div class="stats">
-
-    <div class="stat-box">
-      <small>COINS EARNED</small>
-      <strong id="coinsEarned">0</strong>
-    </div>
-
-    <div class="stat-box">
-      <small>PACKS OPENED</small>
-      <strong id="profilePacks">0</strong>
-    </div>
-
-    <div class="stat-box">
-      <small>CARDS OWNED</small>
-      <strong id="cardsOwned">0</strong>
-    </div>
-
-  </div>
-
-  <div class="section-title">
-    <h2>Duplicate Cards</h2>
-    <span>Sell duplicates for coins</span>
-  </div>
-
-  <div id="sellList"></div>
-
-</section>
-
-
-<!-- SETTINGS -->
-<section id="settings" class="page">
-
-  <div class="page-header">
-    <div>
-      <div class="small-title">GAME</div>
-      <h1>SETTINGS</h1>
-    </div>
-  </div>
-
-  <div class="settings">
-
-    <label>
-      <span>Pack Animation</span>
-
-      <select id="animationSpeed" onchange="changeAnimationSpeed(this.value)">
-        <option value="normal">Normal</option>
-        <option value="fast">Fast</option>
-      </select>
-    </label>
-
-    <label>
-      <span>Compact Cards</span>
-      <input type="checkbox" id="compactCards" onchange="toggleCompact(this.checked)">
-    </label>
-
-    <button class="danger" onclick="resetGame()">
-      RESET ALL PROGRESS
-    </button>
-
-  </div>
-
-</section>
-
-</main>
-
-
-<!-- NAVIGATION -->
-<nav class="bottom-nav">
-
-  <button onclick="showPage('home')">
-    🏠
-    <small>Home</small>
-  </button>
-
-  <button onclick="showPage('packs')">
-    📦
-    <small>Packs</small>
-  </button>
-
-  <button onclick="showPage('collection')">
-    🃏
-    <small>Cards</small>
-  </button>
-
-  <button onclick="showPage('squad')">
-    👥
-    <small>Squad</small>
-  </button>
-
-  <button onclick="showPage('shop')">
-    🏪
-    <small>Shop</small>
-  </button>
-
-  <button onclick="showPage('profile')">
-    👤
-    <small>Profile</small>
-  </button>
-
-</nav>
-
-
-<!-- PACK MODAL -->
-<div id="packModal" class="modal">
-
-  <div class="modal-content">
-
-    <button class="close" onclick="closeModal()">×</button>
-
-    <div id="packAnimation">
-
-      <div class="opening-pack">📦</div>
-
-      <h2>OPENING PACK...</h2>
-
-    </div>
-
-    <div id="cardReveal" class="hidden"></div>
-
-  </div>
-
-</div>
-
-
-<div id="toast"></div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 
 </body>
 </html>
