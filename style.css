@@ -493,44 +493,22 @@ main{
     font-weight: 800;
 }
 
-.card-hover-stats {
+.card-select-checkbox {
     position: absolute;
-    inset: 0;
-    background: rgba(6, 16, 24, 0.94);
-    backdrop-filter: blur(8px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 18px;
-    text-align: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    transform: translateY(10px);
-    border-radius: 16px;
-    z-index: 5;
+    top: 14px;
+    left: 14px;
+    width: 22px;
+    height: 22px;
+    accent-color: var(--green);
+    cursor: pointer;
+    z-index: 10;
+    transform: scale(1.2);
 }
 
-.card:hover .card-hover-stats {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-}
-
-.card-hover-stats h4 {
-    margin: 4px 0;
-    font-size: 18px;
-    color: #fff;
-}
-
-.card-hover-stats .stat-tag {
-    font-size: 12px;
-    font-weight: 800;
-    margin: 3px 0;
-    padding: 3px 10px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.08);
+.card.selected-for-bulk {
+    border-color: var(--green) !important;
+    box-shadow: 0 0 25px rgba(34, 199, 122, 0.7) !important;
+    transform: translateY(-4px) scale(1.02);
 }
 
 .card-image{
@@ -834,24 +812,44 @@ select,input{
 
 .statistics-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
-    gap:12px;
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:14px;
 }
 
 .stat-box{
-    background:var(--panel);
-    padding:18px;
-    border:1px solid var(--border);
-    border-radius:14px;
+    background: linear-gradient(145deg, #0f2130, #08141f);
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.stat-box span {
+    font-size: 13px;
+    font-weight: 800;
+    color: #69c7ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    display: block;
 }
 
 .stat-box b{
-    font-size:27px;
+    font-size: 26px;
+    color: #ffffff;
+    font-weight: 900;
+    display: block;
+    margin: 4px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .stat-box p{
-    color:var(--muted);
-    font-size:12px;
+    color: var(--muted);
+    font-size: 12px;
+    margin: 4px 0 0;
 }
 
 .rank-row{
@@ -2411,26 +2409,31 @@ select,input{
    DRAGGABLE OP ADMIN PANEL (CODE: sixseven67)
    ========================================================= */
 
+/* =========================================================
+   DRAGGABLE OP ADMIN PANEL (CODE: sixseven67)
+   ========================================================= */
+
 .admin-draggable-panel {
     position: fixed;
-    top: 90px;
-    right: 30px;
-    width: min(380px, 94vw);
-    background: rgba(8, 18, 30, 0.96);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, 94vw);
+    background: rgba(8, 18, 30, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 2px solid var(--gold);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(244, 196, 78, 0.35);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 45px rgba(244, 196, 78, 0.45);
     border-radius: 20px;
-    z-index: 1200;
+    z-index: 1500;
     overflow: hidden;
     touch-action: none;
-    animation: slideInDown 0.25s ease;
+    animation: slideInZoom 0.25s ease;
 }
 
-@keyframes slideInDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes slideInZoom {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 .admin-header {
@@ -2567,6 +2570,200 @@ select,input{
 .admin-floating-pill:hover {
     transform: scale(1.08);
     box-shadow: 0 0 35px rgba(244, 196, 78, 0.7);
+}
+
+/* =========================================================
+   COLLECTION TOOLBAR & MULTI-SELECT SYSTEM
+   ========================================================= */
+
+.collection-controls-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.collection-action-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(14, 30, 44, 0.75);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.quick-sell-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.quick-sell-group button {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+}
+
+.multi-select-bar {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 800;
+    background: rgba(6, 16, 26, 0.96);
+    backdrop-filter: blur(16px);
+    border: 2px solid var(--green);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(34, 199, 122, 0.4);
+    border-radius: 20px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: min(720px, 94vw);
+    justify-content: space-between;
+    flex-wrap: wrap;
+    animation: slideUpBar 0.3s ease;
+}
+
+@keyframes slideUpBar {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.multi-select-status {
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.multi-select-status strong {
+    color: var(--gold);
+}
+
+.multi-select-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.multi-select-actions button {
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 8px;
+}
+
+/* =========================================================
+   PACK OPENING 3D SHAKING & BURST ANIMATION
+   ========================================================= */
+
+.pack-opening-modal {
+    background: radial-gradient(circle at center, rgba(12, 28, 44, 0.96), rgba(3, 8, 14, 0.98));
+    z-index: 600;
+}
+
+.pack-anim-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.pack-anim-box {
+    width: 220px;
+    height: 300px;
+    background: linear-gradient(135deg, #18334a, #0b1a26);
+    border: 3px solid var(--gold);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 50px rgba(244, 196, 78, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.15);
+    animation: packRumble 0.6s ease-in-out infinite alternate;
+    text-align: center;
+    padding: 20px;
+}
+
+@keyframes packRumble {
+    0% { transform: rotate(-3deg) scale(1); box-shadow: 0 0 30px rgba(244, 196, 78, 0.4); }
+    50% { transform: rotate(3deg) scale(1.04); box-shadow: 0 0 60px rgba(50, 149, 255, 0.7); }
+    100% { transform: rotate(-2deg) scale(1.08); box-shadow: 0 0 80px rgba(255, 215, 0, 0.9); }
+}
+
+.pack-anim-icon {
+    font-size: 70px;
+    margin-bottom: 12px;
+    animation: pulsePackIcon 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes pulsePackIcon {
+    from { transform: scale(0.9); }
+    to { transform: scale(1.15); }
+}
+
+.pack-anim-box h2 {
+    font-size: 18px;
+    color: #fff;
+    margin: 8px 0 4px;
+    letter-spacing: 1px;
+}
+
+.pack-anim-box p {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0;
+}
+
+/* =========================================================
+   SECRET RARITY CUTSCENE (BLACK & PLATINUM VORTEX)
+   ========================================================= */
+
+.secret-cutscene-overlay {
+    background: #000000;
+}
+
+.secret-lightning-flash {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.9);
+    animation: secretFlash 0.4s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes secretFlash {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0; }
+}
+
+.secret-sols-card {
+    border: 3px solid #ffffff !important;
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.9), 0 0 100px rgba(0, 0, 0, 1) !important;
+    background: radial-gradient(circle at center, #1f1f1f, #050505) !important;
+}
+
+.secret-glitch-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: #ffffff;
+    color: #000000;
+    font-weight: 900;
+    letter-spacing: 2px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    box-shadow: 0 0 20px #ffffff;
+}
+
+.secret-btn {
+    background: linear-gradient(90deg, #333333, #ffffff, #222222) !important;
+    color: #000 !important;
 }
 
 
