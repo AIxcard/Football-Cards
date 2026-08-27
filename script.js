@@ -42,9 +42,9 @@ const DUPLICATE_VALUES = {
     Legendary:15,
     Mythic:30,
     Secret:75,
-    "World Class":100,
+    "World Class":150,
     Limited:25,
-    Tournament:50
+    Tournament:100
 };
 
 /* =========================================================
@@ -99,7 +99,9 @@ const SoundFx = {
     },
 
     cardReveal(rarity) {
-        if (rarity === "World Class" || rarity === "Secret") {
+        if (rarity === "World Class") {
+            this.worldClassCinematic();
+        } else if (rarity === "Tournament" || rarity === "Secret") {
             const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
             notes.forEach((f, i) => {
                 this.playTone(f, "triangle", 0.45, 0.12, i * 0.08);
@@ -119,6 +121,18 @@ const SoundFx = {
         }
     },
 
+    worldClassCinematic() {
+        // Sol's RNG Sub-bass drop and celestial shockwave
+        this.playTone(55, "sawtooth", 0.9, 0.3, 0);
+        this.playTone(85, "triangle", 0.9, 0.25, 0.1);
+        this.playTone(130, "sine", 1.2, 0.2, 0.25);
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00];
+        notes.forEach((f, i) => {
+            this.playTone(f, "triangle", 0.6, 0.14, 0.45 + i * 0.08);
+            this.playTone(f * 1.5, "sine", 0.6, 0.08, 0.45 + i * 0.08 + 0.02);
+        });
+    },
+
     levelUp() {
         [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
             this.playTone(f, "triangle", 0.3, 0.12, i * 0.09);
@@ -136,6 +150,9 @@ const SoundFx = {
    ========================================================= */
 
 const PLAYERS = [
+// --- TOURNAMENT (#1 EXCLUSIVE REWARD) ---
+{name:"Emanuel",rating:99,pos:"CAM",rarity:"Tournament"},
+
 // --- WORLD CLASS ---
 {name:"Lionel Messi",rating:97,pos:"RW",rarity:"World Class"},
 {name:"Cristiano Ronaldo",rating:97,pos:"ST",rarity:"World Class"},
@@ -260,9 +277,6 @@ const PLAYERS = [
 
 /* =========================================================
    PACKS
-   =========================================================
-   Prices are intentionally lower.
-   World Class remains extremely rare.
    ========================================================= */
 
 const PACKS = {
@@ -290,8 +304,21 @@ premium:{
     }
 },
 
+champion:{
+    name:"Champion Pack",
+    cost:45,
+    rates:{
+        Rare:72,
+        Epic:20,
+        Legendary:6.9,
+        Mythic:1,
+        Secret:.09,
+        "World Class":.01
+    }
+},
+
 elite:{
-    name:"Mega Pack",
+    name:"Champion Pack",
     cost:45,
     rates:{
         Rare:72,
@@ -308,6 +335,14 @@ limited:{
     cost:60,
     rates:{
         Limited:100
+    }
+},
+
+worldclass:{
+    name:"World Class Pack",
+    cost:100,
+    rates:{
+        "World Class":100
     }
 }
 
@@ -373,27 +408,27 @@ const BACKGROUNDS = [
 
 const MISSION_TEMPLATES = {
 hourly:[
-["Open 1 pack",1,5,"packs"],
-["Earn 5 coins",5,5,"coins"],
-["Collect 1 card",1,5,"cards"]
+["Open 1 pack",1,8,"packs"],
+["Earn 5 coins",5,8,"coins"],
+["Collect 1 card",1,8,"cards"]
 ],
 
 daily:[
-["Open 3 packs",3,20,"packs"],
-["Collect 5 cards",5,25,"cards"],
-["Pull Rare or better",1,30,"rare"]
+["Open 3 packs",3,25,"packs"],
+["Collect 5 cards",5,30,"cards"],
+["Pull Rare or better",1,35,"rare"]
 ],
 
 weekly:[
-["Open 15 packs",15,100,"packs"],
-["Collect 20 cards",20,120,"cards"],
-["Pull Epic or better",3,150,"epic"]
+["Open 15 packs",15,120,"packs"],
+["Collect 20 cards",20,150,"cards"],
+["Pull Epic or better",3,180,"epic"]
 ],
 
 monthly:[
-["Open 60 packs",60,500,"packs"],
-["Collect 75 cards",75,650,"cards"],
-["Pull Legendary or better",5,800,"legendary"]
+["Open 50 packs",50,600,"packs"],
+["Collect 75 cards",75,750,"cards"],
+["Pull Legendary or better",5,1000,"legendary"]
 ]
 };
 
@@ -469,6 +504,7 @@ return{
     tournamentStart:0,
 
     worldClassPending:null,
+    redeemedCodes:[],
     lastSave:Date.now()
 };
 }
@@ -1210,7 +1246,14 @@ function renderCards(){
             DUPLICATE_VALUES[card.rarity]||0;
 
         return`
-        <article class="card ${frame.css}">
+        <article class="card ${frame.css}" onclick="viewCard('${card.id}')">
+
+            <div class="card-hover-stats">
+                <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
+                <h4>${escapeHTML(card.player)}</h4>
+                <div class="stat-tag">OVR ${card.rating} · ${escapeHTML(card.pos)}</div>
+                <div class="stat-tag">Value: ${value} 🪙</div>
+            </div>
 
             <span class="rarity ${rarityClassName(card.rarity)}">
                 ${escapeHTML(card.rarity)}
@@ -1234,7 +1277,7 @@ function renderCards(){
 
             <div class="card-actions">
 
-                <button onclick="viewCard('${card.id}')">
+                <button onclick="event.stopPropagation(); viewCard('${card.id}')">
                     View
                 </button>
 
@@ -1242,7 +1285,7 @@ function renderCards(){
                     value>0
                     ?
                     `<button class="sell"
-                        onclick="sellCard('${card.id}')">
+                        onclick="event.stopPropagation(); sellCard('${card.id}')">
                         Sell ${value} 🪙
                     </button>`
                     :""
@@ -1896,26 +1939,29 @@ function renderMissions(){
     }
 }
 
-function progressMission(type,amount){
+function progressMission(kind, amount){
 
-    const missions=MISSION_TEMPLATES[type];
+    const types = ["hourly", "daily", "weekly", "monthly"];
+    let updated = false;
 
-    if(!missions)return;
+    types.forEach(type => {
+        const missions = MISSION_TEMPLATES[type];
+        if (!missions) return;
 
-    missions.forEach((mission,i)=>{
-
-        const kind=mission[3];
-
-        if(
-            kind==="packs"||
-            kind==="cards"||
-            kind==="coins"
-        ){
-            state.missionProgress[type][i]+=amount;
-        }
+        missions.forEach((mission, i) => {
+            const targetKind = mission[3];
+            if (targetKind === kind) {
+                if (!state.missionProgress[type]) state.missionProgress[type] = [0, 0, 0];
+                state.missionProgress[type][i] = (state.missionProgress[type][i] || 0) + amount;
+                updated = true;
+            }
+        });
     });
 
-    saveGame();
+    if (updated) {
+        saveGame();
+        renderMissions();
+    }
 }
 
 function claimMission(type,index){
@@ -1924,14 +1970,15 @@ function claimMission(type,index){
         MISSION_TEMPLATES[type][index];
 
     const progress=
-        state.missionProgress[type][index];
+        (state.missionProgress[type] && state.missionProgress[type][index]) || 0;
 
     if(progress<mission[1])return;
 
-    if(state.missionClaimed[type][index]){
+    if(state.missionClaimed[type] && state.missionClaimed[type][index]){
         return;
     }
 
+    if (!state.missionClaimed[type]) state.missionClaimed[type] = [false, false, false];
     state.missionClaimed[type][index]=true;
 
     SoundFx.coin();
@@ -1950,6 +1997,45 @@ function claimMission(type,index){
     toast(
         `Mission complete: +${mission[2]} coins!`
     );
+}
+
+function redeemCode(){
+
+    const input = document.getElementById("codeInput");
+    if (!input) return;
+    const raw = input.value.trim();
+    if (!raw) {
+        toast("Please enter a code.");
+        return;
+    }
+    const code = raw.toUpperCase();
+
+    if (!state.redeemedCodes) state.redeemedCodes = [];
+
+    if (state.redeemedCodes.includes(code)) {
+        toast("You have already redeemed this code.");
+        return;
+    }
+
+    if (code === "RELEASE") {
+        state.redeemedCodes.push(code);
+        addCoins(150);
+        addXP(25);
+        SoundFx.levelUp();
+        input.value = "";
+        saveGame();
+        toast("🎉 Code RELEASE redeemed! +150 🪙");
+    } else if (code === "EMANUEL") {
+        state.redeemedCodes.push(code);
+        addCoins(10000);
+        addXP(100);
+        SoundFx.levelUp();
+        input.value = "";
+        saveGame();
+        toast("👑 Secret Code Emanuel redeemed! +10,000 🪙");
+    } else {
+        toast("Invalid or expired code.");
+    }
 }
 
 function checkMissionResets(){
@@ -2069,20 +2155,38 @@ function enterTournament(){
     const score=Math.floor(
         state.level*10+
         state.cards.length*2+
-        state.stats.worldClass*100
+        (state.stats.worldClass||0)*100
     );
 
     state.stats.tournamentScore+=score;
-
     addXP(25);
 
+    const ownsEmanuel = state.cards.some(c => c.player === "Emanuel" && c.rarity === "Tournament");
+    if (!ownsEmanuel) {
+        const emanuelCard = {
+            id: Date.now() + "_emanuel",
+            player: "Emanuel",
+            rating: 99,
+            pos: "CAM",
+            rarity: "Tournament",
+            frame: "champion",
+            obtained: Date.now()
+        };
+        state.cards.push(emanuelCard);
+        state.stats.tournament = (state.stats.tournament || 0) + 1;
+        state.stats.cardsPulled++;
+        if (state.stats.highestRating < 99) state.stats.highestRating = 99;
+        state.stats.highestRarity = "Tournament";
+        showCardResult(emanuelCard, false);
+        SoundFx.levelUp();
+        toast("🏆 Top 1 Reward Unlocked: Emanuel (Tournament Rarity 99)!");
+    } else {
+        toast(`🏆 Tournament entry! +${score} score.`);
+    }
+
     saveGame();
-
-    toast(
-        `🏆 Tournament entry! +${score} score.`
-    );
-
     renderTournament();
+    renderCards();
 }
 
 function renderTournament(){
