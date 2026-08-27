@@ -3,9 +3,20 @@
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
 
-"use strict";
+"use strict";const CURRENT_SAVE_KEY = "footballCardsSave_v9";
+const PREVIOUS_SAVE_KEYS = [
+    "footballCardsSave_v8",
+    "footballCardsSave_v7",
+    "footballCardsSave_v6",
+    "footballCardsSave_v5",
+    "footballCardsSave_v4",
+    "footballCardsSave_v3",
+    "footballCardsSave_v2",
+    "footballCardsSave_v1",
+    "footballCardsSave",
+    "footballCards"
+];
 
-const SAVE_KEY = "footballCardsSave_v8";
 const CLOUD_STORAGE_KEY = "football_cards_cloud_accounts";
 const CLOUD_TRADES_KEY = "football_cards_cloud_trades";
 
@@ -197,7 +208,7 @@ const PLAYERS = [
 ];
 
 /* =========================================================
-   PACKS
+   PACKS (BALANCED RATES)
    ========================================================= */
 
 const PACKS = {
@@ -214,7 +225,7 @@ premium: {
 champion: {
     name: "Champion Pack",
     cost: 45,
-    rates: { Rare: 72, Epic: 20, Legendary: 6.9, Mythic: 1, Secret: 0.09, "World Class": 0.01 }
+    rates: { Rare: 70, Epic: 21, Legendary: 7, Mythic: 1.49, Secret: 0.5, "World Class": 0.01 }
 },
 exclusive: {
     name: "Exclusive Legends",
@@ -326,7 +337,7 @@ const TITLES = [
 {
     id: "top10",
     name: "Tournament Top 10",
-    cssClass: "title-legend",
+    cssClass: "title-top10",
     requirement: "Reach Top 10 on Tournament Leaderboard",
     unlock: () => {
         const rank = getMyTournamentRank();
@@ -361,15 +372,23 @@ function getMyTournamentRank() {
 }
 
 /* =========================================================
-   STATE ENGINE
+   STATE ENGINE & SEAMLESS MIGRATION
    ========================================================= */
 
+function getRandomDefaultName() {
+    const prefixes = ["Jeff", "Mark", "Alex", "Sam", "Leo", "David", "Chris", "Eric", "Lucas", "Noah", "Liam", "Mason", "Ethan", "Ryan", "Jack", "Felix", "Cole", "Dean", "Kyle", "Owen"];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    return `${prefix}${num}`;
+}
+
 function freshState() {
+    const defaultName = getRandomDefaultName();
     return {
-        initialized: false,
+        initialized: true,
         accountUser: "",
         accountPass: "",
-        name: "",
+        name: defaultName,
         coins: 100,
         xp: 25,
         level: 1,
@@ -433,13 +452,31 @@ function freshState() {
 
 function loadGame() {
     try {
-        const raw = localStorage.getItem(SAVE_KEY);
-        if (!raw) return freshState();
-        const saved = JSON.parse(raw);
+        let raw = localStorage.getItem(CURRENT_SAVE_KEY);
+        if (!raw) {
+            for (const prevKey of PREVIOUS_SAVE_KEYS) {
+                const prevData = localStorage.getItem(prevKey);
+                if (prevData) {
+                    raw = prevData;
+                    try { localStorage.setItem(CURRENT_SAVE_KEY, prevData); } catch (e) {}
+                    break;
+                }
+            }
+        }
+
         const fresh = freshState();
+        if (!raw) return fresh;
+
+        const saved = JSON.parse(raw);
+        let activeName = saved.name;
+        if (!activeName || activeName === "Football Player" || activeName === "Player") {
+            activeName = saved.accountUser || fresh.name;
+        }
+
         return {
             ...fresh,
             ...saved,
+            name: activeName,
             stats: { ...fresh.stats, ...(saved.stats || {}) },
             tournamentDraft: { ...fresh.tournamentDraft, ...(saved.tournamentDraft || {}) },
             missionProgress: { ...fresh.missionProgress, ...(saved.missionProgress || {}) },
@@ -469,7 +506,7 @@ let searchedUserData = null;
 function saveGame() {
     state.lastSave = Date.now();
     try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+        localStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state));
     } catch (e) {}
     syncCloud();
 }
@@ -731,22 +768,27 @@ function bindEvents() {
 }
 
 function checkName() {
-    if (!state.initialized || !state.name) document.getElementById("nameModal").classList.remove("hidden");
+    if (!state.name || state.name === "Football Player") {
+        state.name = getRandomDefaultName();
+        saveGame();
+    }
 }
 
 function confirmName() {
     const input = document.getElementById("nameInput");
     const error = document.getElementById("nameError");
+    if (!input) return;
     const name = input.value.trim();
 
     if (name.length < 2) {
-        error.textContent = "Name must be at least 2 characters.";
+        if (error) error.textContent = "Name must be at least 2 characters.";
         return;
     }
     state.name = name;
     state.initialized = true;
     saveGame();
-    document.getElementById("nameModal").classList.add("hidden");
+    const modal = document.getElementById("nameModal");
+    if (modal) modal.classList.add("hidden");
     renderAll();
     toast(`Welcome, ${name}!`);
 }
@@ -764,7 +806,13 @@ function renderAll() {
     renderLeaderboard();
     renderTournament();
     renderMissions();
+    renderSettings();
     updateAuthUI();
+}
+
+function renderSettings() {
+    setText("settingsCurrentName", state.name || state.accountUser || "Player");
+    setText("settingsAccountName", state.accountUser ? `${state.accountUser} (Cloud Synced)` : `${state.name || 'Guest'} (Local)`);
 }
 
 function updateCoinDisplay() {
@@ -772,7 +820,7 @@ function updateCoinDisplay() {
 }
 
 function renderHero() {
-    setText("homeName", state.name || "Football Player");
+    setText("homeName", state.name || state.accountUser || "Player");
     setText("homeLevel", state.level);
     setText("homeXP", state.xp);
     const needed = state.level * 50;
@@ -1670,7 +1718,7 @@ function ownsPlayer(name) {
    ========================================================= */
 
 function renderProfile() {
-    setText("profileName", state.name || "Football Player");
+    setText("profileName", state.name || state.accountUser || "Player");
     setText("profileLevel", state.level);
     setText("profileCards", state.cards.length);
     setText("profilePacks", state.stats.packsOpened);
