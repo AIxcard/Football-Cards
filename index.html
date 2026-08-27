@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=3.0">
+<link rel="stylesheet" href="style.css?v=4.0">
 </head>
 
 <body>
@@ -16,15 +16,15 @@
     <div class="modal-box auth-box">
         <div class="football-icon">⚽</div>
         <h2 id="authModalTitle">Cloud Account</h2>
-        <p id="authModalSubtitle">Sign up or log in to sync progress across all your devices.</p>
+        <p id="authModalSubtitle">Sign up or log in to sync progress across all your devices & enable trading.</p>
         
         <div class="auth-tabs">
             <button id="authTabLogin" class="auth-tab active" onclick="setAuthTab('login')">Log In</button>
             <button id="authTabSignup" class="auth-tab" onclick="setAuthTab('signup')">Sign Up</button>
         </div>
 
-        <input id="authUsername" maxlength="20" placeholder="Collector Username" autocomplete="username">
-        <input id="authPassword" type="password" maxlength="30" placeholder="Password / PIN" autocomplete="current-password">
+        <input id="authUsername" maxlength="20" placeholder="Username" autocomplete="username">
+        <input id="authPassword" type="password" maxlength="30" placeholder="Password" autocomplete="current-password">
         
         <p id="authError" class="error"></p>
         
@@ -38,10 +38,10 @@
     <div class="modal-box">
         <div class="football-icon">⚽</div>
         <h1>Football Cards</h1>
-        <p>Create your collector name.</p>
+        <p>Choose your username.</p>
         <input id="nameInput" maxlength="20" placeholder="Your name">
         <p id="nameError" class="error"></p>
-        <button id="nameConfirm" class="primary-btn">Start Collecting</button>
+        <button id="nameConfirm" class="primary-btn">Start Playing</button>
     </div>
 </div>
 
@@ -51,23 +51,68 @@
         <h2>Select Card to Showcase</h2>
         <p>Pick a card from your collection for slot <span id="showcaseSlotNum">1</span>.</p>
         <div id="showcaseCardList" class="showcase-picker-grid"></div>
-        <div style="margin-top:15px;display:flex;gap:10px;">
+        <div style="margin-top:15px;display:flex;gap:10px;justify-content:center;">
             <button class="danger-btn" onclick="clearShowcaseSlot()">Remove Card</button>
             <button class="ghost-btn" onclick="closeShowcaseModal()">Cancel</button>
         </div>
     </div>
 </div>
 
-<!-- WORLD CLASS SOL'S RNG CINEMATIC CUTSCENE -->
+<!-- PROFILE SEARCH RESULT MODAL -->
+<div id="profileSearchModal" class="modal hidden">
+    <div class="modal-box searched-profile-box">
+        <div class="searched-profile-header">
+            <div id="searchedAvatarWrap" class="profile-avatar-wrapper frame-default">
+                <img id="searchedAvatarImg" class="profile-avatar-photo" src="" alt="Avatar" onerror="this.src='https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80';">
+            </div>
+            <div>
+                <h2 id="searchedName">Player Profile</h2>
+                <div id="searchedTitle" class="equipped-title-badge title-collector">Collector</div>
+                <p id="searchedMeta" style="margin-top:4px;color:var(--muted);">Level 1 · 0 Cards</p>
+            </div>
+        </div>
+
+        <h3 style="margin-top:20px;">⭐ Player's 6-Slot Showcase</h3>
+        <div id="searchedShowcaseGrid" class="showcase-grid" style="margin-top:10px;"></div>
+
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;">
+            <button id="searchedTradeBtn" class="primary-btn" onclick="initiateTradeWithSearchedUser()">🤝 Propose Trade</button>
+            <button class="ghost-btn" onclick="closeSearchModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOURNAMENT ENTER CONFIRMATION MODAL -->
+<div id="tournamentEnterModal" class="modal hidden">
+    <div class="modal-box">
+        <div class="football-icon">⚔️</div>
+        <h2>Enter Tournament Arena</h2>
+        <p>You will receive <b>1,000 Tournament Gold</b> to open 10 Tournament Draft Packs ($100\text{ Gold}$ each). Draft cards to score points ($+1\text{ to }+100\text{ pts}$).</p>
+        
+        <div class="attempts-box">
+            <span>WEEKLY ATTEMPTS REMAINING</span>
+            <strong id="tournamentAttemptsDisplay">5 / 5</strong>
+        </div>
+
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;">
+            <button id="confirmEnterTournamentBtn" class="primary-btn" onclick="confirmTournamentEntry()">Start Draft Run</button>
+            <button class="ghost-btn" onclick="closeTournamentEnterModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- WORLD CLASS SOL'S RNG CINEMATIC CUTSCENE (MESSI & RONALDO GOATS) -->
 <div id="worldClassOverlay" class="modal hidden sols-rng-overlay">
     <div class="sols-blackout"></div>
     <div class="sols-rift"></div>
     <div class="sols-auras"></div>
     <div class="world-card sols-card">
         <div class="sols-cosmic-rays"></div>
-        <div class="world-glow sols-icon">🌎</div>
-        <p class="rarity worldclass sols-rarity-tag">★ 1 IN 10,000 WORLD CLASS ★</p>
+        <div id="wcGoatBadge" class="goat-crest-badge">🐐 ALL-TIME GOAT 🐐</div>
+        <div class="world-glow sols-icon" id="wcIcon">🌎</div>
+        <p id="wcRarityTag" class="rarity worldclass sols-rarity-tag">★ 1 IN 10,000 WORLD CLASS ★</p>
         <h1 id="wcPlayerName" class="sols-player-name">PLAYER</h1>
+        <p id="wcPlayerQuote" class="sols-player-quote">"The Argentine Magician · 8x Ballon d'Or Winner"</p>
         <p id="wcPlayerMeta" class="sols-player-meta"></p>
         <button id="wcContinue" class="primary-btn sols-btn">CLAIM LEGEND</button>
     </div>
@@ -77,11 +122,11 @@
 <div id="cardRevealOverlay" class="modal hidden reveal-modal">
     <div id="revealCardContainer" class="reveal-card-box">
         <div class="reveal-badge" id="revealBadge">NEW PULL</div>
+        <div id="revealBonusBadge" class="reveal-bonus-tag" style="display:none;">+50 🪙 FIRST DISCOVERY BONUS!</div>
         <div id="revealCard" class="card reveal-card-body">
             <span id="revealRarity" class="rarity">RARITY</span>
             <div id="revealImageContainer" class="card-image-wrap">
-                <img id="revealPhoto" class="card-photo" src="" alt="Player Photo" onerror="this.style.display='none'">
-                <div id="revealEmoji" class="card-image-fallback">⚽</div>
+                <img id="revealPhoto" class="card-photo" src="" alt="Player Photo" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'">
             </div>
             <div id="revealRating" class="card-rating">90</div>
             <div id="revealPos" class="card-position">ST</div>
@@ -109,7 +154,9 @@
 
 <aside id="sidebar">
     <button class="nav active" data-page="home" onclick="showPage('home')">🏠 Home</button>
+    <button class="nav" data-page="packs" onclick="showPage('packs')">📦 Packs</button>
     <button class="nav" data-page="cards" onclick="showPage('cards')">🎴 Collection</button>
+    <button class="nav" data-page="trade" onclick="showPage('trade')">🤝 Trade</button>
     <button class="nav" data-page="shop" onclick="showPage('shop')">🛒 Shop</button>
     <button class="nav" data-page="profile" onclick="showPage('profile')">👤 Profile</button>
     <button class="nav" data-page="statistics" onclick="showPage('statistics')">📊 Statistics</button>
@@ -127,9 +174,9 @@
     <div class="hero">
         <div>
             <p class="eyebrow">WELCOME BACK</p>
-            <h1 id="homeName">Football Collector</h1>
-            <div id="homeEquippedTitle" class="equipped-title-badge title-collector">Football Collector</div>
-            <p style="margin-top:6px;">Build the ultimate football card collection & compete globally.</p>
+            <h1 id="homeName">Football Player</h1>
+            <div id="homeEquippedTitle" class="equipped-title-badge title-collector">Collector</div>
+            <p style="margin-top:6px;">Build the ultimate card collection, trade with players, & win tournaments.</p>
         </div>
 
         <div class="level-card">
@@ -140,78 +187,52 @@
         </div>
     </div>
 
-    <!-- DEDICATED LIMITED EVENT BANNER -->
-    <div id="limitedEventSection" class="limited-event-banner">
-        <div class="limited-head">
-            <div class="limited-badge">👑 WEEKLY EVENT</div>
-            <div id="limitedCountdown" class="limited-timer">Resets 07:00 AM (ICT)</div>
+    <!-- POPULAR FEATURED PACK (PREMIUM) -->
+    <div class="featured-popular-banner">
+        <div class="featured-head">
+            <div class="popular-tag">🔥 MOST POPULAR PACK</div>
+            <button class="ghost-btn" style="padding:6px 14px;" onclick="showPage('packs')">View All Packs →</button>
         </div>
-        <div class="limited-content">
-            <div class="limited-info">
-                <h2>Legends of the Past</h2>
-                <p>Exclusive historic icons available for 1 week only. Limited cards will never appear in normal packs!</p>
-                <div class="limited-odds-grid">
-                    <div class="odds-pill"><span>Ronaldinho (94)</span> <b>35%</b></div>
-                    <div class="odds-pill"><span>Zidane (95)</span> <b>25%</b></div>
-                    <div class="odds-pill"><span>Ronaldo R9 (97)</span> <b>20%</b></div>
-                    <div class="odds-pill"><span>Maradona (96)</span> <b>15%</b></div>
-                    <div class="odds-pill gold"><span>Pelé (98)</span> <b>5%</b></div>
-                </div>
+        <div class="featured-content">
+            <div class="featured-info">
+                <h2>Premium Pack</h2>
+                <p>First-team scouting — Proven top-flight starters & tactical masters. Common cards completely removed!</p>
+                <div class="pack-rate" style="margin-bottom:12px;">Uncommon (65%) · Rare (25%) · Epic (8%) · Legendary (2%)</div>
             </div>
-            <div class="limited-action">
-                <button class="limited-open-btn" onclick="openPack('limited')">
-                    <span>👑 OPEN LIMITED PACK</span>
-                    <b>60 🪙</b>
+            <div class="featured-action">
+                <button class="featured-open-btn" onclick="openPack('premium')">
+                    <span>💎 OPEN PREMIUM PACK</span>
+                    <b>25 🪙</b>
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">PACK STORE</p>
-            <h2>Open Scouting Packs</h2>
+    <!-- DEDICATED EXCLUSIVE EVENT BANNER -->
+    <div id="limitedEventSection" class="limited-event-banner">
+        <div class="limited-head">
+            <div class="limited-badge">👑 WEEKLY EXCLUSIVE EVENT</div>
+            <div id="limitedCountdown" class="limited-timer">Resets 07:00 AM (ICT)</div>
         </div>
-    </div>
-
-    <div class="pack-grid">
-
-        <article class="pack starter-pack">
-            <div class="pack-ball">⚽</div>
-            <p class="rarity common">STARTER</p>
-            <h2>Starter Pack</h2>
-            <p>Academy scouting — Emerging youth prospects & reliable squad starters.</p>
-            <div class="pack-rate">Common · Uncommon · Rare+</div>
-            <button onclick="openPack('starter')">10 🪙 · OPEN</button>
-        </article>
-
-        <article class="pack premium-pack">
-            <div class="pack-ball">💎</div>
-            <p class="rarity uncommon">PREMIUM</p>
-            <h2>Premium Pack</h2>
-            <p>First-team scouting — Proven top-flight starters & tactical masters. Common cards removed.</p>
-            <div class="pack-rate">Uncommon → Legendary</div>
-            <button onclick="openPack('premium')">25 🪙 · OPEN</button>
-        </article>
-
-        <article class="pack champion-pack">
-            <div class="pack-ball">🏆</div>
-            <p class="rarity epic">CHAMPION</p>
-            <h2>Champion Pack</h2>
-            <p>Ballon d'Or shortlist — Elite superstars & generational football talents. No low tiers.</p>
-            <div class="pack-rate">Rare → World Class</div>
-            <button onclick="openPack('champion')">45 🪙 · OPEN</button>
-        </article>
-
-        <article class="pack worldclass-pack">
-            <div class="pack-ball">🌎</div>
-            <p class="rarity worldclass">WORLD CLASS</p>
-            <h2>World Class Pack</h2>
-            <p>GOAT Vault — 100% Guaranteed pull of Lionel Messi (97) or Cristiano Ronaldo (97).</p>
-            <div class="pack-rate">100% World Class Guaranteed</div>
-            <button onclick="openPack('worldclass')">100 🪙 · OPEN</button>
-        </article>
-
+        <div class="limited-content">
+            <div class="limited-info">
+                <h2>Legends of the Past</h2>
+                <p>Exclusive historic icons available for 1 week only. Exclusive cards will never appear in normal packs!</p>
+                <div class="limited-odds-grid">
+                    <div class="odds-pill exclusive-pill"><span>Ronaldinho (94)</span> <b>35%</b></div>
+                    <div class="odds-pill exclusive-pill"><span>Zidane (95)</span> <b>25%</b></div>
+                    <div class="odds-pill exclusive-pill"><span>Ronaldo R9 (97)</span> <b>20%</b></div>
+                    <div class="odds-pill exclusive-pill"><span>Maradona (96)</span> <b>15%</b></div>
+                    <div class="odds-pill exclusive-pill gold"><span>Pelé (98)</span> <b>5%</b></div>
+                </div>
+            </div>
+            <div class="limited-action">
+                <button class="limited-open-btn" onclick="openPack('exclusive')">
+                    <span>👑 OPEN EXCLUSIVE PACK</span>
+                    <b>60 🪙</b>
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="daily-box">
@@ -236,9 +257,72 @@
                 <p class="eyebrow">PROGRESS</p>
                 <h2>Daily Missions Preview</h2>
             </div>
-            <button class="ghost-btn" onclick="showPage('missions')">View All (Hourly/Daily/Weekly/Monthly)</button>
+            <button class="ghost-btn" onclick="showPage('missions')">View All Missions</button>
         </div>
         <div id="homeMissionList"></div>
+    </div>
+
+</section>
+
+
+<!-- ==================== PACKS ==================== -->
+<section id="packs" class="page">
+
+    <div class="section-head">
+        <div>
+            <p class="eyebrow">PACK STORE</p>
+            <h1>Scouting Packs</h1>
+            <p>Open packs to discover players & earn discovery bonus gold!</p>
+        </div>
+    </div>
+
+    <div class="pack-grid">
+
+        <article class="pack starter-pack">
+            <div class="pack-ball">⚽</div>
+            <p class="rarity common">STARTER</p>
+            <h2>Starter Pack</h2>
+            <p>Academy scouting — Emerging youth prospects & reliable squad starters.</p>
+            <div class="pack-rate">Common · Uncommon · Rare+</div>
+            <button onclick="openPack('starter')">10 🪙 · OPEN</button>
+        </article>
+
+        <article class="pack premium-pack">
+            <div class="pack-ball">💎</div>
+            <p class="rarity uncommon">PREMIUM</p>
+            <h2>Premium Pack</h2>
+            <p>First-team scouting — Proven top-flight starters. Common cards removed.</p>
+            <div class="pack-rate">Uncommon → Legendary</div>
+            <button onclick="openPack('premium')">25 🪙 · OPEN</button>
+        </article>
+
+        <article class="pack champion-pack">
+            <div class="pack-ball">🏆</div>
+            <p class="rarity epic">CHAMPION</p>
+            <h2>Champion Pack</h2>
+            <p>Ballon d'Or shortlist — Elite superstars & generational football talents. No low tiers.</p>
+            <div class="pack-rate">Rare → World Class</div>
+            <button onclick="openPack('champion')">45 🪙 · OPEN</button>
+        </article>
+
+        <article class="pack exclusive-pack">
+            <div class="pack-ball">👑</div>
+            <p class="rarity exclusive">EXCLUSIVE</p>
+            <h2>Exclusive Legends</h2>
+            <p>Historic icons available for 1 week only (Pelé, Maradona, R9, Zidane, Ronaldinho).</p>
+            <div class="pack-rate">100% Exclusive Legends</div>
+            <button onclick="openPack('exclusive')">60 🪙 · OPEN</button>
+        </article>
+
+        <article class="pack worldclass-pack">
+            <div class="pack-ball">🌎</div>
+            <p class="rarity worldclass">WORLD CLASS</p>
+            <h2>World Class Pack</h2>
+            <p>GOAT Vault — 100% Guaranteed pull of Lionel Messi (97) or Cristiano Ronaldo (97).</p>
+            <div class="pack-rate">100% World Class Guaranteed</div>
+            <button onclick="openPack('worldclass')">100 🪙 · OPEN</button>
+        </article>
+
     </div>
 
 </section>
@@ -264,12 +348,65 @@
             <option>Mythic</option>
             <option>Secret</option>
             <option>World Class</option>
-            <option>Limited</option>
+            <option>Exclusive</option>
             <option>Tournament</option>
         </select>
     </div>
 
     <div id="cardsGrid" class="cards-grid"></div>
+
+</section>
+
+
+<!-- ==================== TRADE ==================== -->
+<section id="trade" class="page">
+
+    <div class="section-head">
+        <div>
+            <p class="eyebrow">MARKETPLACE</p>
+            <h1>Player Trading Hub</h1>
+            <p>Send trade offers to online players & manage your trade inbox.</p>
+        </div>
+    </div>
+
+    <div id="tradeAuthWarning" class="panel" style="display:none;border-color:var(--gold);text-align:center;">
+        <h3 style="color:var(--gold)">🔒 Cloud Login Required for Trading</h3>
+        <p>You must be signed in with a Cloud Account to send and receive trade requests.</p>
+        <button class="primary-btn" style="margin-top:12px;width:auto;padding:10px 24px;" onclick="openAuthModal()">Log In / Sign Up</button>
+    </div>
+
+    <div id="tradeHubContent">
+        <!-- SEND TRADE PROPOSAL -->
+        <div class="panel">
+            <h2>📤 Send Trade Offer</h2>
+            <div class="trade-send-grid">
+                <div>
+                    <label>Recipient Username</label>
+                    <input id="tradeRecipientInput" placeholder="Enter player username (e.g. b)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;margin-bottom:12px;">
+                    
+                    <label>Select Card You Offer</label>
+                    <select id="tradeOfferCardSelect" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;margin-bottom:12px;"></select>
+
+                    <label>What You Request (Note / Player)</label>
+                    <input id="tradeRequestNoteInput" placeholder="e.g. Any Epic midfielder or Mbappé" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;margin-bottom:14px;">
+
+                    <button class="primary-btn" onclick="sendTradeOffer()">Send Trade Request</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRADE INBOX (PENDING REQUESTS) -->
+        <div class="panel">
+            <h2>📥 Trade Inbox (<span id="tradeInboxCount">0</span>)</h2>
+            <div id="tradeInboxList" class="trade-inbox-list"></div>
+        </div>
+
+        <!-- TRADE HISTORY -->
+        <div class="panel">
+            <h2>📜 Trade History</h2>
+            <div id="tradeHistoryList" class="trade-history-list"></div>
+        </div>
+    </div>
 
 </section>
 
@@ -297,15 +434,24 @@
 <!-- ==================== PROFILE ==================== -->
 <section id="profile" class="page">
 
+    <!-- PLAYER SEARCH BAR -->
+    <div class="panel search-player-panel">
+        <h2>🔍 Search Player Profile</h2>
+        <p>Look up any collector's account to inspect their stats & 6-slot card showcase.</p>
+        <div style="display:flex;gap:10px;margin-top:12px;">
+            <input id="playerSearchInput" placeholder="Enter username (e.g. b)" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;">
+            <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="searchPlayerProfile()">Search</button>
+        </div>
+    </div>
+
     <div id="profileHero" class="profile-hero">
         <div id="profileAvatarWrap" class="profile-avatar-wrapper frame-default">
-            <img id="profileAvatarImg" class="profile-avatar-photo" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80" alt="Avatar" onerror="this.style.display='none';document.getElementById('profileAvatarFallback').style.display='block';">
-            <div id="profileAvatarFallback" class="avatar-fallback" style="display:none;">⚽</div>
+            <img id="profileAvatarImg" class="profile-avatar-photo" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80" alt="Avatar">
         </div>
         <div class="profile-title-block">
-            <p class="eyebrow">COLLECTOR PROFILE</p>
-            <h1 id="profileName">Football Collector</h1>
-            <div id="profileEquippedTitle" class="equipped-title-badge title-collector">Football Collector</div>
+            <p class="eyebrow">PLAYER PROFILE</p>
+            <h1 id="profileName">Football Player</h1>
+            <div id="profileEquippedTitle" class="equipped-title-badge title-collector">Collector</div>
             <p style="margin-top:6px;">Level <b id="profileLevel">1</b></p>
         </div>
     </div>
@@ -346,7 +492,7 @@
 
     <!-- CUSTOMIZATION CONTROLS -->
     <div class="panel">
-        <h2>🎨 Profile Customization</h2>
+        <h2>🎨 Customization</h2>
 
         <label>Equip Profile Frame</label>
         <select id="profileFrameSelect" onchange="setProfileFrame(this.value)"></select>
@@ -370,7 +516,7 @@
         </div>
 
         <div style="margin-top:20px;">
-            <button class="primary-btn" onclick="changeName()">Change Collector Name</button>
+            <button class="primary-btn" onclick="changeName()">Change Name</button>
         </div>
     </div>
 
@@ -395,8 +541,14 @@
         <div>
             <p class="eyebrow">RANKINGS</p>
             <h1>Global Leaderboard</h1>
-            <p>Live rankings across all online collectors worldwide.</p>
+            <p>Live rankings across real authenticated online players.</p>
         </div>
+    </div>
+
+    <div id="leaderboardAuthWarning" class="panel" style="display:none;border-color:var(--gold);text-align:center;">
+        <h3 style="color:var(--gold)">🔒 Cloud Account Required</h3>
+        <p>You must be logged in with a Cloud Account to view global leaderboards.</p>
+        <button class="primary-btn" style="margin-top:12px;width:auto;padding:10px 24px;" onclick="openAuthModal()">Log In / Sign Up</button>
     </div>
 
     <div id="globalLeaderboard" class="leaderboard"></div>
@@ -409,12 +561,18 @@
     <div class="tournament-hero">
         <p class="eyebrow">SEASON 1 DRAFT CHAMPIONSHIP</p>
         <h1>World Football Tournament Arena</h1>
-        <p>Draft 10 Tournament Packs with <b>1,000 Tournament Gold</b>. Score points from rare pulls to claim #1 rank & win exclusive <b>Emanuel (99 OVR)</b>!</p>
+        <p>Draft 10 Tournament Packs with <b>1,000 Tournament Gold</b> (Max 5 attempts per weekly season). Score points from rare pulls to claim #1 rank & win exclusive <b>Emanuel (99 OVR)</b>!</p>
         <div id="tournamentTimer" class="tournament-timer-badge">Resets Monday 7:00 AM (ICT)</div>
     </div>
 
+    <div id="tournamentAuthWarning" class="panel" style="display:none;border-color:var(--gold);text-align:center;">
+        <h3 style="color:var(--gold)">🔒 Cloud Account Required</h3>
+        <p>You must be logged in with a Cloud Account to compete in the World Championship Tournament.</p>
+        <button class="primary-btn" style="margin-top:12px;width:auto;padding:10px 24px;" onclick="openAuthModal()">Log In / Sign Up</button>
+    </div>
+
     <!-- TOURNAMENT DRAFT ARENA -->
-    <div class="panel tournament-arena-panel">
+    <div id="tournamentArenaContent" class="panel tournament-arena-panel">
         <div class="arena-hud">
             <div class="hud-box">
                 <span>TOURNAMENT GOLD</span>
@@ -442,12 +600,14 @@
         </div>
 
         <div class="draft-actions-area">
+            <button id="enterTournamentModalBtn" class="primary-btn tournament-pack-btn" style="display:none;" onclick="openTournamentEnterModal()">
+                <span>⚔️ ENTER TOURNAMENT DRAFT RUN</span>
+                <small id="attemptsLeftSubtitle">5 / 5 Weekly Attempts Remaining</small>
+            </button>
+
             <button id="openTournamentPackBtn" class="primary-btn tournament-pack-btn" onclick="openTournamentPack()">
                 <span>⚔️ OPEN TOURNAMENT DRAFT PACK</span>
                 <small>Costs 100 Tournament Gold (Separate from Normal Game)</small>
-            </button>
-            <button id="resetDraftBtn" class="ghost-btn" style="display:none;" onclick="startNewTournamentDraft()">
-                🔄 Start New Weekly Draft Run (1,000 🪙)
             </button>
         </div>
 
@@ -457,7 +617,7 @@
     </div>
 
     <div class="panel">
-        <h2>🏆 Season Leaderboard</h2>
+        <h2>🏆 Season Tournament Leaderboard (Real Players)</h2>
         <div id="tournamentLeaderboard"></div>
     </div>
 
@@ -517,8 +677,8 @@
     </div>
 
     <div class="panel">
-        <h2>Collector Name</h2>
-        <p>Current name: <b id="settingsCurrentName">Football Collector</b></p>
+        <h2>Name</h2>
+        <p>Current name: <b id="settingsCurrentName">Football Player</b></p>
         <button class="primary-btn" onclick="changeName()">Change Name</button>
     </div>
 
@@ -532,6 +692,6 @@
 
 </main>
 
-<script src="script.js?v=3.0"></script>
+<script src="script.js?v=4.0"></script>
 </body>
 </html>
