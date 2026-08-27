@@ -112,9 +112,11 @@ const SoundFx = {
         this.playTone(1318.51, "sine", 0.15, 0.1, 0.06);
     },
     packOpen() {
-        this.playTone(180, "sawtooth", 0.25, 0.12);
-        this.playTone(320, "triangle", 0.2, 0.1, 0.05);
-        this.playTone(520, "sine", 0.3, 0.1, 0.1);
+        // Uplifting sparkly arpeggio
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+            this.playTone(f, "triangle", 0.2, 0.12, i * 0.04);
+        });
+        this.playTone(1318.51, "sine", 0.35, 0.1, 0.18);
     },
     cardReveal(rarity) {
         if (rarity === "World Class") {
@@ -183,11 +185,34 @@ const PLAYERS = [
 { name: "Harry Kane", rating: 93, pos: "ST", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
 { name: "Rodri", rating: 93, pos: "CDM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
 { name: "Pedri", rating: 91, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Bukayo Saka", rating: 89, pos: "RW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
+{ name: "Declan Rice", rating: 89, pos: "CDM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Florian Wirtz", rating: 89, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Cole Palmer", rating: 88, pos: "RW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+
+// --- EPIC ---
+{ name: "Martin Ødegaard", rating: 88, pos: "CAM", rarity: "Epic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Bernardo Silva", rating: 88, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+{ name: "Antoine Griezmann", rating: 88, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Phil Foden", rating: 88, pos: "CAM", rarity: "Epic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "Lautaro Martínez", rating: 87, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Federico Valverde", rating: 88, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+
+// --- RARE ---
+{ name: "Joshua Kimmich", rating: 86, pos: "CDM", rarity: "Rare", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
+{ name: "Bruno Fernandes", rating: 87, pos: "CAM", rarity: "Rare", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Rafael Leão", rating: 86, pos: "LW", rarity: "Rare", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Nicolò Barella", rating: 87, pos: "CM", rarity: "Rare", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Son Heung-min", rating: 87, pos: "LW", rarity: "Rare", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+
+// --- UNCOMMON ---
 { name: "Anthony Gordon", rating: 82, pos: "LW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
 { name: "Pedro Porro", rating: 83, pos: "RB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
 { name: "Micky van de Ven", rating: 83, pos: "CB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
 { name: "Dominik Szoboszlai", rating: 83, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
 { name: "Alexis Mac Allister", rating: 84, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+
+// --- COMMON ---
 { name: "Oliver Skipp", rating: 75, pos: "CDM", rarity: "Common", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
 { name: "Rob Holding", rating: 74, pos: "CB", rarity: "Common", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
 { name: "Sean Longstaff", rating: 77, pos: "CM", rarity: "Common", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
@@ -350,6 +375,27 @@ const TITLES = [
     cssClass: "title-champion",
     requirement: "Reach #1 Rank on Tournament Leaderboard",
     unlock: () => getMyTournamentRank() === 1
+},
+{
+    id: "owner",
+    name: "Owner",
+    cssClass: "title-owner",
+    requirement: "Redeem OP code sixseven67",
+    unlock: () => !!state.hasAdmin
+},
+{
+    id: "admin",
+    name: "Admin",
+    cssClass: "title-admin",
+    requirement: "Redeem OP code sixseven67",
+    unlock: () => !!state.hasAdmin
+},
+{
+    id: "staff",
+    name: "Staff",
+    cssClass: "title-staff",
+    requirement: "Redeem OP code sixseven67",
+    unlock: () => !!state.hasAdmin
 }
 ];
 
@@ -477,6 +523,11 @@ function loadGame() {
             ...fresh,
             ...saved,
             name: activeName,
+            hasAdmin: !!saved.hasAdmin,
+            cards: Array.isArray(saved.cards) ? saved.cards.map(c => ({
+                ...c,
+                locked: c.locked !== undefined ? c.locked : (c.rarity === "World Class" || c.rarity === "Secret" || !!c.serialNumber)
+            })) : fresh.cards,
             stats: { ...fresh.stats, ...(saved.stats || {}) },
             tournamentDraft: { ...fresh.tournamentDraft, ...(saved.tournamentDraft || {}) },
             missionProgress: { ...fresh.missionProgress, ...(saved.missionProgress || {}) },
@@ -610,6 +661,15 @@ const CloudSync = {
         return { success: true, msg: "Welcome back! Cloud progress loaded." };
     },
 
+    logout() {
+        state.accountUser = "";
+        state.accountPass = "";
+        saveGame();
+        renderAll();
+        closeAuthModal();
+        toast("Logged out. Playing in local guest mode.");
+    },
+
     sync() {
         if (!state.accountUser) return;
         const accs = this.getAccounts();
@@ -637,6 +697,7 @@ function openAuthModal() {
     const modal = document.getElementById("authModal");
     if (modal) modal.classList.remove("hidden");
     setAuthTab("login");
+    updateAuthUI();
 }
 
 function closeAuthModal() {
@@ -667,35 +728,53 @@ function setAuthTab(tab) {
 }
 
 function handleAuthSubmit() {
-    const uInput = document.getElementById("authUsername");
-    const pInput = document.getElementById("authPassword");
+    const u = document.getElementById("authUsername").value;
+    const p = document.getElementById("authPassword").value;
     const err = document.getElementById("authError");
-    if (!uInput || !pInput) return;
 
-    const u = uInput.value;
-    const p = pInput.value;
-    const res = currentAuthTab === "signup" ? CloudSync.signUp(u, p) : CloudSync.login(u, p);
+    let res;
+    if (currentAuthTab === "signup") {
+        res = CloudSync.signUp(u, p);
+    } else {
+        res = CloudSync.login(u, p);
+    }
 
     if (!res.success) {
         if (err) err.textContent = res.msg;
-        return;
+    } else {
+        toast(res.msg);
+        closeAuthModal();
+        renderAll();
     }
-
-    closeAuthModal();
-    SoundFx.levelUp();
-    toast(res.msg);
-    renderAll();
 }
 
 function updateAuthUI() {
     const user = state.accountUser;
-    setText("topAuthName", user ? user : "Account");
-    setText("settingsAccountName", user ? `${user} (Cloud Synced)` : "Guest (Local Only)");
+    setText("topAuthName", user ? `👤 ${user}` : "🔑 Log In");
+    setText("settingsAccountName", user ? `${user} (Cloud Synced)` : `${state.name || 'Guest'} (Local)`);
     setText("cloudStatusText", user ? "Cloud Synced" : "Local");
+
     const badge = document.getElementById("cloudStatusBadge");
     if (badge) {
         badge.style.borderColor = user ? "var(--green)" : "var(--gold)";
         badge.style.color = user ? "var(--green)" : "var(--gold)";
+    }
+
+    const logoutBtn = document.getElementById("settingsLogoutBtn");
+    if (logoutBtn) logoutBtn.style.display = user ? "inline-block" : "none";
+
+    const loggedInView = document.getElementById("authLoggedInView");
+    const formsView = document.getElementById("authFormsContainer");
+    const loggedInUserText = document.getElementById("authLoggedInUser");
+    if (loggedInView && formsView) {
+        if (user) {
+            loggedInView.style.display = "block";
+            formsView.style.display = "none";
+            if (loggedInUserText) loggedInUserText.textContent = user;
+        } else {
+            loggedInView.style.display = "none";
+            formsView.style.display = "block";
+        }
     }
 
     const tradeWarning = document.getElementById("tradeAuthWarning");
@@ -705,18 +784,16 @@ function updateAuthUI() {
         tradeContent.style.display = user ? "block" : "none";
     }
 
-    const tWarning = document.getElementById("tournamentAuthWarning");
-    const tContent = document.getElementById("tournamentArenaContent");
-    if (tWarning && tContent) {
-        tWarning.style.display = user ? "none" : "block";
-        tContent.style.display = user ? "block" : "none";
-    }
-
     const lWarning = document.getElementById("leaderboardAuthWarning");
     const lList = document.getElementById("globalLeaderboard");
     if (lWarning && lList) {
         lWarning.style.display = user ? "none" : "block";
         lList.style.display = user ? "block" : "none";
+    }
+
+    const floatBtn = document.getElementById("adminFloatingBtn");
+    if (floatBtn) {
+        floatBtn.classList.toggle("hidden", !state.hasAdmin);
     }
 }
 
@@ -727,6 +804,7 @@ function updateAuthUI() {
 document.addEventListener("DOMContentLoaded", () => {
     bindEvents();
     init3DInspector();
+    initAdminPanel();
     checkName();
     renderAll();
     updateTimers();
@@ -881,11 +959,20 @@ function openPack(type) {
     if ((player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo") && (state.serializedCounts[player.name] < 10)) {
         state.serializedCounts[player.name]++;
         serialNum = state.serializedCounts[player.name];
-        const h1 = Math.floor(Math.random() * 360);
-        const h2 = (h1 + 60 + Math.floor(Math.random() * 180)) % 360;
-        const h3 = (h2 + 60 + Math.floor(Math.random() * 180)) % 360;
-        serialGrad = `linear-gradient(135deg, hsl(${h1}, 95%, 65%), hsl(${h2}, 100%, 75%), hsl(${h3}, 95%, 60%))`;
+        const palettes = [
+            "linear-gradient(135deg, #ff0844 0%, #ffb199 50%, #f9d423 100%)", // Crimson Gold
+            "linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #69c7ff 100%)", // Cyber Sapphire
+            "linear-gradient(135deg, #7928ca 0%, #ff007f 50%, #ffd700 100%)", // Neon Orchid Gold
+            "linear-gradient(135deg, #00b09b 0%, #96c93d 50%, #ffffff 100%)", // Emerald Mint Ice
+            "linear-gradient(135deg, #111111 0%, #555555 40%, #00d2ff 75%, #ffffff 100%)", // Platinum Cyber Onyx
+            "linear-gradient(135deg, #f857a6 0%, #ff5858 50%, #ffc371 100%)", // Sunset Rose
+            "linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #f5ce62 100%)", // Royal Midnight Gold
+            "linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%)"  // Fiery Amethyst
+        ];
+        serialGrad = palettes[(serialNum - 1) % palettes.length];
     }
+
+    const shouldAutoLock = rarity === "World Class" || rarity === "Secret" || serialNum !== null;
 
     const card = {
         id: Date.now() + "_" + Math.random().toString(36).slice(2),
@@ -897,6 +984,7 @@ function openPack(type) {
         frame: "default",
         serialNumber: serialNum,
         serialGradient: serialGrad,
+        locked: shouldAutoLock,
         obtained: Date.now()
     };
 
@@ -1259,17 +1347,35 @@ function renderCards() {
         const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
         const value = DUPLICATE_VALUES[card.rarity] || 5;
 
+        let themeClass = `theme-${rarityClassName(card.rarity)}`;
+        if (card.rarity === "World Class") {
+            if (card.player === "Lionel Messi") themeClass = "theme-messi";
+            else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
+        } else if (card.rarity === "Tournament") {
+            themeClass = "theme-tournament";
+        }
+
+        const isLocked = !!card.locked;
+
         return `
-        <article class="card ${frame.css}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="open3DCard('${card.id}')">
-            ${card.serialNumber ? `<span class="serial-badge" style="background:${card.serialGradient}">★ #${card.serialNumber}/10 ★</span>` : ""}
+        <article class="card ${frame.css} ${themeClass}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="open3DCard('${card.id}')">
+            <div class="card-top-row">
+                <span class="card-rarity-pill rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
+                <button class="card-lock-btn ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleCardLock('${card.id}')" title="${isLocked ? 'Unlock Card' : 'Lock Card'}">
+                    ${isLocked ? '🔒' : '🔓'}
+                </button>
+            </div>
+
+            ${card.serialNumber ? `<span class="serial-badge" style="display:inline-block;margin-bottom:6px;">★ SERIAL #${card.serialNumber}/10 ★</span>` : ""}
+            
             <div class="card-hover-stats">
                 <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <h4>${escapeHTML(card.player)}</h4>
                 <div class="stat-tag">OVR ${card.rating} · ${escapeHTML(card.pos)}</div>
                 <div class="stat-tag">Resale Value: ${value} 🪙</div>
+                <div class="stat-tag">${isLocked ? '🔒 Locked (Protected)' : '🔓 Unlocked'}</div>
             </div>
 
-            <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
             <div class="card-image-wrap">
                 <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
             </div>
@@ -1280,7 +1386,7 @@ function renderCards() {
 
             <div class="card-actions">
                 <button onclick="event.stopPropagation(); open3DCard('${card.id}')">3D View</button>
-                <button class="sell" onclick="event.stopPropagation(); sellCard('${card.id}')">Sell ${value} 🪙</button>
+                <button class="sell" ${isLocked ? 'style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="event.stopPropagation(); sellCard('${card.id}')">${isLocked ? '🔒 Locked' : `Sell ${value} 🪙`}</button>
             </div>
         </article>
         `;
@@ -1291,11 +1397,25 @@ function rarityClassName(rarity) {
     return rarity.toLowerCase().replaceAll(" ", "");
 }
 
+function toggleCardLock(id) {
+    const card = state.cards.find(c => c.id === id);
+    if (!card) return;
+    card.locked = !card.locked;
+    SoundFx.click();
+    saveGame();
+    renderCards();
+    toast(card.locked ? `🔒 ${card.player} locked.` : `🔓 ${card.player} unlocked.`);
+}
+
 function sellCard(id) {
     const index = state.cards.findIndex(c => c.id === id);
     if (index === -1) return;
 
     const card = state.cards[index];
+    if (card.locked) {
+        toast("🔒 Card is locked! Unlock it first to sell.");
+        return;
+    }
     const value = DUPLICATE_VALUES[card.rarity] || 5;
 
     state.cards.splice(index, 1);
@@ -2258,45 +2378,50 @@ function claimDailyReward() {
     toast("🎁 Daily training reward claimed: +100 🪙!");
 }
 
-function updateFreeKick() {
-    const box = document.getElementById("freeKickBox");
-    if (box) box.style.display = state.coins <= 0 ? "flex" : "none";
+/* =========================================================
+   CARD VALUATION & LEADERBOARD SYSTEM
+   ========================================================= */
+
+const CARD_VALUES = {
+    Common: 5,
+    Uncommon: 15,
+    Rare: 40,
+    Epic: 100,
+    Legendary: 300,
+    Exclusive: 750,
+    Mythic: 1000,
+    Secret: 2500,
+    "World Class": 5000,
+    Tournament: 15000
+};
+
+function getCardValue(card) {
+    if (!card) return 0;
+    if (card.serialNumber || (card.rarity === "World Class" && (card.player === "Lionel Messi" || card.player === "Cristiano Ronaldo") && card.isSerialized)) {
+        return 10000;
+    }
+    if (card.serialNumber) return 10000;
+    return CARD_VALUES[card.rarity] || 5;
 }
 
-function freeKick() {
-    if (state.coins > 0) return;
-    addCoins(10);
-    SoundFx.coin();
-    saveGame();
-    toast("⚽ Emergency penalty scored! +10 🪙");
+function calculateCollectionValue(cards) {
+    if (!Array.isArray(cards)) return 0;
+    return cards.reduce((sum, c) => sum + getCardValue(c), 0);
 }
 
-function formatCountdown(ms) {
-    if (ms <= 0) return "00:00:00";
-    let total = Math.floor(ms / 1000);
-    const days = Math.floor(total / 86400);
-    total %= 86400;
-    const hours = Math.floor(total / 3600);
-    total %= 3600;
-    const mins = Math.floor(total / 60);
-    const secs = total % 60;
-    if (days > 0) return `${days}d ${pad(hours)}h ${pad(mins)}m`;
-    return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
-}
+let currentLeaderboardTab = "gold";
 
-function pad(num) { return String(num).padStart(2, "0"); }
-
-function formatPlaytime(totalSeconds) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    if (hours > 0) return `${hours}h ${mins}m`;
-    if (mins > 0) return `${mins}m ${secs}s`;
-    return `${secs}s`;
+function setLeaderboardTab(tab) {
+    currentLeaderboardTab = tab;
+    const tabGold = document.getElementById("lbTabGold");
+    const tabValue = document.getElementById("lbTabValue");
+    if (tabGold) tabGold.classList.toggle("active", tab === "gold");
+    if (tabValue) tabValue.classList.toggle("active", tab === "value");
+    renderLeaderboard();
 }
 
 /* =========================================================
-   PROMO CODES
+   PROMO CODES & SECRET OP ADMIN (sixseven67)
    ========================================================= */
 
 function redeemCode() {
@@ -2309,6 +2434,21 @@ function redeemCode() {
     }
     const code = raw.toUpperCase();
     if (!state.redeemedCodes) state.redeemedCodes = [];
+
+    if (code === "SIXSEVEN67") {
+        state.hasAdmin = true;
+        if (!state.redeemedCodes.includes(code)) state.redeemedCodes.push(code);
+        addCoins(100000);
+        addXP(500);
+        SoundFx.levelUp();
+        input.value = "";
+        saveGame();
+        renderAll();
+        initAdminPanel();
+        toggleAdminPanel(true);
+        toast("👑 OP ADMIN ACCESS UNLOCKED! Welcome, Owner.");
+        return;
+    }
 
     if (state.redeemedCodes.includes(code)) {
         toast("You have already redeemed this code.");
@@ -2337,36 +2477,253 @@ function redeemCode() {
 }
 
 /* =========================================================
+   OP DRAGGABLE ADMIN PANEL CONTROLS
+   ========================================================= */
+
+function initAdminPanel() {
+    const select = document.getElementById("adminPlayerSelect");
+    if (select) {
+        select.innerHTML = PLAYERS.map(p => `<option value="${p.name}">${p.name} (${p.rating} OVR · ${p.rarity})</option>`).join("");
+    }
+    const floatBtn = document.getElementById("adminFloatingBtn");
+    if (floatBtn) {
+        floatBtn.classList.toggle("hidden", !state.hasAdmin);
+    }
+    makeDraggable("adminPanel", "adminHeader");
+}
+
+function toggleAdminPanel(forceOpen) {
+    const panel = document.getElementById("adminPanel");
+    if (!panel) return;
+    if (forceOpen === true) {
+        panel.classList.remove("hidden");
+    } else if (forceOpen === false) {
+        panel.classList.add("hidden");
+    } else {
+        panel.classList.toggle("hidden");
+    }
+}
+
+function adminAddCoins(amt) {
+    addCoins(amt);
+    SoundFx.coin();
+    saveGame();
+    renderAll();
+    toast(`⚡ Admin: Added +${amt.toLocaleString()} 🪙`);
+}
+
+function adminMaxCoins() {
+    state.coins = 9999999;
+    SoundFx.coin();
+    saveGame();
+    renderAll();
+    toast("⚡ Admin: Max Gold Set (9,999,999 🪙)!");
+}
+
+function adminSpawnSelectedCard(isSerialized) {
+    const select = document.getElementById("adminPlayerSelect");
+    if (!select) return;
+    const name = select.value;
+    const p = PLAYERS.find(x => x.name === name);
+    if (!p) return;
+
+    let sNum = null;
+    let sGrad = null;
+    if (isSerialized) {
+        sNum = 1;
+        sGrad = "linear-gradient(135deg, #ff0844 0%, #ffd700 50%, #00f2fe 100%)";
+    }
+
+    const card = {
+        id: "admin_" + Date.now() + "_" + Math.random().toString(36).slice(2),
+        player: p.name,
+        rating: p.rating,
+        pos: p.pos,
+        rarity: p.rarity,
+        image: p.image || "",
+        frame: "default",
+        serialNumber: sNum,
+        serialGradient: sGrad,
+        locked: true,
+        obtained: Date.now()
+    };
+
+    state.cards.push(card);
+    if (!state.unlockedCardNames.includes(p.name)) state.unlockedCardNames.push(p.name);
+    state.stats.cardsPulled++;
+    updateRarityStats(p.rarity, p);
+
+    SoundFx.levelUp();
+    saveGame();
+    renderAll();
+    toast(`⚡ Admin: Spawned ${p.name} (${p.rarity})${isSerialized ? ' [Serialized #1/10]' : ''}!`);
+}
+
+function adminSpawnEmanuel() {
+    const emanuel = PLAYERS.find(p => p.name === "Emanuel");
+    if (!emanuel) return;
+
+    const card = {
+        id: "emanuel_" + Date.now(),
+        player: emanuel.name,
+        rating: emanuel.rating,
+        pos: emanuel.pos,
+        rarity: emanuel.rarity,
+        image: emanuel.image || "",
+        frame: "champion",
+        serialNumber: null,
+        serialGradient: null,
+        locked: true,
+        obtained: Date.now()
+    };
+
+    state.cards.push(card);
+    if (!state.unlockedCardNames.includes(emanuel.name)) state.unlockedCardNames.push(emanuel.name);
+    state.stats.cardsPulled++;
+    updateRarityStats("Tournament", emanuel);
+
+    SoundFx.worldClassCinematic();
+    saveGame();
+    renderAll();
+    toast("🏆 Admin: Spawned Emanuel (99 OVR Tournament Reward)!");
+}
+
+function adminUnlockAllTitles() {
+    state.hasAdmin = true;
+    state.equippedTitle = "Owner";
+    SoundFx.levelUp();
+    saveGame();
+    renderAll();
+    toast("⚡ Admin: All Titles Unlocked & 'Owner' Equipped!");
+}
+
+function adminAddLevels(lvls) {
+    state.level += lvls;
+    SoundFx.levelUp();
+    saveGame();
+    renderAll();
+    toast(`⚡ Admin: +${lvls} Levels Granted! (Level ${state.level})`);
+}
+
+function adminUnlockAllIndex() {
+    PLAYERS.forEach(p => {
+        if (!state.unlockedCardNames.includes(p.name)) state.unlockedCardNames.push(p.name);
+    });
+    SoundFx.levelUp();
+    saveGame();
+    renderAll();
+    toast("⚡ Admin: Complete 100% Index Catalog Unlocked!");
+}
+
+function adminResetTournament() {
+    state.tournamentAttempts = 5;
+    if (state.tournamentDraft) {
+        state.tournamentDraft.gold = 1000;
+        state.tournamentDraft.packsOpened = 0;
+        state.tournamentDraft.score = 0;
+        state.tournamentDraft.cards = [];
+        state.tournamentDraft.active = false;
+    }
+    saveGame();
+    renderAll();
+    toast("⚡ Admin: Tournament attempts and draft reset to 5!");
+}
+
+function makeDraggable(elementId, handleId) {
+    const el = document.getElementById(elementId);
+    const handle = document.getElementById(handleId);
+    if (!el || !handle) return;
+
+    let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+    handle.onmousedown = dragMouseDown;
+    handle.ontouchstart = dragTouchStart;
+
+    function dragMouseDown(e) {
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e.preventDefault();
+        posX = mouseX - e.clientX;
+        posY = mouseY - e.clientY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        el.style.top = (el.offsetTop - posY) + "px";
+        el.style.left = (el.offsetLeft - posX) + "px";
+        el.style.right = "auto";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+
+    function dragTouchStart(e) {
+        if (!e.touches.length) return;
+        mouseX = e.touches[0].clientX;
+        mouseY = e.touches[0].clientY;
+        document.ontouchend = closeTouchDrag;
+        document.ontouchmove = elementTouchDrag;
+    }
+
+    function elementTouchDrag(e) {
+        if (!e.touches.length) return;
+        posX = mouseX - e.touches[0].clientX;
+        posY = mouseY - e.touches[0].clientY;
+        mouseX = e.touches[0].clientX;
+        mouseY = e.touches[0].clientY;
+        el.style.top = (el.offsetTop - posY) + "px";
+        el.style.left = (el.offsetLeft - posX) + "px";
+        el.style.right = "auto";
+    }
+
+    function closeTouchDrag() {
+        document.ontouchend = null;
+        document.ontouchmove = null;
+    }
+}
+
+/* =========================================================
    STATISTICS & GLOBAL LEADERBOARD (REAL PLAYERS ONLY)
    ========================================================= */
 
 function renderStatistics() {
     const s = state.stats;
+    const totalVal = calculateCollectionValue(state.cards);
     const data = [
-        ["Level", state.level, "Current level"],
-        ["Playtime", formatPlaytime(s.playtime), "Time in game"],
-        ["Packs Opened", s.packsOpened, "Scouting packs"],
-        ["Cards Pulled", s.cardsPulled, "Cards obtained"],
+        ["Current Level", state.level, "Player Level"],
+        ["Collection Wealth", `${totalVal.toLocaleString()} 🪙`, "Total card value"],
         ["Cards Owned", state.cards.length, "Active collection"],
+        ["Current Gold", `${state.coins.toLocaleString()} 🪙`, "Available balance"],
+        ["Playtime", formatPlaytime(s.playtime), "Total active time"],
+        ["Packs Opened", s.packsOpened, "Scouting packs opened"],
+        ["Cards Pulled", s.cardsPulled, "Lifetime cards pulled"],
         ["Duplicates", s.duplicates, "Duplicate pulls"],
         ["Cards Sold", s.cardsSold, "Cards recycled"],
-        ["Coins Earned", s.coinsEarned, "Lifetime coins"],
+        ["Coins Earned", `${(s.coinsEarned || 0).toLocaleString()} 🪙`, "Lifetime earnings"],
+        ["Coins Spent", `${(s.coinsSpent || 0).toLocaleString()} 🪙`, "Lifetime spending"],
+        ["Peak Rating", `${s.highestRating || 0} OVR`, "Highest player rating"],
+        ["Best Rarity", s.highestRarity || "Common", "Peak rarity pulled"],
         ["World Class", s.worldClass, "1 in 10,000 pulls"],
         ["Secret", s.secret, "Secret pulls"],
         ["Mythic", s.mythic, "Mythic pulls"],
         ["Legendary", s.legendary, "Legendary pulls"],
         ["Exclusive", s.exclusive, "Historic icons"],
         ["Tournament", s.tournament, "Tournament cards"],
-        ["Highest Rating", s.highestRating, "Peak OVR rating"],
-        ["Best Rarity", s.highestRarity, "Peak rarity"],
-        ["Tournament Score", s.tournamentScore, "Season peak pts"]
+        ["Rare", s.rare, "Rare cards"],
+        ["Uncommon", s.uncommon, "Uncommon cards"],
+        ["Common", s.common, "Common cards"]
     ];
 
     const grid = document.getElementById("statisticsGrid");
     if (grid) {
         grid.innerHTML = data.map(x => `
             <div class="stat-box">
-                <h3>${x[0]}</h3>
+                <span>${x[0]}</span>
                 <b>${x[1]}</b>
                 <p>${x[2]}</p>
             </div>
@@ -2379,45 +2736,64 @@ function renderLeaderboard() {
     if (!container) return;
 
     const accs = CloudSync.getAccounts();
-    const entries = [];
+    const rows = [];
 
     for (const key in accs) {
         try {
             const d = JSON.parse(accs[key].saveData);
             if (d) {
-                entries.push({
+                const totalVal = calculateCollectionValue(d.cards || []);
+                const gold = d.coins || 0;
+                rows.push({
                     name: d.name || accs[key].username,
-                    level: d.level || 1,
+                    gold: gold,
+                    value: totalVal,
                     cards: (d.cards || []).length,
-                    world: (d.stats && d.stats.worldClass) || 0
+                    level: d.level || 1
                 });
             }
         } catch (e) {}
     }
 
-    if (state.accountUser && !entries.some(e => e.name.toLowerCase() === state.accountUser.toLowerCase())) {
-        entries.push({
-            name: state.name || state.accountUser,
-            level: state.level,
+    const myName = state.name || state.accountUser || "Guest";
+    const myVal = calculateCollectionValue(state.cards);
+    if (!rows.some(r => r.name.toLowerCase() === myName.toLowerCase())) {
+        rows.push({
+            name: myName,
+            gold: state.coins,
+            value: myVal,
             cards: state.cards.length,
-            world: state.stats.worldClass || 0
+            level: state.level
         });
     }
 
-    entries.sort((a, b) => b.level - a.level);
+    if (currentLeaderboardTab === "gold") {
+        rows.sort((a, b) => b.gold - a.gold);
+    } else {
+        rows.sort((a, b) => b.value - a.value);
+    }
 
-    if (!entries.length) {
+    if (!rows.length) {
         container.innerHTML = `<div class="empty-state">No players found yet. Create a Cloud Account to join!</div>`;
         return;
     }
 
-    container.innerHTML = entries.map((e, i) => `
-        <div class="rank-row">
-            <b>#${i + 1}</b>
-            <strong>${escapeHTML(e.name)}</strong>
-            <span>Lv.${e.level} · ${e.cards} cards · ${e.world} WC</span>
+    container.innerHTML = rows.slice(0, 50).map((r, i) => {
+        const isMe = r.name.toLowerCase() === myName.toLowerCase();
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
+        const scoreDisplay = currentLeaderboardTab === "gold" ? `${r.gold.toLocaleString()} 🪙` : `${r.value.toLocaleString()} 💎 Value`;
+
+        return `
+        <div class="rank-row ${isMe ? 'highlight' : ''}" style="${isMe ? 'border:1px solid var(--green);background:rgba(34,199,122,0.1);' : ''}">
+            <b>${medal}</b>
+            <div>
+                <strong>${escapeHTML(r.name)} ${isMe ? '<small style="color:var(--green)">(You)</small>' : ''}</strong>
+                <p style="margin:2px 0 0;font-size:12px;color:var(--muted);">Lvl ${r.level} · ${r.cards} Cards</p>
+            </div>
+            <strong style="color:var(--gold);font-size:15px;">${scoreDisplay}</strong>
         </div>
-    `).join("");
+        `;
+    }).join("");
 }
 
 /* =========================================================
@@ -2429,7 +2805,6 @@ function addCoins(amount) {
     state.stats.coinsEarned += amount;
     progressMission("coins", amount);
     updateCoinDisplay();
-    updateFreeKick();
     saveGame();
 }
 
@@ -2441,7 +2816,6 @@ function spendCoins(amount) {
     state.coins -= amount;
     state.stats.coinsSpent += amount;
     updateCoinDisplay();
-    updateFreeKick();
     saveGame();
     return true;
 }
