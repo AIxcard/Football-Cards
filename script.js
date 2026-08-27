@@ -26,9 +26,9 @@ const RARITY_ORDER = {
     Rare: 3,
     Epic: 4,
     Legendary: 5,
-    Exclusive: 6,
-    Mythic: 7,
-    Secret: 8,
+    Mythic: 6,
+    Secret: 7,
+    Exclusive: 8,
     "World Class": 9,
     Tournament: 10
 };
@@ -39,9 +39,9 @@ const DUPLICATE_VALUES = {
     Rare: 25,
     Epic: 50,
     Legendary: 100,
-    Exclusive: 150,
     Mythic: 200,
     Secret: 500,
+    Exclusive: 750,
     "World Class": 1000,
     Tournament: 2000
 };
@@ -52,9 +52,9 @@ const DISCOVERY_BONUS = {
     Rare: 50,
     Epic: 100,
     Legendary: 250,
-    Exclusive: 500,
     Mythic: 500,
     Secret: 1000,
+    Exclusive: 1500,
     "World Class": 2500,
     Tournament: 5000
 };
@@ -612,10 +612,18 @@ const CloudSync = {
         const key = u.toLowerCase();
         if (accs[key]) return { success: false, msg: "Username already taken." };
 
-        state.accountUser = u;
-        state.accountPass = p;
-        state.name = u;
-        state.initialized = true;
+        // Fresh dedicated save for the newly created account
+        const fresh = freshState();
+        fresh.accountUser = u;
+        fresh.accountPass = p;
+        fresh.name = u;
+        fresh.initialized = true;
+        fresh.cards = [];
+        fresh.unlockedCardNames = [];
+        fresh.coins = 100;
+        fresh.xp = 0;
+        fresh.level = 1;
+        state = fresh;
 
         accs[key] = {
             username: u,
@@ -625,6 +633,7 @@ const CloudSync = {
         };
         this.saveAccounts(accs);
         saveGame();
+        renderAll();
         updateAuthUI();
         return { success: true, msg: "Account created and cloud synced!" };
     },
@@ -644,16 +653,27 @@ const CloudSync = {
                 state = {
                     ...freshState(),
                     ...cloudSave,
+                    accountUser: u,
+                    accountPass: p,
+                    name: cloudSave.name || u,
+                    cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : [],
                     stats: { ...freshState().stats, ...(cloudSave.stats || {}) },
                     tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || {}) }
                 };
-            } catch (e) {}
+            } catch (e) {
+                const fresh = freshState();
+                fresh.accountUser = u;
+                fresh.accountPass = p;
+                fresh.name = u;
+                state = fresh;
+            }
+        } else {
+            const fresh = freshState();
+            fresh.accountUser = u;
+            fresh.accountPass = p;
+            fresh.name = u;
+            state = fresh;
         }
-
-        state.accountUser = u;
-        state.accountPass = p;
-        state.name = u;
-        state.initialized = true;
 
         saveGame();
         renderAll();
@@ -662,12 +682,12 @@ const CloudSync = {
     },
 
     logout() {
-        state.accountUser = "";
-        state.accountPass = "";
+        state = freshState();
         saveGame();
         renderAll();
+        updateAuthUI();
         closeAuthModal();
-        toast("Logged out. Playing in local guest mode.");
+        toast("Logged out. Started fresh guest session.");
     },
 
     sync() {
@@ -917,6 +937,22 @@ function renderHero() {
    PACK OPENING & SERIALIZATION (MESSI & RONALDO FIRST 10)
    ========================================================= */
 
+function generateRandomSerializedGradient() {
+    const presets = [
+        "linear-gradient(135deg, #1f0036 0%, #7928ca 50%, #ffffff 100%)", // Dark Purple White
+        "linear-gradient(135deg, #ff0844 0%, #7928ca 60%, #ff007f 100%)", // Red Purple
+        "linear-gradient(135deg, #f9d423 0%, #ff4e50 50%, #0055a5 100%)", // Yellow Blue
+        "linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #111111 100%)", // Gold Obsidian
+        "linear-gradient(135deg, #051937 0%, #004d7a 40%, #008793 70%, #00bf72 100%)", // Deep Cyber Mint
+        "linear-gradient(135deg, #4a00e0 0%, #8e2de2 50%, #00f2fe 100%)", // Violet Cyan
+        "linear-gradient(135deg, #ff0055 0%, #ffffff 50%, #000000 100%)", // Crimson Silver Onyx
+        "linear-gradient(135deg, #f12711 0%, #f5af19 50%, #ffffff 100%)", // Fiery Solar Gold
+        "linear-gradient(135deg, #11998e 0%, #38ef7d 50%, #ffffff 100%)", // Mint Emerald Ice
+        "linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%)"  // Sunset Royal Magenta
+    ];
+    return presets[Math.floor(Math.random() * presets.length)];
+}
+
 function openPack(type) {
     const pack = PACKS[type];
     if (!pack) return;
@@ -959,17 +995,7 @@ function openPack(type) {
     if ((player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo") && (state.serializedCounts[player.name] < 10)) {
         state.serializedCounts[player.name]++;
         serialNum = state.serializedCounts[player.name];
-        const palettes = [
-            "linear-gradient(135deg, #ff0844 0%, #ffb199 50%, #f9d423 100%)", // Crimson Gold
-            "linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #69c7ff 100%)", // Cyber Sapphire
-            "linear-gradient(135deg, #7928ca 0%, #ff007f 50%, #ffd700 100%)", // Neon Orchid Gold
-            "linear-gradient(135deg, #00b09b 0%, #96c93d 50%, #ffffff 100%)", // Emerald Mint Ice
-            "linear-gradient(135deg, #111111 0%, #555555 40%, #00d2ff 75%, #ffffff 100%)", // Platinum Cyber Onyx
-            "linear-gradient(135deg, #f857a6 0%, #ff5858 50%, #ffc371 100%)", // Sunset Rose
-            "linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #f5ce62 100%)", // Royal Midnight Gold
-            "linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%)"  // Fiery Amethyst
-        ];
-        serialGrad = palettes[(serialNum - 1) % palettes.length];
+        serialGrad = generateRandomSerializedGradient();
     }
 
     const shouldAutoLock = rarity === "World Class" || rarity === "Secret" || serialNum !== null;
@@ -1003,13 +1029,45 @@ function openPack(type) {
 
     saveGame();
 
-    if (rarity === "World Class") {
-        showWorldClass(card);
-    } else {
-        showCardResult(card, duplicate, isFirstDiscovery);
+    // Show 3D Pack Opening Shaking Animation
+    const animOverlay = document.getElementById("packOpeningOverlay");
+    const animTitle = document.getElementById("packAnimTitle");
+    const animIcon = document.getElementById("packAnimIcon");
+    if (animOverlay) {
+        if (animTitle) animTitle.textContent = `OPENING ${pack.name.toUpperCase()}...`;
+        if (animIcon) animIcon.textContent = type === "worldclass" ? "🌎" : type === "exclusive" ? "👑" : "📦";
+        animOverlay.classList.remove("hidden");
     }
 
-    renderAll();
+    setTimeout(() => {
+        if (animOverlay) animOverlay.classList.add("hidden");
+        if (rarity === "World Class") {
+            showWorldClass(card);
+        } else if (rarity === "Secret") {
+            showSecretCutscene(card);
+        } else {
+            showCardResult(card, duplicate, isFirstDiscovery);
+        }
+        renderAll();
+    }, 600);
+}
+
+function showSecretCutscene(card) {
+    const overlay = document.getElementById("secretOverlay");
+    if (!overlay) {
+        showCardResult(card, false, false);
+        return;
+    }
+    setText("secretPlayerName", card.player.toUpperCase());
+    setText("secretPlayerMeta", `${card.rating} OVR · ${card.pos} · ★ 1 IN 500 SECRET PHENOMENON ★`);
+    overlay.classList.remove("hidden");
+    SoundFx.worldClassCinematic();
+}
+
+function closeSecretCutscene() {
+    const overlay = document.getElementById("secretOverlay");
+    if (overlay) overlay.classList.add("hidden");
+    SoundFx.click();
 }
 
 function rollRarity(rates) {
@@ -1322,20 +1380,211 @@ function renderIndex() {
 }
 
 /* =========================================================
-   COLLECTION & HOVER STATS
+   COLLECTION & MULTI-ACTION SYSTEM
    ========================================================= */
+
+let multiSelectMode = false;
+let selectedCardIds = new Set();
+
+function toggleMultiSelectMode() {
+    multiSelectMode = !multiSelectMode;
+    selectedCardIds.clear();
+    const btn = document.getElementById("multiSelectToggleBtn");
+    const bar = document.getElementById("multiSelectBar");
+    if (btn) btn.textContent = multiSelectMode ? "✕ Exit Select" : "☑️ Multi-Select Mode";
+    if (bar) bar.classList.toggle("hidden", !multiSelectMode);
+    renderCards();
+}
+
+function toggleCardSelection(id, event) {
+    if (event) event.stopPropagation();
+    if (selectedCardIds.has(id)) {
+        selectedCardIds.delete(id);
+    } else {
+        selectedCardIds.add(id);
+    }
+    updateMultiSelectBar();
+    renderCards();
+}
+
+function updateMultiSelectBar() {
+    const countEl = document.getElementById("multiSelectCount");
+    const valEl = document.getElementById("multiSelectValue");
+    if (!countEl || !valEl) return;
+
+    const count = selectedCardIds.size;
+    let totalVal = 0;
+    state.cards.forEach(c => {
+        if (selectedCardIds.has(c.id)) {
+            totalVal += (DUPLICATE_VALUES[c.rarity] || 5);
+        }
+    });
+
+    countEl.textContent = `${count} card${count === 1 ? '' : 's'} selected`;
+    valEl.textContent = `(+${totalVal.toLocaleString()} 🪙)`;
+}
+
+function multiSelectAllUnlocked() {
+    const filter = document.getElementById("cardFilter");
+    let cards = [...state.cards];
+    if (filter && filter.value !== "all") {
+        if (filter.value === "locked") cards = cards.filter(c => c.locked);
+        else if (filter.value === "unlocked") cards = cards.filter(c => !c.locked);
+        else cards = cards.filter(c => c.rarity.toLowerCase() === filter.value.toLowerCase());
+    }
+    cards.forEach(c => {
+        if (!c.locked) selectedCardIds.add(c.id);
+    });
+    updateMultiSelectBar();
+    renderCards();
+}
+
+function multiSelectClear() {
+    selectedCardIds.clear();
+    updateMultiSelectBar();
+    renderCards();
+}
+
+function multiLockSelected(shouldLock) {
+    if (!selectedCardIds.size) {
+        toast("No cards selected.");
+        return;
+    }
+    let count = 0;
+    state.cards.forEach(c => {
+        if (selectedCardIds.has(c.id)) {
+            c.locked = shouldLock;
+            count++;
+        }
+    });
+    SoundFx.click();
+    saveGame();
+    selectedCardIds.clear();
+    updateMultiSelectBar();
+    renderCards();
+    toast(`🔒 ${count} cards ${shouldLock ? 'locked' : 'unlocked'}.`);
+}
+
+function multiSellSelected() {
+    if (!selectedCardIds.size) {
+        toast("No cards selected.");
+        return;
+    }
+
+    const cardsToSell = state.cards.filter(c => selectedCardIds.has(c.id) && !c.locked);
+    if (!cardsToSell.length) {
+        toast("Selected cards are locked! Unlock them first to sell.");
+        return;
+    }
+
+    let totalGain = 0;
+    cardsToSell.forEach(c => {
+        totalGain += (DUPLICATE_VALUES[c.rarity] || 5);
+        state.stats.cardsSold++;
+    });
+
+    const sellIds = new Set(cardsToSell.map(c => c.id));
+    state.cards = state.cards.filter(c => !sellIds.has(c.id));
+    state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
+
+    addCoins(totalGain);
+    SoundFx.sell();
+    saveGame();
+    selectedCardIds.clear();
+    updateMultiSelectBar();
+    renderCards();
+    renderShowcase();
+    toast(`💰 Sold ${cardsToSell.length} cards for +${totalGain.toLocaleString()} 🪙!`);
+}
+
+function quickSellRarity(targetRarity) {
+    const unlocked = state.cards.filter(c => c.rarity.toLowerCase() === targetRarity.toLowerCase() && !c.locked);
+    if (!unlocked.length) {
+        toast(`No unlocked ${targetRarity} cards available to sell.`);
+        return;
+    }
+
+    let totalGain = 0;
+    unlocked.forEach(c => {
+        totalGain += (DUPLICATE_VALUES[c.rarity] || 5);
+        state.stats.cardsSold++;
+    });
+
+    const sellIds = new Set(unlocked.map(c => c.id));
+    state.cards = state.cards.filter(c => !sellIds.has(c.id));
+    state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
+
+    addCoins(totalGain);
+    SoundFx.sell();
+    saveGame();
+    renderCards();
+    renderShowcase();
+    toast(`💰 Sold ${unlocked.length} ${targetRarity} cards for +${totalGain.toLocaleString()} 🪙!`);
+}
+
+function quickSellDuplicates() {
+    const seen = new Set();
+    const toSell = [];
+
+    // Keep the best / locked copies, sell duplicates of unlocked cards
+    state.cards.forEach(c => {
+        if (c.locked || c.serialNumber) return;
+        if (seen.has(c.player)) {
+            toSell.push(c);
+        } else {
+            seen.add(c.player);
+        }
+    });
+
+    if (!toSell.length) {
+        toast("No unlocked duplicate cards found.");
+        return;
+    }
+
+    let totalGain = 0;
+    toSell.forEach(c => {
+        totalGain += (DUPLICATE_VALUES[c.rarity] || 5);
+        state.stats.cardsSold++;
+    });
+
+    const sellIds = new Set(toSell.map(c => c.id));
+    state.cards = state.cards.filter(c => !sellIds.has(c.id));
+    state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
+
+    addCoins(totalGain);
+    SoundFx.sell();
+    saveGame();
+    renderCards();
+    renderShowcase();
+    toast(`💰 Sold ${toSell.length} duplicate cards for +${totalGain.toLocaleString()} 🪙!`);
+}
 
 function renderCards() {
     const grid = document.getElementById("cardsGrid");
     const filter = document.getElementById("cardFilter");
+    const sorter = document.getElementById("cardSorter");
     if (!grid) return;
 
     let cards = [...state.cards];
     if (filter && filter.value !== "all") {
-        cards = cards.filter(c => c.rarity.toLowerCase() === filter.value.toLowerCase());
+        if (filter.value === "locked") cards = cards.filter(c => c.locked);
+        else if (filter.value === "unlocked") cards = cards.filter(c => !c.locked);
+        else cards = cards.filter(c => c.rarity.toLowerCase() === filter.value.toLowerCase());
     }
 
-    cards.sort((a, b) => b.rating - a.rating);
+    const sortMode = sorter ? sorter.value : "rarity_desc";
+    if (sortMode === "rarity_desc") {
+        cards.sort((a, b) => (RARITY_ORDER[b.rarity] || 0) - (RARITY_ORDER[a.rarity] || 0) || b.rating - a.rating);
+    } else if (sortMode === "rarity_asc") {
+        cards.sort((a, b) => (RARITY_ORDER[a.rarity] || 0) - (RARITY_ORDER[b.rarity] || 0) || a.rating - b.rating);
+    } else if (sortMode === "value_desc") {
+        cards.sort((a, b) => getCardValue(b) - getCardValue(a) || b.rating - a.rating);
+    } else if (sortMode === "rating_desc") {
+        cards.sort((a, b) => b.rating - a.rating);
+    } else if (sortMode === "newest") {
+        cards.sort((a, b) => (b.obtained || 0) - (a.obtained || 0));
+    }
+
     setText("collectionCount", `${state.cards.length} cards collected`);
 
     if (!cards.length) {
@@ -1356,25 +1605,20 @@ function renderCards() {
         }
 
         const isLocked = !!card.locked;
+        const isSelected = selectedCardIds.has(card.id);
 
         return `
-        <article class="card ${frame.css} ${themeClass}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="open3DCard('${card.id}')">
+        <article class="card ${frame.css} ${themeClass} ${isSelected ? 'selected-for-bulk' : ''}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="${multiSelectMode ? `toggleCardSelection('${card.id}', event)` : `open3DCard('${card.id}')`}">
+            ${multiSelectMode ? `<input type="checkbox" class="card-select-checkbox" ${isSelected ? 'checked' : ''} onclick="toggleCardSelection('${card.id}', event)">` : ""}
+
             <div class="card-top-row">
                 <span class="card-rarity-pill rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
-                <button class="card-lock-btn ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleCardLock('${card.id}')" title="${isLocked ? 'Unlock Card' : 'Lock Card'}">
+                <button class="card-lock-btn ${isLocked ? 'locked' : ''}" onclick="toggleCardLock('${card.id}', event)" title="${isLocked ? 'Unlock Card' : 'Lock Card'}">
                     ${isLocked ? '🔒' : '🔓'}
                 </button>
             </div>
 
             ${card.serialNumber ? `<span class="serial-badge" style="display:inline-block;margin-bottom:6px;">★ SERIAL #${card.serialNumber}/10 ★</span>` : ""}
-            
-            <div class="card-hover-stats">
-                <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
-                <h4>${escapeHTML(card.player)}</h4>
-                <div class="stat-tag">OVR ${card.rating} · ${escapeHTML(card.pos)}</div>
-                <div class="stat-tag">Resale Value: ${value} 🪙</div>
-                <div class="stat-tag">${isLocked ? '🔒 Locked (Protected)' : '🔓 Unlocked'}</div>
-            </div>
 
             <div class="card-image-wrap">
                 <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
@@ -1397,7 +1641,11 @@ function rarityClassName(rarity) {
     return rarity.toLowerCase().replaceAll(" ", "");
 }
 
-function toggleCardLock(id) {
+function toggleCardLock(id, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     const card = state.cards.find(c => c.id === id);
     if (!card) return;
     card.locked = !card.locked;
@@ -2497,10 +2745,14 @@ function toggleAdminPanel(forceOpen) {
     if (!panel) return;
     if (forceOpen === true) {
         panel.classList.remove("hidden");
+        panel.style.display = "block";
     } else if (forceOpen === false) {
         panel.classList.add("hidden");
+        panel.style.display = "none";
     } else {
-        panel.classList.toggle("hidden");
+        const isHidden = panel.classList.contains("hidden") || panel.style.display === "none";
+        panel.classList.toggle("hidden", !isHidden);
+        panel.style.display = isHidden ? "block" : "none";
     }
 }
 
@@ -2874,6 +3126,14 @@ function showPage(pageId) {
 
     const sidebar = document.getElementById("sidebar");
     if (sidebar && window.innerWidth <= 768) sidebar.classList.remove("open");
+
+    if (pageId === "statistics") renderStatistics();
+    if (pageId === "leaderboard") renderLeaderboard();
+    if (pageId === "cards") renderCards();
+    if (pageId === "profile") renderProfile();
+    if (pageId === "trade") renderTradeHub();
+    if (pageId === "index") renderIndex();
+    if (pageId === "shop") renderShop();
 
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
