@@ -33,17 +33,7 @@
     </div>
 </div>
 
-<!-- NAME MODAL (FOR FIRST TIME GUEST) -->
-<div id="nameModal" class="modal hidden">
-    <div class="modal-box">
-        <div class="football-icon">⚽</div>
-        <h1>Football Cards</h1>
-        <p>Choose your username.</p>
-        <input id="nameInput" maxlength="20" placeholder="Your name">
-        <p id="nameError" class="error"></p>
-        <button id="nameConfirm" class="primary-btn">Start Playing</button>
-    </div>
-</div>
+
 
 <!-- PACK ODDS PROBABILITY MODAL -->
 <div id="packOddsModal" class="modal hidden">
@@ -358,8 +348,8 @@
             <div class="pack-ball">🏆</div>
             <p class="rarity epic">CHAMPION</p>
             <h2>Champion Pack</h2>
-            <p>Ballon d'Or shortlist — Elite superstars & generational football talents.</p>
-            <div class="pack-rate">Rare → World Class</div>
+            <p>Ballon d'Or shortlist — Elite superstars & generational football talents (0.5% Secret chance!).</p>
+            <div class="pack-rate">Rare → World Class (0.5% Secret)</div>
             <button onclick="openPack('champion')">45 🪙 · OPEN</button>
         </article>
 
@@ -611,15 +601,6 @@
             <button class="primary-btn" style="width:auto;padding:10px 20px;" onclick="applyCustomAvatarUrl()">Apply</button>
         </div>
 
-        <label>Preset Football Avatars</label>
-        <div class="preset-avatar-grid">
-            <button class="preset-btn" onclick="setPresetAvatar('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80')">⚽ Ball</button>
-            <button class="preset-btn" onclick="setPresetAvatar('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=200&auto=format&fit=crop&q=80')">🏟️ Arena</button>
-            <button class="preset-btn" onclick="setPresetAvatar('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=200&auto=format&fit=crop&q=80')">🏆 Trophy</button>
-            <button class="preset-btn" onclick="setPresetAvatar('https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=200&auto=format&fit=crop&q=80')">🔥 Striker</button>
-            <button class="preset-btn" onclick="setPresetAvatar('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=200&auto=format&fit=crop&q=80')">👑 Legend</button>
-        </div>
-
         <div style="margin-top:20px;">
             <button class="primary-btn" onclick="changeName()">Change Name</button>
         </div>
@@ -784,7 +765,7 @@
 
     <div class="panel">
         <h2>Name</h2>
-        <p>Current name: <b id="settingsCurrentName">Football Player</b></p>
+        <p>Current name: <b id="settingsCurrentName">Player</b></p>
         <button class="primary-btn" onclick="changeName()">Change Name</button>
     </div>
 
