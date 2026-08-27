@@ -23,14 +23,18 @@
     </div>
 </div>
 
-<!-- WORLD CLASS -->
-<div id="worldClassOverlay" class="modal hidden world-modal">
-    <div class="world-card">
-        <div class="world-glow">🌎</div>
-        <p class="rarity worldclass">WORLD CLASS</p>
-        <h1 id="wcPlayerName">PLAYER</h1>
-        <p id="wcPlayerMeta"></p>
-        <button id="wcContinue" class="primary-btn">Continue</button>
+<!-- WORLD CLASS SOL'S RNG CINEMATIC CUTSCENE -->
+<div id="worldClassOverlay" class="modal hidden sols-rng-overlay">
+    <div class="sols-blackout"></div>
+    <div class="sols-rift"></div>
+    <div class="sols-auras"></div>
+    <div class="world-card sols-card">
+        <div class="sols-cosmic-rays"></div>
+        <div class="world-glow sols-icon">🌎</div>
+        <p class="rarity worldclass sols-rarity-tag">★ WORLD CLASS ★</p>
+        <h1 id="wcPlayerName" class="sols-player-name">PLAYER</h1>
+        <p id="wcPlayerMeta" class="sols-player-meta"></p>
+        <button id="wcContinue" class="primary-btn sols-btn">CLAIM LEGEND</button>
     </div>
 </div>
 
@@ -64,8 +68,8 @@
     <button class="nav" data-page="shop" onclick="showPage('shop')">🛒 Shop</button>
     <button class="nav" data-page="profile" onclick="showPage('profile')">👤 Profile</button>
     <button class="nav" data-page="statistics" onclick="showPage('statistics')">📊 Statistics</button>
-    <button class="nav" data-page="leaderboard" onclick="showPage('leaderboard')">🌎 Leaderboard</button>
-    <button class="nav" data-page="tournament" onclick="showPage('tournament')">🏆 Tournament</button>
+    <button class="nav" data-page="leaderboard" onclick="showPage('leaderboard')">🏆 Leaderboard</button>
+    <button class="nav" data-page="tournament" onclick="showPage('tournament')">⚔️ Tournament</button>
     <button class="nav" data-page="missions" onclick="showPage('missions')">🎯 Missions</button>
     <button class="nav" data-page="settings" onclick="showPage('settings')">⚙️ Settings</button>
 </aside>
@@ -103,7 +107,7 @@
             <p class="rarity common">STARTER</p>
             <h2>Starter Pack</h2>
             <p>Reliable cards for beginning your collection.</p>
-            <div class="pack-rate">Common-heavy</div>
+            <div class="pack-rate">Common · Uncommon · Rare+</div>
             <button onclick="openPack('starter')">10 🪙 · OPEN</button>
         </article>
 
@@ -116,22 +120,31 @@
             <button onclick="openPack('premium')">25 🪙 · OPEN</button>
         </article>
 
-        <article class="pack elite-pack">
-            <div class="pack-ball">🔥</div>
-            <p class="rarity epic">MEGA</p>
-            <h2>Mega Pack</h2>
-            <p>Only Rare and above can appear.</p>
+        <article class="pack champion-pack">
+            <div class="pack-ball">🏆</div>
+            <p class="rarity epic">CHAMPION</p>
+            <h2>Champion Pack</h2>
+            <p>No Common or Uncommon cards. Pure high tier.</p>
             <div class="pack-rate">Rare → World Class</div>
-            <button onclick="openPack('elite')">45 🪙 · OPEN</button>
+            <button onclick="openPack('champion')">45 🪙 · OPEN</button>
         </article>
 
         <article id="limitedPackCard" class="pack limited-pack">
             <div class="pack-ball">👑</div>
             <p class="rarity limited">LIMITED</p>
             <h2>Legends of the Past</h2>
-            <p>Historic football icons.</p>
+            <p>Historic football icons (Pelé, Maradona, Zidane).</p>
             <div id="limitedTimer" class="pack-rate">Loading...</div>
             <button onclick="openPack('limited')">60 🪙 · OPEN</button>
+        </article>
+
+        <article class="pack worldclass-pack">
+            <div class="pack-ball">🌎</div>
+            <p class="rarity worldclass">WORLD CLASS</p>
+            <h2>World Class Pack</h2>
+            <p>100% Guaranteed World Class cards (Messi & Ronaldo).</p>
+            <div class="pack-rate">100% World Class</div>
+            <button onclick="openPack('worldclass')">100 🪙 · OPEN</button>
         </article>
 
     </div>
@@ -278,13 +291,12 @@
 <section id="leaderboard" class="page">
     <div class="section-head">
         <div>
-            <p class="eyebrow">ONLINE</p>
+            <p class="eyebrow">RANKINGS</p>
             <h1>Global Leaderboard</h1>
-            <p>Local mode works immediately. Online mode connects when a backend is configured.</p>
+            <p>Top collectors and championship ranking.</p>
         </div>
     </div>
 
-    <div id="onlineStatus" class="online-status">● Checking online service...</div>
     <div id="globalLeaderboard" class="leaderboard"></div>
 </section>
 
@@ -294,7 +306,7 @@
     <div class="tournament-hero">
         <p class="eyebrow">SEASON 1</p>
         <h1>World Football Championship</h1>
-        <p>Compete with your collection.</p>
+        <p>Compete with your collection and win exclusive #1 Tournament card: <b>Emanuel (99)</b>.</p>
         <div id="tournamentTimer">Loading...</div>
         <button class="primary-btn" onclick="enterTournament()">Enter Tournament</button>
     </div>
@@ -338,6 +350,15 @@
     </div>
 
     <div class="panel">
+        <h2>🎁 Redeem Codes</h2>
+        <p>Enter promo codes to receive free coins!</p>
+        <div style="display:flex;gap:10px;margin-top:12px;">
+            <input id="codeInput" placeholder="Enter code (e.g. RELEASE)" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;text-transform:uppercase;">
+            <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="redeemCode()">Redeem</button>
+        </div>
+    </div>
+
+    <div class="panel">
         <h2>Account</h2>
         <p>Current name: <b id="settingsCurrentName">Football Collector</b></p>
         <button class="primary-btn" onclick="changeName()">Change Name</button>
@@ -347,13 +368,6 @@
         <h2>Save</h2>
         <p>Your progress is automatically saved on this device.</p>
         <button class="danger-btn" onclick="resetGame()">Reset Game</button>
-    </div>
-
-    <div class="panel online-panel">
-        <h2>🌎 Online Mode</h2>
-        <p id="onlineInfo">
-            Online services are optional. Your game will continue working offline.
-        </p>
     </div>
 
 </section>
