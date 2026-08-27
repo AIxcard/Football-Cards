@@ -46,6 +46,33 @@ const DUPLICATE_VALUES = {
     Tournament: 2000
 };
 
+const CARD_VALUES = {
+    Common: 5,
+    Uncommon: 15,
+    Rare: 40,
+    Epic: 100,
+    Legendary: 300,
+    Exclusive: 750,
+    Mythic: 1000,
+    Secret: 2500,
+    "World Class": 5000,
+    Tournament: 15000
+};
+
+function getCardValue(card) {
+    if (!card) return 0;
+    if (card.serialNumber || (card.rarity === "World Class" && (card.player === "Lionel Messi" || card.player === "Cristiano Ronaldo") && card.isSerialized)) {
+        return 10000;
+    }
+    if (card.serialNumber) return 10000;
+    return CARD_VALUES[card.rarity] || 5;
+}
+
+function calculateCollectionValue(cards) {
+    if (!Array.isArray(cards)) return 0;
+    return cards.reduce((sum, c) => sum + getCardValue(c), 0);
+}
+
 const SERIALIZED_PALETTES = [
     "linear-gradient(135deg, #1f0036 0%, #7928ca 50%, #ffffff 100%)", // #1 Dark Purple White
     "linear-gradient(135deg, #ff0844 0%, #7928ca 60%, #ff007f 100%)", // #2 Red Purple Fire
@@ -356,28 +383,40 @@ const TITLES = [
     name: "The Greatest",
     cssClass: "title-greatest",
     requirement: "Own Lionel Messi",
-    unlock: () => ownsPlayer("Lionel Messi")
+    unlock: () => {
+        try { return ownsPlayer("Lionel Messi"); } catch (e) { return false; }
+    }
 },
 {
     id: "ronaldo",
     name: "The King",
     cssClass: "title-king",
     requirement: "Own Cristiano Ronaldo",
-    unlock: () => ownsPlayer("Cristiano Ronaldo")
+    unlock: () => {
+        try { return ownsPlayer("Cristiano Ronaldo"); } catch (e) { return false; }
+    }
 },
 {
     id: "world",
     name: "World Class Hunter",
     cssClass: "title-world",
     requirement: "Pull or own a World Class card",
-    unlock: () => (state.stats.worldClass || 0) > 0 || state.cards.some(c => c.rarity === "World Class" || c.player === "Lionel Messi" || c.player === "Cristiano Ronaldo")
+    unlock: () => {
+        try {
+            return (state.stats && state.stats.worldClass > 0) || (Array.isArray(state.cards) && state.cards.some(c => c.rarity === "World Class" || c.player === "Lionel Messi" || c.player === "Cristiano Ronaldo"));
+        } catch (e) { return false; }
+    }
 },
 {
     id: "legend",
     name: "Legend Collector",
     cssClass: "title-legend",
     requirement: "Own 5 Legendary+ cards",
-    unlock: () => state.cards.filter(c => (RARITY_ORDER[c.rarity] || 0) >= 5).length >= 5
+    unlock: () => {
+        try {
+            return Array.isArray(state.cards) && state.cards.filter(c => (RARITY_ORDER[c.rarity] || 0) >= 5).length >= 5;
+        } catch (e) { return false; }
+    }
 },
 {
     id: "top10",
@@ -385,8 +424,10 @@ const TITLES = [
     cssClass: "title-top10",
     requirement: "Reach Top 10 on Tournament Leaderboard",
     unlock: () => {
-        const rank = getMyTournamentRank();
-        return rank > 0 && rank <= 10;
+        try {
+            const rank = getMyTournamentRank();
+            return rank > 0 && rank <= 10;
+        } catch (e) { return false; }
     }
 },
 {
@@ -394,47 +435,65 @@ const TITLES = [
     name: "Season 1 Champion",
     cssClass: "title-champion",
     requirement: "Reach #1 Rank on Tournament Leaderboard",
-    unlock: () => getMyTournamentRank() === 1
+    unlock: () => {
+        try { return getMyTournamentRank() === 1; } catch (e) { return false; }
+    }
 },
 {
     id: "owner",
     name: "Owner",
     cssClass: "title-owner",
     requirement: "Reach Level 50 or 50,000+ Collection Value",
-    unlock: () => (state.level >= 50 || calculateCollectionValue(state.cards) >= 50000)
+    unlock: () => {
+        try {
+            return (state.level >= 50 || calculateCollectionValue(state.cards || []) >= 50000);
+        } catch (e) { return false; }
+    }
 },
 {
     id: "admin",
     name: "Admin",
     cssClass: "title-admin",
     requirement: "Reach Level 25 or 25,000+ Collection Value",
-    unlock: () => (state.level >= 25 || calculateCollectionValue(state.cards) >= 25000)
+    unlock: () => {
+        try {
+            return (state.level >= 25 || calculateCollectionValue(state.cards || []) >= 25000);
+        } catch (e) { return false; }
+    }
 },
 {
     id: "staff",
     name: "Staff",
     cssClass: "title-staff",
     requirement: "Reach Level 10 or 10,000+ Collection Value",
-    unlock: () => (state.level >= 10 || calculateCollectionValue(state.cards) >= 10000)
+    unlock: () => {
+        try {
+            return (state.level >= 10 || calculateCollectionValue(state.cards || []) >= 10000);
+        } catch (e) { return false; }
+    }
 }
 ];
 
 function getMyTournamentRank() {
-    const accs = CloudSync.getAccounts();
-    const scores = [];
-    for (const k in accs) {
-        try {
-            const d = JSON.parse(accs[k].saveData);
-            if (d && d.stats) scores.push({ name: d.name || accs[k].username, score: d.stats.tournamentScore || 0 });
-        } catch (e) {}
+    try {
+        const accs = typeof CloudSync !== "undefined" && CloudSync.getAccounts ? CloudSync.getAccounts() : {};
+        const scores = [];
+        for (const k in accs) {
+            try {
+                const d = JSON.parse(accs[k].saveData);
+                if (d && d.stats) scores.push({ name: d.name || accs[k].username, score: d.stats.tournamentScore || 0 });
+            } catch (e) {}
+        }
+        if (state && state.accountUser && !scores.some(s => s.name.toLowerCase() === state.accountUser.toLowerCase())) {
+            scores.push({ name: state.name || state.accountUser, score: (state.stats && state.stats.tournamentScore) || 0 });
+        }
+        scores.sort((a, b) => b.score - a.score);
+        const myName = (state && (state.name || state.accountUser || "")).toLowerCase();
+        const idx = scores.findIndex(s => s.name.toLowerCase() === myName);
+        return idx >= 0 ? idx + 1 : 0;
+    } catch (e) {
+        return 0;
     }
-    if (state.accountUser && !scores.some(s => s.name.toLowerCase() === state.accountUser.toLowerCase())) {
-        scores.push({ name: state.name || state.accountUser, score: state.stats.tournamentScore || 0 });
-    }
-    scores.sort((a, b) => b.score - a.score);
-    const myName = (state.name || state.accountUser || "").toLowerCase();
-    const idx = scores.findIndex(s => s.name.toLowerCase() === myName);
-    return idx >= 0 ? idx + 1 : 0;
 }
 
 /* =========================================================
@@ -542,12 +601,17 @@ function loadGame() {
         const ownedFrames = Array.isArray(saved.ownedFrames) && saved.ownedFrames.length ? saved.ownedFrames : ["default"];
         const ownedBackgrounds = Array.isArray(saved.ownedBackgrounds) && saved.ownedBackgrounds.length ? saved.ownedBackgrounds : ["campnou"];
 
+        let showcase = Array.isArray(saved.showcase) ? [...saved.showcase] : [null, null, null, null, null, null];
+        while (showcase.length < 6) showcase.push(null);
+        showcase = showcase.slice(0, 6);
+
         return {
             ...fresh,
             ...saved,
             name: activeName,
             ownedFrames: ownedFrames,
             ownedBackgrounds: ownedBackgrounds,
+            showcase: showcase,
             profileFrame: saved.profileFrame || "default",
             profileBackground: saved.profileBackground || "campnou",
             equippedTitle: saved.equippedTitle || "Collector",
@@ -567,7 +631,6 @@ function loadGame() {
             missionProgress: { ...fresh.missionProgress, ...(saved.missionProgress || {}) },
             missionClaimed: { ...fresh.missionClaimed, ...(saved.missionClaimed || {}) },
             missionReset: { ...fresh.missionReset, ...(saved.missionReset || {}) },
-            showcase: Array.isArray(saved.showcase) ? saved.showcase : fresh.showcase,
             unlockedCardNames: Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : [],
             serializedCounts: saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 },
             redeemedCodes: Array.isArray(saved.redeemedCodes) ? saved.redeemedCodes : []
@@ -920,20 +983,20 @@ function confirmName() {
 }
 
 function renderAll() {
-    updateCoinDisplay();
-    renderHero();
-    renderCards();
-    renderIndex();
-    renderTradeHub();
-    renderShop();
-    renderProfile();
-    renderShowcase();
-    renderStatistics();
-    renderLeaderboard();
-    renderTournament();
-    renderMissions();
-    renderSettings();
-    updateAuthUI();
+    try { updateCoinDisplay(); } catch(e) { console.error("CoinDisplay error", e); }
+    try { renderHero(); } catch(e) { console.error("Hero error", e); }
+    try { renderCards(); } catch(e) { console.error("Cards error", e); }
+    try { renderIndex(); } catch(e) { console.error("Index error", e); }
+    try { renderTradeHub(); } catch(e) { console.error("TradeHub error", e); }
+    try { renderShop(); } catch(e) { console.error("Shop error", e); }
+    try { renderProfile(); } catch(e) { console.error("Profile error", e); }
+    try { renderShowcase(); } catch(e) { console.error("Showcase error", e); }
+    try { renderStatistics(); } catch(e) { console.error("Statistics error", e); }
+    try { renderLeaderboard(); } catch(e) { console.error("Leaderboard error", e); }
+    try { renderTournament(); } catch(e) { console.error("Tournament error", e); }
+    try { renderMissions(); } catch(e) { console.error("Missions error", e); }
+    try { renderSettings(); } catch(e) { console.error("Settings error", e); }
+    try { updateAuthUI(); } catch(e) { console.error("AuthUI error", e); }
 }
 
 function renderSettings() {
@@ -1426,40 +1489,15 @@ function renderIndex() {
 }
 
 /* =========================================================
-   COLLECTION & MULTI-ACTION SYSTEM
+   COLLECTION & MULTI-SELL SYSTEM
    ========================================================= */
 
-let multiLockMode = false;
 let multiSellMode = false;
 let selectedCardIds = new Set();
-
-function toggleMultiLockMode(force) {
-    if (force !== undefined) multiLockMode = force;
-    else multiLockMode = !multiLockMode;
-
-    if (multiLockMode) {
-        multiSellMode = false;
-        const sellBar = document.getElementById("multiSellBar");
-        if (sellBar) sellBar.classList.add("hidden");
-        const sellBtn = document.getElementById("multiSellBtn");
-        if (sellBtn) sellBtn.classList.remove("active");
-        toast("🔒 Multi-Lock Active: Click any card to lock or unlock it!");
-    }
-
-    const lockBtn = document.getElementById("multiLockBtn");
-    if (lockBtn) lockBtn.classList.toggle("active", multiLockMode);
-    renderCards();
-}
 
 function toggleMultiSellMode(force) {
     if (force !== undefined) multiSellMode = force;
     else multiSellMode = !multiSellMode;
-
-    if (multiSellMode) {
-        multiLockMode = false;
-        const lockBtn = document.getElementById("multiLockBtn");
-        if (lockBtn) lockBtn.classList.remove("active");
-    }
 
     selectedCardIds.clear();
     const sellBtn = document.getElementById("multiSellBtn");
@@ -1468,13 +1506,14 @@ function toggleMultiSellMode(force) {
     if (sellBar) sellBar.classList.toggle("hidden", !multiSellMode);
     updateMultiSellBar();
     renderCards();
+    if (multiSellMode) {
+        toast("💰 Multi-Sell Active: Select cards to bulk sell!");
+    }
 }
 
 function handleCardClick(cardId, event) {
     if (event) event.stopPropagation();
-    if (multiLockMode) {
-        toggleCardLock(cardId);
-    } else if (multiSellMode) {
+    if (multiSellMode) {
         toggleCardSelection(cardId);
     } else {
         open3DCard(cardId);
@@ -1506,7 +1545,7 @@ function updateMultiSellBar() {
     });
 
     countEl.textContent = `${count} card${count === 1 ? '' : 's'} selected`;
-    valEl.textContent = `(+${totalVal.toLocaleString()} 🪙)`;
+    valEl.textContent = `+${totalVal.toLocaleString()} 🪙`;
 }
 
 function multiSelectAllUnlocked() {
@@ -1556,10 +1595,10 @@ function confirmMultiSell() {
     SoundFx.sell();
     saveGame();
     selectedCardIds.clear();
-    updateMultiSellBar();
+    toggleMultiSellMode(false);
     renderCards();
     renderShowcase();
-    toast(`💰 Sold ${cardsToSell.length} cards for +${totalGain.toLocaleString()} 🪙!`);
+    toast(`🎉 Bulk Sold ${cardsToSell.length} cards for +${totalGain.toLocaleString()} 🪙!`);
 }
 
 function quickSellRarity(targetRarity) {
@@ -2151,30 +2190,35 @@ function ownsPlayer(name) {
    ========================================================= */
 
 function renderProfile() {
-    setText("profileName", state.name || state.accountUser || "Player");
-    setText("profileLevel", state.level);
-    setText("profileCards", state.cards.length);
-    setText("profilePacks", state.stats.packsOpened);
-    setText("profilePlaytime", formatPlaytime(state.stats.playtime));
-    setText("profileBest", state.stats.highestRarity || "Common");
-    const avatarImg = document.getElementById("profileAvatarImg");
-    if (avatarImg && state.avatar) avatarImg.src = state.avatar;
-    const avatarWrap = document.getElementById("profileAvatarWrap");
-    if (avatarWrap) {
-        const frame = FRAMES.find(f => f.id === state.profileFrame) || FRAMES[0];
-        avatarWrap.className = `profile-avatar-wrapper ${frame.css}`;
+    try {
+        setText("profileName", state.name || state.accountUser || "Player");
+        setText("profileLevel", state.level || 1);
+        setText("profileCards", (state.cards || []).length);
+        setText("profilePacks", (state.stats && state.stats.packsOpened) || 0);
+        setText("profilePlaytime", formatPlaytime((state.stats && state.stats.playtime) || 0));
+        setText("profileBest", (state.stats && state.stats.highestRarity) || "Common");
+        const avatarImg = document.getElementById("profileAvatarImg");
+        if (avatarImg && state.avatar) avatarImg.src = state.avatar;
+        const avatarWrap = document.getElementById("profileAvatarWrap");
+        if (avatarWrap) {
+            const frame = FRAMES.find(f => f.id === state.profileFrame) || FRAMES[0];
+            avatarWrap.className = `profile-avatar-wrapper ${frame.css}`;
+        }
+        const titleBadge = document.getElementById("profileEquippedTitle");
+        if (titleBadge) {
+            const titleObj = TITLES.find(t => t.name === state.equippedTitle) || TITLES[0];
+            titleBadge.textContent = titleObj.name;
+            titleBadge.className = `equipped-title-badge ${titleObj.cssClass}`;
+        }
+        const bg = BACKGROUNDS.find(b => b.id === state.profileBackground) || BACKGROUNDS[0];
+        const hero = document.getElementById("profileHero");
+        if (bg && hero) hero.style.background = bg.css;
+        renderProfileCustomization();
+        renderTitles();
+        renderShowcase();
+    } catch(e) {
+        console.error("renderProfile error", e);
     }
-    const titleBadge = document.getElementById("profileEquippedTitle");
-    if (titleBadge) {
-        const titleObj = TITLES.find(t => t.name === state.equippedTitle) || TITLES[0];
-        titleBadge.textContent = titleObj.name;
-        titleBadge.className = `equipped-title-badge ${titleObj.cssClass}`;
-    }
-    const bg = BACKGROUNDS.find(b => b.id === state.profileBackground) || BACKGROUNDS[0];
-    const hero = document.getElementById("profileHero");
-    if (bg && hero) hero.style.background = bg.css;
-    renderProfileCustomization();
-    renderTitles();
 }
 
 function renderProfileCustomization() {
@@ -2701,37 +2745,6 @@ function claimDailyReward() {
     saveGame();
     updateDailyReward();
     toast("🎁 Daily training reward claimed: +100 🪙!");
-}
-
-/* =========================================================
-   CARD VALUATION & LEADERBOARD SYSTEM
-   ========================================================= */
-
-const CARD_VALUES = {
-    Common: 5,
-    Uncommon: 15,
-    Rare: 40,
-    Epic: 100,
-    Legendary: 300,
-    Exclusive: 750,
-    Mythic: 1000,
-    Secret: 2500,
-    "World Class": 5000,
-    Tournament: 15000
-};
-
-function getCardValue(card) {
-    if (!card) return 0;
-    if (card.serialNumber || (card.rarity === "World Class" && (card.player === "Lionel Messi" || card.player === "Cristiano Ronaldo") && card.isSerialized)) {
-        return 10000;
-    }
-    if (card.serialNumber) return 10000;
-    return CARD_VALUES[card.rarity] || 5;
-}
-
-function calculateCollectionValue(cards) {
-    if (!Array.isArray(cards)) return 0;
-    return cards.reduce((sum, c) => sum + getCardValue(c), 0);
 }
 
 let currentLeaderboardTab = "gold";
