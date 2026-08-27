@@ -34,6 +34,24 @@
     </div>
 </div>
 
+<!-- CARD REVEAL MODAL -->
+<div id="cardRevealOverlay" class="modal hidden reveal-modal">
+    <div id="revealCardContainer" class="reveal-card-box">
+        <div class="reveal-badge" id="revealBadge">NEW PULL</div>
+        <div id="revealCard" class="card reveal-card-body">
+            <span id="revealRarity" class="rarity">RARITY</span>
+            <div id="revealEmoji" class="card-image">⚽</div>
+            <div id="revealRating" class="card-rating">90</div>
+            <div id="revealPos" class="card-position">ST</div>
+            <h3 id="revealName">Player Name</h3>
+            <small id="revealRaritySub">Rarity</small>
+        </div>
+        <div class="reveal-actions">
+            <button id="revealCollectBtn" class="primary-btn">Collect Card</button>
+        </div>
+    </div>
+</div>
+
 <header class="topbar">
     <button class="menu-btn" onclick="toggleSidebar()">☰</button>
     <div class="logo">⚽ <span>Football Cards</span></div>
@@ -142,7 +160,7 @@
             </div>
             <button class="ghost-btn" onclick="showPage('missions')">View All</button>
         </div>
-        <div id="missionList"></div>
+        <div id="homeMissionList"></div>
     </div>
 
 </section>
