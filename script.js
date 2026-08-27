@@ -46,6 +46,26 @@ const DUPLICATE_VALUES = {
     Tournament: 2000
 };
 
+const SERIALIZED_PALETTES = [
+    "linear-gradient(135deg, #1f0036 0%, #7928ca 50%, #ffffff 100%)", // #1 Dark Purple White
+    "linear-gradient(135deg, #ff0844 0%, #7928ca 60%, #ff007f 100%)", // #2 Red Purple Fire
+    "linear-gradient(135deg, #f9d423 0%, #ff4e50 50%, #0055a5 100%)", // #3 Yellow Blue Contrast
+    "linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #111111 100%)", // #4 24K Gold Obsidian
+    "linear-gradient(135deg, #051937 0%, #004d7a 40%, #008793 70%, #00bf72 100%)", // #5 Deep Cyber Mint
+    "linear-gradient(135deg, #4a00e0 0%, #8e2de2 50%, #00f2fe 100%)", // #6 Violet Cyan Plasma
+    "linear-gradient(135deg, #ff0055 0%, #ffffff 50%, #000000 100%)", // #7 Crimson Silver Onyx
+    "linear-gradient(135deg, #f12711 0%, #f5af19 50%, #ffffff 100%)", // #8 Fiery Solar Gold
+    "linear-gradient(135deg, #11998e 0%, #38ef7d 50%, #ffffff 100%)", // #9 Mint Emerald Ice
+    "linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%)"  // #10 Sunset Royal Magenta
+];
+
+function generateRandomSerializedGradient(serialNum) {
+    if (serialNum && serialNum >= 1 && serialNum <= SERIALIZED_PALETTES.length) {
+        return SERIALIZED_PALETTES[serialNum - 1];
+    }
+    return SERIALIZED_PALETTES[Math.floor(Math.random() * SERIALIZED_PALETTES.length)];
+}
+
 const DISCOVERY_BONUS = {
     Common: 10,
     Uncommon: 20,
@@ -380,22 +400,22 @@ const TITLES = [
     id: "owner",
     name: "Owner",
     cssClass: "title-owner",
-    requirement: "Redeem OP code sixseven67",
-    unlock: () => !!state.hasAdmin
+    requirement: "Reach Level 50 or 50,000+ Collection Value",
+    unlock: () => (state.level >= 50 || calculateCollectionValue(state.cards) >= 50000)
 },
 {
     id: "admin",
     name: "Admin",
     cssClass: "title-admin",
-    requirement: "Redeem OP code sixseven67",
-    unlock: () => !!state.hasAdmin
+    requirement: "Reach Level 25 or 25,000+ Collection Value",
+    unlock: () => (state.level >= 25 || calculateCollectionValue(state.cards) >= 25000)
 },
 {
     id: "staff",
     name: "Staff",
     cssClass: "title-staff",
-    requirement: "Redeem OP code sixseven67",
-    unlock: () => !!state.hasAdmin
+    requirement: "Reach Level 10 or 10,000+ Collection Value",
+    unlock: () => (state.level >= 10 || calculateCollectionValue(state.cards) >= 10000)
 }
 ];
 
@@ -519,15 +539,29 @@ function loadGame() {
             activeName = saved.accountUser || fresh.name;
         }
 
+        const ownedFrames = Array.isArray(saved.ownedFrames) && saved.ownedFrames.length ? saved.ownedFrames : ["default"];
+        const ownedBackgrounds = Array.isArray(saved.ownedBackgrounds) && saved.ownedBackgrounds.length ? saved.ownedBackgrounds : ["campnou"];
+
         return {
             ...fresh,
             ...saved,
             name: activeName,
-            hasAdmin: !!saved.hasAdmin,
-            cards: Array.isArray(saved.cards) ? saved.cards.map(c => ({
-                ...c,
-                locked: c.locked !== undefined ? c.locked : (c.rarity === "World Class" || c.rarity === "Secret" || !!c.serialNumber)
-            })) : fresh.cards,
+            ownedFrames: ownedFrames,
+            ownedBackgrounds: ownedBackgrounds,
+            profileFrame: saved.profileFrame || "default",
+            profileBackground: saved.profileBackground || "campnou",
+            equippedTitle: saved.equippedTitle || "Collector",
+            cards: Array.isArray(saved.cards) ? saved.cards.map((c, idx) => {
+                let sGrad = c.serialGradient;
+                if (c.serialNumber && !sGrad) {
+                    sGrad = generateRandomSerializedGradient(c.serialNumber);
+                }
+                return {
+                    ...c,
+                    serialGradient: sGrad,
+                    locked: c.locked !== undefined ? c.locked : (c.rarity === "World Class" || c.rarity === "Secret" || !!c.serialNumber)
+                };
+            }) : fresh.cards,
             stats: { ...fresh.stats, ...(saved.stats || {}) },
             tournamentDraft: { ...fresh.tournamentDraft, ...(saved.tournamentDraft || {}) },
             missionProgress: { ...fresh.missionProgress, ...(saved.missionProgress || {}) },
@@ -810,11 +844,6 @@ function updateAuthUI() {
         lWarning.style.display = user ? "none" : "block";
         lList.style.display = user ? "block" : "none";
     }
-
-    const floatBtn = document.getElementById("adminFloatingBtn");
-    if (floatBtn) {
-        floatBtn.classList.toggle("hidden", !state.hasAdmin);
-    }
 }
 
 /* =========================================================
@@ -824,7 +853,6 @@ function updateAuthUI() {
 document.addEventListener("DOMContentLoaded", () => {
     bindEvents();
     init3DInspector();
-    initAdminPanel();
     checkName();
     renderAll();
     updateTimers();
@@ -937,22 +965,6 @@ function renderHero() {
    PACK OPENING & SERIALIZATION (MESSI & RONALDO FIRST 10)
    ========================================================= */
 
-function generateRandomSerializedGradient() {
-    const presets = [
-        "linear-gradient(135deg, #1f0036 0%, #7928ca 50%, #ffffff 100%)", // Dark Purple White
-        "linear-gradient(135deg, #ff0844 0%, #7928ca 60%, #ff007f 100%)", // Red Purple
-        "linear-gradient(135deg, #f9d423 0%, #ff4e50 50%, #0055a5 100%)", // Yellow Blue
-        "linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #111111 100%)", // Gold Obsidian
-        "linear-gradient(135deg, #051937 0%, #004d7a 40%, #008793 70%, #00bf72 100%)", // Deep Cyber Mint
-        "linear-gradient(135deg, #4a00e0 0%, #8e2de2 50%, #00f2fe 100%)", // Violet Cyan
-        "linear-gradient(135deg, #ff0055 0%, #ffffff 50%, #000000 100%)", // Crimson Silver Onyx
-        "linear-gradient(135deg, #f12711 0%, #f5af19 50%, #ffffff 100%)", // Fiery Solar Gold
-        "linear-gradient(135deg, #11998e 0%, #38ef7d 50%, #ffffff 100%)", // Mint Emerald Ice
-        "linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%)"  // Sunset Royal Magenta
-    ];
-    return presets[Math.floor(Math.random() * presets.length)];
-}
-
 function openPack(type) {
     const pack = PACKS[type];
     if (!pack) return;
@@ -995,7 +1007,7 @@ function openPack(type) {
     if ((player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo") && (state.serializedCounts[player.name] < 10)) {
         state.serializedCounts[player.name]++;
         serialNum = state.serializedCounts[player.name];
-        serialGrad = generateRandomSerializedGradient();
+        serialGrad = generateRandomSerializedGradient(serialNum);
     }
 
     const shouldAutoLock = rarity === "World Class" || rarity === "Secret" || serialNum !== null;
@@ -1145,17 +1157,50 @@ function closePackOddsModal() {
    ========================================================= */
 
 function showWorldClass(card) {
+    const animOverlay = document.getElementById("packOpeningOverlay");
+    if (animOverlay) animOverlay.classList.add("hidden");
+
     const overlay = document.getElementById("worldClassOverlay");
     if (!overlay) return;
 
     const isMessi = card.player.includes("Messi");
     const isRonaldo = card.player.includes("Ronaldo");
+    const isSerialized = !!card.serialNumber;
 
     const badge = document.getElementById("wcGoatBadge");
     const quote = document.getElementById("wcPlayerQuote");
     const icon = document.getElementById("wcIcon");
+    const cardBox = overlay.querySelector(".world-card");
+    const rift = overlay.querySelector(".sols-rift");
 
-    if (badge) badge.textContent = isMessi ? "🐐 8x BALLON D'OR GOAT 🐐" : isRonaldo ? "🐐 5x CHAMPIONS LEAGUE GOAT 🐐" : "★ WORLD CLASS LEGEND ★";
+    if (isSerialized) {
+        if (badge) badge.textContent = `★ SERIALIZED #${card.serialNumber}/10 WORLD CLASS GOAT ★`;
+        if (cardBox) {
+            cardBox.style.background = card.serialGradient || "linear-gradient(135deg, #1f0036 0%, #7928ca 50%, #ffffff 100%)";
+            cardBox.style.borderColor = "#ffd700";
+            cardBox.style.boxShadow = "0 0 60px rgba(255, 215, 0, 0.8), 0 0 120px rgba(121, 40, 202, 0.6)";
+        }
+        if (rift) {
+            rift.style.background = card.serialGradient || "conic-gradient(from 0deg, #ff0844, #7928ca, #00f2fe, #ffd700, #ff0844)";
+        }
+    } else {
+        if (badge) badge.textContent = isMessi ? "🐐 8x BALLON D'OR GOAT 🐐" : isRonaldo ? "🐐 5x CHAMPIONS LEAGUE GOAT 🐐" : "★ WORLD CLASS LEGEND ★";
+        if (cardBox) {
+            cardBox.style.background = isMessi
+                ? "linear-gradient(135deg, #003b7a 0%, #0099ff 40%, #ffffff 70%, #003b7a 100%)"
+                : "linear-gradient(135deg, #8b0014 0%, #ff1744 40%, #ffffff 70%, #8b0014 100%)";
+            cardBox.style.borderColor = isMessi ? "#69c7ff" : "#ff5252";
+            cardBox.style.boxShadow = isMessi
+                ? "0 0 60px rgba(105, 199, 255, 0.8), 0 0 120px rgba(0, 153, 255, 0.5)"
+                : "0 0 60px rgba(255, 23, 68, 0.8), 0 0 120px rgba(255, 76, 99, 0.5)";
+        }
+        if (rift) {
+            rift.style.background = isMessi
+                ? "conic-gradient(from 0deg, #003b7a, #0099ff, #ffffff, #0099ff, #003b7a)"
+                : "conic-gradient(from 0deg, #8b0014, #ff1744, #ffffff, #ff1744, #8b0014)";
+        }
+    }
+
     if (icon) icon.textContent = isMessi ? "🇦🇷" : isRonaldo ? "🇵🇹" : "🌎";
     if (quote) quote.textContent = isMessi ? '"The Argentine Magician · World Champion · The Greatest of All Time"' : isRonaldo ? '"The Portuguese Legend · All-Time Top Goalscorer · SIUUU!"' : '"Generational Football Icon"';
 
@@ -1163,6 +1208,7 @@ function showWorldClass(card) {
     setText("wcPlayerMeta", `${card.rating} OVR · ${card.pos} · ★ 1 IN 10,000 WORLD CLASS ★`);
 
     overlay.classList.remove("hidden");
+    overlay.style.display = "grid";
     SoundFx.cardReveal("World Class");
     state.worldClassPending = card.id;
     saveGame();
@@ -1383,17 +1429,56 @@ function renderIndex() {
    COLLECTION & MULTI-ACTION SYSTEM
    ========================================================= */
 
-let multiSelectMode = false;
+let multiLockMode = false;
+let multiSellMode = false;
 let selectedCardIds = new Set();
 
-function toggleMultiSelectMode() {
-    multiSelectMode = !multiSelectMode;
-    selectedCardIds.clear();
-    const btn = document.getElementById("multiSelectToggleBtn");
-    const bar = document.getElementById("multiSelectBar");
-    if (btn) btn.textContent = multiSelectMode ? "✕ Exit Select" : "☑️ Multi-Select Mode";
-    if (bar) bar.classList.toggle("hidden", !multiSelectMode);
+function toggleMultiLockMode(force) {
+    if (force !== undefined) multiLockMode = force;
+    else multiLockMode = !multiLockMode;
+
+    if (multiLockMode) {
+        multiSellMode = false;
+        const sellBar = document.getElementById("multiSellBar");
+        if (sellBar) sellBar.classList.add("hidden");
+        const sellBtn = document.getElementById("multiSellBtn");
+        if (sellBtn) sellBtn.classList.remove("active");
+        toast("🔒 Multi-Lock Active: Click any card to lock or unlock it!");
+    }
+
+    const lockBtn = document.getElementById("multiLockBtn");
+    if (lockBtn) lockBtn.classList.toggle("active", multiLockMode);
     renderCards();
+}
+
+function toggleMultiSellMode(force) {
+    if (force !== undefined) multiSellMode = force;
+    else multiSellMode = !multiSellMode;
+
+    if (multiSellMode) {
+        multiLockMode = false;
+        const lockBtn = document.getElementById("multiLockBtn");
+        if (lockBtn) lockBtn.classList.remove("active");
+    }
+
+    selectedCardIds.clear();
+    const sellBtn = document.getElementById("multiSellBtn");
+    const sellBar = document.getElementById("multiSellBar");
+    if (sellBtn) sellBtn.classList.toggle("active", multiSellMode);
+    if (sellBar) sellBar.classList.toggle("hidden", !multiSellMode);
+    updateMultiSellBar();
+    renderCards();
+}
+
+function handleCardClick(cardId, event) {
+    if (event) event.stopPropagation();
+    if (multiLockMode) {
+        toggleCardLock(cardId);
+    } else if (multiSellMode) {
+        toggleCardSelection(cardId);
+    } else {
+        open3DCard(cardId);
+    }
 }
 
 function toggleCardSelection(id, event) {
@@ -1403,13 +1488,13 @@ function toggleCardSelection(id, event) {
     } else {
         selectedCardIds.add(id);
     }
-    updateMultiSelectBar();
+    updateMultiSellBar();
     renderCards();
 }
 
-function updateMultiSelectBar() {
-    const countEl = document.getElementById("multiSelectCount");
-    const valEl = document.getElementById("multiSelectValue");
+function updateMultiSellBar() {
+    const countEl = document.getElementById("multiSellCount");
+    const valEl = document.getElementById("multiSellValue");
     if (!countEl || !valEl) return;
 
     const count = selectedCardIds.size;
@@ -1435,37 +1520,17 @@ function multiSelectAllUnlocked() {
     cards.forEach(c => {
         if (!c.locked) selectedCardIds.add(c.id);
     });
-    updateMultiSelectBar();
+    updateMultiSellBar();
     renderCards();
 }
 
 function multiSelectClear() {
     selectedCardIds.clear();
-    updateMultiSelectBar();
+    updateMultiSellBar();
     renderCards();
 }
 
-function multiLockSelected(shouldLock) {
-    if (!selectedCardIds.size) {
-        toast("No cards selected.");
-        return;
-    }
-    let count = 0;
-    state.cards.forEach(c => {
-        if (selectedCardIds.has(c.id)) {
-            c.locked = shouldLock;
-            count++;
-        }
-    });
-    SoundFx.click();
-    saveGame();
-    selectedCardIds.clear();
-    updateMultiSelectBar();
-    renderCards();
-    toast(`🔒 ${count} cards ${shouldLock ? 'locked' : 'unlocked'}.`);
-}
-
-function multiSellSelected() {
+function confirmMultiSell() {
     if (!selectedCardIds.size) {
         toast("No cards selected.");
         return;
@@ -1491,7 +1556,7 @@ function multiSellSelected() {
     SoundFx.sell();
     saveGame();
     selectedCardIds.clear();
-    updateMultiSelectBar();
+    updateMultiSellBar();
     renderCards();
     renderShowcase();
     toast(`💰 Sold ${cardsToSell.length} cards for +${totalGain.toLocaleString()} 🪙!`);
@@ -1608,8 +1673,8 @@ function renderCards() {
         const isSelected = selectedCardIds.has(card.id);
 
         return `
-        <article class="card ${frame.css} ${themeClass} ${isSelected ? 'selected-for-bulk' : ''}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="${multiSelectMode ? `toggleCardSelection('${card.id}', event)` : `open3DCard('${card.id}')`}">
-            ${multiSelectMode ? `<input type="checkbox" class="card-select-checkbox" ${isSelected ? 'checked' : ''} onclick="toggleCardSelection('${card.id}', event)">` : ""}
+        <article class="card ${frame.css} ${themeClass} ${isSelected ? 'selected-for-bulk' : ''}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="handleCardClick('${card.id}', event)">
+            ${multiSellMode ? `<input type="checkbox" class="card-select-checkbox" ${isSelected ? 'checked' : ''} onclick="toggleCardSelection('${card.id}', event)">` : ""}
 
             <div class="card-top-row">
                 <span class="card-rarity-pill rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
@@ -2114,9 +2179,21 @@ function renderProfile() {
 
 function renderProfileCustomization() {
     const frameSelect = document.getElementById("profileFrameSelect");
-    if (frameSelect) frameSelect.innerHTML = state.ownedFrames.map(id => { const f = FRAMES.find(x => x.id === id); return `<option value="${f.id}" ${f.id === state.profileFrame ? "selected" : ""}>${f.name}</option>`; }).join("");
+    if (frameSelect) {
+        const ownedF = Array.isArray(state.ownedFrames) && state.ownedFrames.length ? state.ownedFrames : ["default"];
+        frameSelect.innerHTML = ownedF.map(id => {
+            const f = FRAMES.find(x => x.id === id) || FRAMES[0];
+            return `<option value="${f.id}" ${f.id === state.profileFrame ? "selected" : ""}>${f.name}</option>`;
+        }).join("");
+    }
     const bgSelect = document.getElementById("profileBackgroundSelect");
-    if (bgSelect) bgSelect.innerHTML = state.ownedBackgrounds.map(id => { const bg = BACKGROUNDS.find(b => b.id === id); return `<option value="${bg.id}" ${bg.id === state.profileBackground ? "selected" : ""}>${bg.name}</option>`; }).join("");
+    if (bgSelect) {
+        const ownedB = Array.isArray(state.ownedBackgrounds) && state.ownedBackgrounds.length ? state.ownedBackgrounds : ["campnou"];
+        bgSelect.innerHTML = ownedB.map(id => {
+            const bg = BACKGROUNDS.find(b => b.id === id) || BACKGROUNDS[0];
+            return `<option value="${bg.id}" ${bg.id === state.profileBackground ? "selected" : ""}>${bg.name}</option>`;
+        }).join("");
+    }
 }
 
 function setProfileFrame(id) {
@@ -2669,7 +2746,7 @@ function setLeaderboardTab(tab) {
 }
 
 /* =========================================================
-   PROMO CODES & SECRET OP ADMIN (sixseven67)
+   PROMO CODES
    ========================================================= */
 
 function redeemCode() {
@@ -2682,21 +2759,6 @@ function redeemCode() {
     }
     const code = raw.toUpperCase();
     if (!state.redeemedCodes) state.redeemedCodes = [];
-
-    if (code === "SIXSEVEN67") {
-        state.hasAdmin = true;
-        if (!state.redeemedCodes.includes(code)) state.redeemedCodes.push(code);
-        addCoins(100000);
-        addXP(500);
-        SoundFx.levelUp();
-        input.value = "";
-        saveGame();
-        renderAll();
-        initAdminPanel();
-        toggleAdminPanel(true);
-        toast("👑 OP ADMIN ACCESS UNLOCKED! Welcome, Owner.");
-        return;
-    }
 
     if (state.redeemedCodes.includes(code)) {
         toast("You have already redeemed this code.");
@@ -2722,163 +2784,6 @@ function redeemCode() {
     } else {
         toast("Invalid code.");
     }
-}
-
-/* =========================================================
-   OP DRAGGABLE ADMIN PANEL CONTROLS
-   ========================================================= */
-
-function initAdminPanel() {
-    const select = document.getElementById("adminPlayerSelect");
-    if (select) {
-        select.innerHTML = PLAYERS.map(p => `<option value="${p.name}">${p.name} (${p.rating} OVR · ${p.rarity})</option>`).join("");
-    }
-    const floatBtn = document.getElementById("adminFloatingBtn");
-    if (floatBtn) {
-        floatBtn.classList.toggle("hidden", !state.hasAdmin);
-    }
-    makeDraggable("adminPanel", "adminHeader");
-}
-
-function toggleAdminPanel(forceOpen) {
-    const panel = document.getElementById("adminPanel");
-    if (!panel) return;
-    if (forceOpen === true) {
-        panel.classList.remove("hidden");
-        panel.style.display = "block";
-    } else if (forceOpen === false) {
-        panel.classList.add("hidden");
-        panel.style.display = "none";
-    } else {
-        const isHidden = panel.classList.contains("hidden") || panel.style.display === "none";
-        panel.classList.toggle("hidden", !isHidden);
-        panel.style.display = isHidden ? "block" : "none";
-    }
-}
-
-function adminAddCoins(amt) {
-    addCoins(amt);
-    SoundFx.coin();
-    saveGame();
-    renderAll();
-    toast(`⚡ Admin: Added +${amt.toLocaleString()} 🪙`);
-}
-
-function adminMaxCoins() {
-    state.coins = 9999999;
-    SoundFx.coin();
-    saveGame();
-    renderAll();
-    toast("⚡ Admin: Max Gold Set (9,999,999 🪙)!");
-}
-
-function adminSpawnSelectedCard(isSerialized) {
-    const select = document.getElementById("adminPlayerSelect");
-    if (!select) return;
-    const name = select.value;
-    const p = PLAYERS.find(x => x.name === name);
-    if (!p) return;
-
-    let sNum = null;
-    let sGrad = null;
-    if (isSerialized) {
-        sNum = 1;
-        sGrad = "linear-gradient(135deg, #ff0844 0%, #ffd700 50%, #00f2fe 100%)";
-    }
-
-    const card = {
-        id: "admin_" + Date.now() + "_" + Math.random().toString(36).slice(2),
-        player: p.name,
-        rating: p.rating,
-        pos: p.pos,
-        rarity: p.rarity,
-        image: p.image || "",
-        frame: "default",
-        serialNumber: sNum,
-        serialGradient: sGrad,
-        locked: true,
-        obtained: Date.now()
-    };
-
-    state.cards.push(card);
-    if (!state.unlockedCardNames.includes(p.name)) state.unlockedCardNames.push(p.name);
-    state.stats.cardsPulled++;
-    updateRarityStats(p.rarity, p);
-
-    SoundFx.levelUp();
-    saveGame();
-    renderAll();
-    toast(`⚡ Admin: Spawned ${p.name} (${p.rarity})${isSerialized ? ' [Serialized #1/10]' : ''}!`);
-}
-
-function adminSpawnEmanuel() {
-    const emanuel = PLAYERS.find(p => p.name === "Emanuel");
-    if (!emanuel) return;
-
-    const card = {
-        id: "emanuel_" + Date.now(),
-        player: emanuel.name,
-        rating: emanuel.rating,
-        pos: emanuel.pos,
-        rarity: emanuel.rarity,
-        image: emanuel.image || "",
-        frame: "champion",
-        serialNumber: null,
-        serialGradient: null,
-        locked: true,
-        obtained: Date.now()
-    };
-
-    state.cards.push(card);
-    if (!state.unlockedCardNames.includes(emanuel.name)) state.unlockedCardNames.push(emanuel.name);
-    state.stats.cardsPulled++;
-    updateRarityStats("Tournament", emanuel);
-
-    SoundFx.worldClassCinematic();
-    saveGame();
-    renderAll();
-    toast("🏆 Admin: Spawned Emanuel (99 OVR Tournament Reward)!");
-}
-
-function adminUnlockAllTitles() {
-    state.hasAdmin = true;
-    state.equippedTitle = "Owner";
-    SoundFx.levelUp();
-    saveGame();
-    renderAll();
-    toast("⚡ Admin: All Titles Unlocked & 'Owner' Equipped!");
-}
-
-function adminAddLevels(lvls) {
-    state.level += lvls;
-    SoundFx.levelUp();
-    saveGame();
-    renderAll();
-    toast(`⚡ Admin: +${lvls} Levels Granted! (Level ${state.level})`);
-}
-
-function adminUnlockAllIndex() {
-    PLAYERS.forEach(p => {
-        if (!state.unlockedCardNames.includes(p.name)) state.unlockedCardNames.push(p.name);
-    });
-    SoundFx.levelUp();
-    saveGame();
-    renderAll();
-    toast("⚡ Admin: Complete 100% Index Catalog Unlocked!");
-}
-
-function adminResetTournament() {
-    state.tournamentAttempts = 5;
-    if (state.tournamentDraft) {
-        state.tournamentDraft.gold = 1000;
-        state.tournamentDraft.packsOpened = 0;
-        state.tournamentDraft.score = 0;
-        state.tournamentDraft.cards = [];
-        state.tournamentDraft.active = false;
-    }
-    saveGame();
-    renderAll();
-    toast("⚡ Admin: Tournament attempts and draft reset to 5!");
 }
 
 function makeDraggable(elementId, handleId) {
