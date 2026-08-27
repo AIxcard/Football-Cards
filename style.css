@@ -1447,159 +1447,354 @@ select,input{
     -webkit-text-fill-color: transparent;
 }
 
-.title-legend {
-    background: linear-gradient(90deg, #f5ce62, #e65c00, #f9d423, #f5ce62);
+/* =========================================================
+   EXCLUSIVE RARITY (PURPLE & WHITE GRADIENT)
+   ========================================================= */
+
+.rarity.exclusive {
+    background: linear-gradient(135deg, #b66cff 0%, #ffffff 50%, #9d4edd 100%);
     background-size: 200% auto;
     animation: textShimmer 3s linear infinite;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #1a062c;
+    border-color: #b66cff;
+    font-weight: 900;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
 }
 
-.title-champion {
-    background: linear-gradient(90deg, #ff0077, #7928ca, #00f2fe, #39ff14, #ff9900, #ff0077);
-    background-size: 300% auto;
-    animation: textShimmer 2.5s linear infinite;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(255, 0, 119, 0.5));
+.glow-exclusive {
+    box-shadow: 0 0 35px rgba(182, 108, 255, 0.7), 0 0 70px rgba(255, 255, 255, 0.4) !important;
+    border-color: #b66cff !important;
+}
+
+.exclusive-pack {
+    border-color: #b66cff;
+    background: radial-gradient(circle at top right, rgba(182, 108, 255, 0.25), #0d1520 70%);
+}
+
+.exclusive-pill {
+    border-color: #b66cff;
+    background: rgba(182, 108, 255, 0.15);
+}
+
+.exclusive-pill b {
+    color: #d896ff;
 }
 
 /* =========================================================
-   TOURNAMENT DRAFT ARENA
+   FEATURED POPULAR PACK BANNER (HOME)
    ========================================================= */
 
-.tournament-arena-panel {
-    background: radial-gradient(circle at 50% 0%, rgba(245, 206, 98, 0.1), transparent 65%), #0c1824;
-    border: 2px solid rgba(245, 206, 98, 0.35);
+.featured-popular-banner {
+    margin: 20px 0 25px;
+    padding: 24px;
+    border-radius: 22px;
+    background: radial-gradient(circle at 90% 10%, rgba(50, 149, 255, 0.22), transparent 60%), linear-gradient(145deg, #0f2233, #091724 60%, #040c14);
+    border: 2px solid rgba(50, 149, 255, 0.45);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(50, 149, 255, 0.2);
 }
 
-.arena-hud {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
+.featured-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
-@media(max-width: 600px) {
-    .arena-hud { grid-template-columns: 1fr; }
-}
-
-.hud-box {
-    padding: 16px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border);
-    text-align: center;
-}
-
-.hud-box span {
+.popular-tag {
     font-size: 11px;
-    font-weight: 800;
-    color: var(--muted);
-    letter-spacing: 1px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: rgba(50, 149, 255, 0.2);
+    color: var(--blue);
+    border: 1px solid var(--blue);
 }
 
-.hud-box strong {
-    display: block;
-    font-size: 26px;
-    font-weight: 900;
-    margin-top: 4px;
+.featured-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+}
+
+.featured-info h2 {
+    margin: 4px 0 8px;
+    font-size: 24px;
     color: #fff;
 }
 
-.hud-box.highlight {
-    border-color: rgba(245, 206, 98, 0.5);
-    background: rgba(245, 206, 98, 0.1);
+.featured-info p {
+    color: var(--muted);
+    margin: 0 0 12px;
+    font-size: 14px;
 }
 
-.hud-box.highlight strong {
-    color: var(--gold);
-}
-
-.draft-points-guide {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.guide-tag {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
-}
-
-.guide-tag b {
-    color: #69c7ff;
-}
-
-.guide-tag.gold b {
-    color: var(--gold);
-}
-
-.tournament-pack-btn {
-    padding: 18px;
-    font-size: 18px;
-    font-weight: 900;
+.featured-open-btn {
+    padding: 16px 28px;
     border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #3295ff, #00d2ff);
+    color: #03101c;
+    font-weight: 900;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    background: linear-gradient(135deg, #f5ce62, #ff8c00);
-    color: #120902;
-    box-shadow: 0 0 30px rgba(245, 206, 98, 0.35);
+    box-shadow: 0 0 25px rgba(50, 149, 255, 0.45);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tournament-pack-btn small {
-    font-size: 12px;
-    font-weight: 600;
-    opacity: 0.9;
+.featured-open-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 35px rgba(50, 149, 255, 0.65);
 }
 
-.tournament-timer-badge {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.08);
-    font-weight: 800;
-    font-size: 13px;
-    margin-top: 8px;
+@media(max-width: 768px) {
+    .featured-content { grid-template-columns: 1fr; }
+    .featured-open-btn { width: 100%; }
 }
 
-.showcase-picker-box {
-    width: min(650px, 94vw);
-    max-height: 80vh;
+/* =========================================================
+   TALLER 6-SLOT CARD SHOWCASE (3 TOP, 3 BOTTOM)
+   ========================================================= */
+
+.showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+@media(max-width: 900px) {
+    .showcase-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width: 520px) {
+    .showcase-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.showcase-slot {
+    min-height: 380px;
+    border-radius: 20px;
+    border: 2px dashed rgba(255, 255, 255, 0.18);
+    background: rgba(8, 20, 32, 0.5);
+    display: grid;
+    place-items: center;
+    position: relative;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    overflow: hidden;
+    padding: 12px;
+}
+
+.showcase-slot:hover {
+    border-color: rgba(50, 149, 255, 0.6);
+    background: rgba(14, 30, 48, 0.7);
+}
+
+.showcase-card {
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    margin: 0;
+    padding: 16px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
-.showcase-picker-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 10px;
-    overflow-y: auto;
-    max-height: 55vh;
-    padding: 10px 0;
+.showcase-card .card-image-wrap {
+    height: 180px;
+    width: 100%;
 }
 
-.showcase-picker-item {
-    padding: 10px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
+.showcase-slot-action {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.75);
     border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
     cursor: pointer;
-    text-align: center;
-    transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.showcase-picker-item:hover {
-    transform: scale(1.05);
-    border-color: var(--blue);
+.showcase-slot-action:hover {
+    background: var(--blue);
 }
+
+/* =========================================================
+   SEARCH PLAYER PROFILE & MODAL
+   ========================================================= */
+
+.search-player-panel {
+    margin-bottom: 20px;
+    background: #0d1824;
+    border-radius: 18px;
+}
+
+.searched-profile-box {
+    width: min(760px, 94vw);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.searched-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+}
+
+@media(max-width: 550px) {
+    .searched-profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* =========================================================
+   PLAYER-TO-PLAYER TRADING HUB
+   ========================================================= */
+
+.trade-send-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.trade-inbox-list, .trade-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.trade-card-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.trade-info-col h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+.trade-info-col p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.trade-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.trade-actions button {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* =========================================================
+   TOURNAMENT ATTEMPTS & ENTER MODAL
+   ========================================================= */
+
+.attempts-box {
+    margin: 16px 0;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(245, 206, 98, 0.1);
+    border: 1px solid rgba(245, 206, 98, 0.4);
+    text-align: center;
+}
+
+.attempts-box span {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: block;
+}
+
+.attempts-box strong {
+    display: block;
+    font-size: 28px;
+    color: var(--gold);
+    margin-top: 4px;
+}
+
+/* =========================================================
+   GOAT SOL'S RNG CUTSCENES (MESSI & RONALDO)
+   ========================================================= */
+
+.goat-crest-badge {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: rgba(244, 196, 78, 0.25);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    margin-bottom: 12px;
+}
+
+.sols-player-quote {
+    font-style: italic;
+    color: #e3f2fd;
+    font-size: 14px;
+    margin: 4px 0 14px;
+    font-weight: 600;
+}
+
+.reveal-bonus-tag {
+    background: rgba(244, 196, 78, 0.2);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 900;
+    animation: bounceBonus 1s ease infinite alternate;
+}
+
+@keyframes bounceBonus {
+    0% { transform: scale(0.95); }
+    100% { transform: scale(1.05); }
+}
+
+/* Centered content & responsive padding */
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.page {
+    text-align: left;
+}
+
+.modal-box {
+    text-align: center;
+}
+
 
