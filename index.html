@@ -262,6 +262,7 @@
     <div class="logo">⚽ <span>Football Cards</span></div>
     
     <div class="topbar-right">
+        <button id="adminHeaderBtn" class="admin-top-pill" style="display:none;" onclick="openAdminPanel()">👑 Admin Panel</button>
         <div id="cloudStatusBadge" class="cloud-badge" onclick="openAuthModal()" title="Cross-Device Cloud Sync Status">
             <span class="cloud-dot">●</span> <span id="cloudStatusText">Local</span>
         </div>
@@ -271,6 +272,7 @@
 </header>
 
 <aside id="sidebar">
+    <button id="adminSidebarBtn" class="nav admin-nav-item" style="display:none;" onclick="openAdminPanel()">👑 Admin Console</button>
     <button class="nav active" data-page="home" onclick="showPage('home')">🏠 Home</button>
     <button class="nav" data-page="packs" onclick="showPage('packs')">📦 Packs</button>
     <button class="nav" data-page="cards" onclick="showPage('cards')">🎴 Collection</button>
@@ -652,10 +654,12 @@
                 <img id="profileAvatarImg" class="profile-avatar-photo" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80" alt="Avatar" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80';">
             </div>
             <div class="profile-title-block">
-                <p class="eyebrow" style="color:#69c7ff;">PLAYER PROFILE</p>
-                <h1 id="profileName" style="color:#ffffff;text-shadow:0 2px 8px rgba(0,0,0,0.8);">Football Player</h1>
-                <div id="profileEquippedTitle" class="equipped-title-badge title-collector">Collector</div>
-                <p style="margin-top:6px;color:#e1f0ff;font-weight:700;">Level <b id="profileLevel" style="color:var(--gold);">1</b></p>
+                <p class="eyebrow" style="color:#69c7ff;margin:0 0 2px;">PLAYER PROFILE</p>
+                <div class="profile-name-title-row">
+                    <h1 id="profileName" style="color:#ffffff;margin:0;font-size:28px;text-shadow:0 2px 8px rgba(0,0,0,0.8);">Football Player</h1>
+                    <span id="profileEquippedTitle" class="equipped-title-badge title-collector">Collector</span>
+                </div>
+                <p style="margin-top:4px;color:#e1f0ff;font-weight:700;">Level <b id="profileLevel" style="color:var(--gold);">1</b></p>
             </div>
         </div>
     </div>
@@ -844,6 +848,143 @@
 
 </main>
 
-<script src="script.js?v=7.0"></script>
+<!-- =========================================================
+     ADMIN PANEL MODAL (EXCLUSIVE FOR ALUCARD & AUTHORIZED ADMINS)
+     ========================================================= -->
+<div id="adminPanelModal" class="modal hidden admin-modal">
+    <div class="modal-box admin-box">
+        <div class="admin-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:26px;">👑</span>
+                <div>
+                    <h2 style="margin:0;color:var(--gold);font-size:20px;">Master Admin Console</h2>
+                    <small style="color:var(--muted)">Exclusive Master Controller · Logged as <b id="adminActiveUser" style="color:#69c7ff;">Alucard</b></small>
+                </div>
+            </div>
+            <button class="modal-close-x" onclick="closeAdminPanel()">✕</button>
+        </div>
+
+        <div class="admin-tabs-row">
+            <button id="adminTabBtnCurrency" class="admin-tab active" onclick="setAdminTab('currency')">🪙 Economy</button>
+            <button id="adminTabBtnCards" class="admin-tab" onclick="setAdminTab('cards')">🎴 Card Spawner</button>
+            <button id="adminTabBtnLevel" class="admin-tab" onclick="setAdminTab('level')">⭐ Levels</button>
+            <button id="adminTabBtnTitles" class="admin-tab" onclick="setAdminTab('titles')">🎖️ Grant Titles</button>
+            <button id="adminTabBtnModeration" class="admin-tab" onclick="setAdminTab('moderation')">🛡️ Moderation</button>
+        </div>
+
+        <!-- 1. ECONOMY TAB -->
+        <div id="adminTabCurrency" class="admin-tab-content">
+            <h3>🪙 Gold Economy Injection</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Add gold coins to your account or send directly to any online user.</p>
+            
+            <label>Target Username (Leave blank for yourself)</label>
+            <input id="adminGoldTarget" placeholder="e.g. Alucard, Timekung2835" style="width:100%;margin-bottom:10px;">
+            
+            <label>Select Preset Amount or Enter Custom Value</label>
+            <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+                <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=100000">+100k</button>
+                <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=1000000">+1M</button>
+                <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=10000000">+10M</button>
+                <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=50000000">+50M</button>
+            </div>
+            <input id="adminGoldAmount" type="number" placeholder="Enter custom amount (e.g. 1000000)" value="1000000" style="width:100%;margin-bottom:14px;">
+            
+            <button class="primary-btn" onclick="adminExecuteGiveGold()">⚡ Inject Gold</button>
+        </div>
+
+        <!-- 2. CARD SPAWNER TAB -->
+        <div id="adminTabCards" class="admin-tab-content" style="display:none;">
+            <h3>🎴 Master Card Spawner</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Spawn any card directly into your collection or send to another player.</p>
+            
+            <label>Target Username (Leave blank for yourself)</label>
+            <input id="adminCardTarget" placeholder="e.g. Alucard" style="width:100%;margin-bottom:10px;">
+            
+            <label>Select Player Card</label>
+            <select id="adminCardSelect" style="width:100%;margin-bottom:12px;"></select>
+            
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:rgba(255,215,0,0.06);padding:10px;border-radius:10px;border:1px solid rgba(255,215,0,0.3);">
+                <input type="checkbox" id="adminCardSerialized" style="width:20px;height:20px;accent-color:var(--gold);">
+                <label for="adminCardSerialized" style="margin:0;cursor:pointer;color:var(--gold);font-weight:900;">★ Make Serialized (1 of 10 Procedural Holographic Gradient)</label>
+            </div>
+            
+            <button class="primary-btn" onclick="adminExecuteSpawnCard()">✨ Spawn Card</button>
+        </div>
+
+        <!-- 3. LEVEL & XP TAB -->
+        <div id="adminTabLevel" class="admin-tab-content" style="display:none;">
+            <h3>⭐ Level / XP Adjustment</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Set level instantly for yourself or target account.</p>
+            
+            <label>Target Username (Leave blank for yourself)</label>
+            <input id="adminLevelTarget" placeholder="Target Username" style="width:100%;margin-bottom:10px;">
+            
+            <label>Set Level (1 - 999)</label>
+            <input id="adminLevelInput" type="number" value="99" min="1" max="999" style="width:100%;margin-bottom:14px;">
+            
+            <button class="primary-btn" onclick="adminExecuteSetLevel()">⚡ Set Player Level</button>
+        </div>
+
+        <!-- 4. GRANT TITLES TAB -->
+        <div id="adminTabTitles" class="admin-tab-content" style="display:none;">
+            <h3>🎖️ Grant Special Roles & Titles</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Grant exclusive Admin, Staff, or Tournament Champion status to players.</p>
+            
+            <label>Target Account Username</label>
+            <input id="adminTitleTarget" placeholder="Target Username (e.g. Timekung2835)" style="width:100%;margin-bottom:10px;">
+            
+            <label>Select Title / Role</label>
+            <select id="adminTitleSelect" style="width:100%;margin-bottom:14px;">
+                <option value="Admin">Admin (Gradient Orange-Red)</option>
+                <option value="Staff">Staff (Gradient Cyan-Purple)</option>
+                <option value="Tournament Champion">Tournament Champion (Rainbow Gold)</option>
+                <option value="GOAT Hunter">GOAT Hunter (World Class Gradient)</option>
+            </select>
+            
+            <button class="primary-btn" onclick="adminExecuteGrantTitle()">👑 Grant Title to Player</button>
+        </div>
+
+        <!-- 5. MODERATION / BAN TAB -->
+        <div id="adminTabModeration" class="admin-tab-content" style="display:none;">
+            <h3>🛡️ Player Moderation & Suspension Controller</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Ban or unban accounts that use unauthorized scripts or exploit currency.</p>
+            
+            <label>Target Username</label>
+            <input id="adminModTarget" placeholder="Username to Ban / Unban" style="width:100%;margin-bottom:10px;">
+            
+            <label>Reason for Suspension</label>
+            <input id="adminModReason" placeholder="e.g. Unauthorized Script / Balance Injection" value="Unauthorized Script / Currency Injection Detected" style="width:100%;margin-bottom:14px;">
+            
+            <div style="display:flex;gap:10px;">
+                <button class="danger-btn" style="flex:1;" onclick="adminExecuteBan(1)">⛔ Ban Account (1 Day)</button>
+                <button class="ghost-btn" style="flex:1;border-color:var(--green);color:var(--green);font-weight:900;" onclick="adminExecuteUnban()">✓ Unban Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     1-DAY SUSPENSION / BAN SCREEN (HIGH SECURITY BLOCKER)
+     ========================================================= -->
+<div id="accountBannedModal" class="modal hidden banned-modal" style="z-index:999999;background:rgba(4,8,16,0.97);">
+    <div class="modal-box banned-box">
+        <div class="ban-shield-icon">⛔</div>
+        <h1 style="color:#ff1744;margin:10px 0 6px;font-size:26px;letter-spacing:1px;">ACCOUNT SUSPENDED</h1>
+        <p style="color:var(--muted);margin-bottom:16px;font-size:14px;">This account has been temporarily restricted due to client script tampering & unauthorized balance modification.</p>
+        
+        <div class="ban-info-card">
+            <div class="ban-info-row"><span>Account:</span> <b id="banUserText" style="color:#fff;">Username</b></div>
+            <div class="ban-info-row"><span>Reason:</span> <b id="banReasonText" style="color:#ff8a80;">Unauthorized Script / Balance Injection</b></div>
+            <div class="ban-info-row"><span>Penalty:</span> <b style="color:var(--gold)">1 Day Suspension (24 Hours)</b></div>
+            <div class="ban-info-row"><span>Time Remaining:</span> <b id="banCountdownText" style="color:#00f2fe;font-size:18px;">23h 59m 45s</b></div>
+        </div>
+
+        <div style="margin-top:22px;">
+            <button class="danger-btn" style="width:100%;padding:14px;" onclick="CloudSync.logout()">Log Out & Continue as Guest</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js?v=8.0"></script>
 </body>
 </html>
