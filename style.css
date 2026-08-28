@@ -3015,10 +3015,10 @@ select,input{
 }
 
 .pack-top-swipe-bar {
-    width: 320px;
-    height: 44px;
+    width: min(340px, 90vw);
+    height: 46px;
     position: relative;
-    z-index: 12;
+    z-index: 20;
     cursor: grab;
     user-select: none;
     touch-action: none;
@@ -3027,16 +3027,16 @@ select,input{
 .tear-swipe-track {
     position: relative;
     width: 100%;
-    height: 44px;
-    background: rgba(0, 0, 0, 0.85);
-    border: 2px solid rgba(255, 215, 0, 0.6);
+    height: 46px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid rgba(255, 215, 0, 0.7);
     border-radius: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(10px);
     overflow: hidden;
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.35);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
 }
 
 .tear-swipe-prompt {
@@ -3054,7 +3054,7 @@ select,input{
     left: 4px;
     top: 4px;
     bottom: 4px;
-    width: 36px;
+    width: 38px;
     background: linear-gradient(135deg, #ffd700, #ff4500);
     border-radius: 50%;
     display: flex;
@@ -3071,47 +3071,142 @@ select,input{
     transform: scale(1.15);
 }
 
+/* =========================================================
+   DYNAMIC MULTI-PACK DISPLAY STAGE (1x, 3x, 5x)
+   ========================================================= */
+
+.packs-display-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    perspective: 1200px;
+    min-height: 480px;
+    width: 100%;
+}
+
+.multi-pack-3-layout {
+    gap: 15px;
+}
+
+.multi-pack-3-layout .realistic-booster-pack {
+    width: 250px;
+    height: 420px;
+}
+
+.multi-pack-3-layout .pack-stack-3-1 { transform: rotate(-5deg) translateY(10px); }
+.multi-pack-3-layout .pack-stack-3-2 { transform: rotate(0deg) scale(1.05) translateY(-5px); z-index: 10; }
+.multi-pack-3-layout .pack-stack-3-3 { transform: rotate(5deg) translateY(10px); }
+
+.multi-pack-5-layout {
+    gap: 10px;
+}
+
+.multi-pack-5-layout .realistic-booster-pack {
+    width: 200px;
+    height: 380px;
+}
+
+.multi-pack-5-layout .pack-stack-5-1 { transform: rotate(-10deg) translateY(20px); }
+.multi-pack-5-layout .pack-stack-5-2 { transform: rotate(-5deg) translateY(8px); }
+.multi-pack-5-layout .pack-stack-5-3 { transform: rotate(0deg) scale(1.08) translateY(-10px); z-index: 10; }
+.multi-pack-5-layout .pack-stack-5-4 { transform: rotate(5deg) translateY(8px); }
+.multi-pack-5-layout .pack-stack-5-5 { transform: rotate(10deg) translateY(20px); }
+
+@media(max-width: 768px) {
+    .multi-pack-3-layout .realistic-booster-pack,
+    .multi-pack-5-layout .realistic-booster-pack {
+        width: 140px;
+        height: 280px;
+    }
+    .pack-foil-title { font-size: 16px !important; }
+    .pack-foil-emblem { font-size: 40px !important; }
+}
+
+/* =========================================================
+   BESPOKE 3D FOIL BOOSTER PACK ARTWORK
+   ========================================================= */
+
 .realistic-booster-pack {
     position: relative;
     width: 320px;
-    height: 480px;
-    border-radius: 16px;
-    box-shadow: 0 35px 80px rgba(0, 0, 0, 0.95), 0 0 60px var(--foil-glow);
+    height: 490px;
+    border-radius: 18px;
+    box-shadow: 0 35px 80px rgba(0, 0, 0, 0.95), 0 0 65px var(--foil-glow);
     transform-style: preserve-3d;
     transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
     animation: packFloatRumble 2.4s ease-in-out infinite alternate;
 }
 
-.tear-swipe-prompt {
-    font-size: 13px;
+.pack-cap-badge {
+    font-size: 9px;
     font-weight: 900;
     letter-spacing: 1.5px;
-    color: #ffd700;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-    pointer-events: none;
-    animation: swipeHintGlow 1.4s ease-in-out infinite alternate;
+    color: #ffffff;
+    text-align: center;
+    margin-top: 6px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
 }
 
-.tear-swipe-blade {
+.foil-stadium-rings {
     position: absolute;
-    left: 3px;
-    top: 3px;
-    bottom: 3px;
-    width: 34px;
-    background: linear-gradient(135deg, #ffd700, #ff4500);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 1);
-    cursor: grab;
-    transition: transform 0.05s ease-out;
+    inset: 0;
+    background-image: repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 12px, transparent 12px, transparent 24px);
+    pointer-events: none;
 }
 
-.tear-swipe-blade:active {
-    cursor: grabbing;
-    transform: scale(1.15);
+.pack-header-tag {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    margin-top: 4px;
+}
+
+.pack-sub-badge {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffffff;
+    background: rgba(0,0,0,0.45);
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    margin-top: 4px;
+}
+
+.pack-foil-crest-border {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    padding: 6px;
+    background: linear-gradient(135deg, #ffd700, rgba(255,255,255,0.8), #ff8c00);
+    box-shadow: 0 0 35px var(--foil-glow);
+    display: grid;
+    place-items: center;
+}
+
+.pack-foil-crest-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95));
+    display: grid;
+    place-items: center;
+    border: 2px solid rgba(255,255,255,0.4);
+}
+
+.pack-footer-meta {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 8px;
+    padding: 0 6px;
 }
 
 /* Lower Metallic Foil Sleeve Body */
@@ -3121,17 +3216,17 @@ select,input{
     bottom: 0;
     left: 0;
     width: 100%;
-    border-radius: 0 0 16px 16px;
+    border-radius: 0 0 18px 18px;
     background: var(--foil-body-grad);
     z-index: 4;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 24px 18px 0;
+    padding: 16px 14px 0;
     overflow: hidden;
-    border-top: 1px solid rgba(255,255,255,0.25);
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+    border-top: 1px solid rgba(255,255,255,0.3);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.55);
 }
 
 .foil-specular-sheen {
@@ -3140,17 +3235,17 @@ select,input{
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%);
+    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.28) 50%, transparent 60%);
     pointer-events: none;
     animation: foilSheen 3.5s infinite;
 }
 
 .pack-foil-title {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 900;
     color: #fff;
-    margin: 8px 0 0;
-    letter-spacing: 2.5px;
+    margin: 4px 0 0;
+    letter-spacing: 2px;
     text-transform: uppercase;
     text-shadow: 0 3px 12px rgba(0,0,0,0.9), 0 0 25px var(--foil-glow);
 }
@@ -3160,22 +3255,22 @@ select,input{
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 28px 0;
+    margin: 12px 0;
 }
 
 .pack-foil-emblem-glow {
     position: absolute;
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     background: var(--foil-glow);
-    filter: blur(30px);
-    opacity: 0.85;
+    filter: blur(35px);
+    opacity: 0.9;
     animation: pulsePackGlow 1.8s infinite alternate;
 }
 
 .pack-foil-emblem {
-    font-size: 85px;
+    font-size: 70px;
     position: relative;
     z-index: 2;
     filter: drop-shadow(0 6px 20px rgba(0,0,0,0.95));
@@ -3223,7 +3318,7 @@ select,input{
 
 /* TEAR EXECUTION KEYFRAMES */
 .pack-torn .pack-foil-cap {
-    transform: translateY(-120px) rotate(-28deg) scale(0.85);
+    transform: translateY(-130px) rotate(-30deg) scale(0.85);
     opacity: 0;
     pointer-events: none;
 }
@@ -3236,6 +3331,85 @@ select,input{
 .pack-torn .pack-top-swipe-bar {
     opacity: 0;
     pointer-events: none;
+}
+
+/* =========================================================
+   MULTI-CARD REVEAL MODAL (FOR 3x & 5x PACK OPENINGS)
+   ========================================================= */
+
+.multi-reveal-modal {
+    background: rgba(2, 6, 12, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    z-index: 100000 !important;
+}
+
+.multi-reveal-box {
+    width: min(1100px, 95vw);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    background: #081420;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(255, 215, 0, 0.25);
+    overflow-y: auto;
+}
+
+.multi-reveal-header h2 {
+    font-size: 28px;
+    margin: 4px 0;
+    color: #ffffff;
+}
+
+.multi-reveal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.multi-pull-card {
+    animation: cardPopIn 0.5s cubic-bezier(0.34, 1.3, 0.64, 1) backwards;
+}
+
+@keyframes cardPopIn {
+    0% { transform: scale(0.4) translateY(60px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.multi-pull-meta-badge {
+    margin: 6px 0;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.multi-pull-meta-badge .badge-new {
+    color: var(--green);
+    background: rgba(34, 199, 122, 0.15);
+    padding: 3px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--green);
+}
+
+.multi-pull-meta-badge .badge-dupe {
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+
+.multi-pull-meta-badge .badge-serial {
+    color: var(--gold);
+    background: rgba(255, 215, 0, 0.2);
+    padding: 3px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--gold);
+}
+
+.multi-reveal-footer {
+    margin-top: 10px;
 }
 
 /* =========================================================
