@@ -2923,166 +2923,84 @@ select,input{
     pointer-events: none;
 }
 
-.realistic-pack-viewport {
-    perspective: 1200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.pack-opening-container {
     position: relative;
     z-index: 10;
-    padding: 20px;
-}
-
-.realistic-booster-pack {
-    position: relative;
-    width: 320px;
-    height: 500px;
-    border-radius: 16px;
-    box-shadow: 0 35px 80px rgba(0, 0, 0, 0.95), 0 0 55px var(--foil-glow);
-    transform-style: preserve-3d;
-    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-    animation: packFloatRumble 2.4s ease-in-out infinite alternate;
-}
-
-@keyframes packFloatRumble {
-    0% { transform: translateY(0px) rotate(-1.5deg); }
-    50% { transform: translateY(-10px) rotate(1.5deg); }
-    100% { transform: translateY(0px) rotate(-1.5deg); }
-}
-
-/* Foil Themes - Authentic Pokémon Metallic Sheen */
-.starter-foil {
-    --foil-glow: rgba(34, 197, 94, 0.9);
-    --foil-cap-grad: linear-gradient(135deg, #052e16 0%, #22c55e 50%, #15803d 100%);
-    --foil-body-grad: radial-gradient(circle at 50% 30%, #16a34a 0%, #052e16 90%);
-}
-
-.premium-foil {
-    --foil-glow: rgba(56, 189, 248, 0.95);
-    --foil-cap-grad: linear-gradient(135deg, #082f49 0%, #38bdf8 50%, #0284c7 100%);
-    --foil-body-grad: radial-gradient(circle at 50% 30%, #0284c7 0%, #082f49 90%);
-}
-
-.champion-foil {
-    --foil-glow: rgba(168, 85, 247, 0.95);
-    --foil-cap-grad: linear-gradient(135deg, #3b0764 0%, #a855f7 50%, #7e22ce 100%);
-    --foil-body-grad: radial-gradient(circle at 50% 30%, #7e22ce 0%, #3b0764 90%);
-}
-
-.exclusive-foil {
-    --foil-glow: rgba(232, 121, 249, 1);
-    --foil-cap-grad: linear-gradient(135deg, #581c87 0%, #e879f9 50%, #a21caf 100%);
-    --foil-body-grad: radial-gradient(circle at 50% 30%, #c026d3 0%, #3b0764 90%);
-}
-
-.mythic-foil {
-    --foil-glow: rgba(239, 68, 68, 1);
-    --foil-cap-grad: linear-gradient(135deg, #450a0a 0%, #ef4444 50%, #b91c1c 100%);
-    --foil-body-grad: radial-gradient(circle at 50% 30%, #dc2626 0%, #450a0a 90%);
-}
-
-.secret-foil {
-    --foil-glow: rgba(56, 189, 248, 1);
-    --foil-cap-grad: linear-gradient(135deg, #0284c7 0%, #ffffff 50%, #0369a1 100%);
-    --foil-body-grad: radial-gradient(circle at 50% 30%, #1e293b 0%, #020617 90%);
-}
-
-.worldclass-foil {
-    --foil-glow: rgba(234, 179, 8, 1);
-    --foil-cap-grad: linear-gradient(135deg, #422006 0%, #fde047 50%, #ca8a04 100%);
-    --foil-body-grad: radial-gradient(circle at 50% 30%, #eab308 0%, #422006 90%);
-}
-
-/* Ribbed Crimped Seals */
-.pack-crimp-cording {
-    height: 20px;
-    width: 100%;
-    background: repeating-linear-gradient(90deg, rgba(0,0,0,0.7) 0px, rgba(255,255,255,0.5) 4px, rgba(0,0,0,0.8) 8px);
-    border-radius: 14px 14px 0 0;
-    opacity: 0.9;
-}
-
-.pack-crimp-seal-bottom {
-    height: 24px;
-    width: 100%;
-    background: repeating-linear-gradient(90deg, rgba(0,0,0,0.7) 0px, rgba(255,255,255,0.5) 4px, rgba(0,0,0,0.8) 8px);
-    border-radius: 0 0 14px 14px;
-    margin-top: auto;
-    opacity: 0.9;
-}
-
-/* Severable Top Cap */
-.pack-foil-cap {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 78px;
-    z-index: 6;
-    border-radius: 16px 16px 0 0;
-    overflow: hidden;
-    background: var(--foil-cap-grad);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-    transform-origin: top right;
-    transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.65s ease;
-}
-
-/* Tear Line & Swipe Strip */
-.pack-tear-line {
-    position: absolute;
-    top: 72px;
-    left: -10px;
-    right: -10px;
-    height: 42px;
-    z-index: 8;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 16px;
+    margin: auto;
+    perspective: 1200px;
+}
+
+.pack-top-swipe-bar {
+    width: 320px;
+    height: 44px;
+    position: relative;
+    z-index: 12;
     cursor: grab;
     user-select: none;
     touch-action: none;
-    transition: opacity 0.3s ease;
-}
-
-.tear-notch {
-    width: 14px;
-    height: 18px;
-    background: #020617;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
-    z-index: 10;
-}
-
-.left-notch { left: 0; }
-.right-notch { right: 0; transform: translateY(-50%) rotate(180deg); }
-
-.tear-laser-perforation {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: repeating-linear-gradient(90deg, #ffd700 0px, #ffd700 8px, transparent 8px, transparent 14px);
-    box-shadow: 0 0 12px #ffd700, 0 0 24px #ff8c00;
-    transform: translateY(-50%);
-    pointer-events: none;
-    animation: laserPulse 1.2s infinite alternate;
 }
 
 .tear-swipe-track {
     position: relative;
     width: 100%;
-    height: 40px;
+    height: 44px;
     background: rgba(0, 0, 0, 0.85);
-    border: 2px solid rgba(255, 255, 255, 0.45);
+    border: 2px solid rgba(255, 215, 0, 0.6);
     border-radius: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(10px);
     overflow: hidden;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.35);
+}
+
+.tear-swipe-prompt {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #ffd700;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+    pointer-events: none;
+    animation: swipeHintGlow 1.4s ease-in-out infinite alternate;
+}
+
+.tear-swipe-blade {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    bottom: 4px;
+    width: 36px;
+    background: linear-gradient(135deg, #ffd700, #ff4500);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 1);
+    cursor: grab;
+    transition: transform 0.05s ease-out;
+}
+
+.tear-swipe-blade:active {
+    cursor: grabbing;
+    transform: scale(1.15);
+}
+
+.realistic-booster-pack {
+    position: relative;
+    width: 320px;
+    height: 480px;
+    border-radius: 16px;
+    box-shadow: 0 35px 80px rgba(0, 0, 0, 0.95), 0 0 60px var(--foil-glow);
+    transform-style: preserve-3d;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: packFloatRumble 2.4s ease-in-out infinite alternate;
 }
 
 .tear-swipe-prompt {
@@ -3236,7 +3154,7 @@ select,input{
     box-shadow: 0 0 65px var(--foil-glow), 0 40px 80px rgba(0,0,0,0.95);
 }
 
-.pack-torn .pack-tear-line {
+.pack-torn .pack-top-swipe-bar {
     opacity: 0;
     pointer-events: none;
 }
