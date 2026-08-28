@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=5.0">
+<link rel="stylesheet" href="style.css?v=6.0">
 </head>
 
 <body>
@@ -35,7 +35,10 @@
             </div>
 
             <input id="authUsername" maxlength="20" placeholder="Username" autocomplete="username">
-            <input id="authPassword" type="password" maxlength="30" placeholder="Password" autocomplete="current-password">
+            <div class="password-input-wrap" style="position:relative;margin-bottom:10px;">
+                <input id="authPassword" type="password" maxlength="30" placeholder="Password" autocomplete="current-password" style="width:100%;padding-right:42px;box-sizing:border-box;">
+                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('authPassword', this)" title="Show/Hide Password">👁️</button>
+            </div>
             
             <p id="authError" class="error"></p>
             
@@ -184,7 +187,7 @@
     </div>
 </div>
 
-<!-- PACK OPENING ANIMATION OVERLAY -->
+<!-- PACK OPENING ANIMATION OVERLAY WITH INTERACTIVE SWIPE TO OPEN -->
 <div id="packOpeningOverlay" class="modal hidden pack-opening-modal">
     <div class="pack-anim-wrapper">
         <div class="pack-burst-rays" id="packBurstRays"></div>
@@ -193,10 +196,21 @@
             <div class="pack-foil-shimmer"></div>
             <div class="pack-anim-icon" id="packAnimIcon">📦</div>
             <h2 id="packAnimTitle">SCOUTING PACK...</h2>
-            <p id="packAnimSubtitle">Ripping foil &amp; scouting transfer market</p>
-            <div class="pack-rip-track">
+            <p id="packAnimSubtitle" style="font-size:13px;color:var(--muted);margin-bottom:12px;">Swipe foil to reveal your transfer market cards!</p>
+            
+            <!-- INTERACTIVE SWIPE TO RIP COMPONENT -->
+            <div class="pack-swipe-container" id="packSwipeContainer">
+                <div class="pack-swipe-track" id="packSwipeTrack">
+                    <span class="pack-swipe-hint" id="packSwipeHint">👉 SWIPE TO RIP PACK ➔</span>
+                    <div class="pack-swipe-thumb" id="packSwipeThumb">⚡</div>
+                </div>
+            </div>
+
+            <div class="pack-rip-track" style="margin-top:12px;">
                 <div class="pack-rip-bar" id="packRipBar"></div>
             </div>
+            
+            <button class="ghost-btn" style="margin-top:14px;padding:6px 18px;font-size:12px;" onclick="triggerInstantPackTear()">Instant Reveal ⚡</button>
         </div>
     </div>
 </div>
@@ -322,10 +336,20 @@
                 <div class="pack-rate" style="margin-bottom:12px;">Uncommon (58%) · Rare (28%) · Epic (9%) · Legendary (4%) · Secret (0.2%)</div>
             </div>
             <div class="featured-action">
-                <button class="featured-open-btn" onclick="openPack('premium')">
-                    <span>💎 OPEN PREMIUM PACK</span>
-                    <b>25 🪙</b>
-                </button>
+                <div class="featured-btn-group">
+                    <button class="featured-open-btn" onclick="openPack('premium', 1)">
+                        <span>💎 OPEN 1x</span>
+                        <b>25 🪙</b>
+                    </button>
+                    <button class="featured-open-btn secondary" onclick="openPack('premium', 3)">
+                        <span>💎 3x</span>
+                        <b>75 🪙</b>
+                    </button>
+                    <button class="featured-open-btn secondary" onclick="openPack('premium', 5)">
+                        <span>💎 5x</span>
+                        <b>125 🪙</b>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -350,10 +374,20 @@
                 </div>
             </div>
             <div class="limited-action">
-                <button class="limited-open-btn" onclick="openPack('exclusive')">
-                    <span>👑 OPEN EXCLUSIVE PACK</span>
-                    <b>60 🪙</b>
-                </button>
+                <div class="featured-btn-group">
+                    <button class="limited-open-btn" onclick="openPack('exclusive', 1)">
+                        <span>👑 OPEN 1x</span>
+                        <b>60 🪙</b>
+                    </button>
+                    <button class="limited-open-btn secondary" onclick="openPack('exclusive', 3)">
+                        <span>👑 3x</span>
+                        <b>180 🪙</b>
+                    </button>
+                    <button class="limited-open-btn secondary" onclick="openPack('exclusive', 5)">
+                        <span>👑 5x</span>
+                        <b>300 🪙</b>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -365,8 +399,6 @@
         </div>
         <button id="dailyRewardBtn" onclick="claimDailyReward()">Claim</button>
     </div>
-
-
 
     <div class="mission-panel">
         <div class="section-head">
@@ -389,42 +421,58 @@
         <div>
             <p class="eyebrow">PACK STORE</p>
             <h1>Scouting Packs</h1>
-            <p>Open packs to discover players & earn discovery bonus gold!</p>
+            <p>Open packs to discover players &amp; earn discovery bonus gold! Swipe foil to rip open.</p>
         </div>
     </div>
 
     <div class="pack-grid">
 
+        <!-- 1. STARTER PACK -->
         <article class="pack starter-pack">
             <button class="pack-info-btn" onclick="openPackOdds('starter')" title="View Probabilities">?</button>
             <div class="pack-ball">⚽</div>
             <p class="rarity common">STARTER</p>
             <h2>Starter Pack</h2>
-            <p>Academy scouting — Emerging youth prospects & reliable squad starters.</p>
+            <p>Academy scouting — Emerging youth prospects &amp; squad starters.</p>
             <div class="pack-rate">Common · Uncommon · Rare+</div>
-            <button onclick="openPack('starter')">10 🪙 · OPEN</button>
+            <div class="pack-multibuttons">
+                <button onclick="openPack('starter', 1)">1x · 10 🪙</button>
+                <button onclick="openPack('starter', 3)">3x · 30 🪙</button>
+                <button onclick="openPack('starter', 5)">5x · 50 🪙</button>
+            </div>
         </article>
 
+        <!-- 2. PREMIUM PACK -->
         <article class="pack premium-pack">
             <button class="pack-info-btn" onclick="openPackOdds('premium')" title="View Probabilities">?</button>
             <div class="pack-ball">💎</div>
             <p class="rarity uncommon">PREMIUM</p>
             <h2>Premium Pack</h2>
-            <p>First-team scouting — Proven starters & secret icons. Can drop up to Secret!</p>
-            <div class="pack-rate">Uncommon → Secret</div>
-            <button onclick="openPack('premium')">25 🪙 · OPEN</button>
+            <p>First-team scouting — Proven starters &amp; secret icons. Common cards removed!</p>
+            <div class="pack-rate">Uncommon → Secret (0.2%)</div>
+            <div class="pack-multibuttons">
+                <button onclick="openPack('premium', 1)">1x · 25 🪙</button>
+                <button onclick="openPack('premium', 3)">3x · 75 🪙</button>
+                <button onclick="openPack('premium', 5)">5x · 125 🪙</button>
+            </div>
         </article>
 
+        <!-- 3. CHAMPION PACK -->
         <article class="pack champion-pack">
             <button class="pack-info-btn" onclick="openPackOdds('champion')" title="View Probabilities">?</button>
             <div class="pack-ball">🏆</div>
             <p class="rarity epic">CHAMPION</p>
             <h2>Champion Pack</h2>
-            <p>Ballon d'Or shortlist — Elite superstars & generational football talents (0.5% Secret chance!).</p>
+            <p>Ballon d'Or shortlist — Elite superstars &amp; generational talents (0.5% Secret chance!).</p>
             <div class="pack-rate">Rare → World Class (0.5% Secret)</div>
-            <button onclick="openPack('champion')">45 🪙 · OPEN</button>
+            <div class="pack-multibuttons">
+                <button onclick="openPack('champion', 1)">1x · 45 🪙</button>
+                <button onclick="openPack('champion', 3)">3x · 135 🪙</button>
+                <button onclick="openPack('champion', 5)">5x · 225 🪙</button>
+            </div>
         </article>
 
+        <!-- 4. EXCLUSIVE PACK -->
         <article class="pack exclusive-pack">
             <button class="pack-info-btn" onclick="openPackOdds('exclusive')" title="View Probabilities">?</button>
             <div class="pack-ball">👑</div>
@@ -432,9 +480,44 @@
             <h2>Exclusive Legends</h2>
             <p>Historic icons available for 1 week only (Pelé, Maradona, R9, Zidane, Ronaldinho).</p>
             <div class="pack-rate">100% Exclusive Legends</div>
-            <button onclick="openPack('exclusive')">60 🪙 · OPEN</button>
+            <div class="pack-multibuttons">
+                <button onclick="openPack('exclusive', 1)">1x · 60 🪙</button>
+                <button onclick="openPack('exclusive', 3)">3x · 180 🪙</button>
+                <button onclick="openPack('exclusive', 5)">5x · 300 🪙</button>
+            </div>
         </article>
 
+        <!-- 5. MYTHIC PACK (TESTING) -->
+        <article class="pack mythic-pack">
+            <button class="pack-info-btn" onclick="openPackOdds('mythic')" title="View Probabilities">?</button>
+            <div class="pack-ball">🔥</div>
+            <p class="rarity mythic">MYTHIC</p>
+            <h2>Mythic Stars Pack</h2>
+            <p>🧪 Testing Pack — 100% Guaranteed pull of Mythic tier superstars (Neymar, De Bruyne, Bellingham, Vini Jr, etc.).</p>
+            <div class="pack-rate">100% Mythic Guaranteed</div>
+            <div class="pack-multibuttons">
+                <button onclick="openPack('mythic', 1)">1x · 80 🪙</button>
+                <button onclick="openPack('mythic', 3)">3x · 240 🪙</button>
+                <button onclick="openPack('mythic', 5)">5x · 400 🪙</button>
+            </div>
+        </article>
+
+        <!-- 6. SECRET PACK (TESTING) -->
+        <article class="pack secret-pack">
+            <button class="pack-info-btn" onclick="openPackOdds('secret')" title="View Probabilities">?</button>
+            <div class="pack-ball">✦</div>
+            <p class="rarity secret">SECRET</p>
+            <h2>Secret Icons Pack</h2>
+            <p>🧪 Testing Pack — 100% Guaranteed pull of Secret tier icons (Lamine Yamal, Mbappé, Haaland, Zlatan, Iniesta, Ramos, Xavi).</p>
+            <div class="pack-rate">100% Secret Guaranteed</div>
+            <div class="pack-multibuttons">
+                <button onclick="openPack('secret', 1)">1x · 90 🪙</button>
+                <button onclick="openPack('secret', 3)">3x · 270 🪙</button>
+                <button onclick="openPack('secret', 5)">5x · 450 🪙</button>
+            </div>
+        </article>
+
+        <!-- 7. WORLD CLASS PACK -->
         <article class="pack worldclass-pack">
             <button class="pack-info-btn" onclick="openPackOdds('worldclass')" title="View Probabilities">?</button>
             <div class="pack-ball">🌎</div>
@@ -442,7 +525,11 @@
             <h2>World Class Pack</h2>
             <p>GOAT Vault — 100% Guaranteed pull of Lionel Messi (97) or Cristiano Ronaldo (97).</p>
             <div class="pack-rate">100% World Class Guaranteed</div>
-            <button onclick="openPack('worldclass')">100 🪙 · OPEN</button>
+            <div class="pack-multibuttons">
+                <button onclick="openPack('worldclass', 1)">1x · 100 🪙</button>
+                <button onclick="openPack('worldclass', 3)">3x · 300 🪙</button>
+                <button onclick="openPack('worldclass', 5)">5x · 500 🪙</button>
+            </div>
         </article>
 
     </div>
@@ -621,15 +708,12 @@
     <div class="section-head">
         <div>
             <p class="eyebrow">CUSTOMIZATION</p>
-            <h1>Stadium & Avatar Shop</h1>
-            <p>Unlock authentic club crest avatar frames & iconic stadium atmospheres.</p>
+            <h1>Stadium Atmospheres Shop</h1>
+            <p>Unlock iconic stadium environments & matchday backdrops.</p>
         </div>
     </div>
 
-    <h2>🛡️ Profile Avatar Frames</h2>
-    <div id="frameShop" class="shop-grid"></div>
-
-    <h2 style="margin-top:30px;">🏟️ Stadium Atmospheres</h2>
+    <h2>🏟️ Stadium Atmospheres</h2>
     <div id="backgroundShop" class="shop-grid"></div>
 
 </section>
@@ -650,7 +734,7 @@
 
     <div id="profileHero" class="profile-hero">
         <div class="profile-glass-card">
-            <div id="profileAvatarWrap" class="profile-avatar-wrapper frame-default">
+            <div id="profileAvatarWrap" class="profile-avatar-wrapper">
                 <img id="profileAvatarImg" class="profile-avatar-photo" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80" alt="Avatar" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80';">
             </div>
             <div class="profile-title-block">
@@ -700,19 +784,17 @@
 
     <!-- CUSTOMIZATION CONTROLS -->
     <div class="panel">
-        <h2>🎨 Customization</h2>
+        <h2>🎨 Customization & Profile Photo</h2>
 
-        <label>Equip Profile Frame</label>
-        <select id="profileFrameSelect" onchange="setProfileFrame(this.value)"></select>
+        <label>Custom Profile Photo (Choose from Mobile / iPad Gallery or PC Files)</label>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarFileUpload(event)">
+            <button class="primary-btn" style="width:auto;padding:12px 22px;" onclick="document.getElementById('avatarFileInput').click()">📷 Choose from Gallery / Files</button>
+            <button class="ghost-btn" style="width:auto;padding:12px 18px;" onclick="resetDefaultAvatar()">Reset Default</button>
+        </div>
 
         <label>Equip Stadium Background</label>
         <select id="profileBackgroundSelect" onchange="setProfileBackground(this.value)"></select>
-
-        <label>Custom Avatar Image URL</label>
-        <div style="display:flex;gap:10px;margin-bottom:12px;">
-            <input id="avatarUrlInput" placeholder="Paste image link (e.g. https://...)" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;">
-            <button class="primary-btn" style="width:auto;padding:10px 20px;" onclick="applyCustomAvatarUrl()">Apply</button>
-        </div>
 
         <div style="margin-top:20px;">
             <button class="primary-btn" onclick="changeName()">Change Name</button>
@@ -823,9 +905,47 @@
         </div>
     </div>
 
+    <!-- 🔐 CHANGE PASSWORD PANEL -->
+    <div id="settingsChangePassPanel" class="panel">
+        <h2>🔐 Change Account Password</h2>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">Update your password securely across all your devices.</p>
+        
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
+            <label style="margin:0;font-size:12px;">Current Password</label>
+            <div class="password-input-wrap">
+                <input id="currentPasswordInput" type="password" placeholder="Enter current password" autocomplete="current-password">
+                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('currentPasswordInput', this)">👁️</button>
+            </div>
+
+            <label style="margin:0;font-size:12px;">New Password</label>
+            <div class="password-input-wrap">
+                <input id="newPasswordInput" type="password" placeholder="Enter new password (min 3 chars)" autocomplete="new-password">
+                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('newPasswordInput', this)">👁️</button>
+            </div>
+
+            <label style="margin:0;font-size:12px;">Confirm New Password</label>
+            <div class="password-input-wrap">
+                <input id="confirmPasswordInput" type="password" placeholder="Confirm new password" autocomplete="new-password">
+                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('confirmPasswordInput', this)">👁️</button>
+            </div>
+
+            <button class="primary-btn" style="margin-top:6px;" onclick="handleChangePassword()">Update Password</button>
+        </div>
+    </div>
+
+    <!-- ⚡ ANIMATION & PACK PREFERENCES -->
+    <div class="panel">
+        <h2>⚡ Animation Preferences</h2>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Control pack animations &amp; transition speeds.</p>
+        <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);padding:12px 16px;border-radius:12px;border:1px solid var(--border);">
+            <input type="checkbox" id="skipPackAnimToggle" style="width:20px;height:20px;accent-color:var(--green);cursor:pointer;" onchange="toggleSkipPackAnimation(this.checked)">
+            <label for="skipPackAnimToggle" style="margin:0;cursor:pointer;font-weight:700;">⚡ Fast Pack Opening (Skip pack shaking animation)</label>
+        </div>
+    </div>
+
     <div class="panel">
         <h2>🎁 Redeem Promo Codes</h2>
-        <p>Enter promo codes to receive free rewards & unlock features!</p>
+        <p>Enter promo codes to receive free rewards &amp; unlock features!</p>
         <div style="display:flex;gap:10px;margin-top:12px;">
             <input id="codeInput" placeholder="Enter code (e.g. RELEASE)" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;text-transform:uppercase;">
             <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="redeemCode()">Redeem</button>
@@ -874,8 +994,8 @@
 
         <!-- 1. ECONOMY TAB -->
         <div id="adminTabCurrency" class="admin-tab-content">
-            <h3>🪙 Gold Economy Injection</h3>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Add gold coins to your account or send directly to any online user.</p>
+            <h3>🪙 Gold Economy &amp; Currency</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Add gold coins to your account or grant directly to any online player.</p>
             
             <label>Target Username (Leave blank for yourself)</label>
             <input id="adminGoldTarget" placeholder="e.g. Alucard, Timekung2835" style="width:100%;margin-bottom:10px;">
@@ -889,7 +1009,7 @@
             </div>
             <input id="adminGoldAmount" type="number" placeholder="Enter custom amount (e.g. 1000000)" value="1000000" style="width:100%;margin-bottom:14px;">
             
-            <button class="primary-btn" onclick="adminExecuteGiveGold()">⚡ Inject Gold</button>
+            <button class="primary-btn" onclick="adminExecuteGiveGold()">⚡ Grant Gold</button>
         </div>
 
         <!-- 2. CARD SPAWNER TAB -->
