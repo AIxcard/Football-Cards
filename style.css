@@ -3078,16 +3078,18 @@ select,input{
 .packs-display-stage {
     display: flex !important;
     flex-direction: row !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 24px !important;
+    gap: 16px !important;
     position: relative;
     perspective: 1400px;
     min-height: 520px;
     width: 100% !important;
-    max-width: 100vw !important;
+    max-width: 98vw !important;
     overflow-x: auto !important;
-    padding: 20px 10px !important;
+    overflow-y: visible !important;
+    padding: 30px 10px !important;
 }
 
 .single-pack-layout {
@@ -3097,48 +3099,95 @@ select,input{
 .single-pack-layout .realistic-booster-pack {
     width: 320px;
     height: 490px;
+    margin: 0 auto;
 }
 
+/* 3-PACK HORIZONTAL FAN (LEFT TO RIGHT) */
 .multi-pack-3-layout {
     display: flex !important;
     flex-direction: row !important;
+    flex-wrap: nowrap !important;
     gap: 20px !important;
     justify-content: center !important;
+    align-items: center !important;
 }
 
 .multi-pack-3-layout .realistic-booster-pack {
-    width: 260px !important;
-    height: 420px !important;
+    width: 250px !important;
+    height: 400px !important;
     flex-shrink: 0 !important;
 }
 
+.multi-pack-3-layout .pack-fan-3-1 {
+    transform: perspective(1000px) rotateY(18deg) rotateZ(-3deg) translateY(12px) scale(0.92);
+    z-index: 1;
+}
+
+.multi-pack-3-layout .pack-fan-3-2 {
+    transform: perspective(1000px) rotateY(0deg) scale(1.05) translateZ(35px);
+    z-index: 10;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.95), 0 0 70px var(--foil-glow);
+}
+
+.multi-pack-3-layout .pack-fan-3-3 {
+    transform: perspective(1000px) rotateY(-18deg) rotateZ(3deg) translateY(12px) scale(0.92);
+    z-index: 1;
+}
+
+/* 5-PACK HORIZONTAL FAN (LEFT TO RIGHT AS DRAWN IN USER SKETCH) */
 .multi-pack-5-layout {
     display: flex !important;
     flex-direction: row !important;
-    gap: 16px !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
     justify-content: center !important;
-    overflow-x: auto !important;
-    padding: 20px 20px !important;
+    align-items: center !important;
 }
 
 .multi-pack-5-layout .realistic-booster-pack {
-    width: 215px !important;
-    height: 350px !important;
+    width: 195px !important;
+    height: 330px !important;
     flex-shrink: 0 !important;
+}
+
+.multi-pack-5-layout .pack-fan-5-1 {
+    transform: perspective(1000px) rotateY(28deg) rotateZ(-6deg) translateY(24px) scale(0.82);
+    z-index: 1;
+}
+
+.multi-pack-5-layout .pack-fan-5-2 {
+    transform: perspective(1000px) rotateY(14deg) rotateZ(-3deg) translateY(10px) scale(0.92);
+    z-index: 5;
+}
+
+.multi-pack-5-layout .pack-fan-5-3 {
+    transform: perspective(1000px) rotateY(0deg) scale(1.08) translateZ(45px);
+    z-index: 15;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.98), 0 0 80px var(--foil-glow);
+}
+
+.multi-pack-5-layout .pack-fan-5-4 {
+    transform: perspective(1000px) rotateY(-14deg) rotateZ(3deg) translateY(10px) scale(0.92);
+    z-index: 5;
+}
+
+.multi-pack-5-layout .pack-fan-5-5 {
+    transform: perspective(1000px) rotateY(-28deg) rotateZ(6deg) translateY(24px) scale(0.82);
+    z-index: 1;
 }
 
 @media(max-width: 768px) {
     .packs-display-stage {
         justify-content: flex-start !important;
-        gap: 14px !important;
+        gap: 12px !important;
     }
     .multi-pack-3-layout .realistic-booster-pack {
-        width: 180px !important;
-        height: 300px !important;
+        width: 170px !important;
+        height: 290px !important;
     }
     .multi-pack-5-layout .realistic-booster-pack {
-        width: 150px !important;
-        height: 260px !important;
+        width: 140px !important;
+        height: 250px !important;
     }
 }
 
@@ -3193,7 +3242,7 @@ select,input{
     100% { transform: translateY(-8px) rotateX(-2deg) rotateY(2deg); }
 }
 
-/* TOP METALLIC CORRUGATED CRIMP CAP (SWIPE TARGET) */
+/* POKÉMON STRIPED TOP CRIMP CAP (SWIPE TARGET) */
 .pack-foil-cap {
     position: absolute;
     top: 0;
@@ -3201,8 +3250,7 @@ select,input{
     right: 0;
     height: 76px;
     border-radius: 16px 16px 0 0;
-    background: linear-gradient(180deg, #475569 0%, #1e293b 70%, #0f172a 100%);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.45);
     z-index: 6;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
@@ -3210,7 +3258,7 @@ select,input{
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+    transition: transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease 0.1s;
     cursor: grab;
     touch-action: none;
 }
@@ -3219,28 +3267,57 @@ select,input{
     cursor: grabbing;
 }
 
-.pack-crimp-cording {
-    width: 100%;
-    height: 18px;
-    background: repeating-linear-gradient(90deg, #0f172a 0px, #e2e8f0 3px, #64748b 6px, #0f172a 9px);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+.pk-top-crimp-stripes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(90deg, 
+        #0f172a 0px, 
+        #94a3b8 2px, 
+        #f8fafc 4px, 
+        #cbd5e1 6px, 
+        #475569 8px, 
+        #0f172a 10px
+    );
+    opacity: 0.95;
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.8);
 }
 
-.pack-top-tear-indicator {
+.pk-crimp-hanger-hole {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38px;
+    height: 10px;
+    border-radius: 6px;
+    background: #020617;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9);
+    z-index: 7;
+}
+
+.pk-tear-guideline {
+    position: absolute;
+    bottom: 6px;
+    left: 8px;
+    right: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    margin-top: 10px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 900;
     color: #ffd700;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.8);
-    background: rgba(0,0,0,0.6);
-    padding: 4px 14px;
-    border-radius: 12px;
-    border: 1px dashed rgba(255, 215, 0, 0.6);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(255, 215, 0, 0.8);
+    background: rgba(0,0,0,0.7);
+    padding: 3px 10px;
+    border-radius: 10px;
+    border: 1px dashed rgba(255, 215, 0, 0.7);
     letter-spacing: 1.5px;
+    z-index: 8;
     animation: swipeHintGlow 1.4s ease-in-out infinite alternate;
 }
 
@@ -3252,6 +3329,7 @@ select,input{
     bottom: 0;
     background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%);
     pointer-events: none;
+    z-index: 9;
 }
 
 /* LOWER METALLIC FOIL SLEEVE BODY (FULL BLEED POKÉMON SVG ARTWORK) */
@@ -3296,7 +3374,9 @@ select,input{
 @keyframes foilSheen {
     0% { transform: translateX(-100%) translateY(-100%) rotate(25deg); }
     100% { transform: translateX(100%) translateY(100%) rotate(25deg); }
-}/* INNER HIDDEN CARD INSERT READY TO SLIDE UP */
+}
+
+/* DETAILED 3D CARD INSERT INSIDE PACK */
 .pack-card-insert {
     position: absolute;
     top: 20px;
@@ -3308,85 +3388,80 @@ select,input{
     background: #09131e;
     border: 2px solid rgba(255, 215, 0, 0.65);
     box-shadow: 0 20px 40px rgba(0,0,0,0.85);
-    transition: transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.75s ease;
+    transition: transform 0.85s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.85s ease;
 }
 
 .card-insert-back {
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     border-radius: 14px;
-    background: linear-gradient(135deg, #0d223a, #06111d);
+    background: radial-gradient(circle at center, #0f2744 0%, #081422 60%, #030810 100%);
     position: relative;
     overflow: hidden;
+    border: 2px solid rgba(255, 215, 0, 0.7);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
 }
 
 .card-back-pattern {
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(255, 215, 0, 0.15) 1px, transparent 1px);
-    background-size: 14px 14px;
+    background-image: repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.04) 0px, rgba(255, 215, 0, 0.04) 8px, transparent 8px, transparent 16px),
+                      repeating-linear-gradient(-45deg, rgba(255, 215, 0, 0.04) 0px, rgba(255, 215, 0, 0.04) 8px, transparent 8px, transparent 16px);
 }
 
-.card-back-crest {
-    font-size: 60px;
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.85));
-    animation: spinSlow 12s linear infinite;
-}
-
-/* TEAR EXECUTION KEYFRAMES */
-/* INNER HIDDEN CARD INSERT READY TO SLIDE UP */
-.pack-card-insert {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    height: 420px;
+.card-back-frame {
+    position: relative;
     z-index: 2;
-    border-radius: 16px;
-    background: #09131e;
-    border: 2px solid rgba(255, 215, 0, 0.65);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.85);
-    transition: transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.75s ease;
-}
-
-.card-insert-back {
-    width: 100%;
-    height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #0d223a, #06111d);
-    position: relative;
-    overflow: hidden;
-}
-
-.card-back-pattern {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgba(255, 215, 0, 0.15) 1px, transparent 1px);
-    background-size: 14px 14px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15), rgba(0,0,0,0.85));
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
 }
 
 .card-back-crest {
-    font-size: 60px;
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.85));
+    font-size: 58px;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9));
     animation: spinSlow 12s linear infinite;
 }
 
-/* TEAR EXECUTION KEYFRAMES */
+.card-back-title {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #ffd700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    margin-top: 4px;
+}
+
+.card-back-stars {
+    margin-top: 18px;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    z-index: 2;
+}
+
+/* CLEAN RIP-OFF ANIMATION: Top striped crimp separates cleanly and flies away */
 .pack-torn .pack-foil-cap {
-    transform: translateY(-140px) rotate(-35deg) scale(0.85);
-    opacity: 0;
-    pointer-events: none;
+    transform: translateY(-160px) translateX(60px) rotate(-22deg) scale(0.8) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .pack-torn .pack-card-insert {
-    transform: translateY(-220px) scale(1.06);
-    box-shadow: 0 0 65px var(--foil-glow), 0 40px 80px rgba(0,0,0,0.95);
+    transform: translateY(-240px) scale(1.06) !important;
+    box-shadow: 0 0 70px var(--foil-glow), 0 40px 90px rgba(0,0,0,0.98) !important;
 }
 
 .pack-torn .pack-top-swipe-bar {
