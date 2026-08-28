@@ -934,7 +934,11 @@ function bindEvents() {
     if (wc) {
         wc.addEventListener("click", () => {
             SoundFx.click();
-            document.getElementById("worldClassOverlay").classList.add("hidden");
+            const wcOverlay = document.getElementById("worldClassOverlay");
+            if (wcOverlay) {
+                wcOverlay.classList.add("hidden");
+                wcOverlay.style.display = "none";
+            }
             const card = state.cards.find(c => c.id === state.worldClassPending);
             if (card) showCardResult(card, false, false);
             state.worldClassPending = null;
@@ -1108,15 +1112,26 @@ function openPack(type) {
     const animOverlay = document.getElementById("packOpeningOverlay");
     const animTitle = document.getElementById("packAnimTitle");
     const animIcon = document.getElementById("packAnimIcon");
+    const ripBar = document.getElementById("packRipBar");
+
     if (animOverlay) {
-        if (animTitle) animTitle.textContent = `OPENING ${pack.name.toUpperCase()}...`;
-        if (animIcon) animIcon.textContent = type === "worldclass" ? "🌎" : type === "exclusive" ? "👑" : "📦";
+        if (animTitle) animTitle.textContent = `SCOUTING ${pack.name.toUpperCase()}...`;
+        if (animIcon) animIcon.textContent = type === "worldclass" ? "🌎" : type === "champion" ? "🏆" : type === "exclusive" ? "👑" : type === "premium" ? "⭐" : "📦";
+        if (ripBar) {
+            ripBar.style.animation = 'none';
+            void ripBar.offsetWidth; // trigger reflow
+            ripBar.style.animation = 'ripProgress 1.1s ease-in-out forwards';
+        }
         animOverlay.classList.remove("hidden");
+        animOverlay.style.display = "grid";
     }
 
     setTimeout(() => {
-        if (animOverlay) animOverlay.classList.add("hidden");
-        if (rarity === "World Class") {
+        if (animOverlay) {
+            animOverlay.classList.add("hidden");
+            animOverlay.style.display = "none";
+        }
+        if (rarity === "World Class" || player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo") {
             showWorldClass(card);
         } else if (rarity === "Secret") {
             showSecretCutscene(card);
@@ -1124,7 +1139,7 @@ function openPack(type) {
             showCardResult(card, duplicate, isFirstDiscovery);
         }
         renderAll();
-    }, 600);
+    }, 1150);
 }
 
 function showSecretCutscene(card) {
@@ -1267,12 +1282,17 @@ function showWorldClass(card) {
     if (icon) icon.textContent = isMessi ? "🇦🇷" : isRonaldo ? "🇵🇹" : "🌎";
     if (quote) quote.textContent = isMessi ? '"The Argentine Magician · World Champion · The Greatest of All Time"' : isRonaldo ? '"The Portuguese Legend · All-Time Top Goalscorer · SIUUU!"' : '"Generational Football Icon"';
 
+    const photo = document.getElementById("wcPlayerPhoto");
+    if (photo && card.image) {
+        photo.src = card.image;
+    }
+
     setText("wcPlayerName", card.player.toUpperCase());
     setText("wcPlayerMeta", `${card.rating} OVR · ${card.pos} · ★ 1 IN 10,000 WORLD CLASS ★`);
 
     overlay.classList.remove("hidden");
     overlay.style.display = "grid";
-    SoundFx.cardReveal("World Class");
+    SoundFx.worldClassCinematic();
     state.worldClassPending = card.id;
     saveGame();
 }
