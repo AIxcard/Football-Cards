@@ -2084,10 +2084,44 @@ function openPack(type, count = 1) {
 
     const cfg = foilClasses[type] || foilClasses.starter;
 
-    renderBoosterPacksInStage(cfg, pullCount);
+    // Sequential individual pack opening (works for 1x, 3x, and 5x)
+    startPackSequence(cfg, pulledCards);
+}
 
+let activePackSequence = null;
+
+function startPackSequence(cfg, pulledCards) {
+    activePackSequence = {
+        queue: [...pulledCards],
+        total: pulledCards.length,
+        currentIndex: 0,
+        cfg: cfg
+    };
+    openNextSequentialPack();
+}
+
+function openNextSequentialPack() {
+    if (!activePackSequence || activePackSequence.currentIndex >= activePackSequence.total) {
+        activePackSequence = null;
+        unlockModalScroll();
+        renderAll();
+        return;
+    }
+
+    const currentItem = activePackSequence.queue[activePackSequence.currentIndex];
+    const packNum = activePackSequence.currentIndex + 1;
+    const totalPacks = activePackSequence.total;
+    const cfg = activePackSequence.cfg;
+
+    // Render single pack for this individual step
+    renderBoosterPacksInStage(cfg, 1);
+
+    const animOverlay = document.getElementById("packOpeningOverlay");
+    const swipePrompt = document.getElementById("tearSwipePrompt");
     if (swipePrompt) {
-        swipePrompt.textContent = pullCount > 1 ? `👉 SWIPE ACROSS TO TEAR ${pullCount} PACKS ➔` : "👉 SWIPE ACROSS TO TEAR ➔";
+        swipePrompt.textContent = totalPacks > 1 
+            ? `👉 SWIPE ACROSS TO TEAR PACK (${packNum}/${totalPacks}) ➔` 
+            : "👉 SWIPE ACROSS TO TEAR ➔";
     }
 
     if (animOverlay) {
@@ -2102,44 +2136,53 @@ function openPack(type, count = 1) {
                 animOverlay.classList.add("hidden");
                 animOverlay.style.display = "none";
             }
-            deliverPulledCards(pulledCards, bestCard);
+            deliverSinglePackCard(currentItem, packNum, totalPacks);
         });
-    } else {
-        deliverPulledCards(pulledCards, bestCard);
     }
 }
 
-function deliverPulledCards(pulledCards, bestCard) {
-    if (!pulledCards || !pulledCards.length) {
-        unlockModalScroll();
-        return;
+function deliverSinglePackCard(item, packNum, totalPacks) {
+    const { card, duplicate, isFirstDiscovery } = item;
+
+    function proceedToCardReveal() {
+        showCardResult(card, duplicate, isFirstDiscovery, packNum, totalPacks);
     }
 
-    const topWorldClass = pulledCards.find(p => p.card.rarity === "World Class");
-    const topSecret = pulledCards.find(p => p.card.rarity === "Secret");
-    const topMythic = pulledCards.find(p => p.card.rarity === "Mythic");
-
-    function proceedToResults() {
-        if (pulledCards.length === 1) {
-            showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
-        } else {
-            showMultiCardResult(pulledCards);
-        }
-        renderAll();
-    }
-
-    if (topWorldClass) {
-        cutscenePostCallback = proceedToResults;
-        showWorldClass(topWorldClass.card);
-    } else if (topSecret) {
-        cutscenePostCallback = proceedToResults;
-        showSecretCutscene(topSecret.card);
-    } else if (topMythic) {
-        cutscenePostCallback = proceedToResults;
-        showMythicCutscene(topMythic.card);
+    if (card.rarity === "World Class") {
+        cutscenePostCallback = proceedToCardReveal;
+        showWorldClass(card);
+    } else if (card.rarity === "Secret") {
+        cutscenePostCallback = proceedToCardReveal;
+        showSecretCutscene(card);
+    } else if (card.rarity === "Mythic") {
+        cutscenePostCallback = proceedToCardReveal;
+        showMythicCutscene(card);
     } else {
-        proceedToResults();
+        proceedToCardReveal();
     }
+}
+
+function closeCardRevealModal() {
+    const overlay = document.getElementById("cardRevealOverlay");
+    if (overlay) {
+        overlay.classList.add("hidden");
+        overlay.style.display = "none";
+    }
+    SoundFx.click();
+
+    if (activePackSequence) {
+        activePackSequence.currentIndex++;
+        if (activePackSequence.currentIndex < activePackSequence.total) {
+            // Open the next individual pack in sequence!
+            openNextSequentialPack();
+            return;
+        } else {
+            activePackSequence = null;
+        }
+    }
+
+    unlockModalScroll();
+    renderAll();
 }
 
 function showMultiCardResult(pulledCards) {
@@ -2426,7 +2469,7 @@ function showWorldClass(card) {
     saveGame();
 }
 
-function showCardResult(card, duplicate, isFirstDiscovery) {
+function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPacks = 1) {
     const overlay = document.getElementById("cardRevealOverlay");
     const revealCard = document.getElementById("revealCard");
     const revealBadge = document.getElementById("revealBadge");
@@ -2437,6 +2480,7 @@ function showCardResult(card, duplicate, isFirstDiscovery) {
     const revealPos = document.getElementById("revealPos");
     const revealName = document.getElementById("revealName");
     const revealRaritySub = document.getElementById("revealRaritySub");
+    const collectBtn = document.getElementById("revealCollectBtn");
 
     if (overlay && revealCard) {
         revealCard.className = "card reveal-card-body";
@@ -2468,8 +2512,8 @@ function showCardResult(card, duplicate, isFirstDiscovery) {
             revealRarity.className = `rarity ${rClass}`;
         }
 
-        if (revealPhoto && card.image) {
-            revealPhoto.src = card.image;
+        if (revealPhoto) {
+            revealPhoto.src = card.image || "player_temp.png";
         }
 
         if (revealRating) revealRating.textContent = card.rating;
@@ -2477,7 +2521,22 @@ function showCardResult(card, duplicate, isFirstDiscovery) {
         if (revealName) revealName.textContent = card.player;
         if (revealRaritySub) revealRaritySub.textContent = card.rarity;
 
+        if (collectBtn) {
+            if (totalPacks > 1) {
+                if (packNum < totalPacks) {
+                    collectBtn.textContent = `Collect Card & Open Next (${packNum}/${totalPacks}) ➔`;
+                } else {
+                    collectBtn.textContent = `Collect Final Card (${totalPacks}/${totalPacks}) ✓`;
+                }
+            } else {
+                collectBtn.textContent = "Collect Card";
+            }
+        }
+
         overlay.classList.remove("hidden");
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
     }
 
     SoundFx.cardReveal(card.rarity);
