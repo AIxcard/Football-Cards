@@ -318,13 +318,6 @@ const PLAYERS = [
 { name: "Lamine Yamal", rating: 96, pos: "RW", rarity: "Secret", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
 { name: "Kylian Mbappé", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
 { name: "Erling Haaland", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Zlatan Ibrahimović", rating: 91, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Sergio Ramos", rating: 90, pos: "CB", rarity: "Secret", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Andrés Iniesta", rating: 93, pos: "CM", rarity: "Secret", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Xavi", rating: 92, pos: "CM", rarity: "Secret", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Thierry Henry", rating: 93, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Kaká", rating: 91, pos: "CAM", rarity: "Secret", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Ronald Koeman", rating: 89, pos: "CB", rarity: "Secret", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
 
 // --- MYTHIC ---
 { name: "Neymar Jr", rating: 95, pos: "LW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
@@ -1459,6 +1452,125 @@ function renderHero() {
 
 let packTearCallback = null;
 let packTornExecuted = false;
+let cutscenePostCallback = null;
+
+function renderBoosterPacksInStage(cfg, pullCount) {
+    const stage = document.getElementById("packsDisplayStage");
+    if (!stage) return;
+
+    if (pullCount === 1) {
+        stage.className = "packs-display-stage single-pack-layout";
+        stage.innerHTML = `
+            <div class="realistic-booster-pack ${cfg.css}" id="realisticBoosterPack">
+                <div class="pack-card-insert">
+                    <div class="card-insert-face card-insert-back">
+                        <div class="card-back-pattern"></div>
+                        <div class="card-back-crest">⚽</div>
+                    </div>
+                </div>
+                <div class="pack-foil-cap">
+                    <div class="pack-crimp-cording"></div>
+                    <div class="pack-cap-badge">★ OFFICIAL TRADING CARD GAME ★</div>
+                    <div class="pack-cap-foil-shine"></div>
+                </div>
+                <div class="pack-foil-body">
+                    <div class="foil-specular-sheen"></div>
+                    <div class="foil-stadium-rings"></div>
+                    <div class="pack-header-tag">SERIES 2026 EDITION</div>
+                    <h2 class="pack-foil-title">${cfg.title}</h2>
+                    <div class="pack-sub-badge">★ 1 CARD TRANSFER ★</div>
+                    <div class="pack-foil-emblem-wrap">
+                        <div class="pack-foil-emblem-glow"></div>
+                        <div class="pack-foil-crest-border">
+                            <div class="pack-foil-crest-inner">
+                                <div class="pack-foil-emblem">${cfg.emblem}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pack-footer-meta">
+                        <span>ULTIMATE CARDS</span>
+                        <span>★ 100% AUTHENTIC FOIL ★</span>
+                    </div>
+                    <div class="pack-crimp-seal-bottom"></div>
+                </div>
+            </div>
+        `;
+    } else if (pullCount === 3) {
+        stage.className = "packs-display-stage multi-pack-3-layout";
+        stage.innerHTML = [1, 2, 3].map(num => `
+            <div class="realistic-booster-pack ${cfg.css} pack-stack-3-${num}">
+                <div class="pack-card-insert">
+                    <div class="card-insert-face card-insert-back">
+                        <div class="card-back-pattern"></div>
+                        <div class="card-back-crest">⚽</div>
+                    </div>
+                </div>
+                <div class="pack-foil-cap">
+                    <div class="pack-crimp-cording"></div>
+                    <div class="pack-cap-badge">★ PACK ${num} OF 3 ★</div>
+                    <div class="pack-cap-foil-shine"></div>
+                </div>
+                <div class="pack-foil-body">
+                    <div class="foil-specular-sheen"></div>
+                    <div class="foil-stadium-rings"></div>
+                    <div class="pack-header-tag">SERIES 2026 EDITION</div>
+                    <h2 class="pack-foil-title">${cfg.title}</h2>
+                    <div class="pack-sub-badge">★ PACK ${num} ★</div>
+                    <div class="pack-foil-emblem-wrap">
+                        <div class="pack-foil-emblem-glow"></div>
+                        <div class="pack-foil-crest-border">
+                            <div class="pack-foil-crest-inner">
+                                <div class="pack-foil-emblem">${cfg.emblem}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pack-footer-meta">
+                        <span>ULTIMATE CARDS</span>
+                        <span>★ 100% AUTHENTIC FOIL ★</span>
+                    </div>
+                    <div class="pack-crimp-seal-bottom"></div>
+                </div>
+            </div>
+        `).join("");
+    } else if (pullCount === 5) {
+        stage.className = "packs-display-stage multi-pack-5-layout";
+        stage.innerHTML = [1, 2, 3, 4, 5].map(num => `
+            <div class="realistic-booster-pack ${cfg.css} pack-stack-5-${num}">
+                <div class="pack-card-insert">
+                    <div class="card-insert-face card-insert-back">
+                        <div class="card-back-pattern"></div>
+                        <div class="card-back-crest">⚽</div>
+                    </div>
+                </div>
+                <div class="pack-foil-cap">
+                    <div class="pack-crimp-cording"></div>
+                    <div class="pack-cap-badge">★ PACK ${num} OF 5 ★</div>
+                    <div class="pack-cap-foil-shine"></div>
+                </div>
+                <div class="pack-foil-body">
+                    <div class="foil-specular-sheen"></div>
+                    <div class="foil-stadium-rings"></div>
+                    <div class="pack-header-tag">SERIES 2026 EDITION</div>
+                    <h2 class="pack-foil-title">${cfg.title}</h2>
+                    <div class="pack-sub-badge">★ PACK ${num} ★</div>
+                    <div class="pack-foil-emblem-wrap">
+                        <div class="pack-foil-emblem-glow"></div>
+                        <div class="pack-foil-crest-border">
+                            <div class="pack-foil-crest-inner">
+                                <div class="pack-foil-emblem">${cfg.emblem}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pack-footer-meta">
+                        <span>ULTIMATE CARDS</span>
+                        <span>★ 100% AUTHENTIC FOIL ★</span>
+                    </div>
+                    <div class="pack-crimp-seal-bottom"></div>
+                </div>
+            </div>
+        `).join("");
+    }
+}
 
 function initPackSwipeGesture(onTear) {
     packTearCallback = onTear;
@@ -1466,7 +1578,6 @@ function initPackSwipeGesture(onTear) {
 
     const track = document.getElementById("tearSwipeTrack");
     const blade = document.getElementById("tearSwipeBlade");
-    const packEl = document.getElementById("realisticBoosterPack");
     const tearLine = document.getElementById("packTearLine");
 
     if (!track || !blade) return;
@@ -1480,7 +1591,14 @@ function initPackSwipeGesture(onTear) {
     function executeTear() {
         if (packTornExecuted) return;
         packTornExecuted = true;
-        if (packEl) packEl.classList.add("pack-torn");
+        
+        const packs = document.querySelectorAll("#packsDisplayStage .realistic-booster-pack");
+        packs.forEach((p, idx) => {
+            setTimeout(() => {
+                p.classList.add("pack-torn");
+            }, idx * 80);
+        });
+        
         SoundFx.packTear();
 
         setTimeout(() => {
@@ -1489,7 +1607,7 @@ function initPackSwipeGesture(onTear) {
                 packTearCallback = null;
                 cb();
             }
-        }, 750);
+        }, 850);
     }
 
     function handleStart(clientX) {
@@ -1638,10 +1756,7 @@ function openPack(type, count = 1) {
 
     // Configure 3D Realistic Booster Pack Artwork
     const animOverlay = document.getElementById("packOpeningOverlay");
-    const packEl = document.getElementById("realisticBoosterPack");
-    const foilTitle = document.getElementById("packFoilTitle");
-    const foilEmblem = document.getElementById("packFoilEmblem");
-    const pullCountPill = document.getElementById("packPullCountPill");
+    const swipePrompt = document.getElementById("tearSwipePrompt");
 
     const foilClasses = {
         starter: { css: "starter-foil", emblem: "📦", title: "STARTER PACK" },
@@ -1655,12 +1770,11 @@ function openPack(type, count = 1) {
 
     const cfg = foilClasses[type] || foilClasses.starter;
 
-    if (packEl) {
-        packEl.className = `realistic-booster-pack ${cfg.css}`;
+    renderBoosterPacksInStage(cfg, pullCount);
+
+    if (swipePrompt) {
+        swipePrompt.textContent = pullCount > 1 ? `👉 SWIPE ACROSS TO TEAR ${pullCount} PACKS ➔` : "👉 SWIPE ACROSS TO TEAR ➔";
     }
-    if (foilTitle) foilTitle.textContent = cfg.title;
-    if (foilEmblem) foilEmblem.textContent = cfg.emblem;
-    if (pullCountPill) pullCountPill.textContent = `${pullCount} CARD${pullCount > 1 ? 'S' : ''} TRANSFER`;
 
     if (animOverlay) {
         animOverlay.classList.remove("hidden");
@@ -1685,19 +1799,89 @@ function deliverPulledCards(pulledCards, bestCard) {
     const topSecret = pulledCards.find(p => p.card.rarity === "Secret");
     const topMythic = pulledCards.find(p => p.card.rarity === "Mythic");
 
-    if (topWorldClass) {
-        showWorldClass(topWorldClass.card);
-    } else if (topSecret) {
-        showSecretCutscene(topSecret.card);
-    } else if (topMythic) {
-        showMythicCutscene(topMythic.card);
-    } else if (pulledCards.length === 1) {
-        showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
-    } else {
-        showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
-        toast(`🎉 Opened ${pulledCards.length} packs! Top transfer: ${bestCard.card.player} (${bestCard.card.rarity})`);
+    function proceedToResults() {
+        if (pulledCards.length === 1) {
+            showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
+        } else {
+            showMultiCardResult(pulledCards);
+        }
+        renderAll();
     }
 
+    if (topWorldClass) {
+        cutscenePostCallback = proceedToResults;
+        showWorldClass(topWorldClass.card);
+    } else if (topSecret) {
+        cutscenePostCallback = proceedToResults;
+        showSecretCutscene(topSecret.card);
+    } else if (topMythic) {
+        cutscenePostCallback = proceedToResults;
+        showMythicCutscene(topMythic.card);
+    } else {
+        proceedToResults();
+    }
+}
+
+function showMultiCardResult(pulledCards) {
+    const overlay = document.getElementById("multiCardRevealOverlay");
+    const grid = document.getElementById("multiRevealGrid");
+    const title = document.getElementById("multiRevealTitle");
+    const sub = document.getElementById("multiRevealSub");
+    if (!overlay || !grid) return;
+
+    if (title) title.textContent = `All ${pulledCards.length} Cards Pulled`;
+    if (sub) sub.textContent = `${pulledCards.length} packs opened! All cards have been added to your collection.`;
+
+    grid.innerHTML = pulledCards.map((item, idx) => {
+        const { card, duplicate, isFirstDiscovery } = item;
+        const rClass = rarityClassName(card.rarity);
+        const bonus = DISCOVERY_BONUS[card.rarity] || 10;
+        const isLocked = !!card.locked;
+
+        let themeClass = `theme-${rClass}`;
+        if (card.rarity === "World Class") {
+            if (card.player === "Lionel Messi") themeClass = "theme-messi";
+            else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
+        }
+
+        return `
+        <article class="card ${themeClass} multi-pull-card" ${card.serialGradient ? `style="background:${card.serialGradient};animation-delay:${idx * 0.12}s;"` : `style="animation-delay:${idx * 0.12}s;"`}>
+            <div class="card-top-row">
+                <button class="card-lock-btn ${isLocked ? 'locked' : ''}" onclick="toggleCardLock('${card.id}', event)" title="${isLocked ? 'Unlock Card' : 'Lock Card'}">
+                    ${isLocked ? '🔒' : '🔓'}
+                </button>
+            </div>
+
+            ${card.serialNumber ? `<span class="serial-badge" style="display:inline-block;margin-bottom:6px;">★ SERIAL #${card.serialNumber}/10 ★</span>` : ""}
+
+            <div class="card-image-wrap">
+                <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+            </div>
+            <div class="card-rating">${card.rating}</div>
+            <div class="card-position">${escapeHTML(card.pos)}</div>
+            <h3>${escapeHTML(card.player)}</h3>
+            <small>${escapeHTML(card.rarity)}</small>
+
+            <div class="multi-pull-meta-badge">
+                ${card.serialNumber ? `<span class="badge-serial">★ 1/10 SERIALIZED</span>` : isFirstDiscovery ? `<span class="badge-new">+${bonus} 🪙 FIRST DISCOVERY</span>` : duplicate ? `<span class="badge-dupe">DUPLICATE</span>` : `<span class="badge-new">NEW DISCOVERY</span>`}
+            </div>
+
+            <div class="card-actions">
+                <button onclick="open3DCard('${card.id}')">3D View</button>
+            </div>
+        </article>
+        `;
+    }).join("");
+
+    overlay.classList.remove("hidden");
+    SoundFx.cardReveal("Legendary");
+    toast(`🎉 Successfully opened ${pulledCards.length} packs!`);
+}
+
+function closeMultiRevealModal() {
+    const overlay = document.getElementById("multiCardRevealOverlay");
+    if (overlay) overlay.classList.add("hidden");
+    SoundFx.click();
     renderAll();
 }
 
@@ -1719,6 +1903,13 @@ function closeMythicCutscene() {
     const overlay = document.getElementById("mythicOverlay");
     if (overlay) overlay.classList.add("hidden");
     SoundFx.click();
+    if (cutscenePostCallback) {
+        const cb = cutscenePostCallback;
+        cutscenePostCallback = null;
+        cb();
+    } else {
+        renderAll();
+    }
 }
 
 function showSecretCutscene(card) {
@@ -1739,6 +1930,26 @@ function closeSecretCutscene() {
     const overlay = document.getElementById("secretOverlay");
     if (overlay) overlay.classList.add("hidden");
     SoundFx.click();
+    if (cutscenePostCallback) {
+        const cb = cutscenePostCallback;
+        cutscenePostCallback = null;
+        cb();
+    } else {
+        renderAll();
+    }
+}
+
+function closeWorldClass() {
+    const overlay = document.getElementById("worldClassOverlay");
+    if (overlay) overlay.classList.add("hidden");
+    SoundFx.click();
+    if (cutscenePostCallback) {
+        const cb = cutscenePostCallback;
+        cutscenePostCallback = null;
+        cb();
+    } else {
+        renderAll();
+    }
 }
 
 function rollRarity(rates) {
@@ -2114,7 +2325,6 @@ function renderIndex() {
         if (!isUnlocked) {
             return `
             <article class="card index-card locked">
-                <span class="rarity ${rClass}">${escapeHTML(player.rarity)}</span>
                 <div class="card-image-wrap">
                     <img class="card-photo" src="${player.image}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
                 </div>
@@ -2128,7 +2338,6 @@ function renderIndex() {
 
         return `
         <article class="card index-card glow-${rClass}" onclick="open3DCard('${escapeHTML(player.name)}')">
-            <span class="rarity ${rClass}">${escapeHTML(player.rarity)}</span>
             <div class="card-image-wrap">
                 <img class="card-photo" src="${player.image}" alt="${escapeHTML(player.name)}">
             </div>
@@ -2372,7 +2581,6 @@ function renderCards() {
             ${multiSellMode ? `<input type="checkbox" class="card-select-checkbox" ${isSelected ? 'checked' : ''} onclick="toggleCardSelection('${card.id}', event)">` : ""}
 
             <div class="card-top-row">
-                <span class="card-rarity-pill rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <button class="card-lock-btn ${isLocked ? 'locked' : ''}" onclick="toggleCardLock('${card.id}', event)" title="${isLocked ? 'Unlock Card' : 'Lock Card'}">
                     ${isLocked ? '🔒' : '🔓'}
                 </button>
@@ -2466,7 +2674,6 @@ function renderShowcase() {
             <button class="showcase-slot-action" onclick="event.stopPropagation(); openShowcasePicker(${index})">Change</button>
             <article class="card showcase-card ${frame.css}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="open3DCard('${card.id}')">
                 ${card.serialNumber ? `<span class="serial-badge" style="background:${card.serialGradient}">★ #${card.serialNumber}/10 ★</span>` : ""}
-                <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <div class="card-image-wrap">
                     <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}">
                 </div>
