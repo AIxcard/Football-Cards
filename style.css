@@ -3026,12 +3026,13 @@ body.modal-open, html.modal-open {
     position: relative !important;
     z-index: 10 !important;
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     perspective: 1600px !important;
     overflow: hidden !important;
@@ -3050,13 +3051,12 @@ body.modal-open, html.modal-open {
     justify-content: center !important;
     position: relative !important;
     perspective: 1600px !important;
-    width: 100% !important;
+    width: auto !important;
     max-width: 100vw !important;
-    height: 100% !important;
-    max-height: 100vh !important;
-    padding: 10px !important;
-    margin: auto !important;
-    overflow: hidden !important;
+    height: auto !important;
+    padding: 20px 0 !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
     z-index: 20 !important;
     pointer-events: auto !important;
 }
