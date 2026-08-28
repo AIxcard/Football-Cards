@@ -1756,7 +1756,7 @@ function getPackBackSVG(cfg) {
         <g transform="translate(0, 456)">
             <rect width="320" height="34" fill="#090f19"/>
             <rect width="320" height="12" y="12" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
-            <text x="160" y="23" font-family="'Montserrat', sans-serif" font-size="9" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#94a3b8">★ DO NOT EAT · NOT FOR CHILDREN UNDER 3 ★</text>
+            <text x="160" y="23" font-family="'Montserrat', sans-serif" font-size="9" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#94a3b8">★ OFFICIAL 2026 EDITION ★</text>
         </g>
     </svg>
     `;
@@ -1790,12 +1790,12 @@ function renderBoosterPacksInStage(cfg, pullCount) {
     function generatePackHTML(num, isMulti, total) {
         const fanClass = isMulti ? `pack-fan-${total}-${num}` : '';
         return `
-        <div class="luxury-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}" onclick="handlePackInteraction(this, event)">
-            <div class="pack-3d-inner">
-                <div class="pack-face pack-face-front">
+        <div class="luxury-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}" onclick="handlePackInteraction(this, event)" style="position:relative; width:310px; height:480px; max-width:85vw; max-height:72vh; aspect-ratio:320/490; margin:0 auto; perspective:1500px; -webkit-perspective:1500px; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; display:block;">
+            <div class="pack-3d-inner" style="position:relative; width:100%; height:100%; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; transition:transform 0.6s cubic-bezier(0.2,0.8,0.2,1); border-radius:16px; box-shadow:0 35px 80px rgba(0,0,0,0.95), 0 0 50px var(--foil-glow);">
+                <div class="pack-face pack-face-front" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(0deg); z-index:2; background:#0d1a2d;">
                     ${getPackFrontSVG(cfg)}
                 </div>
-                <div class="pack-face pack-face-back">
+                <div class="pack-face pack-face-back" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(180deg); z-index:1; background:#08101a;">
                     ${getPackBackSVG(cfg)}
                 </div>
             </div>
