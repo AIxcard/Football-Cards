@@ -1451,10 +1451,10 @@ function renderHero() {
    ========================================================= */
 
 /* =========================================================
-   AUTHENTIC POKÉMON-STYLE TRADING CARD BOOSTER PACK ARTWORK
+   AUTHENTIC 3D TRADING CARD BOOSTER PACK (FRONT & BACK)
    ========================================================= */
 
-function getPackSVGArtwork(cfg) {
+function getPackFrontSVG(cfg) {
     const colors = {
         starter: { primary: "#10b981", secondary: "#047857", slash1: "#00f2fe", slash2: "#10b981", accent: "#fbbf24", bg1: "#064e3b", bg2: "#022c22" },
         premium: { primary: "#3b82f6", secondary: "#1d4ed8", slash1: "#00f2fe", slash2: "#ff0844", accent: "#ffd700", bg1: "#1e3a8a", bg2: "#081226" },
@@ -1467,7 +1467,7 @@ function getPackSVGArtwork(cfg) {
     const c = colors[cfg.key] || colors.starter;
 
     return `
-    <svg class="pk-booster-svg" viewBox="0 0 320 490" xmlns="http://www.w3.org/2000/svg">
+    <svg class="pk-booster-svg" viewBox="0 0 320 490" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">
         <defs>
             <radialGradient id="bgGrad_${cfg.key}" cx="50%" cy="42%" r="65%">
                 <stop offset="0%" stop-color="${c.primary}" stop-opacity="0.95"/>
@@ -1510,7 +1510,7 @@ function getPackSVGArtwork(cfg) {
             </linearGradient>
             
             <filter id="glow_${cfg.key}" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="6" result="blur"/>
+                <feGaussianBlur stdDeviation="5" result="blur"/>
                 <feComposite in="SourceGraphic" in2="blur" operator="over"/>
             </filter>
         </defs>
@@ -1569,15 +1569,6 @@ function getPackSVGArtwork(cfg) {
             <ellipse cx="-16" cy="-16" rx="14" ry="7" transform="rotate(-30, -16, -16)" fill="#ffffff" opacity="0.8"/>
         </g>
 
-        <!-- Kinetic Sparks -->
-        <g fill="${c.accent}" opacity="0.9">
-            <polygon points="50,170 55,160 58,172 48,178"/>
-            <polygon points="270,190 280,185 275,200 265,192"/>
-            <polygon points="90,320 100,310 95,325 85,322"/>
-            <circle cx="70" cy="210" r="3.5" fill="#fff"/>
-            <circle cx="250" cy="230" r="4" fill="#fff"/>
-        </g>
-
         <!-- 4. TOP LOGO: 3D POKÉMON-STYLE "FOOTBALL" HEADER -->
         <g transform="translate(160, 68)">
             <text x="0" y="24" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="#002b66" stroke="#001838" stroke-width="10" stroke-linejoin="round">FOOTBALL</text>
@@ -1624,9 +1615,173 @@ function getPackSVGArtwork(cfg) {
     `;
 }
 
+function getPackBackSVG(cfg) {
+    const colors = {
+        starter: { primary: "#10b981", secondary: "#047857", bg1: "#064e3b", bg2: "#022c22" },
+        premium: { primary: "#3b82f6", secondary: "#1d4ed8", bg1: "#1e3a8a", bg2: "#081226" },
+        champion: { primary: "#a855f7", secondary: "#7e22ce", bg1: "#581c87", bg2: "#17072b" },
+        exclusive: { primary: "#ec4899", secondary: "#be185d", bg1: "#831843", bg2: "#2e051d" },
+        mythic: { primary: "#ef4444", secondary: "#b91c1c", bg1: "#7f1d1d", bg2: "#2b0606" },
+        secret: { primary: "#06b6d4", secondary: "#0891b2", bg1: "#0e7490", bg2: "#021a24" },
+        worldclass: { primary: "#f59e0b", secondary: "#b45309", bg1: "#78350f", bg2: "#260d02" }
+    };
+    const c = colors[cfg.key] || colors.starter;
+
+    return `
+    <svg class="pk-booster-svg" viewBox="0 0 320 490" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">
+        <defs>
+            <linearGradient id="backBg_${cfg.key}" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${c.bg2}"/>
+                <stop offset="50%" stop-color="#0a131e"/>
+                <stop offset="100%" stop-color="${c.bg2}"/>
+            </linearGradient>
+            <linearGradient id="finSeam" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="rgba(0,0,0,0.85)"/>
+                <stop offset="40%" stop-color="rgba(255,255,255,0.2)"/>
+                <stop offset="60%" stop-color="rgba(255,255,255,0.35)"/>
+                <stop offset="100%" stop-color="rgba(0,0,0,0.95)"/>
+            </linearGradient>
+            <linearGradient id="goldHolo" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffd700"/>
+                <stop offset="25%" stop-color="#00f2fe"/>
+                <stop offset="50%" stop-color="#ff007f"/>
+                <stop offset="75%" stop-color="#39ff14"/>
+                <stop offset="100%" stop-color="#ffd700"/>
+            </linearGradient>
+        </defs>
+
+        <!-- Back Foil Body -->
+        <rect width="320" height="490" fill="url(#backBg_${cfg.key})"/>
+
+        <!-- Top Corrugated Crimp (Back) -->
+        <g transform="translate(0, 0)">
+            <rect width="320" height="42" fill="#090f19"/>
+            <rect width="320" height="42" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+            <rect x="135" y="10" width="50" height="12" rx="6" fill="#030712" stroke="#ffffff" stroke-width="1.2" opacity="0.85"/>
+        </g>
+
+        <!-- Vertical Heat-Seal Fin Seam Spine -->
+        <rect x="148" y="42" width="24" height="414" fill="url(#finSeam)"/>
+        <line x1="160" y1="42" x2="160" y2="456" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+        <!-- Hologram Security Seal Badge -->
+        <g transform="translate(35, 65)">
+            <rect width="110" height="48" rx="8" fill="#08101a" stroke="url(#goldHolo)" stroke-width="1.5"/>
+            <circle cx="28" cy="24" r="14" fill="url(#goldHolo)" opacity="0.75"/>
+            <text x="28" y="28" font-family="'Impact', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="#000">★</text>
+            <text x="50" y="20" font-family="'Montserrat', sans-serif" font-size="7" font-weight="900" fill="#ffd700">OFFICIAL</text>
+            <text x="50" y="30" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="900" fill="#ffffff">LICENSED</text>
+            <text x="50" y="40" font-family="'Montserrat', sans-serif" font-size="5.5" font-weight="700" fill="#94a3b8">AUTHENTIC</text>
+        </g>
+
+        <!-- Age & Safety Symbols -->
+        <g transform="translate(195, 65)">
+            <rect width="90" height="48" rx="8" fill="#08101a" stroke="#334155" stroke-width="1.5"/>
+            <circle cx="22" cy="24" r="14" fill="#dc2626"/>
+            <text x="22" y="28" font-family="'Arial', sans-serif" font-size="11" font-weight="900" text-anchor="middle" fill="#ffffff">0-3</text>
+            <line x1="12" y1="34" x2="32" y2="14" stroke="#ffffff" stroke-width="2.5"/>
+            <text x="44" y="22" font-family="'Montserrat', sans-serif" font-size="7" font-weight="800" fill="#cbd5e1">CE / UKCA</text>
+            <text x="44" y="34" font-family="'Montserrat', sans-serif" font-size="6" font-weight="700" fill="#94a3b8">SAFETY</text>
+        </g>
+
+        <!-- Card Rates & Set Description Panel -->
+        <g transform="translate(25, 125)">
+            <rect width="270" height="160" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+            <text x="135" y="20" font-family="'Impact', sans-serif" font-size="13" font-weight="900" letter-spacing="1" text-anchor="middle" fill="#ffd700">${cfg.title}</text>
+            <text x="135" y="35" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="700" text-anchor="middle" fill="#94a3b8">SERIES 1 · 2026 EDITION TRADING CARDS</text>
+            
+            <line x1="20" y1="44" x2="250" y2="44" stroke="rgba(255,255,255,0.15)"/>
+            
+            <text x="30" y="62" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="800" fill="#ffffff">★ 1 CARD PER BOOSTER FOIL PACK</text>
+            <text x="30" y="78" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="800" fill="#69c7ff">★ 52 WORLD-CLASS FOOTBALL PLAYERS</text>
+            <text x="30" y="94" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="800" fill="#ffd700">★ 1 OF 10 SERIALIZED WORLD CLASS GOAT CARDS</text>
+            <text x="30" y="110" font-family="'Montserrat', sans-serif" font-size="7" font-weight="700" fill="#94a3b8">RATES: COMMON 60% · RARE 25% · EPIC 10% · LEG 5%</text>
+            <text x="30" y="124" font-family="'Montserrat', sans-serif" font-size="7" font-weight="700" fill="#94a3b8">CHANCE OF MYTHIC / SECRET / WORLD CLASS PULLS</text>
+            
+            <rect x="20" y="134" width="230" height="16" rx="4" fill="rgba(255,215,0,0.1)" stroke="rgba(255,215,0,0.3)"/>
+            <text x="135" y="145" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="800" text-anchor="middle" fill="#ffd700">GUARANTEED AUTHENTIC · ALL RIGHTS RESERVED</text>
+        </g>
+
+        <!-- Barcode & SKU Block -->
+        <g transform="translate(45, 298)">
+            <rect width="230" height="70" rx="6" fill="#ffffff"/>
+            
+            <!-- Barcode Black Bars -->
+            <g fill="#000000">
+                <rect x="15" y="10" width="3" height="42"/>
+                <rect x="20" y="10" width="2" height="42"/>
+                <rect x="25" y="10" width="4" height="42"/>
+                <rect x="32" y="10" width="1" height="42"/>
+                <rect x="36" y="10" width="3" height="42"/>
+                <rect x="42" y="10" width="2" height="42"/>
+                <rect x="48" y="10" width="5" height="42"/>
+                <rect x="56" y="10" width="2" height="42"/>
+                <rect x="62" y="10" width="3" height="42"/>
+                <rect x="68" y="10" width="4" height="42"/>
+                <rect x="75" y="10" width="1" height="42"/>
+                <rect x="80" y="10" width="3" height="42"/>
+                <rect x="86" y="10" width="2" height="42"/>
+                <rect x="92" y="10" width="4" height="42"/>
+                <rect x="99" y="10" width="2" height="42"/>
+                <rect x="105" y="10" width="3" height="42"/>
+                <rect x="112" y="10" width="5" height="42"/>
+                <rect x="120" y="10" width="2" height="42"/>
+                <rect x="126" y="10" width="3" height="42"/>
+                <rect x="133" y="10" width="1" height="42"/>
+                <rect x="138" y="10" width="4" height="42"/>
+                <rect x="146" y="10" width="2" height="42"/>
+                <rect x="152" y="10" width="3" height="42"/>
+                <rect x="158" y="10" width="4" height="42"/>
+                <rect x="166" y="10" width="2" height="42"/>
+                <rect x="172" y="10" width="3" height="42"/>
+                <rect x="178" y="10" width="5" height="42"/>
+                <rect x="186" y="10" width="2" height="42"/>
+                <rect x="192" y="10" width="3" height="42"/>
+                <rect x="198" y="10" width="4" height="42"/>
+                <rect x="206" y="10" width="2" height="42"/>
+                <rect x="211" y="10" width="4" height="42"/>
+            </g>
+            <text x="115" y="62" font-family="'Courier New', monospace" font-size="10" font-weight="900" letter-spacing="3" text-anchor="middle" fill="#000000">0 74281 92835 4</text>
+        </g>
+
+        <!-- Environmental & Recycling Badges -->
+        <g transform="translate(60, 385)" fill="#64748b" font-family="'Montserrat', sans-serif" font-size="7" font-weight="700">
+            <text x="0" y="10">♻ 07 FOIL</text>
+            <text x="80" y="10">MADE IN UK</text>
+            <text x="155" y="10">NON-TOXIC</text>
+            <text x="100" y="24" text-anchor="middle" fill="#94a3b8" font-size="6.5">© 2026 FOOTBALL TCG INC. ALL RIGHTS RESERVED.</text>
+        </g>
+
+        <!-- Bottom Corrugated Crimp (Back) -->
+        <g transform="translate(0, 456)">
+            <rect width="320" height="34" fill="#090f19"/>
+            <rect width="320" height="12" y="12" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+            <text x="160" y="23" font-family="'Montserrat', sans-serif" font-size="9" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#94a3b8">★ DO NOT EAT · NOT FOR CHILDREN UNDER 3 ★</text>
+        </g>
+    </svg>
+    `;
+}
+
 let packTearCallback = null;
 let packTornExecuted = false;
 let cutscenePostCallback = null;
+
+function togglePackFlip(packEl, event) {
+    if (event) event.stopPropagation();
+    if (!packEl) return;
+    const inner = packEl.querySelector(".pack-3d-inner");
+    if (inner) {
+        inner.classList.toggle("is-flipped");
+        SoundFx.cardReveal ? SoundFx.cardReveal("Rare") : SoundFx.click();
+    }
+}
+
+function handlePackInteraction(packEl, event) {
+    if (event && event.target && event.target.closest(".pack-flip-hint-btn")) return;
+    if (typeof window.executePackTear === "function") {
+        window.executePackTear();
+    }
+}
 
 function renderBoosterPacksInStage(cfg, pullCount) {
     const stage = document.getElementById("packsDisplayStage");
@@ -1635,10 +1790,16 @@ function renderBoosterPacksInStage(cfg, pullCount) {
     function generatePackHTML(num, isMulti, total) {
         const fanClass = isMulti ? `pack-fan-${total}-${num}` : '';
         return `
-        <div class="luxury-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}">
-            <div class="pack-svg-container">
-                ${getPackSVGArtwork(cfg)}
+        <div class="luxury-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}" onclick="handlePackInteraction(this, event)">
+            <div class="pack-3d-inner">
+                <div class="pack-face pack-face-front">
+                    ${getPackFrontSVG(cfg)}
+                </div>
+                <div class="pack-face pack-face-back">
+                    ${getPackBackSVG(cfg)}
+                </div>
             </div>
+            <button class="pack-flip-hint-btn" onclick="togglePackFlip(this.parentElement, event)" title="Inspect 3D Backside">🔄 3D Flip Back</button>
         </div>
         `;
     }
@@ -1659,8 +1820,9 @@ function initPackSwipeGesture(onTear) {
     packTearCallback = onTear;
     packTornExecuted = false;
 
+    const overlay = document.getElementById("packOpeningOverlay");
     const stage = document.getElementById("packsDisplayStage");
-    if (!stage) return;
+    if (!overlay || !stage) return;
 
     let isDragging = false;
     let startX = 0;
@@ -1685,8 +1847,10 @@ function initPackSwipeGesture(onTear) {
                 packTearCallback = null;
                 cb();
             }
-        }, 750);
+        }, 700);
     }
+
+    window.executePackTear = executeTear;
 
     function handleStart(clientX, clientY) {
         isDragging = true;
@@ -1698,7 +1862,7 @@ function initPackSwipeGesture(onTear) {
         if (!isDragging || packTornExecuted) return;
         const deltaX = clientX - startX;
         const deltaY = clientY - startY;
-        if (Math.abs(deltaX) >= 30 || Math.abs(deltaY) >= 35) {
+        if (Math.abs(deltaX) >= 25 || Math.abs(deltaY) >= 30) {
             isDragging = false;
             executeTear();
         }
@@ -1708,17 +1872,19 @@ function initPackSwipeGesture(onTear) {
         isDragging = false;
     }
 
-    const packs = document.querySelectorAll("#packsDisplayStage .luxury-booster-pack");
-    packs.forEach(pack => {
-        pack.ontouchstart = (e) => { if (e.touches && e.touches.length) handleStart(e.touches[0].clientX, e.touches[0].clientY); };
-        pack.ontouchmove = (e) => { if (e.touches && e.touches.length) handleMove(e.touches[0].clientX, e.touches[0].clientY); };
-        pack.ontouchend = handleEnd;
-        pack.onmousedown = (e) => handleStart(e.clientX, e.clientY);
-        pack.onclick = () => executeTear();
-    });
-
-    window.onmousemove = (e) => { if (isDragging) handleMove(e.clientX, e.clientY); };
-    window.onmouseup = handleEnd;
+    overlay.ontouchstart = (e) => { if (e.touches && e.touches.length) handleStart(e.touches[0].clientX, e.touches[0].clientY); };
+    overlay.ontouchmove = (e) => { if (e.touches && e.touches.length) handleMove(e.touches[0].clientX, e.touches[0].clientY); };
+    overlay.ontouchend = handleEnd;
+    overlay.onmousedown = (e) => {
+        if (e.target && e.target.closest(".pack-flip-hint-btn")) return;
+        handleStart(e.clientX, e.clientY);
+    };
+    overlay.onmousemove = (e) => { if (isDragging) handleMove(e.clientX, e.clientY); };
+    overlay.onmouseup = handleEnd;
+    overlay.onclick = (e) => {
+        if (e.target && e.target.closest(".pack-flip-hint-btn")) return;
+        executeTear();
+    };
 }
 
 function lockModalScroll() {
