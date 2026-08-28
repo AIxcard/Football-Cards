@@ -1858,11 +1858,11 @@ function getPackBackSVG(cfg) {
     const c = colors[cfg.key] || colors.starter;
 
     return `
-    <svg class="pk-booster-svg" viewBox="0 0 320 490" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">
+    <svg class="pk-booster-svg" viewBox="0 0 320 490" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <defs>
             <linearGradient id="backBg_${cfg.key}" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stop-color="${c.bg2}"/>
-                <stop offset="50%" stop-color="#0a131e"/>
+                <stop offset="50%" stop-color="#08101a"/>
                 <stop offset="100%" stop-color="${c.bg2}"/>
             </linearGradient>
             <linearGradient id="finSeam" x1="0" y1="0" x2="1" y2="0">
@@ -1887,90 +1887,95 @@ function getPackBackSVG(cfg) {
 
             <!-- Vertical Heat-Seal Fin Seam Spine -->
             <rect x="148" y="42" width="24" height="414" fill="url(#finSeam)"/>
-            <line x1="160" y1="42" x2="160" y2="456" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <line x1="160" y1="42" x2="160" y2="456" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4,3"/>
 
             <!-- Hologram Security Seal Badge -->
-            <g transform="translate(35, 65)">
-                <rect width="110" height="48" rx="8" fill="#08101a" stroke="url(#goldHolo)" stroke-width="1.5"/>
-                <circle cx="28" cy="24" r="14" fill="url(#goldHolo)" opacity="0.75"/>
-                <text x="28" y="28" font-family="'Impact', sans-serif" font-size="12" font-weight="900" text-anchor="middle" fill="#000">★</text>
-                <text x="50" y="20" font-family="'Montserrat', sans-serif" font-size="7" font-weight="900" fill="#ffd700">OFFICIAL</text>
-                <text x="50" y="30" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="900" fill="#ffffff">LICENSED</text>
-                <text x="50" y="40" font-family="'Montserrat', sans-serif" font-size="5.5" font-weight="700" fill="#94a3b8">AUTHENTIC</text>
+            <g transform="translate(32, 62)">
+                <rect width="112" height="46" rx="8" fill="#050c14" stroke="url(#goldHolo)" stroke-width="1.5"/>
+                <circle cx="26" cy="23" r="14" fill="url(#goldHolo)" opacity="0.8"/>
+                <text x="26" y="27" font-size="12" font-weight="900" text-anchor="middle" fill="#000">★</text>
+                <text x="48" y="19" font-size="7" font-weight="900" fill="#ffd700" letter-spacing="1">OFFICIAL</text>
+                <text x="48" y="29" font-size="6.5" font-weight="900" fill="#ffffff" letter-spacing="0.5">LICENSED</text>
+                <text x="48" y="38" font-size="5.5" font-weight="700" fill="#94a3b8">PRODUCT</text>
             </g>
 
-            <!-- Age & Safety Symbols -->
-            <g transform="translate(195, 65)">
-                <rect width="90" height="48" rx="8" fill="#08101a" stroke="#334155" stroke-width="1.5"/>
-                <circle cx="22" cy="24" r="14" fill="#dc2626"/>
-                <text x="22" y="28" font-family="'Arial', sans-serif" font-size="11" font-weight="900" text-anchor="middle" fill="#ffffff">0-3</text>
-                <line x1="12" y1="34" x2="32" y2="14" stroke="#ffffff" stroke-width="2.5"/>
-                <text x="44" y="22" font-family="'Montserrat', sans-serif" font-size="7" font-weight="800" fill="#cbd5e1">CE / UKCA</text>
-                <text x="44" y="34" font-family="'Montserrat', sans-serif" font-size="6" font-weight="700" fill="#94a3b8">SAFETY</text>
+            <!-- Safety & Age Symbols -->
+            <g transform="translate(196, 62)">
+                <rect width="92" height="46" rx="8" fill="#050c14" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="22" cy="23" r="13" fill="#dc2626"/>
+                <text x="22" y="27" font-size="11" font-weight="900" text-anchor="middle" fill="#ffffff">0-3</text>
+                <line x1="12" y1="33" x2="32" y2="13" stroke="#ffffff" stroke-width="2.5"/>
+                <text x="44" y="21" font-size="7" font-weight="900" fill="#cbd5e1" letter-spacing="0.5">CE / UKCA</text>
+                <text x="44" y="33" font-size="6" font-weight="700" fill="#94a3b8">COMPLIANT</text>
             </g>
 
-            <!-- Card Rates & Set Description Panel -->
-            <g transform="translate(25, 125)">
-                <rect width="270" height="160" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-                <text x="135" y="20" font-family="'Impact', sans-serif" font-size="13" font-weight="900" letter-spacing="1" text-anchor="middle" fill="#ffd700">${cfg.title}</text>
-                <text x="135" y="35" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="700" text-anchor="middle" fill="#94a3b8">SERIES 1 · 2026 EDITION TRADING CARDS</text>
+            <!-- Clean Authentic Pack Info & Legal Panel -->
+            <g transform="translate(24, 122)">
+                <rect width="272" height="162" rx="10" fill="rgba(8, 16, 28, 0.92)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
                 
-                <line x1="20" y1="44" x2="250" y2="44" stroke="rgba(255,255,255,0.15)"/>
+                <text x="136" y="22" font-size="12" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#ffd700">${cfg.title}</text>
+                <text x="136" y="36" font-size="7" font-weight="700" letter-spacing="1" text-anchor="middle" fill="#64748b">OFFICIAL 2026 TRADING CARD COLLECTION</text>
                 
-                <text x="30" y="62" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="800" fill="#ffffff">★ 1 CARD PER BOOSTER FOIL PACK</text>
-                <text x="30" y="78" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="800" fill="#69c7ff">★ 52 WORLD-CLASS FOOTBALL PLAYERS</text>
-                <text x="30" y="94" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="800" fill="#ffd700">★ 1 OF 10 SERIALIZED WORLD CLASS GOAT CARDS</text>
-                <text x="30" y="110" font-family="'Montserrat', sans-serif" font-size="7" font-weight="700" fill="#94a3b8">RATES: COMMON 60% · RARE 25% · EPIC 10% · LEG 5%</text>
-                <text x="30" y="124" font-family="'Montserrat', sans-serif" font-size="7" font-weight="700" fill="#94a3b8">CHANCE OF MYTHIC / SECRET / WORLD CLASS PULLS</text>
+                <line x1="16" y1="44" x2="256" y2="44" stroke="rgba(255,255,255,0.1)"/>
                 
-                <rect x="20" y="134" width="230" height="16" rx="4" fill="rgba(255,215,0,0.1)" stroke="rgba(255,215,0,0.3)"/>
-                <text x="135" y="145" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="800" text-anchor="middle" fill="#ffd700">GUARANTEED AUTHENTIC · ALL RIGHTS RESERVED</text>
+                <text x="20" y="60" font-size="7" font-weight="700" fill="#cbd5e1">· Contains 1 premium trading card per foil pack.</text>
+                <text x="20" y="74" font-size="7" font-weight="700" fill="#cbd5e1">· Collect all 52 world-class football superstars.</text>
+                <text x="20" y="88" font-size="7" font-weight="700" fill="#cbd5e1">· Look for rare numbered serialized 1-of-10 cards.</text>
+                
+                <line x1="16" y1="98" x2="256" y2="98" stroke="rgba(255,255,255,0.08)"/>
+
+                <text x="20" y="112" font-size="6" font-weight="600" fill="#94a3b8">Manufactured and distributed by Football TCG Global.</text>
+                <text x="20" y="124" font-size="6" font-weight="600" fill="#94a3b8">All player likenesses and club assets used under license.</text>
+                <text x="20" y="136" font-size="6" font-weight="600" fill="#94a3b8">Stated odds reflect production averages for this series.</text>
+                
+                <rect x="16" y="142" width="240" height="14" rx="4" fill="rgba(255,215,0,0.08)" stroke="rgba(255,215,0,0.2)"/>
+                <text x="136" y="152" font-size="6" font-weight="800" letter-spacing="1" text-anchor="middle" fill="#ffd700">★ 100% GENUINE AUTHENTIC FOIL ★</text>
             </g>
 
             <!-- Barcode & SKU Block -->
-            <g transform="translate(45, 298)">
-                <rect width="230" height="70" rx="6" fill="#ffffff"/>
+            <g transform="translate(42, 298)">
+                <rect width="236" height="68" rx="6" fill="#ffffff"/>
                 
                 <!-- Barcode Black Bars -->
                 <g fill="#000000">
-                    <rect x="15" y="10" width="3" height="42"/>
-                    <rect x="20" y="10" width="2" height="42"/>
-                    <rect x="25" y="10" width="4" height="42"/>
-                    <rect x="32" y="10" width="1" height="42"/>
-                    <rect x="36" y="10" width="3" height="42"/>
-                    <rect x="42" y="10" width="2" height="42"/>
-                    <rect x="48" y="10" width="5" height="42"/>
-                    <rect x="56" y="10" width="2" height="42"/>
-                    <rect x="62" y="10" width="3" height="42"/>
-                    <rect x="68" y="10" width="4" height="42"/>
-                    <rect x="75" y="10" width="1" height="42"/>
-                    <rect x="80" y="10" width="3" height="42"/>
-                    <rect x="86" y="10" width="2" height="42"/>
-                    <rect x="92" y="10" width="4" height="42"/>
-                    <rect x="99" y="10" width="2" height="42"/>
-                    <rect x="105" y="10" width="3" height="42"/>
-                    <rect x="112" y="10" width="5" height="42"/>
-                    <rect x="120" y="10" width="2" height="42"/>
-                    <rect x="126" y="10" width="3" height="42"/>
-                    <rect x="133" y="10" width="1" height="42"/>
-                    <rect x="138" y="10" width="4" height="42"/>
-                    <rect x="146" y="10" width="2" height="42"/>
-                    <rect x="152" y="10" width="3" height="42"/>
-                    <rect x="158" y="10" width="4" height="42"/>
-                    <rect x="166" y="10" width="2" height="42"/>
-                    <rect x="172" y="10" width="3" height="42"/>
-                    <rect x="178" y="10" width="5" height="42"/>
-                    <rect x="186" y="10" width="2" height="42"/>
-                    <rect x="192" y="10" width="3" height="42"/>
-                    <rect x="198" y="10" width="4" height="42"/>
-                    <rect x="206" y="10" width="2" height="42"/>
-                    <rect x="211" y="10" width="4" height="42"/>
+                    <rect x="15" y="10" width="3" height="40"/>
+                    <rect x="20" y="10" width="2" height="40"/>
+                    <rect x="25" y="10" width="4" height="40"/>
+                    <rect x="32" y="10" width="1" height="40"/>
+                    <rect x="36" y="10" width="3" height="40"/>
+                    <rect x="42" y="10" width="2" height="40"/>
+                    <rect x="48" y="10" width="5" height="40"/>
+                    <rect x="56" y="10" width="2" height="40"/>
+                    <rect x="62" y="10" width="3" height="40"/>
+                    <rect x="68" y="10" width="4" height="40"/>
+                    <rect x="75" y="10" width="1" height="40"/>
+                    <rect x="80" y="10" width="3" height="40"/>
+                    <rect x="86" y="10" width="2" height="40"/>
+                    <rect x="92" y="10" width="4" height="40"/>
+                    <rect x="99" y="10" width="2" height="40"/>
+                    <rect x="105" y="10" width="3" height="40"/>
+                    <rect x="112" y="10" width="5" height="40"/>
+                    <rect x="120" y="10" width="2" height="40"/>
+                    <rect x="126" y="10" width="3" height="40"/>
+                    <rect x="133" y="10" width="1" height="40"/>
+                    <rect x="138" y="10" width="4" height="40"/>
+                    <rect x="146" y="10" width="2" height="40"/>
+                    <rect x="152" y="10" width="3" height="40"/>
+                    <rect x="158" y="10" width="4" height="40"/>
+                    <rect x="166" y="10" width="2" height="40"/>
+                    <rect x="172" y="10" width="3" height="40"/>
+                    <rect x="178" y="10" width="5" height="40"/>
+                    <rect x="186" y="10" width="2" height="40"/>
+                    <rect x="192" y="10" width="3" height="40"/>
+                    <rect x="198" y="10" width="4" height="40"/>
+                    <rect x="206" y="10" width="2" height="40"/>
+                    <rect x="211" y="10" width="4" height="40"/>
                 </g>
-                <text x="115" y="62" font-family="'Courier New', monospace" font-size="10" font-weight="900" letter-spacing="3" text-anchor="middle" fill="#000000">0 74281 92835 4</text>
+                <text x="118" y="60" font-family="'Courier New', monospace" font-size="10" font-weight="900" letter-spacing="3" text-anchor="middle" fill="#000000">0 74281 92835 4</text>
             </g>
 
             <!-- Environmental & Recycling Badges -->
-            <g transform="translate(60, 385)" fill="#64748b" font-family="'Montserrat', sans-serif" font-size="7" font-weight="700">
+            <g transform="translate(60, 385)" fill="#64748b" font-size="7" font-weight="700">
                 <text x="0" y="10">♻ 07 FOIL</text>
                 <text x="80" y="10">MADE IN UK</text>
                 <text x="155" y="10">NON-TOXIC</text>
@@ -1981,7 +1986,7 @@ function getPackBackSVG(cfg) {
             <g transform="translate(0, 456)">
                 <rect width="320" height="34" fill="#090f19"/>
                 <rect width="320" height="12" y="12" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
-                <text x="160" y="23" font-family="'Montserrat', sans-serif" font-size="9" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#94a3b8">★ OFFICIAL 2026 EDITION ★</text>
+                <text x="160" y="23" font-size="9" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#94a3b8">★ OFFICIAL 2026 EDITION ★</text>
             </g>
         </g>
 
