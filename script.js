@@ -1627,20 +1627,26 @@ function renderBoosterPacksInStage(cfg, pullCount) {
     if (!stage) return;
 
     function generatePackHTML(num, isMulti, total) {
+        const fanClass = isMulti ? `pack-fan-${total}-${num}` : '';
         return `
-        <div class="realistic-booster-pack ${cfg.css} ${isMulti ? `pack-multi-col-${total}` : ''}" data-pack-idx="${num}">
-            <!-- INNER CARD INSERT READY TO POP UP -->
+        <div class="realistic-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}">
+            <!-- DETAILED 3D CARD INSERT READY TO POP UP -->
             <div class="pack-card-insert">
                 <div class="card-insert-face card-insert-back">
                     <div class="card-back-pattern"></div>
-                    <div class="card-back-crest">⚽</div>
+                    <div class="card-back-frame">
+                        <div class="card-back-crest">⚽</div>
+                        <div class="card-back-title">FOOTBALL TCG</div>
+                    </div>
+                    <div class="card-back-stars">★★★★★</div>
                 </div>
             </div>
 
-            <!-- SEVERABLE TOP CRIMP CAP (SWIPE HERE DIRECTLY ACROSS) -->
-            <div class="pack-foil-cap" title="Swipe across to open!">
-                <div class="pack-crimp-cording"></div>
-                <div class="pack-top-tear-indicator">
+            <!-- SEVERABLE POKÉMON STRIPED TOP CRIMP CAP (SWIPE HERE DIRECTLY ACROSS) -->
+            <div class="pack-foil-cap" title="Swipe across to tear open!">
+                <div class="pk-top-crimp-stripes"></div>
+                <div class="pk-crimp-hanger-hole"></div>
+                <div class="pk-tear-guideline">
                     <span class="tear-notch-icon">✂</span>
                     <span class="tear-dash-track">SWIPE TO TEAR ➔</span>
                 </div>
