@@ -526,48 +526,52 @@ main{
 
 .rarity{
     display:inline-block;
-    font-size:10px;
+    font-size:11px;
     font-weight:900;
     letter-spacing:1px;
+    text-transform:uppercase;
+    background-color:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
 }
 
 .common {
-    background: linear-gradient(135deg, #a0aec0, #e2e8f0);
+    background: linear-gradient(135deg, #cbd5e1 0%, #ffffff 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
 }
 .uncommon {
-    background: linear-gradient(135deg, #00b09b, #96c93d);
+    background: linear-gradient(135deg, #00e676 0%, #b9f6ca 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
 }
 .rare {
-    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    background: linear-gradient(135deg, #00b0ff 0%, #80d8ff 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
 }
 .epic {
-    background: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+    background: linear-gradient(135deg, #d500f9 0%, #ff80ab 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
 }
 .legendary {
-    background: linear-gradient(135deg, #f7971e, #ffd200);
+    background: linear-gradient(135deg, #ffd700 0%, #ffe57f 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
 }
 .exclusive {
-    background: linear-gradient(135deg, #b66cff 0%, #ffffff 50%, #9d4edd 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 40%, #a855f7 70%, #7e22ce 100%);
     background-size: 200% auto;
     animation: textShimmer 3s linear infinite;
     background-clip: text;
@@ -576,24 +580,22 @@ main{
     font-weight: 900;
 }
 .mythic {
-    background: linear-gradient(135deg, #ff0844 0%, #ff4e50 50%, #d50000 100%);
+    background: linear-gradient(135deg, #ff1744 0%, #ff8a80 50%, #d50000 100%);
     background-size: 200% auto;
     animation: textShimmer 2.5s linear infinite;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
-    filter: drop-shadow(0 0 5px rgba(255, 8, 68, 0.6));
 }
 .secret {
-    background: linear-gradient(135deg, #000000 0%, #555555 35%, #ffffff 70%, #111111 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #9e9e9e 40%, #ffffff 70%, #616161 100%);
     background-size: 200% auto;
     animation: textShimmer 3s linear infinite;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
 }
 .worldclass {
     background: linear-gradient(90deg, #ffffff 0%, #69c7ff 40%, #b66cff 70%, #ffffff 100%);
@@ -603,7 +605,6 @@ main{
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 900;
-    filter: drop-shadow(0 0 8px rgba(105, 199, 255, 0.8));
 }
 .limited {
     background: linear-gradient(135deg, #b66cff, #ffffff);
@@ -2038,8 +2039,8 @@ select,input{
 }
 
 .card-3d-stage {
-    perspective: 1000px;
-    margin: 15px 0;
+    perspective: 1200px;
+    margin: 15px auto;
     width: 280px;
     height: 400px;
     display: grid;
@@ -2052,13 +2053,22 @@ select,input{
     cursor: grabbing;
 }
 
-.card-3d-wrapper {
+.card-3d-flipper {
     width: 270px;
     height: 390px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease-out;
+}
+
+.card-3d-wrapper {
+    width: 100%;
+    height: 100%;
     border-radius: 18px;
     transform-style: preserve-3d;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(50, 149, 255, 0.3);
-    position: relative;
+    position: absolute;
+    inset: 0;
     overflow: hidden;
     padding: 14px;
     display: flex;
@@ -2066,7 +2076,123 @@ select,input{
     justify-content: space-between;
     background: #0d1a26;
     border: 2px solid var(--border);
-    transition: box-shadow 0.1s ease;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.card-3d-front {
+    z-index: 2;
+    transform: rotateY(0deg);
+}
+
+.card-3d-back {
+    transform: rotateY(180deg);
+    background: radial-gradient(circle at center, #091b2c 0%, #040d16 100%) !important;
+    border: 3px solid #ffd700 !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 215, 0, 0.4) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    color: #ffffff;
+}
+
+.card-back-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background-image: radial-gradient(#ffd700 1.5px, transparent 1.5px), radial-gradient(#3295ff 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    pointer-events: none;
+}
+
+.card-back-inner-border {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed rgba(255, 215, 0, 0.6);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 12px;
+    position: relative;
+    z-index: 2;
+    background: rgba(4, 13, 22, 0.7);
+}
+
+.card-back-stars {
+    color: #ffd700;
+    font-size: 16px;
+    letter-spacing: 4px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+.card-back-emblem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-back-ball {
+    font-size: 52px;
+    filter: drop-shadow(0 0 15px rgba(50, 149, 255, 0.8));
+}
+
+.card-back-title {
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-top: 8px;
+    background: linear-gradient(135deg, #ffffff 0%, #ffd700 50%, #ffffff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.card-back-subtitle {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: #69c7ff;
+    font-weight: 800;
+    margin-top: 2px;
+}
+
+.card-back-hologram {
+    padding: 6px 12px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(50, 149, 255, 0.2));
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.card-back-hologram span {
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffd700;
+}
+
+.card-back-hologram small {
+    font-size: 8px;
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.card-back-footer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--muted);
+    letter-spacing: 1px;
 }
 
 .card-3d-shine {
@@ -2295,66 +2421,109 @@ select,input{
 
     .showcase-grid {
 /* =========================================================
-   AVATAR FRAMES & BORDERS (MATCHING NAME DESIGNS)
+   AVATAR FRAMES & BORDERS (AUTHENTIC STYLED DESIGNS)
    ========================================================= */
 
-.profile-avatar-wrapper,
+.profile-avatar-wrapper {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 3px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    background: #091723;
+}
+
+.profile-avatar-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
 .shop-preview {
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    position: relative;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at center, #102334, #050d14);
+    padding: 3px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.shop-preview-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #091723;
+    font-size: 26px;
+    color: #ffffff;
+    user-select: none;
 }
 
 /* 1. Classic Silver */
 .frame-default {
-    border: 3px solid #8fa3b5 !important;
-    box-shadow: 0 0 14px rgba(143, 163, 181, 0.45) !important;
+    border: 3.5px solid #a0aec0 !important;
+    box-shadow: 0 0 14px rgba(160, 174, 192, 0.65), inset 0 0 8px rgba(255, 255, 255, 0.4) !important;
 }
 
 /* 2. Pitch Blue Matrix */
 .frame-blue {
-    border: 3px solid #00f2fe !important;
-    box-shadow: 0 0 20px rgba(0, 242, 254, 0.8), inset 0 0 10px rgba(0, 242, 254, 0.45) !important;
+    border: 3.5px solid #00f2fe !important;
+    box-shadow: 0 0 22px rgba(0, 242, 254, 0.95), inset 0 0 12px rgba(0, 242, 254, 0.6) !important;
     animation: bluePulse 2.5s ease-in-out infinite;
 }
 
 /* 3. Emerald Stadium */
 .frame-green {
-    border: 3px solid #00ff87 !important;
-    box-shadow: 0 0 20px rgba(0, 255, 135, 0.8), inset 0 0 10px rgba(0, 255, 135, 0.45) !important;
+    border: 3.5px solid #00ff87 !important;
+    box-shadow: 0 0 22px rgba(0, 255, 135, 0.95), inset 0 0 12px rgba(0, 255, 135, 0.6) !important;
     animation: greenPulse 2.5s ease-in-out infinite;
 }
 
 /* 4. Royal Crest Purple */
 .frame-purple {
-    border: 3px solid #b66cff !important;
-    box-shadow: 0 0 22px rgba(182, 108, 255, 0.85), inset 0 0 10px rgba(182, 108, 255, 0.45) !important;
+    border: 3.5px solid #b66cff !important;
+    box-shadow: 0 0 24px rgba(182, 108, 255, 0.95), inset 0 0 12px rgba(182, 108, 255, 0.6) !important;
     animation: purplePulse 2.5s ease-in-out infinite;
 }
 
 /* 5. Golden Boot */
 .frame-gold {
-    border: 3px solid #ffd700 !important;
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.9), inset 0 0 12px rgba(255, 215, 0, 0.5) !important;
+    border: 3.5px solid #ffd700 !important;
+    box-shadow: 0 0 28px rgba(255, 215, 0, 0.98), inset 0 0 14px rgba(255, 215, 0, 0.7) !important;
     animation: goldShine 3s linear infinite;
 }
 
 /* 6. Pyro Crimson Flame */
 .frame-red {
-    border: 3px solid #ff1744 !important;
-    box-shadow: 0 0 25px rgba(255, 23, 68, 0.9), 0 0 45px rgba(255, 82, 82, 0.55) !important;
+    border: 3.5px solid #ff1744 !important;
+    box-shadow: 0 0 30px rgba(255, 23, 68, 0.98), 0 0 50px rgba(255, 82, 82, 0.6) !important;
     animation: redFlame 2s ease-in-out infinite alternate;
 }
 
 /* 7. Animated Prism Star */
 .frame-rainbow {
-    border: 3px solid transparent !important;
-    background: linear-gradient(#09141f, #09141f) padding-box, conic-gradient(#ff0077, #ff9900, #39ff14, #00f2fe, #7928ca, #ff0077) border-box !important;
-    box-shadow: 0 0 25px rgba(255, 0, 119, 0.65), 0 0 40px rgba(0, 242, 254, 0.45) !important;
+    border: 3.5px solid transparent !important;
+    background: conic-gradient(from 0deg, #ff0077, #ff9900, #39ff14, #00f2fe, #7928ca, #ff0077) border-box !important;
+    box-shadow: 0 0 28px rgba(255, 0, 119, 0.8), 0 0 45px rgba(0, 242, 254, 0.6) !important;
 }
 
 /* 8. Master Champion */
 .frame-champion {
-    border: 3px solid #ffd700 !important;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.95), 0 0 60px rgba(0, 242, 254, 0.65) !important;
+    border: 3.5px solid #ffd700 !important;
+    box-shadow: 0 0 32px rgba(255, 215, 0, 1), 0 0 65px rgba(0, 242, 254, 0.8) !important;
     animation: champAura 3s ease infinite;
 }
 
@@ -2381,6 +2550,11 @@ select,input{
 @keyframes redFlame {
     0% { box-shadow: 0 0 20px rgba(255, 23, 68, 0.6); }
     100% { box-shadow: 0 0 35px rgba(255, 23, 68, 0.98), 0 0 55px rgba(255, 100, 0, 0.75); }
+}
+
+@keyframes champAura {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.7), 0 0 50px rgba(0, 242, 254, 0.45); }
+    50% { box-shadow: 0 0 40px rgba(255, 215, 0, 1), 0 0 75px rgba(0, 242, 254, 0.85); }
 }
 
 @keyframes champAura {
