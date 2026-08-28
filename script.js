@@ -245,14 +245,26 @@ const SoundFx = {
         });
         this.playTone(1318.51, "sine", 0.35, 0.1, 0.18);
     },
+    packTear() {
+        this.playTone(620, "sawtooth", 0.12, 0.25, 0);
+        this.playTone(320, "triangle", 0.22, 0.3, 0.03);
+        this.playTone(160, "sine", 0.35, 0.25, 0.06);
+        [800, 1100, 1400].forEach((f, i) => {
+            this.playTone(f, "sine", 0.08, 0.08, 0.02 + i * 0.03);
+        });
+    },
     cardReveal(rarity) {
         if (rarity === "World Class") {
             this.worldClassCinematic();
-        } else if (rarity === "Tournament" || rarity === "Secret") {
+        } else if (rarity === "Secret") {
+            this.worldClassCinematic();
+        } else if (rarity === "Mythic") {
+            this.mythicCinematic();
+        } else if (rarity === "Tournament") {
             [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98].forEach((f, i) => {
                 this.playTone(f, "triangle", 0.45, 0.12, i * 0.08);
             });
-        } else if (rarity === "Mythic" || rarity === "Legendary" || rarity === "Exclusive") {
+        } else if (rarity === "Legendary" || rarity === "Exclusive") {
             [440, 554.37, 659.25, 880].forEach((f, i) => {
                 this.playTone(f, "triangle", 0.35, 0.1, i * 0.07);
             });
@@ -260,6 +272,13 @@ const SoundFx = {
             this.playTone(523.25, "sine", 0.15, 0.06, 0);
             this.playTone(659.25, "sine", 0.2, 0.06, 0.05);
         }
+    },
+    mythicCinematic() {
+        this.playTone(70, "sawtooth", 0.9, 0.35, 0);
+        this.playTone(140, "triangle", 0.8, 0.3, 0.08);
+        [329.63, 415.30, 493.88, 659.25, 987.77, 1318.51].forEach((f, i) => {
+            this.playTone(f, "triangle", 0.45, 0.14, 0.2 + i * 0.07);
+        });
     },
     worldClassCinematic() {
         this.playTone(55, "sawtooth", 1.0, 0.35, 0);
@@ -1430,66 +1449,89 @@ function renderHero() {
    PACK OPENING, SWIPE TO OPEN & BULK (1x, 3x, 5x)
    ========================================================= */
 
-let packTearCallback = null;
+/* =========================================================
+   REALISTIC 3D BOOSTER PACK OPENING & SWIPE RIP MECHANIC
+   ========================================================= */
 
-function toggleSkipPackAnimation(checked) {
-    if (!state.settings) state.settings = {};
-    state.settings.skipPackAnimation = !!checked;
-    saveGame();
-    toast(checked ? "⚡ Fast Pack Opening enabled." : "Pack shaking animations enabled.");
-}
+let packTearCallback = null;
+let packTornExecuted = false;
 
 function initPackSwipeGesture(onTear) {
     packTearCallback = onTear;
-    const track = document.getElementById("packSwipeTrack");
-    const thumb = document.getElementById("packSwipeThumb");
-    if (!track || !thumb) return;
+    packTornExecuted = false;
 
-    thumb.style.transform = "translateX(0px)";
+    const track = document.getElementById("tearSwipeTrack");
+    const blade = document.getElementById("tearSwipeBlade");
+    const packEl = document.getElementById("realisticBoosterPack");
+    const tearLine = document.getElementById("packTearLine");
+
+    if (!track || !blade) return;
+
+    blade.style.transform = "translateX(0px)";
 
     let isDragging = false;
     let startX = 0;
-    let trackWidth = Math.max(100, track.clientWidth - 46);
+    let trackWidth = Math.max(80, track.clientWidth - 40);
+
+    function executeTear() {
+        if (packTornExecuted) return;
+        packTornExecuted = true;
+        if (packEl) packEl.classList.add("pack-torn");
+        SoundFx.packTear();
+
+        setTimeout(() => {
+            if (packTearCallback) {
+                const cb = packTearCallback;
+                packTearCallback = null;
+                cb();
+            }
+        }, 750);
+    }
 
     function handleStart(clientX) {
         isDragging = true;
         startX = clientX;
-        trackWidth = Math.max(100, track.clientWidth - 46);
+        trackWidth = Math.max(80, track.clientWidth - 40);
     }
 
     function handleMove(clientX) {
-        if (!isDragging) return;
+        if (!isDragging || packTornExecuted) return;
         const delta = Math.max(0, Math.min(trackWidth, clientX - startX));
-        thumb.style.transform = `translateX(${delta}px)`;
-        if (delta >= trackWidth * 0.75) {
+        blade.style.transform = `translateX(${delta}px)`;
+        if (delta >= trackWidth * 0.65) {
             isDragging = false;
-            triggerInstantPackTear();
+            executeTear();
         }
     }
 
     function handleEnd() {
         if (!isDragging) return;
         isDragging = false;
-        thumb.style.transform = "translateX(0px)";
+        if (!packTornExecuted) {
+            blade.style.transform = "translateX(0px)";
+        }
     }
 
+    // Touch events on tear track and pack top
     track.ontouchstart = (e) => { if (e.touches && e.touches.length) handleStart(e.touches[0].clientX); };
     track.ontouchmove = (e) => { if (e.touches && e.touches.length) handleMove(e.touches[0].clientX); };
     track.ontouchend = handleEnd;
 
-    track.onmousedown = (e) => handleStart(e.clientX);
-    const mouseMoveHandler = (e) => { if (isDragging) handleMove(e.clientX); };
-    const mouseUpHandler = () => { if (isDragging) handleEnd(); };
-    window.addEventListener("mousemove", mouseMoveHandler);
-    window.addEventListener("mouseup", mouseUpHandler);
-}
-
-function triggerInstantPackTear() {
-    if (packTearCallback) {
-        const cb = packTearCallback;
-        packTearCallback = null;
-        cb();
+    if (tearLine) {
+        tearLine.ontouchstart = (e) => { if (e.touches && e.touches.length) handleStart(e.touches[0].clientX); };
+        tearLine.ontouchmove = (e) => { if (e.touches && e.touches.length) handleMove(e.touches[0].clientX); };
+        tearLine.ontouchend = handleEnd;
     }
+
+    // Mouse drag on blade and tear line
+    blade.onmousedown = (e) => handleStart(e.clientX);
+    if (tearLine) tearLine.onmousedown = (e) => handleStart(e.clientX);
+
+    const onMouseMove = (e) => { if (isDragging) handleMove(e.clientX); };
+    const onMouseUp = () => { if (isDragging) handleEnd(); };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
 }
 
 function openPack(type, count = 1) {
@@ -1590,35 +1632,37 @@ function openPack(type, count = 1) {
 
     saveGame();
 
-    // Check skip animation setting
-    if (state.settings && state.settings.skipPackAnimation) {
-        deliverPulledCards(pulledCards, bestCard);
-        return;
-    }
-
-    // Show 3D Pack Opening Shaking Animation & Swipe Bar
+    // Configure 3D Realistic Booster Pack Artwork
     const animOverlay = document.getElementById("packOpeningOverlay");
-    const animTitle = document.getElementById("packAnimTitle");
-    const animIcon = document.getElementById("packAnimIcon");
-    const ripBar = document.getElementById("packRipBar");
+    const packEl = document.getElementById("realisticBoosterPack");
+    const foilTitle = document.getElementById("packFoilTitle");
+    const foilEmblem = document.getElementById("packFoilEmblem");
+    const pullCountPill = document.getElementById("packPullCountPill");
+
+    const foilClasses = {
+        starter: { css: "starter-foil", emblem: "📦", title: "STARTER PACK" },
+        premium: { css: "premium-foil", emblem: "⭐", title: "PREMIUM PACK" },
+        champion: { css: "champion-foil", emblem: "🏆", title: "CHAMPION PACK" },
+        exclusive: { css: "exclusive-foil", emblem: "👑", title: "EXCLUSIVE PACK" },
+        mythic: { css: "mythic-foil", emblem: "🔥", title: "MYTHIC STARS PACK" },
+        secret: { css: "secret-foil", emblem: "💎", title: "SECRET ICONS PACK" },
+        worldclass: { css: "worldclass-foil", emblem: "🌎", title: "WORLD CLASS PACK" }
+    };
+
+    const cfg = foilClasses[type] || foilClasses.starter;
+
+    if (packEl) {
+        packEl.className = `realistic-booster-pack ${cfg.css}`;
+    }
+    if (foilTitle) foilTitle.textContent = cfg.title;
+    if (foilEmblem) foilEmblem.textContent = cfg.emblem;
+    if (pullCountPill) pullCountPill.textContent = `${pullCount} CARD${pullCount > 1 ? 'S' : ''} TRANSFER`;
 
     if (animOverlay) {
-        if (animTitle) animTitle.textContent = `${pullCount}x SCOUTING ${pack.name.toUpperCase()}...`;
-        if (animIcon) animIcon.textContent = type === "worldclass" ? "🌎" : type === "champion" ? "🏆" : type === "exclusive" ? "👑" : type === "mythic" ? "🔥" : type === "secret" ? "✦" : type === "premium" ? "⭐" : "📦";
-        if (ripBar) {
-            ripBar.style.animation = 'none';
-            void ripBar.offsetWidth;
-            ripBar.style.animation = 'ripProgress 1.1s ease-in-out forwards';
-        }
         animOverlay.classList.remove("hidden");
-        animOverlay.style.display = "grid";
-
-        let autoTearTimer = setTimeout(() => {
-            triggerInstantPackTear();
-        }, 1200);
+        animOverlay.style.display = "flex";
 
         initPackSwipeGesture(() => {
-            clearTimeout(autoTearTimer);
             if (animOverlay) {
                 animOverlay.classList.add("hidden");
                 animOverlay.style.display = "none";
@@ -1633,31 +1677,44 @@ function openPack(type, count = 1) {
 function deliverPulledCards(pulledCards, bestCard) {
     if (!pulledCards || !pulledCards.length) return;
 
-    if (pulledCards.length === 1) {
-        const item = pulledCards[0];
-        if (item.card.rarity === "World Class" || item.card.player === "Lionel Messi" || item.card.player === "Cristiano Ronaldo") {
-            showWorldClass(item.card);
-        } else if (item.card.rarity === "Secret") {
-            showSecretCutscene(item.card);
-        } else {
-            showCardResult(item.card, item.duplicate, item.isFirstDiscovery);
-        }
-    } else {
-        // Multi-pack reveal: if contains World Class or Secret, show cutscene, then show summary
-        const topWorldClass = pulledCards.find(p => p.card.rarity === "World Class");
-        const topSecret = pulledCards.find(p => p.card.rarity === "Secret");
+    const topWorldClass = pulledCards.find(p => p.card.rarity === "World Class");
+    const topSecret = pulledCards.find(p => p.card.rarity === "Secret");
+    const topMythic = pulledCards.find(p => p.card.rarity === "Mythic");
 
-        if (topWorldClass) {
-            showWorldClass(topWorldClass.card);
-        } else if (topSecret) {
-            showSecretCutscene(topSecret.card);
-        } else {
-            showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
-        }
-        toast(`🎉 Opened ${pulledCards.length} packs! Best pull: ${bestCard.card.player} (${bestCard.card.rarity})`);
+    if (topWorldClass) {
+        showWorldClass(topWorldClass.card);
+    } else if (topSecret) {
+        showSecretCutscene(topSecret.card);
+    } else if (topMythic) {
+        showMythicCutscene(topMythic.card);
+    } else if (pulledCards.length === 1) {
+        showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
+    } else {
+        showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
+        toast(`🎉 Opened ${pulledCards.length} packs! Top transfer: ${bestCard.card.player} (${bestCard.card.rarity})`);
     }
 
     renderAll();
+}
+
+function showMythicCutscene(card) {
+    const overlay = document.getElementById("mythicOverlay");
+    if (!overlay) {
+        showCardResult(card, false, false);
+        return;
+    }
+    setText("mythicPlayerName", card.player.toUpperCase());
+    const photo = document.getElementById("mythicPlayerPhoto");
+    if (photo && card.image) photo.src = card.image;
+    setText("mythicPlayerMeta", `${card.rating} OVR · ${card.pos} · ★ 1 IN 50 MYTHIC CLASS ★`);
+    overlay.classList.remove("hidden");
+    SoundFx.mythicCinematic();
+}
+
+function closeMythicCutscene() {
+    const overlay = document.getElementById("mythicOverlay");
+    if (overlay) overlay.classList.add("hidden");
+    SoundFx.click();
 }
 
 function showSecretCutscene(card) {
@@ -1667,6 +1724,8 @@ function showSecretCutscene(card) {
         return;
     }
     setText("secretPlayerName", card.player.toUpperCase());
+    const photo = document.getElementById("secretPlayerPhoto");
+    if (photo && card.image) photo.src = card.image;
     setText("secretPlayerMeta", `${card.rating} OVR · ${card.pos} · ★ 1 IN 500 SECRET PHENOMENON ★`);
     overlay.classList.remove("hidden");
     SoundFx.worldClassCinematic();
