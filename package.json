@@ -1,0 +1,19 @@
+﻿{
+  "name": "football-cards-server",
+  "version": "1.0.0",
+  "description": "Server-side backend and persistent database for Football Cards TCG",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "football",
+    "cards",
+    "tcg",
+    "game",
+    "server"
+  ],
+  "author": "Alucard",
+  "license": "MIT"
+}
