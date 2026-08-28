@@ -292,12 +292,16 @@ const PLAYERS = [
 { name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
 
 // --- SECRET ---
+{ name: "Lamine Yamal", rating: 96, pos: "RW", rarity: "Secret", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
 { name: "Kylian Mbappé", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
 { name: "Erling Haaland", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
 { name: "Zlatan Ibrahimović", rating: 91, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
 { name: "Sergio Ramos", rating: 90, pos: "CB", rarity: "Secret", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
 { name: "Andrés Iniesta", rating: 93, pos: "CM", rarity: "Secret", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
 { name: "Xavi", rating: 92, pos: "CM", rarity: "Secret", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Thierry Henry", rating: 93, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Kaká", rating: 91, pos: "CAM", rarity: "Secret", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Ronald Koeman", rating: 89, pos: "CB", rarity: "Secret", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
 
 // --- MYTHIC ---
 { name: "Neymar Jr", rating: 95, pos: "LW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
@@ -306,38 +310,79 @@ const PLAYERS = [
 { name: "Jude Bellingham", rating: 93, pos: "CM", rarity: "Mythic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
 { name: "Mohamed Salah", rating: 93, pos: "RW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
 { name: "Robert Lewandowski", rating: 93, pos: "ST", rarity: "Mythic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Lamine Yamal", rating: 94, pos: "RW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+{ name: "Harry Kane", rating: 93, pos: "ST", rarity: "Mythic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Rodri", rating: 93, pos: "CDM", rarity: "Mythic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "Virgil van Dijk", rating: 91, pos: "CB", rarity: "Mythic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Thibaut Courtois", rating: 91, pos: "GK", rarity: "Mythic", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Alisson", rating: 90, pos: "GK", rarity: "Mythic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Marc-André ter Stegen", rating: 90, pos: "GK", rarity: "Mythic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
 
 // --- LEGENDARY ---
-{ name: "Harry Kane", rating: 93, pos: "ST", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Rodri", rating: 93, pos: "CDM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
 { name: "Pedri", rating: 91, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
 { name: "Bukayo Saka", rating: 89, pos: "RW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
 { name: "Declan Rice", rating: 89, pos: "CDM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
 { name: "Florian Wirtz", rating: 89, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
 { name: "Cole Palmer", rating: 88, pos: "RW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Martin Ødegaard", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Bernardo Silva", rating: 88, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+{ name: "Antoine Griezmann", rating: 88, pos: "ST", rarity: "Legendary", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Phil Foden", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "Federico Valverde", rating: 88, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Lautaro Martínez", rating: 88, pos: "ST", rarity: "Legendary", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Rúben Dias", rating: 89, pos: "CB", rarity: "Legendary", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "William Saliba", rating: 88, pos: "CB", rarity: "Legendary", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Jamal Musiala", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Son Heung-min", rating: 88, pos: "LW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Bruno Fernandes", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Jan Oblak", rating: 88, pos: "GK", rarity: "Legendary", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Ederson", rating: 88, pos: "GK", rarity: "Legendary", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "Mike Maignan", rating: 88, pos: "GK", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
 
 // --- EPIC ---
-{ name: "Martin Ødegaard", rating: 88, pos: "CAM", rarity: "Epic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Bernardo Silva", rating: 88, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Antoine Griezmann", rating: 88, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Phil Foden", rating: 88, pos: "CAM", rarity: "Epic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Lautaro Martínez", rating: 87, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Federico Valverde", rating: 88, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Joshua Kimmich", rating: 87, pos: "CDM", rarity: "Epic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
+{ name: "Rafael Leão", rating: 87, pos: "LW", rarity: "Epic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Nicolò Barella", rating: 87, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Trent Alexander-Arnold", rating: 86, pos: "RB", rarity: "Epic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Achraf Hakimi", rating: 86, pos: "RB", rarity: "Epic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+{ name: "Theo Hernández", rating: 86, pos: "LB", rarity: "Epic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Alphonso Davies", rating: 85, pos: "LB", rarity: "Epic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "Gabriel Magalhães", rating: 86, pos: "CB", rarity: "Epic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Alessandro Bastoni", rating: 86, pos: "CB", rarity: "Epic", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Gavi", rating: 85, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
+{ name: "Eduardo Camavinga", rating: 85, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Aurélien Tchouaméni", rating: 85, pos: "CDM", rarity: "Epic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Khvicha Kvaratskhelia", rating: 86, pos: "LW", rarity: "Epic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Victor Osimhen", rating: 87, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Alexander Isak", rating: 85, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+{ name: "Emiliano Martínez", rating: 86, pos: "GK", rarity: "Epic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Gianluigi Donnarumma", rating: 87, pos: "GK", rarity: "Epic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "Gregor Kobel", rating: 86, pos: "GK", rarity: "Epic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
 
 // --- RARE ---
-{ name: "Joshua Kimmich", rating: 86, pos: "CDM", rarity: "Rare", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Bruno Fernandes", rating: 87, pos: "CAM", rarity: "Rare", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Rafael Leão", rating: 86, pos: "LW", rarity: "Rare", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Nicolò Barella", rating: 87, pos: "CM", rarity: "Rare", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Son Heung-min", rating: 87, pos: "LW", rarity: "Rare", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Anthony Gordon", rating: 83, pos: "LW", rarity: "Rare", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
+{ name: "Pedro Porro", rating: 83, pos: "RB", rarity: "Rare", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Micky van de Ven", rating: 83, pos: "CB", rarity: "Rare", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Dominik Szoboszlai", rating: 83, pos: "CM", rarity: "Rare", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Alexis Mac Allister", rating: 84, pos: "CM", rarity: "Rare", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Lucas Paquetá", rating: 82, pos: "CAM", rarity: "Rare", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+{ name: "Darwin Núñez", rating: 83, pos: "ST", rarity: "Rare", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Ollie Watkins", rating: 84, pos: "ST", rarity: "Rare", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "João Palhinha", rating: 83, pos: "CDM", rarity: "Rare", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Manuel Akanji", rating: 83, pos: "CB", rarity: "Rare", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Lisandro Martínez", rating: 83, pos: "CB", rarity: "Rare", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
+{ name: "David Raya", rating: 83, pos: "GK", rarity: "Rare", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
 
 // --- UNCOMMON ---
-{ name: "Anthony Gordon", rating: 82, pos: "LW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Pedro Porro", rating: 83, pos: "RB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Micky van de Ven", rating: 83, pos: "CB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Dominik Szoboszlai", rating: 83, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Alexis Mac Allister", rating: 84, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Harvey Elliott", rating: 79, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
+{ name: "Kobbie Mainoo", rating: 79, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Alejandro Garnacho", rating: 80, pos: "LW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Destiny Udogie", rating: 80, pos: "LB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
+{ name: "Rico Lewis", rating: 78, pos: "RB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Conor Gallagher", rating: 80, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
+{ name: "Jarrod Bowen", rating: 81, pos: "RW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Brennan Johnson", rating: 79, pos: "RW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Evan Ferguson", rating: 77, pos: "ST", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
+{ name: "Bart Verbruggen", rating: 78, pos: "GK", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
 
 // --- COMMON ---
 { name: "Oliver Skipp", rating: 75, pos: "CDM", rarity: "Common", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
@@ -350,6 +395,8 @@ const PLAYERS = [
 { name: "Harry Wilson", rating: 76, pos: "RW", rarity: "Common", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
 { name: "Dan Burn", rating: 78, pos: "LB", rarity: "Common", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
 { name: "Lewis Dunk", rating: 79, pos: "CB", rarity: "Common", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
+{ name: "Cameron Archer", rating: 74, pos: "ST", rarity: "Common", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Joe Willock", rating: 76, pos: "CM", rarity: "Common", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
 
 // --- EXCLUSIVE (LEGENDS OF THE PAST) ---
 { name: "Pelé", rating: 98, pos: "ST", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80", odds: 5 },
@@ -384,6 +431,16 @@ exclusive: {
     cost: 60,
     rates: { Exclusive: 100 }
 },
+mythic: {
+    name: "Mythic Stars Pack",
+    cost: 80,
+    rates: { Mythic: 100 }
+},
+secret: {
+    name: "Secret Icons Pack",
+    cost: 90,
+    rates: { Secret: 100 }
+},
 worldclass: {
     name: "World Class Pack",
     cost: 100,
@@ -397,19 +454,8 @@ tournament: {
 };
 
 /* =========================================================
-   AVATAR FRAMES & REAL STADIUM BACKGROUNDS
+   REAL STADIUM BACKGROUNDS
    ========================================================= */
-
-const FRAMES = [
-{ id: "default", name: "Classic Silver", cost: 0, css: "frame-default" },
-{ id: "blue", name: "Pitch Blue Matrix", cost: 20, css: "frame-blue" },
-{ id: "green", name: "Emerald Stadium", cost: 35, css: "frame-green" },
-{ id: "purple", name: "Royal Crest Purple", cost: 50, css: "frame-purple" },
-{ id: "gold", name: "Golden Boot", cost: 100, css: "frame-gold" },
-{ id: "red", name: "Pyro Crimson Flame", cost: 150, css: "frame-red" },
-{ id: "rainbow", name: "Animated Prism Star", cost: 300, css: "frame-rainbow" },
-{ id: "champion", name: "Master Champion", cost: 500, css: "frame-champion" }
-];
 
 const BACKGROUNDS = [
 { id: "campnou", name: "Camp Nou Night", cost: 0, css: "url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
@@ -502,11 +548,10 @@ const TITLES = [
     id: "top10",
     name: "Tournament Top 10",
     cssClass: "title-top10",
-    requirement: "Reach Top 10 on Tournament Leaderboard",
+    requirement: "Awarded to Top 10 Tournament Finishers (Coming Soon)",
     unlock: () => {
         try {
-            const rank = getMyTournamentRank();
-            return rank > 0 && rank <= 10;
+            return (state.grantedTitles || []).includes("Tournament Top 10");
         } catch (e) { return false; }
     }
 },
@@ -514,16 +559,18 @@ const TITLES = [
     id: "champion",
     name: "Season 1 Champion",
     cssClass: "title-champion",
-    requirement: "Reach #1 Rank on Tournament Leaderboard",
+    requirement: "Awarded to Season 1 Tournament Winner (Coming Soon)",
     unlock: () => {
-        try { return getMyTournamentRank() === 1; } catch (e) { return false; }
+        try {
+            return (state.grantedTitles || []).includes("Season 1 Champion");
+        } catch (e) { return false; }
     }
 },
 {
     id: "owner",
     name: "Owner",
     cssClass: "title-owner",
-    requirement: "Exclusive Creator Title (Alucard)",
+    requirement: "Exclusive title for the Owner of the game",
     unlock: () => {
         try {
             const u = (state.accountUser || state.name || "").toLowerCase();
@@ -535,7 +582,7 @@ const TITLES = [
     id: "admin",
     name: "Admin",
     cssClass: "title-admin",
-    requirement: "Granted exclusively by Owner (Alucard)",
+    requirement: "Granted exclusively by the Owner of the game",
     unlock: () => {
         try {
             const u = (state.accountUser || state.name || "").toLowerCase();
@@ -547,7 +594,7 @@ const TITLES = [
     id: "staff",
     name: "Staff",
     cssClass: "title-staff",
-    requirement: "Granted exclusively by Owner (Alucard)",
+    requirement: "Granted exclusively by the Owner of the game",
     unlock: () => {
         try {
             const u = (state.accountUser || state.name || "").toLowerCase();
@@ -774,141 +821,222 @@ function updatePlaytime() {
 }
 
 /* =========================================================
-   CLOUD AUTH & TRADING BACKEND
+   GLOBAL MULTI-DEVICE CLOUD REST SYNC & AUTH
    ========================================================= */
 
-const FIREBASE_DB_URL = "https://football-cards-global-default-rtdb.firebaseio.com";
-const ONLINE_BACKEND_URL = "https://keyvalue.immanuel.co/api/KeyVal";
-const ONLINE_BACKEND_KEY = "football_cards_global_hub_v3";
+const GlobalCloudRest = {
+    LEADERBOARD_URL: "https://api.restful-api.dev/objects/ff8081819ff5b11001a047e7c0a846e2",
+    USERS_URL: "https://api.restful-api.dev/objects/ff8081819ff5b11001a047e82a2c46e3",
 
-const FirebaseSync = {
     async fetchLeaderboard() {
         try {
-            const res = await fetch(`${FIREBASE_DB_URL}/leaderboard.json`, { cache: "no-store" });
-            if (res.ok) {
-                const data = await res.json();
-                if (data && typeof data === "object") return data;
-            }
+            const res = await fetch(this.LEADERBOARD_URL);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return (data && data.data) ? data.data : null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async pushLeaderboard(username, pData) {
+        if (!username || !pData) return;
+        try {
+            let current = await this.fetchLeaderboard() || {};
+            current[username.toLowerCase()] = {
+                name: pData.name || username,
+                username: username,
+                gold: Number(pData.coins || pData.gold || 0),
+                value: Number(pData.value || calculateCollectionValue(pData.cards || [])),
+                cards: Number((pData.cards || []).length || pData.cardsCount || 0),
+                level: Number(pData.level || 1),
+                equippedTitle: pData.equippedTitle || "Collector",
+                bannedUntil: Number(pData.bannedUntil || 0),
+                updatedAt: Date.now()
+            };
+            await fetch(this.LEADERBOARD_URL, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: "football_cards_global_leaderboard",
+                    data: current
+                })
+            });
         } catch (e) {}
-        return null;
     },
 
     async fetchAllUsers() {
         try {
-            const res = await fetch(`${FIREBASE_DB_URL}/users.json`, { cache: "no-store" });
-            if (res.ok) {
-                const data = await res.json();
-                if (data && typeof data === "object") return data;
-            }
-        } catch (e) {}
-        return null;
+            const res = await fetch(this.USERS_URL);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return (data && data.data) ? data.data : null;
+        } catch (e) {
+            return null;
+        }
     },
 
     async fetchUser(username) {
         if (!username) return null;
         try {
-            const res = await fetch(`${FIREBASE_DB_URL}/users/${encodeURIComponent(username.toLowerCase())}.json`, { cache: "no-store" });
-            if (res.ok) return await res.json();
-        } catch (e) {}
-        return null;
-    },
-
-    async pushUser(username, accountPayload) {
-        if (!username) return;
-        const clean = username.trim().toLowerCase();
-        try {
-            await fetch(`${FIREBASE_DB_URL}/users/${encodeURIComponent(clean)}.json`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(accountPayload)
-            });
-
-            let pData = {};
-            try {
-                pData = typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : (accountPayload.saveData || {});
-            } catch(e) {}
-
-            const lbEntry = {
-                name: pData.name || accountPayload.username,
-                username: accountPayload.username,
-                gold: Number(pData.coins) || 0,
-                value: calculateCollectionValue(pData.cards || []),
-                cards: (pData.cards || []).length,
-                level: pData.level || 1,
-                equippedTitle: pData.equippedTitle || "Collector",
-                profileFrame: pData.profileFrame || "default",
-                bannedUntil: pData.bannedUntil || 0,
-                updatedAt: Date.now()
-            };
-
-            await fetch(`${FIREBASE_DB_URL}/leaderboard/${encodeURIComponent(clean)}.json`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(lbEntry)
-            });
+            const res = await fetch(this.USERS_URL);
+            if (!res.ok) return null;
+            const json = await res.json();
+            if (json && json.data && json.data[username.toLowerCase()]) {
+                return json.data[username.toLowerCase()];
+            }
+            return null;
         } catch (e) {
-            console.warn("Firebase sync notice:", e);
+            return null;
         }
     },
 
-    async setBan(username, durationMs, reason) {
-        const clean = (username || "").trim().toLowerCase();
-        if (!clean || clean === "alucard") return;
-        const banObj = {
-            username: username,
-            bannedUntil: Date.now() + durationMs,
-            reason: reason || "Unauthorized Script / Balance Injection",
-            bannedAt: Date.now()
-        };
+    async pushUser(username, accountPayload) {
+        if (!username || !accountPayload) return;
         try {
-            await fetch(`${FIREBASE_DB_URL}/bans/${encodeURIComponent(clean)}.json`, {
+            const res = await fetch(this.USERS_URL);
+            let current = {};
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.data) current = json.data;
+            }
+            current[username.toLowerCase()] = {
+                username: username,
+                password: accountPayload.password || "",
+                saveData: accountPayload.saveData || "",
+                updatedAt: Date.now()
+            };
+            await fetch(this.USERS_URL, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(banObj)
+                body: JSON.stringify({
+                    name: "football_cards_global_users",
+                    data: current
+                })
             });
+
+            let pData = {};
+            try { pData = typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : (accountPayload.saveData || {}); } catch(e) {}
+            this.pushLeaderboard(username, pData);
+        } catch (e) {}
+    },
+
+    async setBan(username, durationMs, reason) {
+        const u = (username || "").trim().toLowerCase();
+        if (!u || u === "alucard") return;
+        try {
+            let current = await this.fetchLeaderboard() || {};
+            if (current[u]) {
+                current[u].bannedUntil = Date.now() + durationMs;
+                current[u].banReason = reason;
+                await fetch(this.LEADERBOARD_URL, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: "football_cards_global_leaderboard", data: current })
+                });
+            }
         } catch (e) {}
     },
 
     async removeBan(username) {
-        const clean = (username || "").trim().toLowerCase();
-        if (!clean) return;
+        const u = (username || "").trim().toLowerCase();
+        if (!u) return;
         try {
-            await fetch(`${FIREBASE_DB_URL}/bans/${encodeURIComponent(clean)}.json`, {
-                method: "DELETE"
-            });
+            let current = await this.fetchLeaderboard() || {};
+            if (current[u]) {
+                current[u].bannedUntil = 0;
+                current[u].banReason = "";
+                await fetch(this.LEADERBOARD_URL, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: "football_cards_global_leaderboard", data: current })
+                });
+            }
         } catch (e) {}
     }
 };
+
+const FirebaseSync = GlobalCloudRest;
+
+function togglePasswordVisibility(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === "password") {
+        input.type = "text";
+        if (btnEl) btnEl.textContent = "🙈";
+    } else {
+        input.type = "password";
+        if (btnEl) btnEl.textContent = "👁️";
+    }
+}
+
+async function handleChangePassword() {
+    if (!state.accountUser) {
+        toast("You must be logged into a Cloud Account to change password.");
+        openAuthModal();
+        return;
+    }
+    const currentInput = document.getElementById("currentPasswordInput");
+    const newInput = document.getElementById("newPasswordInput");
+    const confirmInput = document.getElementById("confirmPasswordInput");
+    if (!currentInput || !newInput || !confirmInput) return;
+
+    const currentPass = currentInput.value.trim();
+    const newPass = newInput.value.trim();
+    const confirmPass = confirmInput.value.trim();
+
+    if (!currentPass || !newPass || !confirmPass) {
+        toast("Please fill in all password fields.");
+        return;
+    }
+
+    if (state.accountPass && currentPass !== state.accountPass) {
+        toast("Current password is incorrect.");
+        return;
+    }
+
+    if (newPass.length < 3) {
+        toast("New password must be at least 3 characters.");
+        return;
+    }
+
+    if (newPass !== confirmPass) {
+        toast("New passwords do not match.");
+        return;
+    }
+
+    state.accountPass = newPass;
+    const accs = CloudSync.getAccounts();
+    const key = state.accountUser.toLowerCase();
+    if (accs[key]) {
+        accs[key].password = newPass;
+        CloudSync.saveAccounts(accs);
+    }
+    await GlobalCloudRest.pushUser(state.accountUser, {
+        username: state.accountUser,
+        password: newPass,
+        saveData: JSON.stringify(state)
+    });
+
+    currentInput.value = "";
+    newInput.value = "";
+    confirmInput.value = "";
+    saveGame();
+    SoundFx.levelUp();
+    toast("✓ Account password updated successfully!");
+}
 
 let onlineAccountsCache = {};
 
 async function fetchOnlineGlobalAccounts() {
     try {
-        const fbUsers = await FirebaseSync.fetchAllUsers();
-        if (fbUsers && typeof fbUsers === "object") {
+        const cloudUsers = await GlobalCloudRest.fetchAllUsers();
+        if (cloudUsers && typeof cloudUsers === "object") {
             const localAccs = CloudSync.getAccounts();
-            const merged = { ...localAccs, ...fbUsers };
+            const merged = { ...localAccs, ...cloudUsers };
             CloudSync.saveAccounts(merged);
             onlineAccountsCache = merged;
             return merged;
-        }
-    } catch (e) {}
-
-    try {
-        const res = await fetch(`${ONLINE_BACKEND_URL}/GetValue/${ONLINE_BACKEND_KEY}`, { cache: "no-store" });
-        if (res.ok) {
-            let raw = await res.text();
-            if (raw) {
-                try { if (raw.startsWith('"')) raw = JSON.parse(raw); } catch(e) {}
-                if (typeof raw === "string" && raw.startsWith("{")) raw = JSON.parse(raw);
-                if (raw && typeof raw === "object") {
-                    onlineAccountsCache = raw;
-                    const localAccs = CloudSync.getAccounts();
-                    const merged = { ...raw, ...localAccs };
-                    CloudSync.saveAccounts(merged);
-                    return merged;
-                }
-            }
         }
     } catch (e) {}
     return CloudSync.getAccounts();
@@ -919,9 +1047,7 @@ async function pushOnlineGlobalAccount(username, accountPayload) {
         const local = CloudSync.getAccounts();
         local[username.toLowerCase()] = accountPayload;
         CloudSync.saveAccounts(local);
-        FirebaseSync.pushUser(username, accountPayload);
-        const payloadStr = JSON.stringify(local);
-        await fetch(`${ONLINE_BACKEND_URL}/UpdateValue/${ONLINE_BACKEND_KEY}/${encodeURIComponent(payloadStr)}`);
+        await GlobalCloudRest.pushUser(username, accountPayload);
     } catch (e) {}
 }
 
@@ -991,13 +1117,13 @@ const CloudSync = {
         const key = u.toLowerCase();
         let acc = accs[key];
 
-        // Check Firebase online database if not found locally
+        // Check global cloud database if not found locally
         if (!acc) {
             try {
-                const fbUser = await FirebaseSync.fetchUser(u);
-                if (fbUser && fbUser.password === p) {
-                    acc = fbUser;
-                    accs[key] = fbUser;
+                const cloudUser = await GlobalCloudRest.fetchUser(u);
+                if (cloudUser && cloudUser.password === p) {
+                    acc = cloudUser;
+                    accs[key] = cloudUser;
                     this.saveAccounts(accs);
                 }
             } catch (e) {}
@@ -1052,7 +1178,7 @@ const CloudSync = {
         closeAuthModal();
         const bannedModal = document.getElementById("accountBannedModal");
         if (bannedModal) bannedModal.classList.add("hidden");
-        toast("Logged out. Started fresh guest session.");
+        toast("Logged out. Switched to Guest profile.");
     },
 
     sync() {
@@ -1301,117 +1427,237 @@ function renderHero() {
 }
 
 /* =========================================================
-   PACK OPENING & SERIALIZATION (MESSI & RONALDO FIRST 10)
+   PACK OPENING, SWIPE TO OPEN & BULK (1x, 3x, 5x)
    ========================================================= */
 
-function openPack(type) {
+let packTearCallback = null;
+
+function toggleSkipPackAnimation(checked) {
+    if (!state.settings) state.settings = {};
+    state.settings.skipPackAnimation = !!checked;
+    saveGame();
+    toast(checked ? "⚡ Fast Pack Opening enabled." : "Pack shaking animations enabled.");
+}
+
+function initPackSwipeGesture(onTear) {
+    packTearCallback = onTear;
+    const track = document.getElementById("packSwipeTrack");
+    const thumb = document.getElementById("packSwipeThumb");
+    if (!track || !thumb) return;
+
+    thumb.style.transform = "translateX(0px)";
+
+    let isDragging = false;
+    let startX = 0;
+    let trackWidth = Math.max(100, track.clientWidth - 46);
+
+    function handleStart(clientX) {
+        isDragging = true;
+        startX = clientX;
+        trackWidth = Math.max(100, track.clientWidth - 46);
+    }
+
+    function handleMove(clientX) {
+        if (!isDragging) return;
+        const delta = Math.max(0, Math.min(trackWidth, clientX - startX));
+        thumb.style.transform = `translateX(${delta}px)`;
+        if (delta >= trackWidth * 0.75) {
+            isDragging = false;
+            triggerInstantPackTear();
+        }
+    }
+
+    function handleEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        thumb.style.transform = "translateX(0px)";
+    }
+
+    track.ontouchstart = (e) => { if (e.touches && e.touches.length) handleStart(e.touches[0].clientX); };
+    track.ontouchmove = (e) => { if (e.touches && e.touches.length) handleMove(e.touches[0].clientX); };
+    track.ontouchend = handleEnd;
+
+    track.onmousedown = (e) => handleStart(e.clientX);
+    const mouseMoveHandler = (e) => { if (isDragging) handleMove(e.clientX); };
+    const mouseUpHandler = () => { if (isDragging) handleEnd(); };
+    window.addEventListener("mousemove", mouseMoveHandler);
+    window.addEventListener("mouseup", mouseUpHandler);
+}
+
+function triggerInstantPackTear() {
+    if (packTearCallback) {
+        const cb = packTearCallback;
+        packTearCallback = null;
+        cb();
+    }
+}
+
+function openPack(type, count = 1) {
     const pack = PACKS[type];
     if (!pack) return;
-    if (!spendCoins(pack.cost)) return;
+
+    const pullCount = Math.max(1, Math.min(5, Number(count) || 1));
+    const totalCost = pack.cost * pullCount;
+
+    if (!spendCoins(totalCost)) return;
 
     SoundFx.packOpen();
-    state.stats.packsOpened++;
+    state.stats.packsOpened = (state.stats.packsOpened || 0) + pullCount;
 
-    let player;
-    let rarity;
+    const pulledCards = [];
+    let bestCard = null;
 
-    if (type === "exclusive") {
-        rarity = "Exclusive";
-        player = rollExclusivePlayer();
-    } else {
-        rarity = rollRarity(pack.rates);
-        player = choosePlayer(rarity);
+    for (let i = 0; i < pullCount; i++) {
+        let player;
+        let rarity;
+
+        if (type === "exclusive") {
+            rarity = "Exclusive";
+            player = rollExclusivePlayer();
+        } else if (type === "mythic") {
+            rarity = "Mythic";
+            player = choosePlayer("Mythic");
+        } else if (type === "secret") {
+            rarity = "Secret";
+            player = choosePlayer("Secret");
+        } else {
+            rarity = rollRarity(pack.rates);
+            player = choosePlayer(rarity);
+        }
+
+        if (!player) {
+            addCoins(pack.cost);
+            continue;
+        }
+
+        const duplicate = state.cards.some(c => c.player === player.name);
+        const isFirstDiscovery = !state.unlockedCardNames.includes(player.name);
+
+        if (isFirstDiscovery) {
+            state.unlockedCardNames.push(player.name);
+            const bonus = DISCOVERY_BONUS[rarity] || 10;
+            addCoins(bonus);
+        }
+
+        // Check serialization ONLY for World Class (Messi & Ronaldo)
+        let serialNum = null;
+        let serialGrad = null;
+
+        if (rarity === "World Class" && (player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo")) {
+            if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+            if (state.serializedCounts[player.name] < 10) {
+                state.serializedCounts[player.name]++;
+                serialNum = state.serializedCounts[player.name];
+                serialGrad = generateRandomSerializedGradient(serialNum);
+            }
+        }
+
+        const shouldAutoLock = rarity === "World Class" || rarity === "Secret" || serialNum !== null;
+
+        const card = {
+            id: Date.now() + "_" + i + "_" + Math.random().toString(36).slice(2),
+            player: player.name,
+            rating: player.rating,
+            pos: player.pos,
+            rarity: rarity,
+            image: player.image || "",
+            frame: "default",
+            serialNumber: serialNum,
+            serialGradient: serialGrad,
+            locked: shouldAutoLock,
+            obtained: Date.now()
+        };
+
+        state.cards.push(card);
+        state.stats.cardsPulled = (state.stats.cardsPulled || 0) + 1;
+        if (duplicate) state.stats.duplicates = (state.stats.duplicates || 0) + 1;
+
+        updateRarityStats(rarity, player);
+        addXP(rarity === "World Class" ? 100 : rarity === "Secret" ? 35 : rarity === "Mythic" ? 20 : rarity === "Legendary" ? 10 : 5);
+
+        progressMission("packs", 1);
+        progressMission("cards", 1);
+        if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Rare) progressMission("rare", 1);
+        if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Epic) progressMission("epic", 1);
+        if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Legendary) progressMission("legendary", 1);
+
+        pulledCards.push({ card, duplicate, isFirstDiscovery });
+
+        if (!bestCard || (RARITY_ORDER[rarity] || 0) > (RARITY_ORDER[bestCard.card.rarity] || 0)) {
+            bestCard = { card, duplicate, isFirstDiscovery };
+        }
     }
-
-    if (!player) {
-        addCoins(pack.cost);
-        toast("Scouting error — coins returned.");
-        return;
-    }
-
-    const duplicate = state.cards.some(c => c.player === player.name);
-    const isFirstDiscovery = !state.unlockedCardNames.includes(player.name);
-
-    if (isFirstDiscovery) {
-        state.unlockedCardNames.push(player.name);
-        const bonus = DISCOVERY_BONUS[rarity] || 10;
-        addCoins(bonus);
-    }
-
-    // Check serialization for first 10 Messi / Ronaldo pulls
-    if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
-    let serialNum = null;
-    let serialGrad = null;
-
-    if ((player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo") && (state.serializedCounts[player.name] < 10)) {
-        state.serializedCounts[player.name]++;
-        serialNum = state.serializedCounts[player.name];
-        serialGrad = generateRandomSerializedGradient(serialNum);
-    }
-
-    const shouldAutoLock = rarity === "World Class" || rarity === "Secret" || serialNum !== null;
-
-    const card = {
-        id: Date.now() + "_" + Math.random().toString(36).slice(2),
-        player: player.name,
-        rating: player.rating,
-        pos: player.pos,
-        rarity: rarity,
-        image: player.image || "",
-        frame: "default",
-        serialNumber: serialNum,
-        serialGradient: serialGrad,
-        locked: shouldAutoLock,
-        obtained: Date.now()
-    };
-
-    state.cards.push(card);
-    state.stats.cardsPulled++;
-    if (duplicate) state.stats.duplicates++;
-
-    updateRarityStats(rarity, player);
-    addXP(rarity === "World Class" ? 100 : rarity === "Secret" ? 35 : rarity === "Mythic" ? 20 : rarity === "Legendary" ? 10 : 5);
-
-    progressMission("packs", 1);
-    progressMission("cards", 1);
-    if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Rare) progressMission("rare", 1);
-    if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Epic) progressMission("epic", 1);
-    if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Legendary) progressMission("legendary", 1);
 
     saveGame();
 
-    // Show 3D Pack Opening Shaking Animation
+    // Check skip animation setting
+    if (state.settings && state.settings.skipPackAnimation) {
+        deliverPulledCards(pulledCards, bestCard);
+        return;
+    }
+
+    // Show 3D Pack Opening Shaking Animation & Swipe Bar
     const animOverlay = document.getElementById("packOpeningOverlay");
     const animTitle = document.getElementById("packAnimTitle");
     const animIcon = document.getElementById("packAnimIcon");
     const ripBar = document.getElementById("packRipBar");
 
     if (animOverlay) {
-        if (animTitle) animTitle.textContent = `SCOUTING ${pack.name.toUpperCase()}...`;
-        if (animIcon) animIcon.textContent = type === "worldclass" ? "🌎" : type === "champion" ? "🏆" : type === "exclusive" ? "👑" : type === "premium" ? "⭐" : "📦";
+        if (animTitle) animTitle.textContent = `${pullCount}x SCOUTING ${pack.name.toUpperCase()}...`;
+        if (animIcon) animIcon.textContent = type === "worldclass" ? "🌎" : type === "champion" ? "🏆" : type === "exclusive" ? "👑" : type === "mythic" ? "🔥" : type === "secret" ? "✦" : type === "premium" ? "⭐" : "📦";
         if (ripBar) {
             ripBar.style.animation = 'none';
-            void ripBar.offsetWidth; // trigger reflow
+            void ripBar.offsetWidth;
             ripBar.style.animation = 'ripProgress 1.1s ease-in-out forwards';
         }
         animOverlay.classList.remove("hidden");
         animOverlay.style.display = "grid";
+
+        let autoTearTimer = setTimeout(() => {
+            triggerInstantPackTear();
+        }, 1200);
+
+        initPackSwipeGesture(() => {
+            clearTimeout(autoTearTimer);
+            if (animOverlay) {
+                animOverlay.classList.add("hidden");
+                animOverlay.style.display = "none";
+            }
+            deliverPulledCards(pulledCards, bestCard);
+        });
+    } else {
+        deliverPulledCards(pulledCards, bestCard);
+    }
+}
+
+function deliverPulledCards(pulledCards, bestCard) {
+    if (!pulledCards || !pulledCards.length) return;
+
+    if (pulledCards.length === 1) {
+        const item = pulledCards[0];
+        if (item.card.rarity === "World Class" || item.card.player === "Lionel Messi" || item.card.player === "Cristiano Ronaldo") {
+            showWorldClass(item.card);
+        } else if (item.card.rarity === "Secret") {
+            showSecretCutscene(item.card);
+        } else {
+            showCardResult(item.card, item.duplicate, item.isFirstDiscovery);
+        }
+    } else {
+        // Multi-pack reveal: if contains World Class or Secret, show cutscene, then show summary
+        const topWorldClass = pulledCards.find(p => p.card.rarity === "World Class");
+        const topSecret = pulledCards.find(p => p.card.rarity === "Secret");
+
+        if (topWorldClass) {
+            showWorldClass(topWorldClass.card);
+        } else if (topSecret) {
+            showSecretCutscene(topSecret.card);
+        } else {
+            showCardResult(bestCard.card, bestCard.duplicate, bestCard.isFirstDiscovery);
+        }
+        toast(`🎉 Opened ${pulledCards.length} packs! Best pull: ${bestCard.card.player} (${bestCard.card.rarity})`);
     }
 
-    setTimeout(() => {
-        if (animOverlay) {
-            animOverlay.classList.add("hidden");
-            animOverlay.style.display = "none";
-        }
-        if (rarity === "World Class" || player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo") {
-            showWorldClass(card);
-        } else if (rarity === "Secret") {
-            showSecretCutscene(card);
-        } else {
-            showCardResult(card, duplicate, isFirstDiscovery);
-        }
-        renderAll();
-    }, 1150);
+    renderAll();
 }
 
 function showSecretCutscene(card) {
@@ -1458,15 +1704,20 @@ function rollExclusivePlayer() {
 }
 
 function updateRarityStats(rarity, player) {
-    const key = rarity.toLowerCase().replaceAll(" ", "");
-    if (state.stats[key] !== undefined) state.stats[key]++;
+    if (!state.stats) state.stats = {};
+    if (rarity === "World Class") {
+        state.stats.worldClass = (state.stats.worldClass || 0) + 1;
+    } else {
+        const key = rarity.toLowerCase().replaceAll(" ", "");
+        state.stats[key] = (state.stats[key] || 0) + 1;
+    }
 
     const currentPeakOrder = RARITY_ORDER[state.stats.highestRarity] || 0;
     const newOrder = RARITY_ORDER[rarity] || 0;
     if (newOrder > currentPeakOrder) {
         state.stats.highestRarity = rarity;
     }
-    if (player.rating > state.stats.highestRating) {
+    if (player && player.rating && player.rating > (state.stats.highestRating || 0)) {
         state.stats.highestRating = player.rating;
     }
 }
@@ -2541,11 +2792,7 @@ function renderProfile() {
         setText("profileBest", (state.stats && state.stats.highestRarity) || "Common");
         const avatarImg = document.getElementById("profileAvatarImg");
         if (avatarImg && state.avatar) avatarImg.src = state.avatar;
-        const avatarWrap = document.getElementById("profileAvatarWrap");
-        if (avatarWrap) {
-            const frame = FRAMES.find(f => f.id === state.profileFrame) || FRAMES[0];
-            avatarWrap.className = `profile-avatar-wrapper ${frame.css}`;
-        }
+        
         const titleBadge = document.getElementById("profileEquippedTitle");
         if (titleBadge) {
             const titleObj = TITLES.find(t => t.name === state.equippedTitle) || TITLES[0];
@@ -2564,14 +2811,6 @@ function renderProfile() {
 }
 
 function renderProfileCustomization() {
-    const frameSelect = document.getElementById("profileFrameSelect");
-    if (frameSelect) {
-        const ownedF = Array.isArray(state.ownedFrames) && state.ownedFrames.length ? state.ownedFrames : ["default"];
-        frameSelect.innerHTML = ownedF.map(id => {
-            const f = FRAMES.find(x => x.id === id) || FRAMES[0];
-            return `<option value="${f.id}" ${f.id === state.profileFrame ? "selected" : ""}>${f.name}</option>`;
-        }).join("");
-    }
     const bgSelect = document.getElementById("profileBackgroundSelect");
     if (bgSelect) {
         const ownedB = Array.isArray(state.ownedBackgrounds) && state.ownedBackgrounds.length ? state.ownedBackgrounds : ["campnou"];
@@ -2582,13 +2821,6 @@ function renderProfileCustomization() {
     }
 }
 
-function setProfileFrame(id) {
-    state.profileFrame = id;
-    saveGame();
-    renderProfile();
-    toast("Profile avatar frame equipped.");
-}
-
 function setProfileBackground(id) {
     state.profileBackground = id;
     saveGame();
@@ -2596,26 +2828,60 @@ function setProfileBackground(id) {
     toast("Stadium background equipped.");
 }
 
-function applyCustomAvatarUrl() {
-    const input = document.getElementById("avatarUrlInput");
-    if (!input || !input.value.trim()) return;
-    const url = input.value.trim();
-    state.avatar = url;
-    const pImg = document.getElementById("profileAvatarImg");
-    if (pImg) pImg.src = url;
-    saveGame();
-    renderProfile();
-    input.value = "";
-    toast("Custom avatar applied!");
+function handleAvatarFileUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        toast("Please select a valid image file.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Compress to max 256x256 to fit nicely in saves
+            const canvas = document.createElement("canvas");
+            const maxDim = 256;
+            let w = img.width;
+            let h = img.height;
+            if (w > h) {
+                if (w > maxDim) {
+                    h = Math.round((h * maxDim) / w);
+                    w = maxDim;
+                }
+            } else {
+                if (h > maxDim) {
+                    w = Math.round((w * maxDim) / h);
+                    h = maxDim;
+                }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            const compressed = canvas.toDataURL("image/jpeg", 0.85);
+
+            state.avatar = compressed;
+            const pImg = document.getElementById("profileAvatarImg");
+            if (pImg) pImg.src = compressed;
+            saveGame();
+            renderProfile();
+            toast("📷 Custom avatar photo updated from gallery!");
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
-function setPresetAvatar(url) {
-    state.avatar = url;
+function resetDefaultAvatar() {
+    state.avatar = "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80";
     const pImg = document.getElementById("profileAvatarImg");
-    if (pImg) pImg.src = url;
+    if (pImg) pImg.src = state.avatar;
     saveGame();
     renderProfile();
-    toast("Avatar updated!");
+    toast("Avatar reset to default.");
 }
 
 /* =========================================================
@@ -2623,41 +2889,7 @@ function setPresetAvatar(url) {
    ========================================================= */
 
 function renderShop() {
-    const frames = document.getElementById("frameShop");
     const backgrounds = document.getElementById("backgroundShop");
-
-    const frameIcons = {
-        default: "🛡️",
-        blue: "⚡",
-        green: "🌿",
-        purple: "👑",
-        gold: "🏆",
-        red: "🔥",
-        rainbow: "✦",
-        champion: "⚔️"
-    };
-
-    if (frames) {
-        frames.innerHTML = FRAMES.map(frame => {
-            const owned = (state.ownedFrames || []).includes(frame.id);
-            const icon = frameIcons[frame.id] || "🛡️";
-            return `
-            <div class="shop-item">
-                <div class="shop-preview ${frame.css}">
-                    <div class="shop-preview-avatar">
-                        <span>${icon}</span>
-                    </div>
-                </div>
-                <h3>${escapeHTML(frame.name)}</h3>
-                <p>${frame.cost === 0 ? "Free" : frame.cost + " coins"}</p>
-                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyFrame('${frame.id}')">
-                    ${owned ? "Owned" : "Buy Frame"}
-                </button>
-            </div>
-            `;
-        }).join("");
-    }
-
     if (backgrounds) {
         backgrounds.innerHTML = BACKGROUNDS.map(bg => {
             const owned = (state.ownedBackgrounds || []).includes(bg.id);
@@ -2667,25 +2899,12 @@ function renderShop() {
                 <h3>${escapeHTML(bg.name)}</h3>
                 <p>${bg.cost === 0 ? "Free" : bg.cost + " coins"}</p>
                 <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyBackground('${bg.id}')">
-                    ${owned ? "Owned" : "Buy Stadium"}
+                    ${owned ? "Owned" : "Buy Atmosphere"}
                 </button>
             </div>
             `;
         }).join("");
     }
-}
-
-function buyFrame(id) {
-    const frame = FRAMES.find(f => f.id === id);
-    if (!frame || state.ownedFrames.includes(id)) return;
-    if (!spendCoins(frame.cost)) return;
-
-    state.ownedFrames.push(id);
-    saveGame();
-    renderShop();
-    renderProfile();
-    SoundFx.coin();
-    toast(`Unlocked Avatar Frame: ${frame.name}`);
 }
 
 function buyBackground(id) {
@@ -3359,8 +3578,12 @@ async function adminExecuteSpawnCard() {
     let sNum = null;
     let sGrad = null;
     if (isSerialized) {
-        sNum = Math.floor(Math.random() * 10) + 1;
-        sGrad = generateRandomSerializedGradient(sNum);
+        if (p.rarity === "World Class") {
+            sNum = Math.floor(Math.random() * 10) + 1;
+            sGrad = generateRandomSerializedGradient(sNum);
+        } else {
+            toast("Note: Serialization is exclusive to World Class cards.");
+        }
     }
 
     const newCard = {
@@ -3836,3 +4059,36 @@ setInterval(() => {
     updateTimers();
     checkBanStatus();
 }, 1000);
+
+/* =========================================================
+   MOBILE & IPAD RESPONSIVE TOUCH & COPY PROTECTIONS
+   ========================================================= */
+
+let lastTouchEnd = 0;
+document.addEventListener("touchend", function(event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+        // Prevent double tap zooming while allowing input taps
+        const targetTag = (event.target && event.target.tagName) || "";
+        if (targetTag !== "INPUT" && targetTag !== "TEXTAREA" && targetTag !== "SELECT") {
+            event.preventDefault();
+        }
+    }
+    lastTouchEnd = now;
+}, { passive: false });
+
+document.addEventListener("copy", function(e) {
+    const targetTag = (e.target && e.target.tagName) || "";
+    if (targetTag !== "INPUT" && targetTag !== "TEXTAREA") {
+        e.preventDefault();
+    }
+});
+
+document.addEventListener("contextmenu", function(e) {
+    const targetTag = (e.target && e.target.tagName) || "";
+    if (targetTag !== "INPUT" && targetTag !== "TEXTAREA") {
+        if (e.target && e.target.closest && (e.target.closest(".card") || e.target.closest(".pack-card"))) {
+            e.preventDefault();
+        }
+    }
+});
