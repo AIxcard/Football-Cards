@@ -158,11 +158,16 @@
 <!-- PACK OPENING ANIMATION OVERLAY -->
 <div id="packOpeningOverlay" class="modal hidden pack-opening-modal">
     <div class="pack-anim-wrapper">
+        <div class="pack-burst-rays" id="packBurstRays"></div>
         <div class="pack-anim-glow" id="packAnimGlow"></div>
         <div class="pack-anim-box" id="packAnimBox">
+            <div class="pack-foil-shimmer"></div>
             <div class="pack-anim-icon" id="packAnimIcon">📦</div>
-            <h2 id="packAnimTitle">SCOUTING PLAYERS...</h2>
-            <p id="packAnimSubtitle">Searching the global transfer market</p>
+            <h2 id="packAnimTitle">SCOUTING PACK...</h2>
+            <p id="packAnimSubtitle">Ripping foil &amp; scouting transfer market</p>
+            <div class="pack-rip-track">
+                <div class="pack-rip-bar" id="packRipBar"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -190,12 +195,15 @@
     <div class="world-card sols-card">
         <div class="sols-cosmic-rays"></div>
         <div id="wcGoatBadge" class="goat-crest-badge">🐐 ALL-TIME GOAT 🐐</div>
-        <div class="world-glow sols-icon" id="wcIcon">🌎</div>
+        <div class="wc-photo-wrap" style="position:relative;margin:10px auto 6px;width:130px;height:130px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);box-shadow:0 0 35px rgba(255,215,0,0.85);">
+            <img id="wcPlayerPhoto" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" style="width:100%;height:100%;object-fit:cover;" alt="GOAT" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+        </div>
+        <div class="world-glow sols-icon" id="wcIcon" style="font-size:32px;margin-top:-22px;position:relative;z-index:5;">🌎</div>
         <p id="wcRarityTag" class="rarity worldclass sols-rarity-tag">★ 1 IN 10,000 WORLD CLASS ★</p>
         <h1 id="wcPlayerName" class="sols-player-name">PLAYER</h1>
         <p id="wcPlayerQuote" class="sols-player-quote">"The Argentine Magician · 8x Ballon d'Or Winner"</p>
         <p id="wcPlayerMeta" class="sols-player-meta"></p>
-        <button id="wcContinue" class="primary-btn sols-btn">CLAIM LEGEND</button>
+        <button id="wcContinue" class="primary-btn sols-btn">CLAIM GOAT CARD</button>
     </div>
 </div>
 
