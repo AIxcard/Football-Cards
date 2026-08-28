@@ -487,24 +487,27 @@ const BACKGROUNDS = [
 
 const MISSION_TEMPLATES = {
 hourly: [
-    ["Open 1 pack", 1, 10, "packs"],
-    ["Earn 10 coins", 10, 10, "coins"],
-    ["Collect 1 card", 1, 10, "cards"]
+    ["Open 2 scouting packs", 2, 20, "packs"],
+    ["Earn 50 coins", 50, 25, "coins"],
+    ["Collect 3 player cards", 3, 25, "cards"]
 ],
 daily: [
-    ["Open 3 packs", 3, 35, "packs"],
-    ["Collect 5 cards", 5, 40, "cards"],
-    ["Pull Rare or better", 1, 50, "rare"]
+    ["Open 8 scouting packs", 8, 80, "packs"],
+    ["Collect 12 cards", 12, 100, "cards"],
+    ["Pull 2 Rare or better cards", 2, 120, "rare"],
+    ["Sell 3 duplicate cards", 3, 70, "duplicates"]
 ],
 weekly: [
-    ["Open 15 packs", 15, 150, "packs"],
-    ["Collect 20 cards", 20, 200, "cards"],
-    ["Pull Epic or better", 3, 250, "epic"]
+    ["Open 30 scouting packs", 30, 450, "packs"],
+    ["Collect 45 cards", 45, 500, "cards"],
+    ["Pull 5 Epic or better cards", 5, 650, "epic"],
+    ["Earn 2,500 total coins", 2500, 750, "coins"]
 ],
 monthly: [
-    ["Open 50 packs", 50, 800, "packs"],
-    ["Collect 75 cards", 75, 1000, "cards"],
-    ["Pull Legendary or better", 5, 1500, "legendary"]
+    ["Open 100 scouting packs", 100, 2000, "packs"],
+    ["Collect 150 cards", 150, 2500, "cards"],
+    ["Pull 4 Legendary or better cards", 4, 3500, "legendary"],
+    ["Earn 10,000 total coins", 10000, 4000, "coins"]
 ]
 };
 
@@ -2746,12 +2749,12 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
         if (collectBtn) {
             if (totalPacks > 1) {
                 if (packNum < totalPacks) {
-                    collectBtn.textContent = `Collect Card & Open Next (${packNum}/${totalPacks}) ➔`;
+                    collectBtn.textContent = `Collect & Next (${packNum}/${totalPacks}) ➔`;
                 } else {
                     collectBtn.textContent = `Collect Final Card (${totalPacks}/${totalPacks}) ✓`;
                 }
             } else {
-                collectBtn.textContent = "Collect Card";
+                collectBtn.textContent = "Collect Card ✓";
             }
         }
 
@@ -4148,7 +4151,31 @@ function updateTimers() {
     updateLimitedTimer();
     updateTournamentTimer();
     updateDailyReward();
-    updateFreeKick();
+    updateMissionCountdownTimers();
+}
+
+function updateMissionCountdownTimers() {
+    const info = document.getElementById("missionResetInfo");
+    const now = Date.now();
+    if (!state.missionReset) {
+        state.missionReset = { hourly: now, daily: now, weekly: now, monthly: now };
+    }
+    const hourlyRem = Math.max(0, 3600000 - (now - (state.missionReset.hourly || now)));
+    const dailyRem = Math.max(0, 86400000 - (now - (state.missionReset.daily || now)));
+    const weeklyRem = Math.max(0, 604800000 - (now - (state.missionReset.weekly || now)));
+    const monthlyRem = Math.max(0, 2592000000 - (now - (state.missionReset.monthly || now)));
+
+    if (info) {
+        if (currentMissionType === "hourly") {
+            info.innerHTML = `⏱️ Hourly Reset in <b>${formatCountdown(hourlyRem)}</b>`;
+        } else if (currentMissionType === "daily") {
+            info.innerHTML = `⏱️ Daily Reset in <b>${formatCountdown(dailyRem)}</b>`;
+        } else if (currentMissionType === "weekly") {
+            info.innerHTML = `⏱️ Weekly Reset in <b>${formatCountdown(weeklyRem)}</b>`;
+        } else {
+            info.innerHTML = `⏱️ Monthly Reset in <b>${formatCountdown(monthlyRem)}</b>`;
+        }
+    }
 }
 
 function updateLimitedTimer() {
@@ -4220,7 +4247,7 @@ async function renderLeaderboard() {
     const list = document.getElementById("globalLeaderboard") || document.getElementById("leaderboardList");
     if (!list) return;
 
-    list.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);"><span class="pack-spinner" style="display:inline-block;width:24px;height:24px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;"></span><p style="margin-top:10px;">Connecting to Firebase Global Leaderboard...</p></div>`;
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);"><span class="pack-spinner" style="display:inline-block;width:28px;height:28px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;"></span><p style="margin-top:12px;font-size:14px;font-weight:700;">Connecting to Global Online Leaderboard...</p></div>`;
 
     let fbLeaderboard = await FirebaseSync.fetchLeaderboard();
     let fbUsers = await FirebaseSync.fetchAllUsers();
@@ -4228,7 +4255,7 @@ async function renderLeaderboard() {
 
     let playersMap = {};
 
-    // 1. Ingest from Firebase leaderboard
+    // 1. Ingest from cloud leaderboard
     if (fbLeaderboard && typeof fbLeaderboard === "object") {
         for (const k in fbLeaderboard) {
             const entry = fbLeaderboard[k];
@@ -4242,13 +4269,14 @@ async function renderLeaderboard() {
                     level: Number(entry.level || 1),
                     equippedTitle: entry.equippedTitle || "Collector",
                     profileFrame: entry.profileFrame || "default",
+                    avatar: entry.avatar || "player_temp.png",
                     bannedUntil: entry.bannedUntil || 0
                 };
             }
         }
     }
 
-    // 2. Ingest from Firebase users
+    // 2. Ingest from cloud users
     if (fbUsers && typeof fbUsers === "object") {
         for (const k in fbUsers) {
             const u = fbUsers[k];
@@ -4264,6 +4292,7 @@ async function renderLeaderboard() {
                     level: pData.level || 1,
                     equippedTitle: pData.equippedTitle || "Collector",
                     profileFrame: pData.profileFrame || "default",
+                    avatar: pData.avatar || "player_temp.png",
                     bannedUntil: pData.bannedUntil || 0
                 };
             }
@@ -4285,12 +4314,13 @@ async function renderLeaderboard() {
                 level: pData.level || 1,
                 equippedTitle: pData.equippedTitle || "Collector",
                 profileFrame: pData.profileFrame || "default",
+                avatar: pData.avatar || "player_temp.png",
                 bannedUntil: pData.bannedUntil || 0
             };
         }
     }
 
-    // 4. Ensure current active session is present
+    // 4. Current active session
     const currentName = state.accountUser || state.name || "Guest";
     const currentKey = currentName.toLowerCase();
     playersMap[currentKey] = {
@@ -4302,16 +4332,14 @@ async function renderLeaderboard() {
         level: state.level || 1,
         equippedTitle: state.equippedTitle || "Collector",
         profileFrame: state.profileFrame || "default",
+        avatar: state.avatar || "player_temp.png",
         bannedUntil: state.bannedUntil || 0,
         isSelf: true
     };
 
     let playersList = Object.values(playersMap);
-
-    // Filter out banned accounts
     playersList = playersList.filter(p => p.isSelf || !p.bannedUntil || p.bannedUntil <= Date.now());
 
-    // Sort according to tab
     if (currentLeaderboardTab === "value") {
         playersList.sort((a, b) => (b.value - a.value) || (b.gold - a.gold));
     } else {
@@ -4323,47 +4351,102 @@ async function renderLeaderboard() {
         return;
     }
 
-    const rankBadges = ["🥇", "🥈", "🥉"];
+    const top1 = playersList[0];
+    const top2 = playersList[1];
+    const top3 = playersList[2];
+    const rest = playersList.slice(3);
 
-    list.innerHTML = playersList.map((p, i) => {
+    function createPodiumCard(p, rankNum) {
+        if (!p) return "";
         const isMe = (state.accountUser && p.username.toLowerCase() === state.accountUser.toLowerCase()) || (p.isSelf);
         const titleObj = TITLES.find(t => t.name === p.equippedTitle) || TITLES[0];
-        const rankIcon = i < 3 ? rankBadges[i] : `#${i + 1}`;
         const scoreDisplay = currentLeaderboardTab === "value"
-            ? `💎 ${p.value.toLocaleString()} Value`
+            ? `💎 ${p.value.toLocaleString()}`
             : `${p.gold.toLocaleString()} 🪙`;
 
+        const crown = rankNum === 1 ? `<div class="lb-podium-crown">👑</div>` : "";
+        const rankLabel = rankNum === 1 ? "1" : rankNum === 2 ? "2" : "3";
+
         return `
-        <div class="leaderboard-item ${isMe ? 'self' : ''}">
-            <div class="lb-left">
-                <span class="lb-rank">${rankIcon}</span>
-                <div class="lb-user-info">
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                        <strong class="lb-name">${escapeHTML(p.name)} ${isMe ? '<span style="color:var(--green);font-size:12px;">(You)</span>' : ''}</strong>
-                        ${p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;">${escapeHTML(p.equippedTitle)}</span>` : ''}
-                    </div>
-                    <span class="lb-meta">Lvl ${p.level || 1} · ${p.cards || 0} Cards</span>
-                </div>
+        <div class="lb-podium-card rank-${rankNum} ${isMe ? 'self' : ''}">
+            ${crown}
+            <div class="lb-podium-avatar-wrap">
+                <img class="lb-podium-avatar frame-${p.profileFrame || 'default'}" src="${escapeHTML(p.avatar || 'player_temp.png')}" alt="${escapeHTML(p.name)}" onerror="this.src='player_temp.png'">
+                <div class="lb-podium-rank-badge">${rankLabel}</div>
             </div>
-            <div class="lb-score">${scoreDisplay}</div>
+            <div class="lb-podium-name">
+                <span>${escapeHTML(p.name)}</span>
+                ${isMe ? '<span style="color:var(--green);font-size:11px;">(You)</span>' : ''}
+            </div>
+            ${p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;margin-top:2px;">${escapeHTML(p.equippedTitle)}</span>` : ''}
+            <div class="lb-podium-meta">Level ${p.level || 1} · ${p.cards || 0} Cards</div>
+            <div class="lb-podium-score">${scoreDisplay}</div>
         </div>
         `;
-    }).join("");
+    }
+
+    let html = `<div class="leaderboard-container">`;
+
+    // Podium Section
+    html += `<div class="lb-podium-row">`;
+    html += createPodiumCard(top2, 2);
+    html += createPodiumCard(top1, 1);
+    html += createPodiumCard(top3, 3);
+    html += `</div>`;
+
+    // 4th+ Rows Table
+    if (rest.length > 0) {
+        html += `<div class="lb-table-container">`;
+        rest.forEach((p, idx) => {
+            const rank = idx + 4;
+            const isMe = (state.accountUser && p.username.toLowerCase() === state.accountUser.toLowerCase()) || (p.isSelf);
+            const titleObj = TITLES.find(t => t.name === p.equippedTitle) || TITLES[0];
+            const scoreDisplay = currentLeaderboardTab === "value"
+                ? `💎 ${p.value.toLocaleString()}`
+                : `${p.gold.toLocaleString()} 🪙`;
+
+            html += `
+            <div class="lb-table-row ${isMe ? 'self' : ''}">
+                <div class="lb-row-rank">#${rank}</div>
+                <div class="lb-row-user">
+                    <img class="lb-row-avatar frame-${p.profileFrame || 'default'}" src="${escapeHTML(p.avatar || 'player_temp.png')}" alt="${escapeHTML(p.name)}" onerror="this.src='player_temp.png'">
+                    <div class="lb-row-info">
+                        <div class="lb-row-name-wrap">
+                            <strong class="lb-row-name">${escapeHTML(p.name)}</strong>
+                            ${isMe ? '<span style="color:var(--green);font-size:11px;font-weight:800;">(You)</span>' : ''}
+                            ${p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;">${escapeHTML(p.equippedTitle)}</span>` : ''}
+                        </div>
+                        <span class="lb-row-meta">Level ${p.level || 1} · ${p.cards || 0} Cards</span>
+                    </div>
+                </div>
+                <div class="lb-row-score">${scoreDisplay}</div>
+            </div>
+            `;
+        });
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    list.innerHTML = html;
 }
 
 /* =========================================================
    ADMIN PANEL CONTROLLER (EXCLUSIVE FOR ALUCARD & GRANTED ADMINS)
    ========================================================= */
 
-function isUserAdmin() {
+function checkIsAdmin() {
     const u = (state.accountUser || state.name || "").toLowerCase();
     return u === "alucard" || !!state.isGrantedAdmin || (state.grantedTitles || []).includes("Admin") || (state.grantedTitles || []).includes("Owner");
+}
+
+function isUserAdmin() {
+    return checkIsAdmin();
 }
 
 function checkAdminStatus() {
     const adminHeaderBtn = document.getElementById("adminHeaderBtn");
     const adminSidebarBtn = document.getElementById("adminSidebarBtn");
-    const hasAdmin = isUserAdmin();
+    const hasAdmin = checkIsAdmin();
 
     if (adminHeaderBtn) adminHeaderBtn.style.display = hasAdmin ? "inline-block" : "none";
     if (adminSidebarBtn) adminSidebarBtn.style.display = hasAdmin ? "block" : "none";
@@ -4375,7 +4458,7 @@ function checkAdminStatus() {
 }
 
 function openAdminPanel() {
-    if (!isUserAdmin()) {
+    if (!checkIsAdmin()) {
         toast("🔒 Access Denied: Creator / Admin authorization required.");
         return;
     }
@@ -4409,7 +4492,10 @@ function populateAdminCardList() {
 }
 
 async function adminExecuteGiveGold() {
-    if (!isUserAdmin()) return;
+    if (!checkIsAdmin()) {
+        toast("🔒 Access Denied: Creator / Admin authorization required.");
+        return;
+    }
     const target = (document.getElementById("adminGoldTarget").value || "").trim();
     const amount = Number(document.getElementById("adminGoldAmount").value) || 0;
     if (amount <= 0) {
@@ -4450,7 +4536,10 @@ async function adminExecuteGiveGold() {
 }
 
 async function adminExecuteSpawnCard() {
-    if (!isUserAdmin()) return;
+    if (!checkIsAdmin()) {
+        toast("🔒 Access Denied: Creator / Admin authorization required.");
+        return;
+    }
     const target = (document.getElementById("adminCardTarget").value || "").trim();
     const cardName = document.getElementById("adminCardSelect").value;
     const isSerialized = document.getElementById("adminCardSerialized").checked;
@@ -4856,19 +4945,63 @@ function addXP(amount) {
     saveGame();
 }
 
-function changeName() {
-    const newName = prompt("Enter your name:", state.name);
+async function changeName() {
+    const current = state.accountUser || state.name || "";
+    const newName = prompt("Enter your new player / account name:", current);
     if (!newName) return;
     const name = newName.trim();
     if (name.length < 2) {
         toast("Name must be at least 2 characters.");
         return;
     }
+
+    const oldUser = state.accountUser;
     state.name = name;
-    if (state.accountUser) state.accountUser = name;
+
+    if (oldUser) {
+        const oldKey = oldUser.toLowerCase();
+        const newKey = name.toLowerCase();
+
+        if (oldKey !== newKey) {
+            // Update local accounts
+            const accs = CloudSync.getAccounts();
+            if (accs[oldKey]) {
+                const accData = { ...accs[oldKey], username: name };
+                delete accs[oldKey];
+                accs[newKey] = accData;
+                CloudSync.saveAccounts(accs);
+            }
+
+            state.accountUser = name;
+
+            // Migrate on GitHub Cloud database
+            try {
+                const usersFile = await GitHubCloudSync.fetchFile("data/users.json");
+                if (usersFile && usersFile.data) {
+                    const users = usersFile.data;
+                    if (users[oldKey]) {
+                        users[newKey] = { ...users[oldKey], username: name, updatedAt: Date.now() };
+                        delete users[oldKey];
+                        await GitHubCloudSync.saveFile("data/users.json", users, `rename user ${oldUser} -> ${name}`);
+                    }
+                }
+
+                const lbFile = await GitHubCloudSync.fetchFile("data/leaderboard.json");
+                if (lbFile && lbFile.data) {
+                    const lb = lbFile.data;
+                    if (lb[oldKey]) {
+                        lb[newKey] = { ...lb[oldKey], name: name, username: name, updatedAt: Date.now() };
+                        delete lb[oldKey];
+                        await GitHubCloudSync.saveFile("data/leaderboard.json", lb, `rename lb ${oldUser} -> ${name}`);
+                    }
+                }
+            } catch(e) {}
+        }
+    }
+
     saveGame();
     renderAll();
-    toast(`Name updated to: ${name}`);
+    toast(`✓ Account & player name updated to "${name}"!`);
 }
 
 function resetGame() {
