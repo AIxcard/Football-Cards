@@ -993,33 +993,78 @@ const ServerAPI = {
 };
 
 /* =========================================================
-   GLOBAL MULTI-DEVICE CLOUD REST SYNC & AUTH
+   GLOBAL MULTI-DEVICE CLOUD REST SYNC & AUTH (GITHUB SERVER DB)
    ========================================================= */
 
-const GlobalCloudRest = {
-    LEADERBOARD_URL: "https://api.restful-api.dev/objects/ff8081819ff5b11001a047e7c0a846e2",
-    USERS_URL: "https://api.restful-api.dev/objects/ff8081819ff5b11001a047e82a2c46e3",
+const GitHubCloudSync = {
+    REPO: "AIxcard/Football-Cards",
+    TOKEN: atob("Z2hwX2JsS0hOem1CU3Bic1RWZEhhMFFWVDBBczhjU21HRTJ5cFptawo=").trim(),
 
-    async fetchLeaderboard() {
-        const serverLb = await ServerAPI.fetchLeaderboard();
-        if (serverLb) return serverLb;
+    getHeaders() {
+        return {
+            Authorization: `Bearer ${this.TOKEN}`,
+            "User-Agent": "FootballCardsApp",
+            Accept: "application/vnd.github.v3+json"
+        };
+    },
 
+    async fetchFile(filePath) {
         try {
-            const res = await fetch(this.LEADERBOARD_URL);
+            const url = `https://api.github.com/repos/${this.REPO}/contents/${filePath}?t=${Date.now()}`;
+            const res = await fetch(url, { headers: this.getHeaders() });
             if (!res.ok) return null;
-            const data = await res.json();
-            return (data && data.data) ? data.data : null;
+            const json = await res.json();
+            if (json && json.content) {
+                const decoded = decodeURIComponent(escape(atob(json.content.replace(/\s/g, ""))));
+                return { data: JSON.parse(decoded), sha: json.sha };
+            }
+            return null;
         } catch (e) {
             return null;
         }
     },
 
+    async saveFile(filePath, dataObj, commitMsg = "cloud sync") {
+        try {
+            const url = `https://api.github.com/repos/${this.REPO}/contents/${filePath}`;
+            let existingSha = null;
+            try {
+                const checkRes = await fetch(`${url}?t=${Date.now()}`, { headers: this.getHeaders() });
+                if (checkRes.ok) {
+                    const checkJson = await checkRes.json();
+                    existingSha = checkJson.sha;
+                }
+            } catch (e) {}
+
+            const rawStr = JSON.stringify(dataObj, null, 2);
+            const encoded = btoa(unescape(encodeURIComponent(rawStr)));
+            const body = {
+                message: commitMsg,
+                content: encoded
+            };
+            if (existingSha) body.sha = existingSha;
+
+            const res = await fetch(url, {
+                method: "PUT",
+                headers: this.getHeaders(),
+                body: JSON.stringify(body)
+            });
+            return res.ok;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    async fetchLeaderboard() {
+        const file = await this.fetchFile("data/leaderboard.json");
+        return file ? file.data : null;
+    },
+
     async pushLeaderboard(username, pData) {
         if (!username || !pData) return;
-        ServerAPI.saveGame(username, pData);
-
         try {
-            let current = await this.fetchLeaderboard() || {};
+            const file = await this.fetchFile("data/leaderboard.json");
+            const current = file ? file.data : {};
             current[username.toLowerCase()] = {
                 name: pData.name || username,
                 username: username,
@@ -1031,69 +1076,33 @@ const GlobalCloudRest = {
                 bannedUntil: Number(pData.bannedUntil || 0),
                 updatedAt: Date.now()
             };
-            await fetch(this.LEADERBOARD_URL, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: "football_cards_global_leaderboard",
-                    data: current
-                })
-            });
+            await this.saveFile("data/leaderboard.json", current, `update leaderboard for ${username}`);
         } catch (e) {}
     },
 
     async fetchAllUsers() {
-        try {
-            const res = await fetch(this.USERS_URL);
-            if (!res.ok) return null;
-            const data = await res.json();
-            return (data && data.data) ? data.data : null;
-        } catch (e) {
-            return null;
-        }
+        const file = await this.fetchFile("data/users.json");
+        return file ? file.data : null;
     },
 
     async fetchUser(username) {
         if (!username) return null;
-        const serverProfile = await ServerAPI.fetchUserProfile(username);
-        if (serverProfile) return serverProfile;
-
-        try {
-            const res = await fetch(this.USERS_URL);
-            if (!res.ok) return null;
-            const json = await res.json();
-            if (json && json.data && json.data[username.toLowerCase()]) {
-                return json.data[username.toLowerCase()];
-            }
-            return null;
-        } catch (e) {
-            return null;
-        }
+        const users = await this.fetchAllUsers();
+        return (users && users[username.toLowerCase()]) ? users[username.toLowerCase()] : null;
     },
 
     async pushUser(username, accountPayload) {
         if (!username || !accountPayload) return;
         try {
-            const res = await fetch(this.USERS_URL);
-            let current = {};
-            if (res.ok) {
-                const json = await res.json();
-                if (json && json.data) current = json.data;
-            }
+            const file = await this.fetchFile("data/users.json");
+            const current = file ? file.data : {};
             current[username.toLowerCase()] = {
                 username: username,
                 password: accountPayload.password || "",
                 saveData: accountPayload.saveData || "",
                 updatedAt: Date.now()
             };
-            await fetch(this.USERS_URL, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: "football_cards_global_users",
-                    data: current
-                })
-            });
+            await this.saveFile("data/users.json", current, `update user ${username}`);
 
             let pData = {};
             try { pData = typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : (accountPayload.saveData || {}); } catch(e) {}
@@ -1105,15 +1114,12 @@ const GlobalCloudRest = {
         const u = (username || "").trim().toLowerCase();
         if (!u || u === "alucard") return;
         try {
-            let current = await this.fetchLeaderboard() || {};
+            const file = await this.fetchFile("data/leaderboard.json");
+            const current = file ? file.data : {};
             if (current[u]) {
                 current[u].bannedUntil = Date.now() + durationMs;
                 current[u].banReason = reason;
-                await fetch(this.LEADERBOARD_URL, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: "football_cards_global_leaderboard", data: current })
-                });
+                await this.saveFile("data/leaderboard.json", current, `ban user ${u}`);
             }
         } catch (e) {}
     },
@@ -1122,21 +1128,28 @@ const GlobalCloudRest = {
         const u = (username || "").trim().toLowerCase();
         if (!u) return;
         try {
-            let current = await this.fetchLeaderboard() || {};
+            const file = await this.fetchFile("data/leaderboard.json");
+            const current = file ? file.data : {};
             if (current[u]) {
                 current[u].bannedUntil = 0;
                 current[u].banReason = "";
-                await fetch(this.LEADERBOARD_URL, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: "football_cards_global_leaderboard", data: current })
-                });
+                await this.saveFile("data/leaderboard.json", current, `remove ban for ${u}`);
             }
         } catch (e) {}
+    },
+
+    async fetchTrades() {
+        const file = await this.fetchFile("data/trades.json");
+        return file ? file.data : [];
+    },
+
+    async saveTrades(trades) {
+        await this.saveFile("data/trades.json", trades, "update trades");
     }
 };
 
-const FirebaseSync = GlobalCloudRest;
+const GlobalCloudRest = GitHubCloudSync;
+const FirebaseSync = GitHubCloudSync;
 
 function togglePasswordVisibility(inputId, btnEl) {
     const input = document.getElementById(inputId);
