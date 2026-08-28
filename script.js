@@ -33,6 +33,62 @@ const RARITY_ORDER = {
     Tournament: 10
 };
 
+function formatPlaytime(seconds) {
+    if (!seconds || seconds <= 0) return "0s";
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    if (hrs > 0) return `${hrs}h ${mins}m ${secs}s`;
+    if (mins > 0) return `${mins}m ${secs}s`;
+    return `${secs}s`;
+}
+
+function formatCountdown(ms) {
+    if (!ms || ms <= 0) return "0d 0h 0m";
+    const totalSecs = Math.floor(ms / 1000);
+    const days = Math.floor(totalSecs / 86400);
+    const hrs = Math.floor((totalSecs % 86400) / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = Math.floor(totalSecs % 60);
+    if (days > 0) return `${days}d ${hrs}h ${mins}m`;
+    return `${hrs}h ${mins}m ${secs}s`;
+}
+
+const AntiCheat = {
+    computeChecksum(coins, cardsLen, level) {
+        const c = Number(coins) || 0;
+        const cl = Number(cardsLen) || 0;
+        const lv = Number(level) || 1;
+        const v = ((c * 17) ^ (cl * 37) ^ (lv * 103) ^ 0x5F3759DF) >>> 0;
+        return v.toString(16);
+    },
+    signState(st) {
+        if (!st) return;
+        st._sig = this.computeChecksum(st.coins || 0, (st.cards || []).length, st.level || 1);
+        st._lastValidCoins = Number(st.coins) || 0;
+    },
+    validateState(st) {
+        if (!st) return true;
+        if (!st._sig) {
+            this.signState(st);
+            return true;
+        }
+        const expected = this.computeChecksum(st.coins || 0, (st.cards || []).length, st.level || 1);
+        if (st._sig !== expected) {
+            console.warn("Anti-Cheat: Unauthorized state injection detected. Restoring verified balance.");
+            if (st._lastValidCoins !== undefined) {
+                st.coins = st._lastValidCoins;
+            }
+            this.signState(st);
+            if (typeof toast === "function") {
+                toast("🛡️ Anti-Cheat: Unauthorized modification reverted!");
+            }
+            return false;
+        }
+        return true;
+    }
+};
+
 const DUPLICATE_VALUES = {
     Common: 5,
     Uncommon: 12,
@@ -641,6 +697,7 @@ function loadGame() {
 }
 
 let state = loadGame();
+AntiCheat.signState(state);
 let currentMissionType = "hourly";
 let playStarted = Date.now();
 let currentAuthTab = "login";
@@ -652,6 +709,8 @@ let searchedUserData = null;
    ========================================================= */
 
 function saveGame() {
+    AntiCheat.validateState(state);
+    AntiCheat.signState(state);
     state.lastSave = Date.now();
     try {
         localStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state));
@@ -680,6 +739,44 @@ function updatePlaytime() {
 /* =========================================================
    CLOUD AUTH & TRADING BACKEND
    ========================================================= */
+
+const ONLINE_BACKEND_URL = "https://keyvalue.immanuel.co/api/KeyVal";
+const ONLINE_BACKEND_KEY = "football_cards_global_hub_v2";
+
+let onlineAccountsCache = {};
+
+async function fetchOnlineGlobalAccounts() {
+    try {
+        const res = await fetch(`${ONLINE_BACKEND_URL}/GetValue/${ONLINE_BACKEND_KEY}`, { cache: "no-store" });
+        if (res.ok) {
+            let raw = await res.text();
+            if (raw) {
+                try { if (raw.startsWith('"')) raw = JSON.parse(raw); } catch(e) {}
+                if (typeof raw === "string" && raw.startsWith("{")) raw = JSON.parse(raw);
+                if (raw && typeof raw === "object") {
+                    onlineAccountsCache = raw;
+                    const localAccs = CloudSync.getAccounts();
+                    const merged = { ...raw, ...localAccs };
+                    CloudSync.saveAccounts(merged);
+                    return merged;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("Online cloud sync offline fallback active", e);
+    }
+    return CloudSync.getAccounts();
+}
+
+async function pushOnlineGlobalAccount(username, accountPayload) {
+    try {
+        const local = CloudSync.getAccounts();
+        local[username.toLowerCase()] = accountPayload;
+        CloudSync.saveAccounts(local);
+        const payloadStr = JSON.stringify(local);
+        await fetch(`${ONLINE_BACKEND_URL}/UpdateValue/${ONLINE_BACKEND_KEY}/${encodeURIComponent(payloadStr)}`);
+    } catch (e) {}
+}
 
 const CloudSync = {
     getAccounts() {
@@ -721,18 +818,22 @@ const CloudSync = {
         fresh.xp = 0;
         fresh.level = 1;
         state = fresh;
+        AntiCheat.signState(state);
 
-        accs[key] = {
+        const accObj = {
             username: u,
             password: p,
             saveData: JSON.stringify(state),
             updatedAt: Date.now()
         };
+        accs[key] = accObj;
         this.saveAccounts(accs);
+        pushOnlineGlobalAccount(u, accObj);
+
         saveGame();
         renderAll();
         updateAuthUI();
-        return { success: true, msg: "Account created and cloud synced!" };
+        return { success: true, msg: "Account created and online cloud synced!" };
     },
 
     login(username, password) {
@@ -772,14 +873,16 @@ const CloudSync = {
             state = fresh;
         }
 
+        AntiCheat.signState(state);
         saveGame();
         renderAll();
         updateAuthUI();
-        return { success: true, msg: "Welcome back! Cloud progress loaded." };
+        return { success: true, msg: "Welcome back! Online cloud progress loaded." };
     },
 
     logout() {
         state = freshState();
+        AntiCheat.signState(state);
         saveGame();
         renderAll();
         updateAuthUI();
@@ -795,6 +898,7 @@ const CloudSync = {
             accs[key].saveData = JSON.stringify(state);
             accs[key].updatedAt = Date.now();
             this.saveAccounts(accs);
+            pushOnlineGlobalAccount(state.accountUser, accs[key]);
         }
     }
 };
@@ -1009,7 +1113,8 @@ function renderSettings() {
 }
 
 function updateCoinDisplay() {
-    setText("coinDisplay", state.coins);
+    AntiCheat.validateState(state);
+    setText("coinDisplay", (Number(state.coins) || 0).toLocaleString());
 }
 
 function renderHero() {
@@ -1359,38 +1464,79 @@ function showCardResult(card, duplicate, isFirstDiscovery) {
    INTERACTIVE 3D CARD INSPECTOR
    ========================================================= */
 
+let is3DCardFlipped = false;
+let card3DRotX = 0;
+let card3DRotY = 0;
+
 function init3DInspector() {
     const stage = document.getElementById("card3DStage");
-    const card = document.getElementById("card3DCard");
+    const flipper = document.getElementById("card3DFlipper");
     const shine = document.getElementById("card3DShine");
-    if (!stage || !card) return;
+    if (!stage || !flipper) return;
 
-    function handleMove(clientX, clientY) {
-        const rect = stage.getBoundingClientRect();
-        const x = (clientX - rect.left) / rect.width - 0.5;
-        const y = (clientY - rect.top) / rect.height - 0.5;
+    let isDragging = false;
+    let startX = 0, startY = 0;
 
-        const rotX = -y * 32;
-        const rotY = x * 32;
-
-        card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.05, 1.05, 1.05)`;
-        if (shine) {
-            shine.style.opacity = Math.min(0.9, Math.abs(x) + Math.abs(y) + 0.3);
-            shine.style.transform = `translate(${x * 100}px, ${y * 100}px) rotate(${rotY * 2}deg)`;
-        }
+    function applyTransform() {
+        const baseFlip = is3DCardFlipped ? 180 : 0;
+        flipper.style.transform = `rotateX(${card3DRotX}deg) rotateY(${card3DRotY + baseFlip}deg) scale3d(1.04, 1.04, 1.04)`;
     }
 
-    stage.addEventListener("mousemove", (e) => handleMove(e.clientX, e.clientY));
-    stage.addEventListener("mouseleave", () => {
-        card.style.transform = "rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
-        if (shine) shine.style.opacity = 0.5;
+    stage.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
     });
 
-    stage.addEventListener("touchmove", (e) => {
-        if (e.touches.length > 0) {
-            handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        card3DRotY += dx * 0.7;
+        card3DRotX = Math.max(-60, Math.min(60, card3DRotX - dy * 0.7));
+        applyTransform();
+    });
+
+    window.addEventListener("mouseup", () => {
+        isDragging = false;
+    });
+
+    stage.addEventListener("touchstart", (e) => {
+        if (e.touches.length) {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
         }
     }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+        if (!isDragging || !e.touches.length) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+
+        card3DRotY += dx * 0.8;
+        card3DRotX = Math.max(-60, Math.min(60, card3DRotX - dy * 0.8));
+        applyTransform();
+    }, { passive: true });
+
+    window.addEventListener("touchend", () => {
+        isDragging = false;
+    });
+}
+
+function toggle3DCardFlip() {
+    is3DCardFlipped = !is3DCardFlipped;
+    const flipper = document.getElementById("card3DFlipper");
+    if (flipper) {
+        const baseFlip = is3DCardFlipped ? 180 : 0;
+        flipper.style.transform = `rotateX(${card3DRotX}deg) rotateY(${card3DRotY + baseFlip}deg) scale3d(1.04, 1.04, 1.04)`;
+    }
+    SoundFx.click();
 }
 
 function open3DCard(identifier) {
@@ -1399,6 +1545,15 @@ function open3DCard(identifier) {
 
     const player = cardObj || pObj;
     if (!player) return;
+
+    is3DCardFlipped = false;
+    card3DRotX = 0;
+    card3DRotY = 0;
+
+    const flipper = document.getElementById("card3DFlipper");
+    if (flipper) {
+        flipper.style.transform = "rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+    }
 
     const modal = document.getElementById("card3DModal");
     const cardEl = document.getElementById("card3DCard");
@@ -1416,7 +1571,7 @@ function open3DCard(identifier) {
 
     const rClass = rarityClassName(player.rarity);
     if (cardEl) {
-        cardEl.className = `card-3d-wrapper glow-${rClass}`;
+        cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass}`;
         if (cardObj && cardObj.serialGradient) {
             cardEl.style.background = cardObj.serialGradient;
         } else {
@@ -2304,17 +2459,31 @@ function renderShop() {
     const frames = document.getElementById("frameShop");
     const backgrounds = document.getElementById("backgroundShop");
 
+    const frameIcons = {
+        default: "🛡️",
+        blue: "⚡",
+        green: "🌿",
+        purple: "👑",
+        gold: "🏆",
+        red: "🔥",
+        rainbow: "✦",
+        champion: "⚔️"
+    };
+
     if (frames) {
         frames.innerHTML = FRAMES.map(frame => {
-            const owned = state.ownedFrames.includes(frame.id);
+            const owned = (state.ownedFrames || []).includes(frame.id);
+            const icon = frameIcons[frame.id] || "🛡️";
             return `
             <div class="shop-item">
                 <div class="shop-preview ${frame.css}">
-                    <img class="shop-avatar-demo" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80" alt="Avatar">
+                    <div class="shop-preview-avatar">
+                        <span>${icon}</span>
+                    </div>
                 </div>
-                <h3>${frame.name}</h3>
+                <h3>${escapeHTML(frame.name)}</h3>
                 <p>${frame.cost === 0 ? "Free" : frame.cost + " coins"}</p>
-                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : ""}" onclick="buyFrame('${frame.id}')">
+                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyFrame('${frame.id}')">
                     ${owned ? "Owned" : "Buy Frame"}
                 </button>
             </div>
@@ -2324,13 +2493,13 @@ function renderShop() {
 
     if (backgrounds) {
         backgrounds.innerHTML = BACKGROUNDS.map(bg => {
-            const owned = state.ownedBackgrounds.includes(bg.id);
+            const owned = (state.ownedBackgrounds || []).includes(bg.id);
             return `
             <div class="shop-item">
                 <div class="shop-preview" style="background:${bg.css}"></div>
-                <h3>${bg.name}</h3>
+                <h3>${escapeHTML(bg.name)}</h3>
                 <p>${bg.cost === 0 ? "Free" : bg.cost + " coins"}</p>
-                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : ""}" onclick="buyBackground('${bg.id}')">
+                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyBackground('${bg.id}')">
                     ${owned ? "Owned" : "Buy Stadium"}
                 </button>
             </div>
@@ -2882,46 +3051,64 @@ function makeDraggable(elementId, handleId) {
    ========================================================= */
 
 function renderStatistics() {
-    const s = state.stats;
-    const totalVal = calculateCollectionValue(state.cards);
-    const data = [
-        ["Current Level", state.level, "Player Level"],
-        ["Collection Wealth", `${totalVal.toLocaleString()} 🪙`, "Total card value"],
-        ["Cards Owned", state.cards.length, "Active collection"],
-        ["Current Gold", `${state.coins.toLocaleString()} 🪙`, "Available balance"],
-        ["Playtime", formatPlaytime(s.playtime), "Total active time"],
-        ["Packs Opened", s.packsOpened, "Scouting packs opened"],
-        ["Cards Pulled", s.cardsPulled, "Lifetime cards pulled"],
-        ["Duplicates", s.duplicates, "Duplicate pulls"],
-        ["Cards Sold", s.cardsSold, "Cards recycled"],
-        ["Coins Earned", `${(s.coinsEarned || 0).toLocaleString()} 🪙`, "Lifetime earnings"],
-        ["Coins Spent", `${(s.coinsSpent || 0).toLocaleString()} 🪙`, "Lifetime spending"],
-        ["Peak Rating", `${s.highestRating || 0} OVR`, "Highest player rating"],
-        ["Best Rarity", s.highestRarity || "Common", "Peak rarity pulled"],
-        ["World Class", s.worldClass, "1 in 10,000 pulls"],
-        ["Secret", s.secret, "Secret pulls"],
-        ["Mythic", s.mythic, "Mythic pulls"],
-        ["Legendary", s.legendary, "Legendary pulls"],
-        ["Exclusive", s.exclusive, "Historic icons"],
-        ["Tournament", s.tournament, "Tournament cards"],
-        ["Rare", s.rare, "Rare cards"],
-        ["Uncommon", s.uncommon, "Uncommon cards"],
-        ["Common", s.common, "Common cards"]
-    ];
+    try {
+        const s = state.stats || {};
+        const totalVal = calculateCollectionValue(state.cards || []);
+        const data = [
+            ["Current Level", state.level || 1, "Player Level"],
+            ["Collection Wealth", `${totalVal.toLocaleString()} 🪙`, "Total card value"],
+            ["Cards Owned", (state.cards || []).length, "Active collection"],
+            ["Current Gold", `${(state.coins || 0).toLocaleString()} 🪙`, "Available balance"],
+            ["Playtime", formatPlaytime(s.playtime || 0), "Total active time"],
+            ["Packs Opened", s.packsOpened || 0, "Scouting packs opened"],
+            ["Cards Pulled", s.cardsPulled || 0, "Lifetime cards pulled"],
+            ["Duplicates", s.duplicates || 0, "Duplicate pulls"],
+            ["Cards Sold", s.cardsSold || 0, "Cards recycled"],
+            ["Coins Earned", `${(s.coinsEarned || 0).toLocaleString()} 🪙`, "Lifetime earnings"],
+            ["Coins Spent", `${(s.coinsSpent || 0).toLocaleString()} 🪙`, "Lifetime spending"],
+            ["Peak Rating", `${s.highestRating || 0} OVR`, "Highest player rating"],
+            ["Best Rarity", s.highestRarity || "Common", "Peak rarity pulled"],
+            ["World Class", s.worldClass || 0, "1 in 10,000 pulls"],
+            ["Secret", s.secret || 0, "Secret pulls"],
+            ["Mythic", s.mythic || 0, "Mythic pulls"],
+            ["Legendary", s.legendary || 0, "Legendary pulls"],
+            ["Exclusive", s.exclusive || 0, "Historic icons"],
+            ["Tournament", s.tournament || 0, "Tournament cards"],
+            ["Rare", s.rare || 0, "Rare cards"],
+            ["Uncommon", s.uncommon || 0, "Uncommon cards"],
+            ["Common", s.common || 0, "Common cards"]
+        ];
 
-    const grid = document.getElementById("statisticsGrid");
-    if (grid) {
-        grid.innerHTML = data.map(x => `
-            <div class="stat-box">
-                <span>${x[0]}</span>
-                <b>${x[1]}</b>
-                <p>${x[2]}</p>
-            </div>
-        `).join("");
+        const grid = document.getElementById("statisticsGrid");
+        if (grid) {
+            grid.innerHTML = data.map(x => `
+                <div class="stat-box">
+                    <span>${escapeHTML(String(x[0]))}</span>
+                    <b>${escapeHTML(String(x[1]))}</b>
+                    <p>${escapeHTML(String(x[2]))}</p>
+                </div>
+            `).join("");
+        }
+    } catch(err) {
+        console.error("renderStatistics error", err);
     }
 }
 
-function renderLeaderboard() {
+async function renderLeaderboard() {
+    const container = document.getElementById("globalLeaderboard");
+    if (!container) return;
+
+    // Fetch latest online cross-device accounts asynchronously
+    fetchOnlineGlobalAccounts().then(() => {
+        populateLeaderboardRows();
+    }).catch(() => {
+        populateLeaderboardRows();
+    });
+
+    populateLeaderboardRows();
+}
+
+function populateLeaderboardRows() {
     const container = document.getElementById("globalLeaderboard");
     if (!container) return;
 
@@ -2952,8 +3139,8 @@ function renderLeaderboard() {
             name: myName,
             gold: state.coins,
             value: myVal,
-            cards: state.cards.length,
-            level: state.level
+            cards: (state.cards || []).length,
+            level: state.level || 1
         });
     }
 
@@ -2964,7 +3151,7 @@ function renderLeaderboard() {
     }
 
     if (!rows.length) {
-        container.innerHTML = `<div class="empty-state">No players found yet. Create a Cloud Account to join!</div>`;
+        container.innerHTML = `<div class="empty-state">No players found yet. Create an Online Cloud Account to join!</div>`;
         return;
     }
 
@@ -2987,24 +3174,30 @@ function renderLeaderboard() {
 }
 
 /* =========================================================
-   ECONOMY & XP
+   ECONOMY & XP (ANTI-CHEAT SECURED)
    ========================================================= */
 
 function addCoins(amount) {
-    state.coins += amount;
-    state.stats.coinsEarned += amount;
-    progressMission("coins", amount);
+    AntiCheat.validateState(state);
+    const amt = Math.max(0, Math.floor(Number(amount) || 0));
+    state.coins = (Number(state.coins) || 0) + amt;
+    state.stats.coinsEarned = (Number(state.stats.coinsEarned) || 0) + amt;
+    AntiCheat.signState(state);
+    progressMission("coins", amt);
     updateCoinDisplay();
     saveGame();
 }
 
 function spendCoins(amount) {
-    if (state.coins < amount) {
+    AntiCheat.validateState(state);
+    const amt = Math.max(0, Math.floor(Number(amount) || 0));
+    if ((Number(state.coins) || 0) < amt) {
         toast("Not enough coins.");
         return false;
     }
-    state.coins -= amount;
-    state.stats.coinsSpent += amount;
+    state.coins = (Number(state.coins) || 0) - amt;
+    state.stats.coinsSpent = (Number(state.stats.coinsSpent) || 0) + amt;
+    AntiCheat.signState(state);
     updateCoinDisplay();
     saveGame();
     return true;
@@ -3022,6 +3215,7 @@ function addXP(amount) {
         toast(`🎉 Level Up! Level ${state.level}!`);
     }
 
+    AntiCheat.signState(state);
     renderHero();
     renderProfile();
     saveGame();
@@ -3044,7 +3238,8 @@ function changeName() {
 
 function resetGame() {
     if (!confirm("Are you sure? This permanently deletes your progress.")) return;
-    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(CURRENT_SAVE_KEY);
+    PREVIOUS_SAVE_KEYS.forEach(k => localStorage.removeItem(k));
     location.reload();
 }
 
