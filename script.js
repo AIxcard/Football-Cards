@@ -1717,7 +1717,8 @@ function initPackSwipeGesture(onTear) {
     function handleTouchMove(e) {
         if (!isDragging || packTornExecuted || !e.touches || !e.touches.length) return;
         const deltaX = e.touches[0].clientX - startX;
-        if (Math.abs(deltaX) >= 60) {
+        const deltaY = e.touches[0].clientY - startY;
+        if (Math.abs(deltaX) >= 35 || Math.abs(deltaY) >= 40) {
             isDragging = false;
             executeTear();
         }
@@ -1736,7 +1737,8 @@ function initPackSwipeGesture(onTear) {
     function handleMouseMove(e) {
         if (!isDragging || packTornExecuted) return;
         const deltaX = e.clientX - startX;
-        if (Math.abs(deltaX) >= 60) {
+        const deltaY = e.clientY - startY;
+        if (Math.abs(deltaX) >= 35 || Math.abs(deltaY) >= 40) {
             isDragging = false;
             executeTear();
         }
@@ -1753,7 +1755,6 @@ function initPackSwipeGesture(onTear) {
         cap.ontouchmove = handleTouchMove;
         cap.ontouchend = handleTouchEnd;
         cap.onmousedown = handleMouseDown;
-        // Click fallback on the cap triggers rip
         cap.onclick = (e) => {
             e.stopPropagation();
             executeTear();
