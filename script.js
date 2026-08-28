@@ -837,6 +837,162 @@ function updatePlaytime() {
 }
 
 /* =========================================================
+   SERVER-SIDE BACKEND & REST API CLIENT
+   ========================================================= */
+
+const ServerAPI = {
+    BASE_URL: "",
+    token: localStorage.getItem("football_cards_token") || "",
+
+    setToken(token) {
+        this.token = token || "";
+        if (token) localStorage.setItem("football_cards_token", token);
+        else localStorage.removeItem("football_cards_token");
+    },
+
+    getHeaders() {
+        const headers = { "Content-Type": "application/json" };
+        if (this.token) headers["Authorization"] = `Bearer ${this.token}`;
+        return headers;
+    },
+
+    async signup(username, password) {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/auth/signup`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                this.setToken(data.token);
+                return { success: true, data: data.saveData, msg: "Account created and registered on server!" };
+            }
+            return { success: false, msg: data.error || "Signup failed on server." };
+        } catch (e) {
+            return null; // Fallback to local / mock
+        }
+    },
+
+    async login(username, password) {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                this.setToken(data.token);
+                return { success: true, data: data.saveData, msg: "Welcome back! Server save loaded." };
+            }
+            return { success: false, msg: data.error || "Login failed on server." };
+        } catch (e) {
+            return null; // Fallback to local / mock
+        }
+    },
+
+    async saveGame(username, stateObj) {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/save`, {
+                method: "POST",
+                headers: this.getHeaders(),
+                body: JSON.stringify({ username, saveData: stateObj })
+            });
+            return res.ok;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    async loadGame(username) {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/save?username=${encodeURIComponent(username)}`, {
+                headers: this.getHeaders()
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return data.saveData || null;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async fetchLeaderboard() {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/leaderboard`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.leaderboard)) {
+                    const map = {};
+                    data.leaderboard.forEach(entry => {
+                        map[(entry.username || entry.name || "").toLowerCase()] = entry;
+                    });
+                    return map;
+                }
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async fetchUserProfile(username) {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/user/${encodeURIComponent(username)}`);
+            if (res.ok) {
+                const data = await res.json();
+                return data.profile || null;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async fetchTrades() {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/trades`);
+            if (res.ok) {
+                const data = await res.json();
+                return data.trades || [];
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async createTrade(tradePayload) {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/trades/create`, {
+                method: "POST",
+                headers: this.getHeaders(),
+                body: JSON.stringify(tradePayload)
+            });
+            return res.ok;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    async acceptTrade(tradeId, buyerUsername, offeredCard) {
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/trades/accept`, {
+                method: "POST",
+                headers: this.getHeaders(),
+                body: JSON.stringify({ tradeId, buyerUsername, offeredCard })
+            });
+            return res.ok;
+        } catch (e) {
+            return false;
+        }
+    }
+};
+
+/* =========================================================
    GLOBAL MULTI-DEVICE CLOUD REST SYNC & AUTH
    ========================================================= */
 
@@ -845,6 +1001,9 @@ const GlobalCloudRest = {
     USERS_URL: "https://api.restful-api.dev/objects/ff8081819ff5b11001a047e82a2c46e3",
 
     async fetchLeaderboard() {
+        const serverLb = await ServerAPI.fetchLeaderboard();
+        if (serverLb) return serverLb;
+
         try {
             const res = await fetch(this.LEADERBOARD_URL);
             if (!res.ok) return null;
@@ -857,6 +1016,8 @@ const GlobalCloudRest = {
 
     async pushLeaderboard(username, pData) {
         if (!username || !pData) return;
+        ServerAPI.saveGame(username, pData);
+
         try {
             let current = await this.fetchLeaderboard() || {};
             current[username.toLowerCase()] = {
@@ -894,6 +1055,9 @@ const GlobalCloudRest = {
 
     async fetchUser(username) {
         if (!username) return null;
+        const serverProfile = await ServerAPI.fetchUserProfile(username);
+        if (serverProfile) return serverProfile;
+
         try {
             const res = await fetch(this.USERS_URL);
             if (!res.ok) return null;
@@ -1039,7 +1203,7 @@ async function handleChangePassword() {
     confirmInput.value = "";
     saveGame();
     SoundFx.levelUp();
-    toast("✓ Account password updated successfully!");
+    toast("✓ Account password updated successfully on server!");
 }
 
 let onlineAccountsCache = {};
@@ -1085,17 +1249,37 @@ const CloudSync = {
         try { localStorage.setItem(CLOUD_TRADES_KEY, JSON.stringify(trades)); } catch (e) {}
     },
 
-    signUp(username, password) {
+    async signUp(username, password) {
         const u = username.trim();
         const p = password.trim();
         if (u.length < 2) return { success: false, msg: "Username must be at least 2 characters." };
         if (p.length < 3) return { success: false, msg: "Password must be at least 3 characters." };
 
+        // 1. Attempt Server-Side Signup First
+        const serverRes = await ServerAPI.signup(u, p);
+        if (serverRes && serverRes.success && serverRes.data) {
+            state = {
+                ...freshState(),
+                ...serverRes.data,
+                accountUser: u,
+                accountPass: p,
+                name: u
+            };
+            AntiCheat.signState(state);
+            saveGame();
+            renderAll();
+            updateAuthUI();
+            checkAdminStatus();
+            return { success: true, msg: "Account registered on server-side database!" };
+        } else if (serverRes && !serverRes.success) {
+            return { success: false, msg: serverRes.msg };
+        }
+
+        // 2. Offline / Local fallback
         const accs = this.getAccounts();
         const key = u.toLowerCase();
         if (accs[key]) return { success: false, msg: "Username already taken." };
 
-        // Fresh dedicated save for the newly created account
         const fresh = freshState();
         fresh.accountUser = u;
         fresh.accountPass = p;
@@ -1129,11 +1313,34 @@ const CloudSync = {
     async login(username, password) {
         const u = username.trim();
         const p = password.trim();
+
+        // 1. Attempt Server-Side Login First
+        const serverRes = await ServerAPI.login(u, p);
+        if (serverRes && serverRes.success && serverRes.data) {
+            state = {
+                ...freshState(),
+                ...serverRes.data,
+                accountUser: u,
+                accountPass: p,
+                name: serverRes.data.name || u,
+                cards: Array.isArray(serverRes.data.cards) ? serverRes.data.cards : []
+            };
+            AntiCheat.signState(state);
+            saveGame();
+            renderAll();
+            updateAuthUI();
+            checkAdminStatus();
+            checkBanStatus();
+            return { success: true, msg: "Welcome back! Server-side game progress loaded." };
+        } else if (serverRes && !serverRes.success) {
+            return { success: false, msg: serverRes.msg };
+        }
+
+        // 2. Offline / Local fallback
         let accs = this.getAccounts();
         const key = u.toLowerCase();
         let acc = accs[key];
 
-        // Check global cloud database if not found locally
         if (!acc) {
             try {
                 const cloudUser = await GlobalCloudRest.fetchUser(u);
@@ -1185,6 +1392,7 @@ const CloudSync = {
     },
 
     logout() {
+        ServerAPI.setToken("");
         state = freshState();
         AntiCheat.signState(state);
         saveGame();
@@ -1199,6 +1407,7 @@ const CloudSync = {
 
     sync() {
         if (!state.accountUser) return;
+        ServerAPI.saveGame(state.accountUser, state);
         const accs = this.getAccounts();
         const key = state.accountUser.toLowerCase();
         if (accs[key]) {
