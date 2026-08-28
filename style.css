@@ -3051,7 +3051,7 @@ body.modal-open, html.modal-open {
     justify-content: center !important;
     position: relative !important;
     perspective: 1600px !important;
-    width: auto !important;
+    width: 100% !important;
     max-width: 100vw !important;
     height: auto !important;
     padding: 20px 0 !important;
@@ -3135,32 +3135,6 @@ body.modal-open, html.modal-open {
     pointer-events: none !important;
 }
 
-.pack-flip-hint-btn {
-    position: absolute !important;
-    bottom: -38px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    background: rgba(11, 22, 38, 0.95) !important;
-    border: 1px solid var(--gold) !important;
-    color: var(--gold) !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    padding: 5px 12px !important;
-    border-radius: 16px !important;
-    cursor: pointer !important;
-    z-index: 100 !important;
-    white-space: nowrap !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
-    transition: transform 0.2s ease, background 0.2s ease !important;
-    pointer-events: auto !important;
-}
-
-.pack-flip-hint-btn:hover {
-    transform: translateX(-50%) scale(1.08) !important;
-    background: var(--gold) !important;
-    color: #000000 !important;
-}
-
 @keyframes packFloatRumble {
     0% { transform: translateY(0px) rotateX(2deg) rotateY(-2deg); }
     100% { transform: translateY(-8px) rotateX(-2deg) rotateY(2deg); }
@@ -3240,12 +3214,27 @@ body.modal-open, html.modal-open {
     z-index: 1 !important;
 }
 
-/* RIP ANIMATION */
+/* RIP & TEAR PHYSICAL ANIMATION */
 .pack-torn {
-    transform: translateY(-50px) scale(0.9) !important;
-    opacity: 0 !important;
-    transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease 0.1s !important;
     pointer-events: none !important;
+    animation: none !important;
+}
+
+.pack-torn .pack-top-crimp-cap {
+    transform: translateY(-90px) rotate(-16deg) scale(0.9) !important;
+    opacity: 0 !important;
+    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease 0.15s !important;
+}
+
+.pack-torn .pack-body-content {
+    transform: translateY(35px) scale(0.95) !important;
+    opacity: 0 !important;
+    transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s, opacity 0.45s ease 0.15s !important;
+}
+
+.pack-torn .pack-3d-inner {
+    box-shadow: 0 0 100px rgba(255, 215, 0, 1), 0 0 160px var(--foil-glow) !important;
+    transition: box-shadow 0.4s ease !important;
 }
 
 /* =========================================================
