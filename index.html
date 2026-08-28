@@ -187,42 +187,99 @@
     </div>
 </div>
 
-<!-- PACK OPENING ANIMATION OVERLAY WITH INTERACTIVE SWIPE TO OPEN -->
+<!-- REALISTIC 3D PHYSICAL BOOSTER PACK RIP OVERLAY -->
 <div id="packOpeningOverlay" class="modal hidden pack-opening-modal">
-    <div class="pack-anim-wrapper">
-        <div class="pack-burst-rays" id="packBurstRays"></div>
-        <div class="pack-anim-glow" id="packAnimGlow"></div>
-        <div class="pack-anim-box" id="packAnimBox">
-            <div class="pack-foil-shimmer"></div>
-            <div class="pack-anim-icon" id="packAnimIcon">📦</div>
-            <h2 id="packAnimTitle">SCOUTING PACK...</h2>
-            <p id="packAnimSubtitle" style="font-size:13px;color:var(--muted);margin-bottom:12px;">Swipe foil to reveal your transfer market cards!</p>
-            
-            <!-- INTERACTIVE SWIPE TO RIP COMPONENT -->
-            <div class="pack-swipe-container" id="packSwipeContainer">
-                <div class="pack-swipe-track" id="packSwipeTrack">
-                    <span class="pack-swipe-hint" id="packSwipeHint">👉 SWIPE TO RIP PACK ➔</span>
-                    <div class="pack-swipe-thumb" id="packSwipeThumb">⚡</div>
+    <div class="pack-stage-backdrop" id="packStageBackdrop"></div>
+    <div class="pack-burst-rays" id="packBurstRays"></div>
+    
+    <div class="realistic-pack-viewport" id="realisticPackViewport">
+        <!-- THE PHYSICAL 3D BOOSTER PACK -->
+        <div class="realistic-booster-pack starter-foil" id="realisticBoosterPack">
+            <!-- INNER CARDS STACK READY TO SLIDE UP -->
+            <div class="pack-card-insert" id="packCardInsert">
+                <div class="card-insert-face card-insert-back">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-crest">⚽</div>
                 </div>
             </div>
 
-            <div class="pack-rip-track" style="margin-top:12px;">
-                <div class="pack-rip-bar" id="packRipBar"></div>
+            <!-- SEVERABLE TOP CRIMPED CAP -->
+            <div class="pack-foil-cap" id="packFoilCap">
+                <div class="pack-crimp-cording"></div>
+                <div class="pack-crimp-seal-top"></div>
+                <div class="pack-cap-label" id="packCapLabel">TRANSFER MARKET</div>
             </div>
-            
-            <button class="ghost-btn" style="margin-top:14px;padding:6px 18px;font-size:12px;" onclick="triggerInstantPackTear()">Instant Reveal ⚡</button>
+
+            <!-- GLOWING INTERACTIVE TEAR LINE / SWIPE STRIP -->
+            <div class="pack-tear-line" id="packTearLine">
+                <div class="tear-notch left-notch"></div>
+                <div class="tear-laser-perforation" id="tearLaserPerforation"></div>
+                <div class="tear-swipe-track" id="tearSwipeTrack">
+                    <span class="tear-swipe-prompt" id="tearSwipePrompt">👉 SWIPE ACROSS TO TEAR ➔</span>
+                    <div class="tear-swipe-blade" id="tearSwipeBlade">⚡</div>
+                </div>
+                <div class="tear-notch right-notch"></div>
+                <div class="pack-tear-sparks" id="packTearSparks"></div>
+            </div>
+
+            <!-- LOWER METALLIC FOIL SLEEVE BODY -->
+            <div class="pack-foil-body" id="packFoilBody">
+                <div class="foil-specular-sheen"></div>
+                <div class="pack-brand-header">
+                    <span class="brand-sub">OFFICIAL LICENSED TRADING CARDS</span>
+                    <h2 class="pack-foil-title" id="packFoilTitle">PREMIUM PACK</h2>
+                </div>
+
+                <div class="pack-foil-emblem-wrap">
+                    <div class="pack-foil-emblem-glow"></div>
+                    <div class="pack-foil-emblem" id="packFoilEmblem">⭐</div>
+                </div>
+
+                <div class="pack-foil-meta">
+                    <span class="pack-edition-pill" id="packEditionPill">SERIES 2026</span>
+                    <span class="pack-cards-count-pill" id="packPullCountPill">1 CARD TRANSFER</span>
+                </div>
+
+                <div class="pack-crimp-seal-bottom"></div>
+            </div>
         </div>
+
+        <p class="pack-rip-instruction" id="packRipInstruction">Swipe across the top crimp seal to tear open</p>
+    </div>
+</div>
+
+<!-- MYTHIC RARITY DRAMATIC BURST CUTSCENE -->
+<div id="mythicOverlay" class="modal hidden sols-rng-overlay mythic-cutscene-overlay">
+    <div class="sols-blackout"></div>
+    <div class="mythic-magma-rift"></div>
+    <div class="mythic-fire-auras"></div>
+    <div class="world-card sols-card mythic-sols-card">
+        <div class="mythic-fire-crest">🔥 MYTHIC STAR PHENOMENON 🔥</div>
+        <div class="mythic-card-photo-wrap" style="position:relative;margin:12px auto 6px;width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid #ff4d4d;box-shadow:0 0 35px rgba(255,77,77,0.85);">
+            <img id="mythicPlayerPhoto" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" style="width:100%;height:100%;object-fit:cover;" alt="Mythic Player" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+        </div>
+        <div class="world-glow sols-icon" id="mythicIcon" style="font-size:32px;margin-top:-20px;position:relative;z-index:5;">🔥</div>
+        <p id="mythicRarityTag" class="rarity mythic sols-rarity-tag">★ 1 IN 50 MYTHIC CLASS ★</p>
+        <h1 id="mythicPlayerName" class="sols-player-name">PLAYER</h1>
+        <p id="mythicPlayerQuote" class="sols-player-quote">"World-Class Dominance · Elite Superstar"</p>
+        <p id="mythicPlayerMeta" class="sols-player-meta"></p>
+        <button id="mythicContinue" class="primary-btn sols-btn mythic-btn" onclick="closeMythicCutscene()">CLAIM MYTHIC CARD</button>
     </div>
 </div>
 
 <!-- SECRET RARITY SOL'S RNG CINEMATIC CUTSCENE -->
 <div id="secretOverlay" class="modal hidden sols-rng-overlay secret-cutscene-overlay">
     <div class="sols-blackout"></div>
+    <div class="secret-celestial-rift"></div>
     <div class="secret-lightning-flash"></div>
+    <div class="secret-starfield"></div>
     <div class="world-card sols-card secret-sols-card">
         <div class="secret-glitch-badge">✦ SECRET PHENOMENON ✦</div>
-        <div class="world-glow sols-icon" id="secretIcon">💎</div>
-        <p id="secretRarityTag" class="rarity secret sols-rarity-tag">★ 1 IN 500 SECRET PULL ★</p>
+        <div class="secret-card-photo-wrap" style="position:relative;margin:12px auto 6px;width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid #38bdf8;box-shadow:0 0 35px rgba(56,189,248,0.85);">
+            <img id="secretPlayerPhoto" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" style="width:100%;height:100%;object-fit:cover;" alt="Secret Player" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+        </div>
+        <div class="world-glow sols-icon" id="secretIcon" style="font-size:32px;margin-top:-20px;position:relative;z-index:5;">💎</div>
+        <p id="secretRarityTag" class="rarity secret sols-rarity-tag">★ 1 IN 500 SECRET PHENOMENON ★</p>
         <h1 id="secretPlayerName" class="sols-player-name">PLAYER</h1>
         <p id="secretPlayerQuote" class="sols-player-quote">"Unstoppable Force · Elite Mastermind"</p>
         <p id="secretPlayerMeta" class="sols-player-meta"></p>
@@ -930,16 +987,6 @@
             </div>
 
             <button class="primary-btn" style="margin-top:6px;" onclick="handleChangePassword()">Update Password</button>
-        </div>
-    </div>
-
-    <!-- ⚡ ANIMATION & PACK PREFERENCES -->
-    <div class="panel">
-        <h2>⚡ Animation Preferences</h2>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Control pack animations &amp; transition speeds.</p>
-        <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);padding:12px 16px;border-radius:12px;border:1px solid var(--border);">
-            <input type="checkbox" id="skipPackAnimToggle" style="width:20px;height:20px;accent-color:var(--green);cursor:pointer;" onchange="toggleSkipPackAnimation(this.checked)">
-            <label for="skipPackAnimToggle" style="margin:0;cursor:pointer;font-weight:700;">⚡ Fast Pack Opening (Skip pack shaking animation)</label>
         </div>
     </div>
 
