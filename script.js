@@ -308,118 +308,118 @@ const SoundFx = {
 
 const PLAYERS = [
 // --- TOURNAMENT REWARD ---
-{ name: "Emanuel", rating: 99, pos: "CAM", rarity: "Tournament", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
+{ name: "Emanuel", rating: 99, pos: "CAM", rarity: "Tournament", image: "player_temp.png" },
 
 // --- WORLD CLASS (GOATS) ---
-{ name: "Lionel Messi", rating: 97, pos: "RW", rarity: "World Class", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Lionel Messi", rating: 97, pos: "RW", rarity: "World Class", image: "player_temp.png" },
+{ name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "player_temp.png" },
 
 // --- SECRET ---
-{ name: "Lamine Yamal", rating: 96, pos: "RW", rarity: "Secret", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Kylian Mbappé", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Erling Haaland", rating: 96, pos: "ST", rarity: "Secret", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Lamine Yamal", rating: 96, pos: "RW", rarity: "Secret", image: "player_temp.png" },
+{ name: "Kylian Mbappé", rating: 96, pos: "ST", rarity: "Secret", image: "player_temp.png" },
+{ name: "Erling Haaland", rating: 96, pos: "ST", rarity: "Secret", image: "player_temp.png" },
 
 // --- MYTHIC ---
-{ name: "Neymar Jr", rating: 95, pos: "LW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Kevin De Bruyne", rating: 94, pos: "CM", rarity: "Mythic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Vinícius Júnior", rating: 94, pos: "LW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Jude Bellingham", rating: 93, pos: "CM", rarity: "Mythic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Mohamed Salah", rating: 93, pos: "RW", rarity: "Mythic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Robert Lewandowski", rating: 93, pos: "ST", rarity: "Mythic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Harry Kane", rating: 93, pos: "ST", rarity: "Mythic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Rodri", rating: 93, pos: "CDM", rarity: "Mythic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Virgil van Dijk", rating: 91, pos: "CB", rarity: "Mythic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Thibaut Courtois", rating: 91, pos: "GK", rarity: "Mythic", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Alisson", rating: 90, pos: "GK", rarity: "Mythic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Marc-André ter Stegen", rating: 90, pos: "GK", rarity: "Mythic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
+{ name: "Neymar Jr", rating: 95, pos: "LW", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Kevin De Bruyne", rating: 94, pos: "CM", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Vinícius Júnior", rating: 94, pos: "LW", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Jude Bellingham", rating: 93, pos: "CM", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Mohamed Salah", rating: 93, pos: "RW", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Robert Lewandowski", rating: 93, pos: "ST", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Harry Kane", rating: 93, pos: "ST", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Rodri", rating: 93, pos: "CDM", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Virgil van Dijk", rating: 91, pos: "CB", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Thibaut Courtois", rating: 91, pos: "GK", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Alisson", rating: 90, pos: "GK", rarity: "Mythic", image: "player_temp.png" },
+{ name: "Marc-André ter Stegen", rating: 90, pos: "GK", rarity: "Mythic", image: "player_temp.png" },
 
 // --- LEGENDARY ---
-{ name: "Pedri", rating: 91, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Bukayo Saka", rating: 89, pos: "RW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Declan Rice", rating: 89, pos: "CDM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Florian Wirtz", rating: 89, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Cole Palmer", rating: 88, pos: "RW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Martin Ødegaard", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Bernardo Silva", rating: 88, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Antoine Griezmann", rating: 88, pos: "ST", rarity: "Legendary", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Phil Foden", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Federico Valverde", rating: 88, pos: "CM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Lautaro Martínez", rating: 88, pos: "ST", rarity: "Legendary", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Rúben Dias", rating: 89, pos: "CB", rarity: "Legendary", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "William Saliba", rating: 88, pos: "CB", rarity: "Legendary", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Jamal Musiala", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Son Heung-min", rating: 88, pos: "LW", rarity: "Legendary", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Bruno Fernandes", rating: 88, pos: "CAM", rarity: "Legendary", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Jan Oblak", rating: 88, pos: "GK", rarity: "Legendary", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Ederson", rating: 88, pos: "GK", rarity: "Legendary", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Mike Maignan", rating: 88, pos: "GK", rarity: "Legendary", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Pedri", rating: 91, pos: "CM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Bukayo Saka", rating: 89, pos: "RW", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Declan Rice", rating: 89, pos: "CDM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Florian Wirtz", rating: 89, pos: "CAM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Cole Palmer", rating: 88, pos: "RW", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Martin Ødegaard", rating: 88, pos: "CAM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Bernardo Silva", rating: 88, pos: "CM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Antoine Griezmann", rating: 88, pos: "ST", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Phil Foden", rating: 88, pos: "CAM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Federico Valverde", rating: 88, pos: "CM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Lautaro Martínez", rating: 88, pos: "ST", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Rúben Dias", rating: 89, pos: "CB", rarity: "Legendary", image: "player_temp.png" },
+{ name: "William Saliba", rating: 88, pos: "CB", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Jamal Musiala", rating: 88, pos: "CAM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Son Heung-min", rating: 88, pos: "LW", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Bruno Fernandes", rating: 88, pos: "CAM", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Jan Oblak", rating: 88, pos: "GK", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Ederson", rating: 88, pos: "GK", rarity: "Legendary", image: "player_temp.png" },
+{ name: "Mike Maignan", rating: 88, pos: "GK", rarity: "Legendary", image: "player_temp.png" },
 
 // --- EPIC ---
-{ name: "Joshua Kimmich", rating: 87, pos: "CDM", rarity: "Epic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Rafael Leão", rating: 87, pos: "LW", rarity: "Epic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Nicolò Barella", rating: 87, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Trent Alexander-Arnold", rating: 86, pos: "RB", rarity: "Epic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Achraf Hakimi", rating: 86, pos: "RB", rarity: "Epic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Theo Hernández", rating: 86, pos: "LB", rarity: "Epic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Alphonso Davies", rating: 85, pos: "LB", rarity: "Epic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Gabriel Magalhães", rating: 86, pos: "CB", rarity: "Epic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Alessandro Bastoni", rating: 86, pos: "CB", rarity: "Epic", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Gavi", rating: 85, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Eduardo Camavinga", rating: 85, pos: "CM", rarity: "Epic", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Aurélien Tchouaméni", rating: 85, pos: "CDM", rarity: "Epic", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Khvicha Kvaratskhelia", rating: 86, pos: "LW", rarity: "Epic", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Victor Osimhen", rating: 87, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Alexander Isak", rating: 85, pos: "ST", rarity: "Epic", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Emiliano Martínez", rating: 86, pos: "GK", rarity: "Epic", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Gianluigi Donnarumma", rating: 87, pos: "GK", rarity: "Epic", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Gregor Kobel", rating: 86, pos: "GK", rarity: "Epic", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
+{ name: "Joshua Kimmich", rating: 87, pos: "CDM", rarity: "Epic", image: "player_temp.png" },
+{ name: "Rafael Leão", rating: 87, pos: "LW", rarity: "Epic", image: "player_temp.png" },
+{ name: "Nicolò Barella", rating: 87, pos: "CM", rarity: "Epic", image: "player_temp.png" },
+{ name: "Trent Alexander-Arnold", rating: 86, pos: "RB", rarity: "Epic", image: "player_temp.png" },
+{ name: "Achraf Hakimi", rating: 86, pos: "RB", rarity: "Epic", image: "player_temp.png" },
+{ name: "Theo Hernández", rating: 86, pos: "LB", rarity: "Epic", image: "player_temp.png" },
+{ name: "Alphonso Davies", rating: 85, pos: "LB", rarity: "Epic", image: "player_temp.png" },
+{ name: "Gabriel Magalhães", rating: 86, pos: "CB", rarity: "Epic", image: "player_temp.png" },
+{ name: "Alessandro Bastoni", rating: 86, pos: "CB", rarity: "Epic", image: "player_temp.png" },
+{ name: "Gavi", rating: 85, pos: "CM", rarity: "Epic", image: "player_temp.png" },
+{ name: "Eduardo Camavinga", rating: 85, pos: "CM", rarity: "Epic", image: "player_temp.png" },
+{ name: "Aurélien Tchouaméni", rating: 85, pos: "CDM", rarity: "Epic", image: "player_temp.png" },
+{ name: "Khvicha Kvaratskhelia", rating: 86, pos: "LW", rarity: "Epic", image: "player_temp.png" },
+{ name: "Victor Osimhen", rating: 87, pos: "ST", rarity: "Epic", image: "player_temp.png" },
+{ name: "Alexander Isak", rating: 85, pos: "ST", rarity: "Epic", image: "player_temp.png" },
+{ name: "Emiliano Martínez", rating: 86, pos: "GK", rarity: "Epic", image: "player_temp.png" },
+{ name: "Gianluigi Donnarumma", rating: 87, pos: "GK", rarity: "Epic", image: "player_temp.png" },
+{ name: "Gregor Kobel", rating: 86, pos: "GK", rarity: "Epic", image: "player_temp.png" },
 
 // --- RARE ---
-{ name: "Anthony Gordon", rating: 83, pos: "LW", rarity: "Rare", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Pedro Porro", rating: 83, pos: "RB", rarity: "Rare", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Micky van de Ven", rating: 83, pos: "CB", rarity: "Rare", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Dominik Szoboszlai", rating: 83, pos: "CM", rarity: "Rare", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Alexis Mac Allister", rating: 84, pos: "CM", rarity: "Rare", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Lucas Paquetá", rating: 82, pos: "CAM", rarity: "Rare", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Darwin Núñez", rating: 83, pos: "ST", rarity: "Rare", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Ollie Watkins", rating: 84, pos: "ST", rarity: "Rare", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "João Palhinha", rating: 83, pos: "CDM", rarity: "Rare", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Manuel Akanji", rating: 83, pos: "CB", rarity: "Rare", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Lisandro Martínez", rating: 83, pos: "CB", rarity: "Rare", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "David Raya", rating: 83, pos: "GK", rarity: "Rare", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Anthony Gordon", rating: 83, pos: "LW", rarity: "Rare", image: "player_temp.png" },
+{ name: "Pedro Porro", rating: 83, pos: "RB", rarity: "Rare", image: "player_temp.png" },
+{ name: "Micky van de Ven", rating: 83, pos: "CB", rarity: "Rare", image: "player_temp.png" },
+{ name: "Dominik Szoboszlai", rating: 83, pos: "CM", rarity: "Rare", image: "player_temp.png" },
+{ name: "Alexis Mac Allister", rating: 84, pos: "CM", rarity: "Rare", image: "player_temp.png" },
+{ name: "Lucas Paquetá", rating: 82, pos: "CAM", rarity: "Rare", image: "player_temp.png" },
+{ name: "Darwin Núñez", rating: 83, pos: "ST", rarity: "Rare", image: "player_temp.png" },
+{ name: "Ollie Watkins", rating: 84, pos: "ST", rarity: "Rare", image: "player_temp.png" },
+{ name: "João Palhinha", rating: 83, pos: "CDM", rarity: "Rare", image: "player_temp.png" },
+{ name: "Manuel Akanji", rating: 83, pos: "CB", rarity: "Rare", image: "player_temp.png" },
+{ name: "Lisandro Martínez", rating: 83, pos: "CB", rarity: "Rare", image: "player_temp.png" },
+{ name: "David Raya", rating: 83, pos: "GK", rarity: "Rare", image: "player_temp.png" },
 
 // --- UNCOMMON ---
-{ name: "Harvey Elliott", rating: 79, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Kobbie Mainoo", rating: 79, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=350&auto=format&fit=crop&q=80" },
-{ name: "Alejandro Garnacho", rating: 80, pos: "LW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
-{ name: "Destiny Udogie", rating: 80, pos: "LB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Rico Lewis", rating: 78, pos: "RB", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Conor Gallagher", rating: 80, pos: "CM", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Jarrod Bowen", rating: 81, pos: "RW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Brennan Johnson", rating: 79, pos: "RW", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Evan Ferguson", rating: 77, pos: "ST", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Bart Verbruggen", rating: 78, pos: "GK", rarity: "Uncommon", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
+{ name: "Harvey Elliott", rating: 79, pos: "CM", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Kobbie Mainoo", rating: 79, pos: "CM", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Alejandro Garnacho", rating: 80, pos: "LW", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Destiny Udogie", rating: 80, pos: "LB", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Rico Lewis", rating: 78, pos: "RB", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Conor Gallagher", rating: 80, pos: "CM", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Jarrod Bowen", rating: 81, pos: "RW", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Brennan Johnson", rating: 79, pos: "RW", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Evan Ferguson", rating: 77, pos: "ST", rarity: "Uncommon", image: "player_temp.png" },
+{ name: "Bart Verbruggen", rating: 78, pos: "GK", rarity: "Uncommon", image: "player_temp.png" },
 
 // --- COMMON ---
-{ name: "Oliver Skipp", rating: 75, pos: "CDM", rarity: "Common", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80" },
-{ name: "Rob Holding", rating: 74, pos: "CB", rarity: "Common", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Sean Longstaff", rating: 77, pos: "CM", rarity: "Common", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Dwight McNeil", rating: 76, pos: "LM", rarity: "Common", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Dominic Calvert-Lewin", rating: 78, pos: "ST", rarity: "Common", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80" },
-{ name: "Tyrone Mings", rating: 77, pos: "CB", rarity: "Common", image: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=350&auto=format&fit=crop&q=80" },
-{ name: "Fraser Forster", rating: 75, pos: "GK", rarity: "Common", image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=350&auto=format&fit=crop&q=80" },
-{ name: "Harry Wilson", rating: 76, pos: "RW", rarity: "Common", image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=350&auto=format&fit=crop&q=80" },
-{ name: "Dan Burn", rating: 78, pos: "LB", rarity: "Common", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80" },
-{ name: "Lewis Dunk", rating: 79, pos: "CB", rarity: "Common", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80" },
-{ name: "Cameron Archer", rating: 74, pos: "ST", rarity: "Common", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" },
-{ name: "Joe Willock", rating: 76, pos: "CM", rarity: "Common", image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=350&auto=format&fit=crop&q=80" },
+{ name: "Oliver Skipp", rating: 75, pos: "CDM", rarity: "Common", image: "player_temp.png" },
+{ name: "Rob Holding", rating: 74, pos: "CB", rarity: "Common", image: "player_temp.png" },
+{ name: "Sean Longstaff", rating: 77, pos: "CM", rarity: "Common", image: "player_temp.png" },
+{ name: "Dwight McNeil", rating: 76, pos: "LM", rarity: "Common", image: "player_temp.png" },
+{ name: "Dominic Calvert-Lewin", rating: 78, pos: "ST", rarity: "Common", image: "player_temp.png" },
+{ name: "Tyrone Mings", rating: 77, pos: "CB", rarity: "Common", image: "player_temp.png" },
+{ name: "Fraser Forster", rating: 75, pos: "GK", rarity: "Common", image: "player_temp.png" },
+{ name: "Harry Wilson", rating: 76, pos: "RW", rarity: "Common", image: "player_temp.png" },
+{ name: "Dan Burn", rating: 78, pos: "LB", rarity: "Common", image: "player_temp.png" },
+{ name: "Lewis Dunk", rating: 79, pos: "CB", rarity: "Common", image: "player_temp.png" },
+{ name: "Cameron Archer", rating: 74, pos: "ST", rarity: "Common", image: "player_temp.png" },
+{ name: "Joe Willock", rating: 76, pos: "CM", rarity: "Common", image: "player_temp.png" },
 
 // --- EXCLUSIVE (LEGENDS OF THE PAST) ---
-{ name: "Pelé", rating: 98, pos: "ST", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=350&auto=format&fit=crop&q=80", odds: 5 },
-{ name: "Diego Maradona", rating: 96, pos: "CAM", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80", odds: 15 },
-{ name: "Ronaldo Nazário", rating: 97, pos: "ST", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=350&auto=format&fit=crop&q=80", odds: 20 },
-{ name: "Zinedine Zidane", rating: 95, pos: "CAM", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=350&auto=format&fit=crop&q=80", odds: 25 },
-{ name: "Ronaldinho", rating: 94, pos: "LW", rarity: "Exclusive", image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=350&auto=format&fit=crop&q=80", odds: 35 }
+{ name: "Pelé", rating: 98, pos: "ST", rarity: "Exclusive", image: "player_temp.png", odds: 5 },
+{ name: "Diego Maradona", rating: 96, pos: "CAM", rarity: "Exclusive", image: "player_temp.png", odds: 15 },
+{ name: "Ronaldo Nazário", rating: 97, pos: "ST", rarity: "Exclusive", image: "player_temp.png", odds: 20 },
+{ name: "Zinedine Zidane", rating: 95, pos: "CAM", rarity: "Exclusive", image: "player_temp.png", odds: 25 },
+{ name: "Ronaldinho", rating: 94, pos: "LW", rarity: "Exclusive", image: "player_temp.png", odds: 35 }
 ];
 
 /* =========================================================
@@ -1398,6 +1398,9 @@ function confirmName() {
 }
 
 function renderAll() {
+    if (state.cards && state.cards.length) {
+        state.cards.forEach(c => { c.image = "player_temp.png"; });
+    }
     try { updateCoinDisplay(); } catch(e) { console.error("CoinDisplay error", e); }
     try { renderHero(); } catch(e) { console.error("Hero error", e); }
     try { renderCards(); } catch(e) { console.error("Cards error", e); }
@@ -1458,117 +1461,55 @@ function renderBoosterPacksInStage(cfg, pullCount) {
     const stage = document.getElementById("packsDisplayStage");
     if (!stage) return;
 
+    function generatePackHTML(num, isMulti, total) {
+        return `
+        <div class="realistic-booster-pack ${cfg.css} ${isMulti ? `pack-stack-${total}-${num}` : ''}">
+            <div class="pack-card-insert">
+                <div class="card-insert-face card-insert-back">
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-crest">⚽</div>
+                </div>
+            </div>
+            <div class="pack-foil-cap">
+                <div class="pack-crimp-cording"></div>
+                <div class="pack-cap-badge">★ OFFICIAL TRADING CARD GAME ★</div>
+                <div class="pack-cap-foil-shine"></div>
+            </div>
+            <div class="pack-foil-body">
+                <div class="foil-specular-sheen"></div>
+                <div class="foil-stadium-rings"></div>
+                <div class="pack-lightning-bolts"></div>
+                
+                <div class="pack-header-tag">SERIES 2026 EDITION</div>
+                
+                <div class="pack-title-banner">
+                    <h2 class="pack-foil-title">${cfg.title}</h2>
+                </div>
+
+                <div class="pack-hero-stage">
+                    <div class="pack-energy-aura"></div>
+                    <div class="pack-hero-crest-outer">
+                        <div class="pack-hero-crest-inner">
+                            <div class="pack-hero-icon">${cfg.emblem}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pack-crimp-seal-bottom"></div>
+            </div>
+        </div>
+        `;
+    }
+
     if (pullCount === 1) {
         stage.className = "packs-display-stage single-pack-layout";
-        stage.innerHTML = `
-            <div class="realistic-booster-pack ${cfg.css}" id="realisticBoosterPack">
-                <div class="pack-card-insert">
-                    <div class="card-insert-face card-insert-back">
-                        <div class="card-back-pattern"></div>
-                        <div class="card-back-crest">⚽</div>
-                    </div>
-                </div>
-                <div class="pack-foil-cap">
-                    <div class="pack-crimp-cording"></div>
-                    <div class="pack-cap-badge">★ OFFICIAL TRADING CARD GAME ★</div>
-                    <div class="pack-cap-foil-shine"></div>
-                </div>
-                <div class="pack-foil-body">
-                    <div class="foil-specular-sheen"></div>
-                    <div class="foil-stadium-rings"></div>
-                    <div class="pack-header-tag">SERIES 2026 EDITION</div>
-                    <h2 class="pack-foil-title">${cfg.title}</h2>
-                    <div class="pack-sub-badge">★ 1 CARD TRANSFER ★</div>
-                    <div class="pack-foil-emblem-wrap">
-                        <div class="pack-foil-emblem-glow"></div>
-                        <div class="pack-foil-crest-border">
-                            <div class="pack-foil-crest-inner">
-                                <div class="pack-foil-emblem">${cfg.emblem}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pack-footer-meta">
-                        <span>ULTIMATE CARDS</span>
-                        <span>★ 100% AUTHENTIC FOIL ★</span>
-                    </div>
-                    <div class="pack-crimp-seal-bottom"></div>
-                </div>
-            </div>
-        `;
+        stage.innerHTML = generatePackHTML(1, false, 1);
     } else if (pullCount === 3) {
         stage.className = "packs-display-stage multi-pack-3-layout";
-        stage.innerHTML = [1, 2, 3].map(num => `
-            <div class="realistic-booster-pack ${cfg.css} pack-stack-3-${num}">
-                <div class="pack-card-insert">
-                    <div class="card-insert-face card-insert-back">
-                        <div class="card-back-pattern"></div>
-                        <div class="card-back-crest">⚽</div>
-                    </div>
-                </div>
-                <div class="pack-foil-cap">
-                    <div class="pack-crimp-cording"></div>
-                    <div class="pack-cap-badge">★ PACK ${num} OF 3 ★</div>
-                    <div class="pack-cap-foil-shine"></div>
-                </div>
-                <div class="pack-foil-body">
-                    <div class="foil-specular-sheen"></div>
-                    <div class="foil-stadium-rings"></div>
-                    <div class="pack-header-tag">SERIES 2026 EDITION</div>
-                    <h2 class="pack-foil-title">${cfg.title}</h2>
-                    <div class="pack-sub-badge">★ PACK ${num} ★</div>
-                    <div class="pack-foil-emblem-wrap">
-                        <div class="pack-foil-emblem-glow"></div>
-                        <div class="pack-foil-crest-border">
-                            <div class="pack-foil-crest-inner">
-                                <div class="pack-foil-emblem">${cfg.emblem}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pack-footer-meta">
-                        <span>ULTIMATE CARDS</span>
-                        <span>★ 100% AUTHENTIC FOIL ★</span>
-                    </div>
-                    <div class="pack-crimp-seal-bottom"></div>
-                </div>
-            </div>
-        `).join("");
+        stage.innerHTML = [1, 2, 3].map(num => generatePackHTML(num, true, 3)).join("");
     } else if (pullCount === 5) {
         stage.className = "packs-display-stage multi-pack-5-layout";
-        stage.innerHTML = [1, 2, 3, 4, 5].map(num => `
-            <div class="realistic-booster-pack ${cfg.css} pack-stack-5-${num}">
-                <div class="pack-card-insert">
-                    <div class="card-insert-face card-insert-back">
-                        <div class="card-back-pattern"></div>
-                        <div class="card-back-crest">⚽</div>
-                    </div>
-                </div>
-                <div class="pack-foil-cap">
-                    <div class="pack-crimp-cording"></div>
-                    <div class="pack-cap-badge">★ PACK ${num} OF 5 ★</div>
-                    <div class="pack-cap-foil-shine"></div>
-                </div>
-                <div class="pack-foil-body">
-                    <div class="foil-specular-sheen"></div>
-                    <div class="foil-stadium-rings"></div>
-                    <div class="pack-header-tag">SERIES 2026 EDITION</div>
-                    <h2 class="pack-foil-title">${cfg.title}</h2>
-                    <div class="pack-sub-badge">★ PACK ${num} ★</div>
-                    <div class="pack-foil-emblem-wrap">
-                        <div class="pack-foil-emblem-glow"></div>
-                        <div class="pack-foil-crest-border">
-                            <div class="pack-foil-crest-inner">
-                                <div class="pack-foil-emblem">${cfg.emblem}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pack-footer-meta">
-                        <span>ULTIMATE CARDS</span>
-                        <span>★ 100% AUTHENTIC FOIL ★</span>
-                    </div>
-                    <div class="pack-crimp-seal-bottom"></div>
-                </div>
-            </div>
-        `).join("");
+        stage.innerHTML = [1, 2, 3, 4, 5].map(num => generatePackHTML(num, true, 5)).join("");
     }
 }
 
