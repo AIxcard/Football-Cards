@@ -3072,55 +3072,74 @@ select,input{
 }
 
 /* =========================================================
-   DYNAMIC MULTI-PACK DISPLAY STAGE (1x, 3x, 5x)
+   DYNAMIC HORIZONTAL MULTI-PACK DISPLAY STAGE (LEFT TO RIGHT)
    ========================================================= */
 
 .packs-display-stage {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 24px !important;
     position: relative;
-    perspective: 1200px;
-    min-height: 480px;
-    width: 100%;
+    perspective: 1400px;
+    min-height: 520px;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: auto !important;
+    padding: 20px 10px !important;
+}
+
+.single-pack-layout {
+    justify-content: center !important;
+}
+
+.single-pack-layout .realistic-booster-pack {
+    width: 320px;
+    height: 490px;
 }
 
 .multi-pack-3-layout {
-    gap: 15px;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 20px !important;
+    justify-content: center !important;
 }
 
 .multi-pack-3-layout .realistic-booster-pack {
-    width: 250px;
-    height: 420px;
+    width: 260px !important;
+    height: 420px !important;
+    flex-shrink: 0 !important;
 }
 
-.multi-pack-3-layout .pack-stack-3-1 { transform: rotate(-5deg) translateY(10px); }
-.multi-pack-3-layout .pack-stack-3-2 { transform: rotate(0deg) scale(1.05) translateY(-5px); z-index: 10; }
-.multi-pack-3-layout .pack-stack-3-3 { transform: rotate(5deg) translateY(10px); }
-
 .multi-pack-5-layout {
-    gap: 10px;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    justify-content: center !important;
+    overflow-x: auto !important;
+    padding: 20px 20px !important;
 }
 
 .multi-pack-5-layout .realistic-booster-pack {
-    width: 200px;
-    height: 380px;
+    width: 215px !important;
+    height: 350px !important;
+    flex-shrink: 0 !important;
 }
 
-.multi-pack-5-layout .pack-stack-5-1 { transform: rotate(-10deg) translateY(20px); }
-.multi-pack-5-layout .pack-stack-5-2 { transform: rotate(-5deg) translateY(8px); }
-.multi-pack-5-layout .pack-stack-5-3 { transform: rotate(0deg) scale(1.08) translateY(-10px); z-index: 10; }
-.multi-pack-5-layout .pack-stack-5-4 { transform: rotate(5deg) translateY(8px); }
-.multi-pack-5-layout .pack-stack-5-5 { transform: rotate(10deg) translateY(20px); }
-
 @media(max-width: 768px) {
-    .multi-pack-3-layout .realistic-booster-pack,
-    .multi-pack-5-layout .realistic-booster-pack {
-        width: 140px;
-        height: 280px;
+    .packs-display-stage {
+        justify-content: flex-start !important;
+        gap: 14px !important;
     }
-    .pack-foil-title { font-size: 16px !important; }
-    .pack-foil-emblem { font-size: 40px !important; }
+    .multi-pack-3-layout .realistic-booster-pack {
+        width: 180px !important;
+        height: 300px !important;
+    }
+    .multi-pack-5-layout .realistic-booster-pack {
+        width: 150px !important;
+        height: 260px !important;
+    }
 }
 
 /* =========================================================
@@ -3128,52 +3147,31 @@ select,input{
    ========================================================= */
 
 .starter-foil {
-    --foil-body-grad: radial-gradient(circle at 50% 35%, #059669 0%, #064e3b 50%, #022c22 95%);
     --foil-glow: rgba(16, 185, 129, 0.9);
-    --foil-accent: #34d399;
-    --foil-banner-grad: linear-gradient(180deg, #10b981, #047857);
 }
 
 .premium-foil {
-    --foil-body-grad: radial-gradient(circle at 50% 35%, #2563eb 0%, #1e3a8a 50%, #081226 95%);
     --foil-glow: rgba(59, 130, 246, 0.9);
-    --foil-accent: #60a5fa;
-    --foil-banner-grad: linear-gradient(180deg, #3b82f6, #1d4ed8);
 }
 
 .champion-foil {
-    --foil-body-grad: radial-gradient(circle at 50% 35%, #9333ea 0%, #581c87 50%, #17072b 95%);
     --foil-glow: rgba(168, 85, 247, 0.9);
-    --foil-accent: #c084fc;
-    --foil-banner-grad: linear-gradient(180deg, #a855f7, #7e22ce);
 }
 
 .exclusive-foil {
-    --foil-body-grad: radial-gradient(circle at 50% 35%, #db2777 0%, #831843 50%, #2e051d 95%);
     --foil-glow: rgba(236, 72, 153, 0.9);
-    --foil-accent: #f472b6;
-    --foil-banner-grad: linear-gradient(180deg, #ec4899, #be185d);
 }
 
 .mythic-foil {
-    --foil-body-grad: radial-gradient(circle at 50% 35%, #dc2626 0%, #7f1d1d 50%, #2b0606 95%);
     --foil-glow: rgba(239, 68, 68, 0.95);
-    --foil-accent: #f87171;
-    --foil-banner-grad: linear-gradient(180deg, #ef4444, #b91c1c);
 }
 
 .secret-foil {
-    --foil-body-grad: radial-gradient(circle at 50% 35%, #06b6d4 0%, #0e7490 50%, #021a24 95%);
     --foil-glow: rgba(6, 182, 212, 0.95);
-    --foil-accent: #22d3ee;
-    --foil-banner-grad: linear-gradient(180deg, #06b6d4, #0891b2);
 }
 
 .worldclass-foil {
-    --foil-body-grad: radial-gradient(circle at 50% 35%, #d97706 0%, #78350f 50%, #260d02 95%);
     --foil-glow: rgba(245, 158, 11, 1);
-    --foil-accent: #fbbf24;
-    --foil-banner-grad: linear-gradient(180deg, #f59e0b, #b45309);
 }
 
 .realistic-booster-pack {
@@ -3186,6 +3184,8 @@ select,input{
     transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
     animation: packFloatRumble 2.4s ease-in-out infinite alternate;
     overflow: visible;
+    user-select: none;
+    touch-action: none;
 }
 
 @keyframes packFloatRumble {
@@ -3193,13 +3193,13 @@ select,input{
     100% { transform: translateY(-8px) rotateX(-2deg) rotateY(2deg); }
 }
 
-/* TOP METALLIC CORRUGATED CRIMP CAP */
+/* TOP METALLIC CORRUGATED CRIMP CAP (SWIPE TARGET) */
 .pack-foil-cap {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 74px;
+    height: 76px;
     border-radius: 16px 16px 0 0;
     background: linear-gradient(180deg, #475569 0%, #1e293b 70%, #0f172a 100%);
     border-bottom: 2px solid rgba(255, 255, 255, 0.4);
@@ -3211,6 +3211,12 @@ select,input{
     align-items: center;
     justify-content: flex-start;
     transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+    cursor: grab;
+    touch-action: none;
+}
+
+.pack-foil-cap:active {
+    cursor: grabbing;
 }
 
 .pack-crimp-cording {
@@ -3220,18 +3226,22 @@ select,input{
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
 }
 
-.pack-cap-badge {
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    color: #ffffff;
-    text-align: center;
+.pack-top-tear-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     margin-top: 10px;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 10px rgba(255,255,255,0.6);
-    background: rgba(0,0,0,0.5);
-    padding: 3px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.25);
+    font-size: 11px;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.8);
+    background: rgba(0,0,0,0.6);
+    padding: 4px 14px;
+    border-radius: 12px;
+    border: 1px dashed rgba(255, 215, 0, 0.6);
+    letter-spacing: 1.5px;
+    animation: swipeHintGlow 1.4s ease-in-out infinite alternate;
 }
 
 .pack-cap-foil-shine {
@@ -3244,7 +3254,7 @@ select,input{
     pointer-events: none;
 }
 
-/* LOWER METALLIC FOIL SLEEVE BODY */
+/* LOWER METALLIC FOIL SLEEVE BODY (FULL BLEED POKÉMON SVG ARTWORK) */
 .pack-foil-body {
     position: absolute;
     top: 74px;
@@ -3252,16 +3262,23 @@ select,input{
     left: 0;
     width: 100%;
     border-radius: 0 0 16px 16px;
-    background: var(--foil-body-grad);
     z-index: 4;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 16px 14px 0;
+    justify-content: center;
+    padding: 0 !important;
     overflow: hidden;
-    border-top: 1px solid rgba(255,255,255,0.35);
     box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+    background: #020617;
+}
+
+.pk-booster-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 0 0 16px 16px;
+    object-fit: fill;
 }
 
 .foil-specular-sheen {
@@ -3273,130 +3290,53 @@ select,input{
     background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.3) 48%, rgba(255,215,0,0.4) 52%, rgba(0,255,255,0.3) 56%, transparent 65%);
     pointer-events: none;
     animation: foilSheen 3.2s infinite;
+    z-index: 5;
 }
 
 @keyframes foilSheen {
     0% { transform: translateX(-100%) translateY(-100%) rotate(25deg); }
     100% { transform: translateX(100%) translateY(100%) rotate(25deg); }
-}
-
-.foil-stadium-rings {
+}/* INNER HIDDEN CARD INSERT READY TO SLIDE UP */
+.pack-card-insert {
     position: absolute;
-    inset: 0;
-    background-image: repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 12px, transparent 12px, transparent 24px);
-    pointer-events: none;
-}
-
-.pack-lightning-bolts {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.pack-header-tag {
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 2.5px;
-    color: #ffd700;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 10px rgba(255, 215, 0, 0.8);
-    margin-top: 2px;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    height: 420px;
     z-index: 2;
+    border-radius: 16px;
+    background: #09131e;
+    border: 2px solid rgba(255, 215, 0, 0.65);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.85);
+    transition: transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.75s ease;
 }
 
-/* 3D POKÉMON-STYLE PACK TITLE BANNER */
-.pack-title-banner {
-    position: relative;
-    z-index: 3;
-    margin-top: 4px;
-    padding: 6px 18px;
-    background: var(--foil-banner-grad);
-    border: 2px solid #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.8), 0 0 25px var(--foil-glow);
-    transform: perspective(300px) rotateX(10deg);
-}
-
-.pack-foil-title {
-    font-family: 'Impact', 'Montserrat', sans-serif !important;
-    font-style: italic;
-    font-size: 26px;
-    font-weight: 900;
-    color: #ffffff;
-    margin: 0;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 4px 10px rgba(0,0,0,0.9);
-}
-
-/* HERO GRAPHIC ART STAGE */
-.pack-hero-stage {
-    position: relative;
+.card-insert-back {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 190px;
-    height: 190px;
-    margin: 10px 0;
-    z-index: 2;
-}
-
-.pack-energy-aura {
-    position: absolute;
-    width: 170px;
-    height: 170px;
-    border-radius: 50%;
-    background: var(--foil-glow);
-    filter: blur(35px);
-    opacity: 0.95;
-    animation: pulsePackGlow 1.8s infinite alternate;
-}
-
-.pack-hero-crest-outer {
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0d223a, #06111d);
     position: relative;
-    width: 155px;
-    height: 155px;
-    border-radius: 50%;
-    padding: 7px;
-    background: linear-gradient(135deg, #ffd700 0%, #ffffff 50%, #ff8c00 100%);
-    box-shadow: 0 0 35px var(--foil-glow), inset 0 0 15px rgba(255,255,255,0.7);
-    display: grid;
-    place-items: center;
+    overflow: hidden;
 }
 
-.pack-hero-crest-inner {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 40%, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.98));
-    display: grid;
-    place-items: center;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    box-shadow: inset 0 0 25px rgba(0,0,0,0.9);
+.card-back-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 215, 0, 0.15) 1px, transparent 1px);
+    background-size: 14px 14px;
 }
 
-.pack-hero-icon {
-    font-size: 80px;
-    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px var(--foil-glow));
-    animation: heroIconFloat 2.5s ease-in-out infinite alternate;
+.card-back-crest {
+    font-size: 60px;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.85));
+    animation: spinSlow 12s linear infinite;
 }
 
-@keyframes heroIconFloat {
-    0% { transform: scale(0.96) rotate(-3deg); }
-    100% { transform: scale(1.06) rotate(3deg); }
-}
-
-/* BOTTOM CORRUGATED METALLIC CRIMP SEAL */
-.pack-crimp-seal-bottom {
-    width: calc(100% + 28px);
-    height: 24px;
-    margin: 0 -14px;
-    background: repeating-linear-gradient(90deg, #0f172a 0px, #e2e8f0 3px, #64748b 6px, #0f172a 9px);
-    border-top: 2px solid rgba(255, 255, 255, 0.4);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
-    z-index: 5;
-}
-
+/* TEAR EXECUTION KEYFRAMES */
 /* INNER HIDDEN CARD INSERT READY TO SLIDE UP */
 .pack-card-insert {
     position: absolute;
@@ -3439,7 +3379,7 @@ select,input{
 
 /* TEAR EXECUTION KEYFRAMES */
 .pack-torn .pack-foil-cap {
-    transform: translateY(-130px) rotate(-30deg) scale(0.85);
+    transform: translateY(-140px) rotate(-35deg) scale(0.85);
     opacity: 0;
     pointer-events: none;
 }
