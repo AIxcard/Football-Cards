@@ -2974,7 +2974,7 @@ select,input{
     display: none;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(0, 0, 0, 0.96) !important;
+    background: radial-gradient(circle at 50% 50%, #0c1c38 0%, #030814 85%) !important;
     backdrop-filter: blur(25px) !important;
     -webkit-backdrop-filter: blur(25px) !important;
     z-index: 99999 !important;
@@ -2985,12 +2985,12 @@ select,input{
 
 .pack-burst-rays {
     position: absolute;
-    width: 700px;
-    height: 700px;
+    width: 800px;
+    height: 800px;
     border-radius: 50%;
-    background: conic-gradient(from 0deg, rgba(255, 215, 0, 0.25), rgba(50, 149, 255, 0.35), rgba(255, 0, 128, 0.25), rgba(255, 215, 0, 0.25));
-    filter: blur(70px);
-    animation: spinRays 5s linear infinite;
+    background: conic-gradient(from 0deg, rgba(255, 215, 0, 0.2), rgba(50, 149, 255, 0.3), rgba(255, 0, 128, 0.2), rgba(255, 215, 0, 0.2));
+    filter: blur(80px);
+    animation: spinRays 6s linear infinite;
     pointer-events: none;
 }
 
@@ -3038,116 +3038,11 @@ select,input{
     perspective: 1600px !important;
     width: auto !important;
     max-width: 98vw !important;
-    padding: 30px 10px !important;
+    padding: 20px 10px !important;
     margin: auto !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
 }
-
-.single-pack-layout {
-    justify-content: center !important;
-}
-
-.single-pack-layout .realistic-booster-pack {
-    width: 320px !important;
-    height: 490px !important;
-    margin: 0 auto !important;
-}
-
-/* 3-PACK HORIZONTAL 3D FAN (LEFT TO RIGHT) */
-.multi-pack-3-layout {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 16px !important;
-}
-
-.multi-pack-3-layout .realistic-booster-pack {
-    width: 250px !important;
-    height: 400px !important;
-    flex-shrink: 0 !important;
-}
-
-.multi-pack-3-layout .pack-fan-3-1 {
-    transform: perspective(1200px) rotateY(18deg) rotateZ(-3deg) translateY(12px) scale(0.94) !important;
-    z-index: 2 !important;
-}
-
-.multi-pack-3-layout .pack-fan-3-2 {
-    transform: perspective(1200px) rotateY(0deg) scale(1.06) translateZ(40px) !important;
-    z-index: 10 !important;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.98), 0 0 75px var(--foil-glow) !important;
-}
-
-.multi-pack-3-layout .pack-fan-3-3 {
-    transform: perspective(1200px) rotateY(-18deg) rotateZ(3deg) translateY(12px) scale(0.94) !important;
-    z-index: 2 !important;
-}
-
-/* 5-PACK HORIZONTAL 3D FAN (LEFT 2, CENTER, RIGHT 2 AS SKETCHED) */
-.multi-pack-5-layout {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 10px !important;
-    width: auto !important;
-    max-width: 98vw !important;
-}
-
-.multi-pack-5-layout .realistic-booster-pack {
-    width: 190px !important;
-    height: 330px !important;
-    flex-shrink: 0 !important;
-}
-
-.multi-pack-5-layout .pack-fan-5-1 {
-    transform: perspective(1200px) rotateY(28deg) rotateZ(-6deg) translateY(24px) scale(0.84) !important;
-    z-index: 1 !important;
-}
-
-.multi-pack-5-layout .pack-fan-5-2 {
-    transform: perspective(1200px) rotateY(14deg) rotateZ(-3deg) translateY(10px) scale(0.94) !important;
-    z-index: 5 !important;
-}
-
-.multi-pack-5-layout .pack-fan-5-3 {
-    transform: perspective(1200px) rotateY(0deg) scale(1.1) translateZ(50px) !important;
-    z-index: 20 !important;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.98), 0 0 85px var(--foil-glow) !important;
-}
-
-.multi-pack-5-layout .pack-fan-5-4 {
-    transform: perspective(1200px) rotateY(-14deg) rotateZ(3deg) translateY(10px) scale(0.94) !important;
-    z-index: 5 !important;
-}
-
-.multi-pack-5-layout .pack-fan-5-5 {
-    transform: perspective(1200px) rotateY(-28deg) rotateZ(6deg) translateY(24px) scale(0.84) !important;
-    z-index: 1 !important;
-}
-
-@media(max-width: 768px) {
-    .packs-display-stage {
-        justify-content: flex-start !important;
-        gap: 10px !important;
-    }
-    .multi-pack-3-layout .realistic-booster-pack {
-        width: 170px !important;
-        height: 290px !important;
-    }
-    .multi-pack-5-layout .realistic-booster-pack {
-        width: 140px !important;
-        height: 250px !important;
-    }
-}
-
-/* =========================================================
-   AUTHENTIC POKÉMON-STYLE TRADING CARD BOOSTER PACKS
-   ========================================================= */
 
 .starter-foil { --foil-glow: rgba(16, 185, 129, 0.95); }
 .premium-foil { --foil-glow: rgba(59, 130, 246, 0.95); }
@@ -3157,18 +3052,23 @@ select,input{
 .secret-foil { --foil-glow: rgba(6, 182, 212, 0.95); }
 .worldclass-foil { --foil-glow: rgba(245, 158, 11, 1); }
 
-.realistic-booster-pack {
+.luxury-booster-pack {
     position: relative !important;
-    width: 320px;
-    height: 490px;
-    border-radius: 16px;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95), 0 0 60px var(--foil-glow);
-    transform-style: preserve-3d;
-    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-    animation: packFloatRumble 2.4s ease-in-out infinite alternate;
+    width: 310px !important;
+    height: 480px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 35px 80px rgba(0, 0, 0, 0.95), 0 0 60px var(--foil-glow) !important;
+    transform-style: preserve-3d !important;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease !important;
+    animation: packFloatRumble 2.4s ease-in-out infinite alternate !important;
     overflow: visible !important;
-    user-select: none;
-    touch-action: none;
+    user-select: none !important;
+    touch-action: none !important;
+    cursor: grab !important;
+}
+
+.luxury-booster-pack:active {
+    cursor: grabbing !important;
 }
 
 @keyframes packFloatRumble {
@@ -3176,372 +3076,96 @@ select,input{
     100% { transform: translateY(-8px) rotateX(-2deg) rotateY(2deg); }
 }
 
-/* POKÉMON STRIPED TOP CRIMP CAP (SWIPE TARGET) */
-.pack-foil-cap {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: 76px !important;
-    border-radius: 16px 16px 0 0 !important;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.45) !important;
-    z-index: 6 !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    transition: transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease 0.1s !important;
-    cursor: grab !important;
-    touch-action: none !important;
-}
-
-.pack-foil-cap:active {
-    cursor: grabbing !important;
-}
-
-/* TOP METALLIC CORRUGATED POKÉMON STRIPED CRIMP (IMAGE 1) */
-.pk-top-crimp-stripes {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: repeating-linear-gradient(90deg, 
-        #020617 0px, 
-        #334155 2px, 
-        #94a3b8 3px, 
-        #f8fafc 4px, 
-        #334155 5px, 
-        #020617 7px
-    ) !important;
-    opacity: 0.95 !important;
-    box-shadow: inset 0 3px 6px rgba(0,0,0,0.85) !important;
-}
-
-.pk-crimp-hanger-hole {
-    position: absolute !important;
-    top: 14px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 40px !important;
-    height: 10px !important;
-    border-radius: 6px !important;
-    background: #020617 !important;
-    border: 1px solid rgba(255, 255, 255, 0.6) !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.95) !important;
-    z-index: 7 !important;
-}
-
-.pk-tear-guideline {
-    position: absolute !important;
-    bottom: 6px !important;
-    left: 8px !important;
-    right: 8px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    font-size: 10px !important;
-    font-weight: 900 !important;
-    color: #ffd700 !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(255, 215, 0, 0.8) !important;
-    background: rgba(0,0,0,0.75) !important;
-    padding: 3px 10px !important;
-    border-radius: 10px !important;
-    border: 1px dashed rgba(255, 215, 0, 0.7) !important;
-    letter-spacing: 1.5px !important;
-    z-index: 8 !important;
-    animation: swipeHintGlow 1.4s ease-in-out infinite alternate !important;
-}
-
-.pack-cap-foil-shine {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%) !important;
-    pointer-events: none !important;
-    z-index: 9 !important;
-}
-
-/* 3D PACK WRAPPER & BACKPACK PACKAGING */
-.pack-3d-box {
-    position: relative !important;
-    width: 100% !important;
-    height: 100% !important;
-    transform-style: preserve-3d !important;
-}
-
-.pack-foil-front {
-    position: absolute !important;
-    inset: 0 !important;
+.pack-svg-container {
     width: 100% !important;
     height: 100% !important;
     border-radius: 16px !important;
-    z-index: 4 !important;
-}
-
-/* REALISTIC 3D BACK FOIL SLEEVE */
-.pack-foil-back {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 16px !important;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%) !important;
-    border: 2px solid rgba(255, 255, 255, 0.2) !important;
-    box-shadow: inset 0 0 35px rgba(0,0,0,0.85) !important;
-    z-index: 1 !important;
     overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 0 !important;
-}
-
-.pack-back-top-crimp, .pack-back-bottom-crimp {
-    width: 100% !important;
-    height: 32px !important;
-    background: repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #cbd5e1 4px, #334155 5px, #020617 7px) !important;
-    opacity: 0.95 !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9) !important;
-}
-
-.pack-back-center-fin {
-    position: absolute !important;
-    top: 32px !important;
-    bottom: 32px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 18px !important;
-    background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.6)) !important;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.7), -2px 0 8px rgba(0,0,0,0.7) !important;
-    z-index: 2 !important;
-}
-
-.pack-back-details {
-    position: relative !important;
-    z-index: 3 !important;
-    padding: 18px 24px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center !important;
-    gap: 12px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-.pack-back-seal {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    background: rgba(255, 215, 0, 0.15) !important;
-    border: 1px solid rgba(255, 215, 0, 0.6) !important;
-    padding: 4px 10px !important;
-    border-radius: 20px !important;
-    font-size: 8px !important;
-    font-weight: 900 !important;
-    color: #ffd700 !important;
-    letter-spacing: 1px !important;
-}
-
-.pack-back-info {
-    font-size: 9px !important;
-    color: #94a3b8 !important;
-    line-height: 1.4 !important;
-    text-align: center !important;
-    margin: 0 !important;
-}
-
-.pack-back-info p {
-    margin: 2px 0 !important;
-}
-
-.pack-back-barcode-box {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    background: #ffffff !important;
-    padding: 6px 14px !important;
-    border-radius: 6px !important;
-    color: #000000 !important;
-}
-
-.pack-back-barcode {
-    font-family: 'Courier New', monospace !important;
-    font-size: 16px !important;
-    font-weight: 900 !important;
-    letter-spacing: 2px !important;
-    line-height: 1 !important;
-}
-
-.pack-back-serial {
-    font-size: 8px !important;
-    font-weight: 700 !important;
-    letter-spacing: 1.5px !important;
-    margin-top: 2px !important;
-    color: #000 !important;
-}
-
-.pack-back-footer {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    width: 100% !important;
-    font-size: 8px !important;
-    font-weight: 900 !important;
-    color: #64748b !important;
-    letter-spacing: 1px !important;
-}
-
-.pack-back-age-badge {
-    background: #000000 !important;
-    color: #ffffff !important;
-    border: 1px solid #ffffff !important;
-    padding: 1px 4px !important;
-    border-radius: 3px !important;
-}
-
-/* LOWER METALLIC FOIL SLEEVE BODY (FULL BLEED POKÉMON SVG ARTWORK) */
-.pack-foil-body {
-    position: absolute !important;
-    top: 74px !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    border-radius: 0 0 16px 16px !important;
-    z-index: 4 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.6) !important;
-    background: #020617 !important;
 }
 
 .pk-booster-svg {
     width: 100% !important;
     height: 100% !important;
     display: block !important;
-    border-radius: 0 0 16px 16px !important;
-    object-fit: fill !important;
 }
 
-.foil-specular-sheen {
-    position: absolute !important;
-    top: -60% !important;
-    left: -60% !important;
-    width: 220% !important;
-    height: 220% !important;
-    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.3) 48%, rgba(255,215,0,0.4) 52%, rgba(0,255,255,0.3) 56%, transparent 65%) !important;
-    pointer-events: none !important;
-    animation: foilSheen 3.2s infinite !important;
+/* 1-PACK LAYOUT */
+.single-pack-layout .luxury-booster-pack {
+    width: 320px !important;
+    height: 490px !important;
+    margin: 0 auto !important;
+}
+
+/* 3-PACK HORIZONTAL 3D FAN (LEFT TO RIGHT LIKE IMAGE 2) */
+.multi-pack-3-layout {
+    gap: 18px !important;
+}
+
+.multi-pack-3-layout .luxury-booster-pack {
+    width: 250px !important;
+    height: 390px !important;
+    flex-shrink: 0 !important;
+}
+
+.multi-pack-3-layout .pack-fan-3-1 {
+    transform: perspective(1200px) rotateY(18deg) rotateZ(-3deg) translateY(8px) scale(0.94) !important;
+    z-index: 2 !important;
+}
+
+.multi-pack-3-layout .pack-fan-3-2 {
+    transform: perspective(1200px) rotateY(0deg) scale(1.06) translateZ(40px) translateY(-6px) !important;
+    z-index: 10 !important;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.98), 0 0 75px var(--foil-glow) !important;
+}
+
+.multi-pack-3-layout .pack-fan-3-3 {
+    transform: perspective(1200px) rotateY(-18deg) rotateZ(3deg) translateY(8px) scale(0.94) !important;
+    z-index: 2 !important;
+}
+
+/* 5-PACK HORIZONTAL 3D FAN (LEFT TO RIGHT LIKE IMAGE 2) */
+.multi-pack-5-layout {
+    gap: 12px !important;
+}
+
+.multi-pack-5-layout .luxury-booster-pack {
+    width: 190px !important;
+    height: 310px !important;
+    flex-shrink: 0 !important;
+}
+
+.multi-pack-5-layout .pack-fan-5-1 {
+    transform: perspective(1200px) rotateY(26deg) rotateZ(-5deg) translateY(18px) scale(0.85) !important;
+    z-index: 1 !important;
+}
+
+.multi-pack-5-layout .pack-fan-5-2 {
+    transform: perspective(1200px) rotateY(13deg) rotateZ(-2.5deg) translateY(6px) scale(0.94) !important;
     z-index: 5 !important;
 }
 
-@keyframes foilSheen {
-    0% { transform: translateX(-100%) translateY(-100%) rotate(25deg); }
-    100% { transform: translateX(100%) translateY(100%) rotate(25deg); }
+.multi-pack-5-layout .pack-fan-5-3 {
+    transform: perspective(1200px) rotateY(0deg) scale(1.08) translateZ(45px) translateY(-8px) !important;
+    z-index: 20 !important;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.98), 0 0 85px var(--foil-glow) !important;
 }
 
-/* DETAILED 3D CARD INSERT INSIDE PACK */
-.pack-card-insert {
-    position: absolute !important;
-    top: 20px !important;
-    left: 20px !important;
-    right: 20px !important;
-    height: 420px !important;
-    z-index: 2 !important;
-    border-radius: 16px !important;
-    background: #09131e !important;
-    border: 2px solid rgba(255, 215, 0, 0.65) !important;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.85) !important;
-    transition: transform 0.85s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.85s ease !important;
+.multi-pack-5-layout .pack-fan-5-4 {
+    transform: perspective(1200px) rotateY(-13deg) rotateZ(2.5deg) translateY(6px) scale(0.94) !important;
+    z-index: 5 !important;
 }
 
-.card-insert-back {
-    width: 100% !important;
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 14px !important;
-    background: radial-gradient(circle at center, #0f2744 0%, #081422 60%, #030810 100%) !important;
-    position: relative !important;
-    overflow: hidden !important;
-    border: 2px solid rgba(255, 215, 0, 0.7) !important;
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.9) !important;
+.multi-pack-5-layout .pack-fan-5-5 {
+    transform: perspective(1200px) rotateY(-26deg) rotateZ(5deg) translateY(18px) scale(0.85) !important;
+    z-index: 1 !important;
 }
 
-.card-back-pattern {
-    position: absolute !important;
-    inset: 0 !important;
-    background-image: repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.04) 0px, rgba(255, 215, 0, 0.04) 8px, transparent 8px, transparent 16px),
-                      repeating-linear-gradient(-45deg, rgba(255, 215, 0, 0.04) 0px, rgba(255, 215, 0, 0.04) 8px, transparent 8px, transparent 16px) !important;
-}
-
-.card-back-frame {
-    position: relative !important;
-    z-index: 2 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border: 2px solid rgba(255, 215, 0, 0.5) !important;
-    border-radius: 50% !important;
-    width: 150px !important;
-    height: 150px !important;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.15), rgba(0,0,0,0.85)) !important;
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3) !important;
-}
-
-.card-back-crest {
-    font-size: 58px !important;
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9)) !important;
-    animation: spinSlow 12s linear infinite !important;
-}
-
-.card-back-title {
-    font-size: 10px !important;
-    font-weight: 900 !important;
-    letter-spacing: 2px !important;
-    color: #ffd700 !important;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important;
-    margin-top: 4px !important;
-}
-
-.card-back-stars {
-    margin-top: 18px !important;
-    font-size: 13px !important;
-    letter-spacing: 4px !important;
-    color: #ffd700 !important;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8) !important;
-    z-index: 2 !important;
-}
-
-/* CLEAN RIP-OFF ANIMATION: Top striped crimp separates cleanly and flies away */
-.pack-torn .pack-foil-cap {
-    transform: translateY(-160px) translateX(60px) rotate(-22deg) scale(0.8) !important;
+/* RIP ANIMATION */
+.pack-torn {
+    transform: translateY(-50px) scale(0.9) !important;
     opacity: 0 !important;
+    transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease 0.1s !important;
     pointer-events: none !important;
-}
-
-.pack-torn .pack-card-insert {
-    transform: translateY(-240px) scale(1.06) !important;
-    box-shadow: 0 0 70px var(--foil-glow), 0 40px 90px rgba(0,0,0,0.98) !important;
-}
-
-.pack-torn .pack-top-swipe-bar {
-    opacity: 0;
-    pointer-events: none;
 }
 
 /* =========================================================
@@ -3549,30 +3173,41 @@ select,input{
    ========================================================= */
 
 .multi-reveal-modal {
-    background: rgba(2, 6, 12, 0.96) !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: radial-gradient(circle at 50% 40%, #0b1526 0%, #020612 90%) !important;
     backdrop-filter: blur(25px) !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
     z-index: 100000 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .multi-reveal-box {
-    width: min(1200px, 96vw) !important;
-    max-height: 90vh !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     display: flex !important;
     flex-direction: column !important;
-    text-align: center !important;
-    background: #040812 !important;
-    border: 2px solid rgba(255, 215, 0, 0.45) !important;
-    border-radius: 26px !important;
-    padding: 24px !important;
-    box-shadow: 0 25px 90px rgba(0, 0, 0, 0.98), 0 0 70px rgba(255, 215, 0, 0.3) !important;
-    overflow-y: auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 10px !important;
     box-sizing: border-box !important;
 }
 
 .multi-reveal-header h2 {
-    font-size: 28px !important;
+    font-size: 30px !important;
     margin: 4px 0 !important;
     color: #ffffff !important;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5) !important;
 }
 
 /* HORIZONTAL TABLE LAYOUT MATCHING IMAGE 2 */
@@ -3582,49 +3217,53 @@ select,input{
     flex-wrap: nowrap !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 24px !important;
+    gap: 30px !important;
     margin: 30px 0 !important;
     width: 100% !important;
+    max-width: 100vw !important;
     overflow-x: auto !important;
-    padding: 20px 10px !important;
+    padding: 30px 20px !important;
 }
 
-.multi-pull-card {
-    width: 220px !important;
+.multi-table-card {
+    width: 240px !important;
+    height: 380px !important;
     flex-shrink: 0 !important;
-    animation: cardPopIn 0.5s cubic-bezier(0.34, 1.3, 0.64, 1) backwards !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    border-radius: 18px !important;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(255, 215, 0, 0.25) !important;
+    animation: cardDropTable 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards !important;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease !important;
 }
 
-.multi-pull-card:hover {
-    transform: translateY(-12px) scale(1.06) !important;
+.multi-table-card:hover {
+    transform: translateY(-16px) scale(1.08) !important;
     z-index: 10 !important;
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.98), 0 0 50px rgba(255, 215, 0, 0.6) !important;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.98), 0 0 60px rgba(255, 215, 0, 0.7) !important;
 }
 
 /* NATURAL POKER/TRADING CARD TILT (AS IN USER'S 3-CARD PHOTO) */
-.multi-reveal-grid > .multi-pull-card:nth-child(1) {
-    transform: rotate(-2.5deg) translateY(4px);
+.multi-reveal-grid > .multi-table-card:nth-child(1) {
+    transform: rotate(-3deg) translateY(4px);
 }
 
-.multi-reveal-grid > .multi-pull-card:nth-child(2) {
-    transform: rotate(0deg) scale(1.04) translateY(-6px);
+.multi-reveal-grid > .multi-table-card:nth-child(2) {
+    transform: rotate(0deg) scale(1.04) translateY(-8px);
 }
 
-.multi-reveal-grid > .multi-pull-card:nth-child(3) {
-    transform: rotate(2.5deg) translateY(4px);
+.multi-reveal-grid > .multi-table-card:nth-child(3) {
+    transform: rotate(3deg) translateY(4px);
 }
 
-.multi-reveal-grid > .multi-pull-card:nth-child(4) {
+.multi-reveal-grid > .multi-table-card:nth-child(4) {
     transform: rotate(-1.5deg) translateY(2px);
 }
 
-.multi-reveal-grid > .multi-pull-card:nth-child(5) {
-    transform: rotate(3.5deg) translateY(6px);
+.multi-reveal-grid > .multi-table-card:nth-child(5) {
+    transform: rotate(4deg) translateY(8px);
 }
 
-@keyframes cardPopIn {
-    0% { transform: scale(0.4) translateY(60px); opacity: 0; }
+@keyframes cardDropTable {
+    0% { transform: scale(0.6) translateY(100px); opacity: 0; }
     100% { opacity: 1; }
 }
 
