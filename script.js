@@ -1468,8 +1468,8 @@ function getPackSVGArtwork(cfg) {
     return `
     <svg class="pk-booster-svg" viewBox="0 0 320 490" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <radialGradient id="bgGrad_${cfg.key}" cx="50%" cy="40%" r="65%">
-                <stop offset="0%" stop-color="${c.primary}" stop-opacity="0.9"/>
+            <radialGradient id="bgGrad_${cfg.key}" cx="50%" cy="42%" r="65%">
+                <stop offset="0%" stop-color="${c.primary}" stop-opacity="0.95"/>
                 <stop offset="55%" stop-color="${c.bg1}"/>
                 <stop offset="100%" stop-color="${c.bg2}"/>
             </radialGradient>
@@ -1518,11 +1518,10 @@ function getPackSVGArtwork(cfg) {
         <rect width="320" height="490" fill="url(#bgGrad_${cfg.key})"/>
 
         <!-- Stadium Spotlights -->
-        <polygon points="0,0 80,0 160,340 40,340" fill="url(#lightCone)" opacity="0.35"/>
-        <polygon points="320,0 240,0 160,340 280,340" fill="url(#lightCone)" opacity="0.35"/>
-        <polygon points="160,0 190,0 210,380 140,380" fill="url(#lightCone)" opacity="0.25"/>
+        <polygon points="0,42 80,42 160,340 40,340" fill="url(#lightCone)" opacity="0.35"/>
+        <polygon points="320,42 240,42 160,340 280,340" fill="url(#lightCone)" opacity="0.35"/>
 
-        <!-- High-Tech Stadium Hex & Perspective Pitch Lines -->
+        <!-- High-Tech Stadium Pitch Grid -->
         <g stroke="rgba(255,255,255,0.18)" stroke-width="1.5" fill="none">
             <line x1="160" y1="180" x2="0" y2="450"/>
             <line x1="160" y1="180" x2="70" y2="450"/>
@@ -1533,31 +1532,31 @@ function getPackSVGArtwork(cfg) {
             <ellipse cx="160" cy="370" rx="70" ry="18" stroke="rgba(255,215,0,0.4)"/>
         </g>
 
-        <!-- 2. DYNAMIC POKÉMON-STYLE ENERGY SLASHES (LUCARIO STYLE ARCS) -->
-        <path d="M 340 60 Q 210 180 30 220 Q 180 160 340 60 Z" fill="url(#slashCyan_${cfg.key})" opacity="0.85" filter="url(#glow_${cfg.key})"/>
-        <path d="M 330 110 Q 220 220 10 270 Q 190 200 330 110 Z" fill="${c.slash1}" opacity="0.95"/>
-        <path d="M 310 120 Q 220 220 30 265" stroke="#ffffff" stroke-width="3.5" fill="none" opacity="0.95"/>
+        <!-- 2. DYNAMIC POKÉMON ENERGY SLASHES -->
+        <path d="M 340 80 Q 210 190 30 225 Q 180 170 340 80 Z" fill="url(#slashCyan_${cfg.key})" opacity="0.85" filter="url(#glow_${cfg.key})"/>
+        <path d="M 330 120 Q 220 225 10 275 Q 190 205 330 120 Z" fill="${c.slash1}" opacity="0.95"/>
+        <path d="M 310 130 Q 220 225 30 270" stroke="#ffffff" stroke-width="3.5" fill="none" opacity="0.95"/>
 
-        <path d="M -20 120 Q 110 220 300 340 Q 130 260 -20 120 Z" fill="url(#slashRed_${cfg.key})" opacity="0.85" filter="url(#glow_${cfg.key})"/>
-        <path d="M -10 170 Q 120 260 310 380 Q 130 290 -10 170 Z" fill="${c.slash2}" opacity="0.95"/>
-        <path d="M 0 180 Q 120 260 290 370" stroke="#ffffff" stroke-width="3.5" fill="none" opacity="0.95"/>
+        <path d="M -20 130 Q 110 225 300 345 Q 130 265 -20 130 Z" fill="url(#slashRed_${cfg.key})" opacity="0.85" filter="url(#glow_${cfg.key})"/>
+        <path d="M -10 175 Q 120 265 310 385 Q 130 295 -10 175 Z" fill="${c.slash2}" opacity="0.95"/>
+        <path d="M 0 185 Q 120 265 290 375" stroke="#ffffff" stroke-width="3.5" fill="none" opacity="0.95"/>
 
         <!-- Slash Cross Energy Starburst -->
-        <g transform="translate(160, 230)">
+        <g transform="translate(160, 235)">
             <circle r="60" fill="${c.primary}" opacity="0.35" filter="url(#glow_${cfg.key})"/>
             <polygon points="0,-65 10,-12 65,0 12,10 0,65 -10,12 -65,0 -12,-10" fill="#ffffff" opacity="0.8"/>
             <polygon points="0,-40 7,-8 40,0 8,7 0,40 -7,8 -40,0 -8,-7" fill="${c.accent}" opacity="0.95"/>
         </g>
 
         <!-- 3. HERO FOOTBALL STRIKER SILHOUETTE & 3D BLAZING BALL -->
-        <g transform="translate(75, 115) scale(0.62)" opacity="0.95">
+        <g transform="translate(75, 125) scale(0.62)" opacity="0.95">
             <path d="M 120 180 C 100 130 140 80 180 60 C 220 80 250 120 230 170 C 270 150 310 190 280 240 C 240 230 200 250 170 290 C 130 260 100 230 120 180 Z" fill="${c.primary}" filter="url(#glow_${cfg.key})" opacity="0.85"/>
             <path d="M 140 170 C 130 130 160 90 190 80 C 210 95 230 130 210 165 C 240 150 270 180 250 220 C 220 210 190 230 170 260 C 140 240 120 210 140 170 Z" fill="#081422"/>
             <path d="M 170 110 Q 190 130 210 115 Q 200 150 175 160 Z" fill="${c.accent}" opacity="0.85"/>
         </g>
 
         <!-- Giant 3D Blazing Football blasting towards camera -->
-        <g transform="translate(160, 235)">
+        <g transform="translate(160, 240)">
             <circle r="52" fill="none" stroke="${c.accent}" stroke-width="4" opacity="0.85" stroke-dasharray="10,6" filter="url(#glow_${cfg.key})"/>
             <circle r="46" fill="radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 50%, #1e293b 100%)" stroke="url(#goldStroke)" stroke-width="3.5"/>
             <polygon points="0,-18 17,-6 11,15 -11,15 -17,-6" fill="#0f172a"/>
@@ -1569,40 +1568,46 @@ function getPackSVGArtwork(cfg) {
             <ellipse cx="-16" cy="-16" rx="14" ry="7" transform="rotate(-30, -16, -16)" fill="#ffffff" opacity="0.8"/>
         </g>
 
-        <!-- Kinetic Speed Sparks & Explosive Shards -->
+        <!-- Kinetic Sparks -->
         <g fill="${c.accent}" opacity="0.9">
-            <polygon points="50,160 55,150 58,162 48,168"/>
-            <polygon points="270,180 280,175 275,190 265,182"/>
-            <polygon points="90,310 100,300 95,315 85,312"/>
-            <polygon points="230,300 242,295 235,312 225,308"/>
-            <circle cx="70" cy="200" r="3.5" fill="#fff"/>
-            <circle cx="250" cy="220" r="4" fill="#fff"/>
-            <circle cx="110" cy="340" r="3" fill="${c.slash1}"/>
-            <circle cx="210" cy="330" r="3.5" fill="${c.slash2}"/>
+            <polygon points="50,170 55,160 58,172 48,178"/>
+            <polygon points="270,190 280,185 275,200 265,192"/>
+            <polygon points="90,320 100,310 95,325 85,322"/>
+            <circle cx="70" cy="210" r="3.5" fill="#fff"/>
+            <circle cx="250" cy="230" r="4" fill="#fff"/>
         </g>
 
         <!-- 4. TOP LOGO: 3D POKÉMON-STYLE "FOOTBALL" HEADER -->
-        <g transform="translate(160, 48)">
+        <g transform="translate(160, 68)">
             <text x="0" y="24" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="#002b66" stroke="#001838" stroke-width="10" stroke-linejoin="round">FOOTBALL</text>
             <text x="0" y="22" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="url(#pkYellow)" stroke="#003399" stroke-width="4.5" stroke-linejoin="round">FOOTBALL</text>
             <text x="0" y="21" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-dasharray="12,25">FOOTBALL</text>
         </g>
 
         <!-- TRADING CARD GAME Red Ribbon Pill -->
-        <g transform="translate(160, 84)">
+        <g transform="translate(160, 102)">
             <polygon points="-88,-9 88,-9 80,9 -80,9" fill="#dc2626" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.8))"/>
             <text x="0" y="4" font-family="'Montserrat', 'Arial', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="2.5" fill="#ffffff">TRADING CARD GAME</text>
         </g>
 
         <!-- 5. LOWER 3D MEGA-EVOLUTION STYLE SET TITLE BANNER -->
-        <g transform="translate(160, 405)">
+        <g transform="translate(160, 412)">
             <polygon points="-140,-20 140,-20 128,20 -128,20" fill="#09121d" stroke="#000000" stroke-width="5" filter="drop-shadow(0 8px 16px rgba(0,0,0,0.9))"/>
             <polygon points="-136,-17 136,-17 125,17 -125,17" fill="url(#bannerGrad_${cfg.key})" stroke="url(#goldStroke)" stroke-width="2.5"/>
             <polygon points="-128,-11 128,-11 119,11 -119,11" fill="#06101c" opacity="0.75"/>
             <text x="0" y="7" font-family="'Impact', 'Arial Black', sans-serif" font-size="22" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="#ffffff" stroke="#000000" stroke-width="3.5" paint-order="stroke fill">${cfg.title}</text>
         </g>
 
-        <!-- 6. BOTTOM CORRUGATED CRIMP BAR & SERIAL / 6+ AGE BADGE -->
+        <!-- 6. TOP CORRUGATED METALLIC STRIPED CRIMP (IMAGE 1) -->
+        <g transform="translate(0, 0)">
+            <rect width="320" height="42" fill="#090f19" stroke="#1e293b" stroke-width="1"/>
+            <rect width="320" height="42" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+            <rect x="135" y="10" width="50" height="12" rx="6" fill="#030712" stroke="#ffffff" stroke-width="1.2" opacity="0.85"/>
+            <line x1="12" y1="36" x2="308" y2="36" stroke="#ffd700" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.9"/>
+            <text x="160" y="34" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#ffd700">✂ SWIPE TO TEAR ➔</text>
+        </g>
+
+        <!-- 7. BOTTOM CORRUGATED CRIMP BAR & SERIAL / 6+ AGE BADGE -->
         <g transform="translate(0, 456)">
             <rect width="320" height="34" fill="linear-gradient(180deg, #dc2626 0%, #991b1b 100%)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
             <rect width="320" height="12" y="12" fill="repeating-linear-gradient(90deg, #450a0a 0px, #ffffff 2px, #7f1d1d 4px, #450a0a 6px)" opacity="0.6"/>
@@ -1610,7 +1615,7 @@ function getPackSVGArtwork(cfg) {
         </g>
 
         <!-- Top Right "6+" Age Badge -->
-        <g transform="translate(285, 20)">
+        <g transform="translate(285, 48)">
             <rect width="26" height="16" rx="4" fill="#000000" stroke="#ffffff" stroke-width="1.5" opacity="0.85"/>
             <text x="13" y="12" font-family="'Arial', sans-serif" font-size="10" font-weight="900" text-anchor="middle" fill="#ffffff">6+</text>
         </g>
@@ -1629,65 +1634,9 @@ function renderBoosterPacksInStage(cfg, pullCount) {
     function generatePackHTML(num, isMulti, total) {
         const fanClass = isMulti ? `pack-fan-${total}-${num}` : '';
         return `
-        <div class="realistic-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}">
-            <div class="pack-3d-box">
-                <!-- 1. DETAILED 3D CARD INSERT READY TO POP UP -->
-                <div class="pack-card-insert">
-                    <div class="card-insert-face card-insert-back">
-                        <div class="card-back-pattern"></div>
-                        <div class="card-back-frame">
-                            <div class="card-back-crest">⚽</div>
-                            <div class="card-back-title">FOOTBALL TCG</div>
-                        </div>
-                        <div class="card-back-stars">★★★★★</div>
-                    </div>
-                </div>
-
-                <!-- 2. FRONT FOIL SLEEVE -->
-                <div class="pack-foil-front">
-                    <!-- SEVERABLE POKÉMON STRIPED TOP CRIMP CAP (IMAGE 1) -->
-                    <div class="pack-foil-cap" title="Swipe across to tear open!">
-                        <div class="pk-top-crimp-stripes"></div>
-                        <div class="pk-crimp-hanger-hole"></div>
-                        <div class="pk-tear-guideline">
-                            <span class="tear-notch-icon">✂</span>
-                            <span class="tear-dash-track">SWIPE TO TEAR ➔</span>
-                        </div>
-                        <div class="pack-cap-foil-shine"></div>
-                    </div>
-
-                    <!-- FULL BLEED POKÉMON-STYLE VECTOR ARTWORK BODY -->
-                    <div class="pack-foil-body">
-                        <div class="foil-specular-sheen"></div>
-                        ${getPackSVGArtwork(cfg)}
-                    </div>
-                </div>
-
-                <!-- 3. REALISTIC 3D BACK FOIL SLEEVE -->
-                <div class="pack-foil-back">
-                    <div class="pack-back-top-crimp"></div>
-                    <div class="pack-back-center-fin"></div>
-                    <div class="pack-back-details">
-                        <div class="pack-back-seal">
-                            <span class="seal-star">★</span>
-                            <span class="seal-text">OFFICIAL LICENSED TRADING CARDS</span>
-                        </div>
-                        <div class="pack-back-info">
-                            <p><b>SERIES 2026 EDITION</b></p>
-                            <p>1 OFFICIAL DIGITAL TRADING CARD</p>
-                            <p>COLLECT ALL LEGENDARY & SECRET ICONS</p>
-                        </div>
-                        <div class="pack-back-barcode-box">
-                            <div class="pack-back-barcode">||| | || ||| || ||| | ||| ||</div>
-                            <span class="pack-back-serial">2 02600 77890 4</span>
-                        </div>
-                        <div class="pack-back-footer">
-                            <span>FOOTBALL TCG INC.</span>
-                            <span class="pack-back-age-badge">6+</span>
-                        </div>
-                    </div>
-                    <div class="pack-back-bottom-crimp"></div>
-                </div>
+        <div class="luxury-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}">
+            <div class="pack-svg-container">
+                ${getPackSVGArtwork(cfg)}
             </div>
         </div>
         `;
@@ -1720,11 +1669,11 @@ function initPackSwipeGesture(onTear) {
         if (packTornExecuted) return;
         packTornExecuted = true;
         
-        const packs = document.querySelectorAll("#packsDisplayStage .realistic-booster-pack");
+        const packs = document.querySelectorAll("#packsDisplayStage .luxury-booster-pack");
         packs.forEach((p, idx) => {
             setTimeout(() => {
                 p.classList.add("pack-torn");
-            }, idx * 90);
+            }, idx * 75);
         });
         
         SoundFx.packTear();
@@ -1735,62 +1684,41 @@ function initPackSwipeGesture(onTear) {
                 packTearCallback = null;
                 cb();
             }
-        }, 850);
+        }, 750);
     }
 
-    function handleTouchStart(e) {
-        if (!e.touches || !e.touches.length) return;
+    function handleStart(clientX, clientY) {
         isDragging = true;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
+        startX = clientX;
+        startY = clientY;
     }
 
-    function handleTouchMove(e) {
-        if (!isDragging || packTornExecuted || !e.touches || !e.touches.length) return;
-        const deltaX = e.touches[0].clientX - startX;
-        const deltaY = e.touches[0].clientY - startY;
-        if (Math.abs(deltaX) >= 35 || Math.abs(deltaY) >= 40) {
-            isDragging = false;
-            executeTear();
-        }
-    }
-
-    function handleTouchEnd() {
-        isDragging = false;
-    }
-
-    function handleMouseDown(e) {
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-    }
-
-    function handleMouseMove(e) {
+    function handleMove(clientX, clientY) {
         if (!isDragging || packTornExecuted) return;
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-        if (Math.abs(deltaX) >= 35 || Math.abs(deltaY) >= 40) {
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+        if (Math.abs(deltaX) >= 30 || Math.abs(deltaY) >= 35) {
             isDragging = false;
             executeTear();
         }
     }
 
-    function handleMouseUp() {
+    function handleEnd() {
         isDragging = false;
     }
 
-    // Attach listeners directly to the top crimp caps of the booster packs
-    const caps = document.querySelectorAll("#packsDisplayStage .pack-foil-cap, #packsDisplayStage .realistic-booster-pack");
-    caps.forEach(cap => {
-        cap.ontouchstart = handleTouchStart;
-        cap.ontouchmove = handleTouchMove;
-        cap.ontouchend = handleTouchEnd;
-        cap.onmousedown = handleMouseDown;
-        cap.onclick = (e) => {
-            e.stopPropagation();
-            executeTear();
-        };
+    const packs = document.querySelectorAll("#packsDisplayStage .luxury-booster-pack");
+    packs.forEach(pack => {
+        pack.ontouchstart = (e) => { if (e.touches && e.touches.length) handleStart(e.touches[0].clientX, e.touches[0].clientY); };
+        pack.ontouchmove = (e) => { if (e.touches && e.touches.length) handleMove(e.touches[0].clientX, e.touches[0].clientY); };
+        pack.ontouchend = handleEnd;
+        pack.onmousedown = (e) => handleStart(e.clientX, e.clientY);
+        pack.onclick = () => executeTear();
     });
+
+    window.onmousemove = (e) => { if (isDragging) handleMove(e.clientX, e.clientY); };
+    window.onmouseup = handleEnd;
+}
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
@@ -1985,7 +1913,7 @@ function showMultiCardResult(pulledCards) {
         }
 
         return `
-        <article class="card ${themeClass} multi-pull-card" ${card.serialGradient ? `style="background:${card.serialGradient};animation-delay:${idx * 0.12}s;"` : `style="animation-delay:${idx * 0.12}s;"`}>
+        <article class="card ${themeClass} multi-table-card" ${card.serialGradient ? `style="background:${card.serialGradient};"` : ''}>
             <div class="card-top-row">
                 <button class="card-lock-btn ${isLocked ? 'locked' : ''}" onclick="toggleCardLock('${card.id}', event)" title="${isLocked ? 'Unlock Card' : 'Lock Card'}">
                     ${isLocked ? '🔒' : '🔓'}
@@ -1995,7 +1923,7 @@ function showMultiCardResult(pulledCards) {
             ${card.serialNumber ? `<span class="serial-badge" style="display:inline-block;margin-bottom:6px;">★ SERIAL #${card.serialNumber}/10 ★</span>` : ""}
 
             <div class="card-image-wrap">
-                <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+                <img class="card-photo" src="${card.image || 'player_temp.png'}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='player_temp.png';">
             </div>
             <div class="card-rating">${card.rating}</div>
             <div class="card-position">${escapeHTML(card.pos)}</div>
@@ -2014,13 +1942,17 @@ function showMultiCardResult(pulledCards) {
     }).join("");
 
     overlay.classList.remove("hidden");
+    overlay.style.display = "flex";
     SoundFx.cardReveal("Legendary");
     toast(`🎉 Successfully opened ${pulledCards.length} packs!`);
 }
 
 function closeMultiRevealModal() {
     const overlay = document.getElementById("multiCardRevealOverlay");
-    if (overlay) overlay.classList.add("hidden");
+    if (overlay) {
+        overlay.classList.add("hidden");
+        overlay.style.display = "none";
+    }
     SoundFx.click();
     renderAll();
 }
