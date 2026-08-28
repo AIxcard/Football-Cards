@@ -3201,6 +3201,7 @@ select,input{
     cursor: grabbing !important;
 }
 
+/* TOP METALLIC CORRUGATED POKÉMON STRIPED CRIMP (IMAGE 1) */
 .pk-top-crimp-stripes {
     position: absolute !important;
     top: 0 !important;
@@ -3208,15 +3209,15 @@ select,input{
     right: 0 !important;
     bottom: 0 !important;
     background: repeating-linear-gradient(90deg, 
-        #0f172a 0px, 
-        #94a3b8 2px, 
+        #020617 0px, 
+        #334155 2px, 
+        #94a3b8 3px, 
         #f8fafc 4px, 
-        #cbd5e1 6px, 
-        #475569 8px, 
-        #0f172a 10px
+        #334155 5px, 
+        #020617 7px
     ) !important;
     opacity: 0.95 !important;
-    box-shadow: inset 0 3px 6px rgba(0,0,0,0.8) !important;
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.85) !important;
 }
 
 .pk-crimp-hanger-hole {
@@ -3224,12 +3225,12 @@ select,input{
     top: 14px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 38px !important;
+    width: 40px !important;
     height: 10px !important;
     border-radius: 6px !important;
     background: #020617 !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.95) !important;
     z-index: 7 !important;
 }
 
@@ -3246,7 +3247,7 @@ select,input{
     font-weight: 900 !important;
     color: #ffd700 !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(255, 215, 0, 0.8) !important;
-    background: rgba(0,0,0,0.7) !important;
+    background: rgba(0,0,0,0.75) !important;
     padding: 3px 10px !important;
     border-radius: 10px !important;
     border: 1px dashed rgba(255, 215, 0, 0.7) !important;
@@ -3264,6 +3265,146 @@ select,input{
     background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%) !important;
     pointer-events: none !important;
     z-index: 9 !important;
+}
+
+/* 3D PACK WRAPPER & BACKPACK PACKAGING */
+.pack-3d-box {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform-style: preserve-3d !important;
+}
+
+.pack-foil-front {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 16px !important;
+    z-index: 4 !important;
+}
+
+/* REALISTIC 3D BACK FOIL SLEEVE */
+.pack-foil-back {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 16px !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: inset 0 0 35px rgba(0,0,0,0.85) !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 !important;
+}
+
+.pack-back-top-crimp, .pack-back-bottom-crimp {
+    width: 100% !important;
+    height: 32px !important;
+    background: repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #cbd5e1 4px, #334155 5px, #020617 7px) !important;
+    opacity: 0.95 !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9) !important;
+}
+
+.pack-back-center-fin {
+    position: absolute !important;
+    top: 32px !important;
+    bottom: 32px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 18px !important;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.6)) !important;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.7), -2px 0 8px rgba(0,0,0,0.7) !important;
+    z-index: 2 !important;
+}
+
+.pack-back-details {
+    position: relative !important;
+    z-index: 3 !important;
+    padding: 18px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.pack-back-seal {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: rgba(255, 215, 0, 0.15) !important;
+    border: 1px solid rgba(255, 215, 0, 0.6) !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 8px !important;
+    font-weight: 900 !important;
+    color: #ffd700 !important;
+    letter-spacing: 1px !important;
+}
+
+.pack-back-info {
+    font-size: 9px !important;
+    color: #94a3b8 !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    margin: 0 !important;
+}
+
+.pack-back-info p {
+    margin: 2px 0 !important;
+}
+
+.pack-back-barcode-box {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    background: #ffffff !important;
+    padding: 6px 14px !important;
+    border-radius: 6px !important;
+    color: #000000 !important;
+}
+
+.pack-back-barcode {
+    font-family: 'Courier New', monospace !important;
+    font-size: 16px !important;
+    font-weight: 900 !important;
+    letter-spacing: 2px !important;
+    line-height: 1 !important;
+}
+
+.pack-back-serial {
+    font-size: 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.5px !important;
+    margin-top: 2px !important;
+    color: #000 !important;
+}
+
+.pack-back-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    font-size: 8px !important;
+    font-weight: 900 !important;
+    color: #64748b !important;
+    letter-spacing: 1px !important;
+}
+
+.pack-back-age-badge {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border: 1px solid #ffffff !important;
+    padding: 1px 4px !important;
+    border-radius: 3px !important;
 }
 
 /* LOWER METALLIC FOIL SLEEVE BODY (FULL BLEED POKÉMON SVG ARTWORK) */
@@ -3404,49 +3545,87 @@ select,input{
 }
 
 /* =========================================================
-   MULTI-CARD REVEAL MODAL (FOR 3x & 5x PACK OPENINGS)
+   MULTI-CARD REVEAL MODAL (HORIZONTAL TABLE LAYOUT LIKE IMAGE 2)
    ========================================================= */
 
 .multi-reveal-modal {
-    background: rgba(2, 6, 12, 0.95) !important;
-    backdrop-filter: blur(20px) !important;
+    background: rgba(2, 6, 12, 0.96) !important;
+    backdrop-filter: blur(25px) !important;
     z-index: 100000 !important;
 }
 
 .multi-reveal-box {
-    width: min(1100px, 95vw);
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    background: #081420;
-    border: 2px solid rgba(255, 215, 0, 0.4);
-    border-radius: 26px;
-    padding: 28px;
-    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(255, 215, 0, 0.25);
-    overflow-y: auto;
+    width: min(1200px, 96vw) !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    text-align: center !important;
+    background: #040812 !important;
+    border: 2px solid rgba(255, 215, 0, 0.45) !important;
+    border-radius: 26px !important;
+    padding: 24px !important;
+    box-shadow: 0 25px 90px rgba(0, 0, 0, 0.98), 0 0 70px rgba(255, 215, 0, 0.3) !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
 }
 
 .multi-reveal-header h2 {
-    font-size: 28px;
-    margin: 4px 0;
-    color: #ffffff;
+    font-size: 28px !important;
+    margin: 4px 0 !important;
+    color: #ffffff !important;
 }
 
+/* HORIZONTAL TABLE LAYOUT MATCHING IMAGE 2 */
 .multi-reveal-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 24px !important;
+    margin: 30px 0 !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    padding: 20px 10px !important;
 }
 
 .multi-pull-card {
-    animation: cardPopIn 0.5s cubic-bezier(0.34, 1.3, 0.64, 1) backwards;
+    width: 220px !important;
+    flex-shrink: 0 !important;
+    animation: cardPopIn 0.5s cubic-bezier(0.34, 1.3, 0.64, 1) backwards !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.multi-pull-card:hover {
+    transform: translateY(-12px) scale(1.06) !important;
+    z-index: 10 !important;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.98), 0 0 50px rgba(255, 215, 0, 0.6) !important;
+}
+
+/* NATURAL POKER/TRADING CARD TILT (AS IN USER'S 3-CARD PHOTO) */
+.multi-reveal-grid > .multi-pull-card:nth-child(1) {
+    transform: rotate(-2.5deg) translateY(4px);
+}
+
+.multi-reveal-grid > .multi-pull-card:nth-child(2) {
+    transform: rotate(0deg) scale(1.04) translateY(-6px);
+}
+
+.multi-reveal-grid > .multi-pull-card:nth-child(3) {
+    transform: rotate(2.5deg) translateY(4px);
+}
+
+.multi-reveal-grid > .multi-pull-card:nth-child(4) {
+    transform: rotate(-1.5deg) translateY(2px);
+}
+
+.multi-reveal-grid > .multi-pull-card:nth-child(5) {
+    transform: rotate(3.5deg) translateY(6px);
 }
 
 @keyframes cardPopIn {
     0% { transform: scale(0.4) translateY(60px); opacity: 0; }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
+    100% { opacity: 1; }
 }
 
 .multi-pull-meta-badge {
