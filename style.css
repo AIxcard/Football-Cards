@@ -2562,8 +2562,10 @@ select,input{
    ========================================================= */
 
 .pack-opening-modal {
-    background: radial-gradient(circle at center, rgba(12, 28, 44, 0.96), rgba(3, 8, 14, 0.98));
-    z-index: 9000 !important;
+    background: radial-gradient(circle at center, rgba(12, 28, 44, 0.98), rgba(3, 8, 14, 0.99)) !important;
+    z-index: 9500 !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .pack-anim-wrapper {
@@ -2574,50 +2576,109 @@ select,input{
     position: relative;
 }
 
+.pack-burst-rays {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(255, 215, 0, 0.2), rgba(50, 149, 255, 0.3), rgba(255, 0, 128, 0.2), rgba(255, 215, 0, 0.2));
+    filter: blur(50px);
+    animation: spinRays 4s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes spinRays {
+    from { transform: rotate(0deg) scale(0.9); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    to { transform: rotate(360deg) scale(0.9); }
+}
+
 .pack-anim-box {
-    width: 220px;
-    height: 300px;
-    background: linear-gradient(135deg, #18334a, #0b1a26);
+    width: 240px;
+    height: 330px;
+    background: linear-gradient(145deg, #1e3a54, #0d1e2d);
     border: 3px solid var(--gold);
-    border-radius: 24px;
+    border-radius: 26px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 50px rgba(244, 196, 78, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.15);
-    animation: packRumble 0.6s ease-in-out infinite alternate;
+    box-shadow: 0 0 60px rgba(244, 196, 78, 0.6), inset 0 0 35px rgba(255, 255, 255, 0.2);
+    animation: packRumble 0.5s ease-in-out infinite alternate;
     text-align: center;
-    padding: 20px;
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.pack-foil-shimmer {
+    position: absolute;
+    inset: -100%;
+    background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.4) 48%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.4) 52%, transparent 65%);
+    animation: foilShimmer 1.5s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes foilShimmer {
+    0% { transform: translateX(-50%) rotate(25deg); }
+    100% { transform: translateX(50%) rotate(25deg); }
 }
 
 @keyframes packRumble {
     0% { transform: rotate(-3deg) scale(1); box-shadow: 0 0 30px rgba(244, 196, 78, 0.4); }
-    50% { transform: rotate(3deg) scale(1.04); box-shadow: 0 0 60px rgba(50, 149, 255, 0.7); }
-    100% { transform: rotate(-2deg) scale(1.08); box-shadow: 0 0 80px rgba(255, 215, 0, 0.9); }
+    50% { transform: rotate(4deg) scale(1.06); box-shadow: 0 0 70px rgba(50, 149, 255, 0.8); }
+    100% { transform: rotate(-3deg) scale(1.1); box-shadow: 0 0 90px rgba(255, 215, 0, 0.95); }
 }
 
 .pack-anim-icon {
-    font-size: 70px;
-    margin-bottom: 12px;
-    animation: pulsePackIcon 0.4s ease-in-out infinite alternate;
+    font-size: 80px;
+    margin-bottom: 14px;
+    animation: pulsePackIcon 0.35s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
 }
 
 @keyframes pulsePackIcon {
     from { transform: scale(0.9); }
-    to { transform: scale(1.15); }
+    to { transform: scale(1.2); }
 }
 
 .pack-anim-box h2 {
-    font-size: 18px;
+    font-size: 19px;
     color: #fff;
+    font-weight: 900;
     margin: 8px 0 4px;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .pack-anim-box p {
     font-size: 12px;
-    color: var(--muted);
-    margin: 0;
+    color: #cbd5e1;
+    margin: 0 0 16px;
+}
+
+.pack-rip-track {
+    width: 90%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pack-rip-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #3295ff, #38db8b, #ffd700);
+    border-radius: 20px;
+    animation: ripProgress 1.1s ease-in-out forwards;
+}
+
+@keyframes ripProgress {
+    0% { width: 0%; }
+    50% { width: 60%; }
+    100% { width: 100%; }
 }
 
 /* =========================================================
