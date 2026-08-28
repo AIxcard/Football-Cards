@@ -1363,6 +1363,7 @@ function bindEvents() {
             SoundFx.click();
             const overlay = document.getElementById("cardRevealOverlay");
             if (overlay) overlay.classList.add("hidden");
+            unlockModalScroll();
         });
     }
 
@@ -1720,6 +1721,16 @@ function initPackSwipeGesture(onTear) {
     window.onmouseup = handleEnd;
 }
 
+function lockModalScroll() {
+    document.body.classList.add("modal-open");
+    document.documentElement.classList.add("modal-open");
+}
+
+function unlockModalScroll() {
+    document.body.classList.remove("modal-open");
+    document.documentElement.classList.remove("modal-open");
+}
+
 function openPack(type, count = 1) {
     const pack = PACKS[type];
     if (!pack) return;
@@ -1841,6 +1852,7 @@ function openPack(type, count = 1) {
     }
 
     if (animOverlay) {
+        lockModalScroll();
         animOverlay.classList.remove("hidden");
         animOverlay.style.display = "flex";
 
@@ -1857,7 +1869,10 @@ function openPack(type, count = 1) {
 }
 
 function deliverPulledCards(pulledCards, bestCard) {
-    if (!pulledCards || !pulledCards.length) return;
+    if (!pulledCards || !pulledCards.length) {
+        unlockModalScroll();
+        return;
+    }
 
     const topWorldClass = pulledCards.find(p => p.card.rarity === "World Class");
     const topSecret = pulledCards.find(p => p.card.rarity === "Secret");
@@ -1892,6 +1907,8 @@ function showMultiCardResult(pulledCards) {
     const title = document.getElementById("multiRevealTitle");
     const sub = document.getElementById("multiRevealSub");
     if (!overlay || !grid) return;
+
+    lockModalScroll();
 
     if (title) title.textContent = `All ${pulledCards.length} Cards Pulled`;
     if (sub) sub.textContent = `${pulledCards.length} packs opened! All cards have been added to your collection.`;
@@ -1949,6 +1966,7 @@ function closeMultiRevealModal() {
         overlay.classList.add("hidden");
         overlay.style.display = "none";
     }
+    unlockModalScroll();
     SoundFx.click();
     renderAll();
 }
@@ -1959,6 +1977,7 @@ function showMythicCutscene(card) {
         showCardResult(card, false, false);
         return;
     }
+    lockModalScroll();
     setText("mythicPlayerName", card.player.toUpperCase());
     const photo = document.getElementById("mythicPlayerPhoto");
     if (photo && card.image) photo.src = card.image;
@@ -1976,6 +1995,7 @@ function closeMythicCutscene() {
         cutscenePostCallback = null;
         cb();
     } else {
+        unlockModalScroll();
         renderAll();
     }
 }
@@ -1986,6 +2006,7 @@ function showSecretCutscene(card) {
         showCardResult(card, false, false);
         return;
     }
+    lockModalScroll();
     setText("secretPlayerName", card.player.toUpperCase());
     const photo = document.getElementById("secretPlayerPhoto");
     if (photo && card.image) photo.src = card.image;
@@ -2003,6 +2024,7 @@ function closeSecretCutscene() {
         cutscenePostCallback = null;
         cb();
     } else {
+        unlockModalScroll();
         renderAll();
     }
 }
@@ -2016,6 +2038,7 @@ function closeWorldClass() {
         cutscenePostCallback = null;
         cb();
     } else {
+        unlockModalScroll();
         renderAll();
     }
 }
