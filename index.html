@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=125.0">
+<link rel="stylesheet" href="style.css?v=130.0">
 </head>
 
 <body>
@@ -926,10 +926,10 @@
         <h2>☁️ Cross-Device Cloud Account</h2>
         <p>Logged in as: <b id="settingsAccountName">Guest (Local)</b></p>
         <p id="settingsCloudSyncStatus" style="font-size:13px;color:var(--green);margin-top:4px;">● Auto-saving locally & in cloud</p>
-        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
-            <button id="settingsAuthBtn" class="primary-btn" style="width:auto;padding:10px 20px;" onclick="openAuthModal()">Switch / Log In Account</button>
-            <button id="settingsLogoutBtn" class="danger-btn" style="display:none;width:auto;padding:10px 20px;" onclick="CloudSync.logout()">Log Out</button>
-            <button class="ghost-btn" onclick="manualSyncCloud()">Force Sync Now</button>
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center;">
+            <button id="settingsAuthBtn" class="primary-btn" style="width:auto;height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;" onclick="openAuthModal()">Switch / Log In Account</button>
+            <button id="settingsLogoutBtn" class="danger-btn" style="display:none;width:auto;height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;" onclick="CloudSync.logout()">Log Out</button>
+            <button id="settingsSyncBtn" class="ghost-btn" style="width:auto;height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;" onclick="manualSyncCloud()">Force Sync Now</button>
         </div>
     </div>
 
@@ -1123,6 +1123,6 @@
     </div>
 </div>
 
-<script src="script.js?v=125.0"></script>
+<script src="script.js?v=130.0"></script>
 </body>
 </html>
