@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=30.0">
+<link rel="stylesheet" href="style.css?v=35.0">
 <style>
 .pack-opening-modal {
     position: fixed !important;
@@ -283,35 +283,70 @@
             </div>
         </div>
 
-        <!-- BIG CENTERED PHYSICAL 3D BOOSTER PACK -->
-        <div class="realistic-booster-pack starter-foil" id="realisticBoosterPack">
-            <!-- INNER CARDS STACK READY TO SLIDE UP -->
-            <div class="pack-card-insert" id="packCardInsert">
-                <div class="card-insert-face card-insert-back">
-                    <div class="card-back-pattern"></div>
-                    <div class="card-back-crest">⚽</div>
-                </div>
-            </div>
-
-            <!-- SEVERABLE TOP CRIMPED FOIL CAP -->
-            <div class="pack-foil-cap" id="packFoilCap">
-                <div class="pack-crimp-cording"></div>
-                <div class="pack-cap-foil-shine"></div>
-            </div>
-
-            <!-- LOWER METALLIC FOIL SLEEVE BODY (POKEMON/SPORTS STYLE FOIL ARTWORK) -->
-            <div class="pack-foil-body" id="packFoilBody">
-                <div class="foil-specular-sheen"></div>
-                
-                <h2 class="pack-foil-title" id="packFoilTitle">PREMIUM PACK</h2>
-
-                <div class="pack-foil-emblem-wrap">
-                    <div class="pack-foil-emblem-glow"></div>
-                    <div class="pack-foil-emblem" id="packFoilEmblem">⭐</div>
+        <!-- DYNAMIC PACKS STACK (1x, 3x, or 5x) -->
+        <div class="packs-display-stage" id="packsDisplayStage">
+            <div class="realistic-booster-pack starter-foil" id="realisticBoosterPack">
+                <!-- INNER CARDS STACK READY TO SLIDE UP -->
+                <div class="pack-card-insert" id="packCardInsert">
+                    <div class="card-insert-face card-insert-back">
+                        <div class="card-back-pattern"></div>
+                        <div class="card-back-crest">⚽</div>
+                    </div>
                 </div>
 
-                <div class="pack-crimp-seal-bottom"></div>
+                <!-- SEVERABLE TOP CRIMPED FOIL CAP -->
+                <div class="pack-foil-cap" id="packFoilCap">
+                    <div class="pack-crimp-cording"></div>
+                    <div class="pack-cap-badge">★ OFFICIAL TRADING CARD GAME ★</div>
+                    <div class="pack-cap-foil-shine"></div>
+                </div>
+
+                <!-- LOWER METALLIC FOIL SLEEVE BODY (BESPOKE FOOTBALL ARTWORK) -->
+                <div class="pack-foil-body" id="packFoilBody">
+                    <div class="foil-specular-sheen"></div>
+                    <div class="foil-stadium-rings"></div>
+                    
+                    <div class="pack-header-tag">SERIES 2026 EDITION</div>
+                    <h2 class="pack-foil-title" id="packFoilTitle">PREMIUM PACK</h2>
+                    <div class="pack-sub-badge" id="packSubBadge">★ 1 CARD TRANSFER ★</div>
+
+                    <!-- HERO CENTERPIECE: METALLIC HOLOGRAPHIC FOOTBALL CREST -->
+                    <div class="pack-foil-emblem-wrap">
+                        <div class="pack-foil-emblem-glow"></div>
+                        <div class="pack-foil-crest-border">
+                            <div class="pack-foil-crest-inner">
+                                <div class="pack-foil-emblem" id="packFoilEmblem">⚽</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pack-footer-meta">
+                        <span>ULTIMATE CARDS</span>
+                        <span>★ 100% AUTHENTIC FOIL ★</span>
+                    </div>
+
+                    <div class="pack-crimp-seal-bottom"></div>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MULTI-CARD REVEAL MODAL (FOR 3x & 5x PACK OPENINGS) -->
+<div id="multiCardRevealOverlay" class="modal hidden multi-reveal-modal">
+    <div class="multi-reveal-box">
+        <div class="multi-reveal-header">
+            <p class="eyebrow" style="color:var(--gold);">★ MULTI-PACK TRANSFER COMPLETE ★</p>
+            <h2 id="multiRevealTitle">All 3 Cards Pulled</h2>
+            <p id="multiRevealSub" style="color:var(--muted);margin:4px 0 0;">All cards have been added to your collection.</p>
+        </div>
+
+        <div id="multiRevealGrid" class="multi-reveal-grid">
+            <!-- Cards rendered dynamically -->
+        </div>
+
+        <div class="multi-reveal-footer">
+            <button id="multiRevealCollectBtn" class="primary-btn" onclick="closeMultiRevealModal()">Collect All Cards &amp; Return</button>
         </div>
     </div>
 </div>
