@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=105.0">
+<link rel="stylesheet" href="style.css?v=110.0">
 </head>
 
 <body>
@@ -188,13 +188,13 @@
 </div>
 
 <!-- REALISTIC 3D PHYSICAL BOOSTER PACK RIP OVERLAY -->
-<div id="packOpeningOverlay" class="modal hidden pack-opening-modal">
-    <div class="pack-stage-backdrop" id="packStageBackdrop"></div>
-    <div class="pack-burst-rays" id="packBurstRays"></div>
+<div id="packOpeningOverlay" class="modal hidden pack-opening-modal" style="position:fixed!important;inset:0!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;display:none;align-items:center!important;justify-content:center!important;z-index:99999!important;margin:0!important;padding:0!important;overflow:hidden!important;">
+    <div class="pack-stage-backdrop" id="packStageBackdrop" style="position:absolute;inset:0;pointer-events:none;"></div>
+    <div class="pack-burst-rays" id="packBurstRays" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
     
-    <div class="pack-opening-container" id="packOpeningContainer">
+    <div class="pack-opening-container" id="packOpeningContainer" style="position:relative!important;width:100%!important;height:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;margin:0 auto!important;padding:0!important;perspective:1600px!important;pointer-events:auto!important;">
         <!-- DYNAMIC HORIZONTAL PACKS STAGE (LEFT TO RIGHT FOR 1x, 3x, or 5x) -->
-        <div class="packs-display-stage" id="packsDisplayStage">
+        <div class="packs-display-stage" id="packsDisplayStage" style="display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;width:100%!important;margin:0 auto!important;position:relative!important;z-index:20!important;">
             <!-- Dynamically populated with authentic Pokemon-style vector booster packs -->
         </div>
     </div>
@@ -1123,6 +1123,6 @@
     </div>
 </div>
 
-<script src="script.js?v=105.0"></script>
+<script src="script.js?v=110.0"></script>
 </body>
 </html>
