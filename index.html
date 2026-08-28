@@ -67,21 +67,50 @@
             <span class="eyebrow" id="inspectorEyebrow">3D CARD INSPECTOR</span>
             <button class="modal-close-x" onclick="close3DCardModal()">✕</button>
         </div>
-        <p class="inspector-hint">Move your mouse or drag your finger freely to rotate & inspect in 3D</p>
+        <p class="inspector-hint">Drag or swipe freely to rotate 360° in 3D · Click Flip to inspect card back</p>
         
         <div class="card-3d-stage" id="card3DStage">
-            <div class="card-3d-wrapper" id="card3DCard">
-                <div class="card-3d-shine" id="card3DShine"></div>
-                <div id="card3DBadgeWrap"></div>
-                <span id="card3DRarity" class="rarity">RARITY</span>
-                <div class="card-image-wrap">
-                    <img id="card3DPhoto" class="card-photo" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" alt="Player Photo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+            <div class="card-3d-flipper" id="card3DFlipper">
+                <!-- FRONT FACE -->
+                <div class="card-3d-wrapper card-3d-front" id="card3DCard">
+                    <div class="card-3d-shine" id="card3DShine"></div>
+                    <div id="card3DBadgeWrap"></div>
+                    <span id="card3DRarity" class="rarity">RARITY</span>
+                    <div class="card-image-wrap">
+                        <img id="card3DPhoto" class="card-photo" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" alt="Player Photo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+                    </div>
+                    <div id="card3DRating" class="card-rating">90</div>
+                    <div id="card3DPos" class="card-position">ST</div>
+                    <h3 id="card3DName">Player Name</h3>
+                    <small id="card3DRaritySub">Rarity</small>
                 </div>
-                <div id="card3DRating" class="card-rating">90</div>
-                <div id="card3DPos" class="card-position">ST</div>
-                <h3 id="card3DName">Player Name</h3>
-                <small id="card3DRaritySub">Rarity</small>
+
+                <!-- BACK COVER FACE (ROYAL BLUE, GOLD & WHITE OFFICIAL DESIGN) -->
+                <div class="card-3d-wrapper card-3d-back" id="card3DBack">
+                    <div class="card-3d-shine"></div>
+                    <div class="card-back-pattern"></div>
+                    <div class="card-back-inner-border">
+                        <div class="card-back-stars">★★★★★</div>
+                        <div class="card-back-emblem">
+                            <div class="card-back-ball">⚽</div>
+                            <div class="card-back-title">FOOTBALL CARDS</div>
+                            <div class="card-back-subtitle">OFFICIAL LICENSED TRADING CARD</div>
+                        </div>
+                        <div class="card-back-hologram">
+                            <span>GENUINE OFFICIAL MERCHANDISE</span>
+                            <small>★ ULTIMATE EDITION ★</small>
+                        </div>
+                        <div class="card-back-footer">
+                            <span>SERIES 2026</span>
+                            <span>AUTHENTIC PULL</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+            <button id="card3DFlipBtn" class="primary-btn" style="width:auto;padding:8px 20px;font-size:13px;" onclick="toggle3DCardFlip()">🔄 Flip Front / Back</button>
         </div>
 
         <div class="inspector-stats-row">
