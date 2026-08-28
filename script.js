@@ -139,6 +139,10 @@ const CARD_VALUES = {
     Tournament: 15000
 };
 
+const FRAMES = [
+    { id: "default", name: "Classic Silver", css: "frame-default", cost: 0 }
+];
+
 function getCardValue(card) {
     if (!card) return 0;
     if (card.serialNumber || (card.rarity === "World Class" && (card.player === "Lionel Messi" || card.player === "Cristiano Ronaldo") && card.isSerialized)) {
