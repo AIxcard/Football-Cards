@@ -2969,23 +2969,28 @@ select,input{
 .pack-opening-modal {
     position: fixed !important;
     inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
     display: none;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(0, 0, 0, 0.95) !important;
+    background: rgba(0, 0, 0, 0.96) !important;
     backdrop-filter: blur(25px) !important;
     -webkit-backdrop-filter: blur(25px) !important;
     z-index: 99999 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .pack-burst-rays {
     position: absolute;
-    width: 600px;
-    height: 600px;
+    width: 700px;
+    height: 700px;
     border-radius: 50%;
     background: conic-gradient(from 0deg, rgba(255, 215, 0, 0.25), rgba(50, 149, 255, 0.35), rgba(255, 0, 128, 0.25), rgba(255, 215, 0, 0.25));
-    filter: blur(60px);
-    animation: spinRays 4s linear infinite;
+    filter: blur(70px);
+    animation: spinRays 5s linear infinite;
     pointer-events: none;
 }
 
@@ -3003,72 +3008,20 @@ select,input{
 }
 
 .pack-opening-container {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin: auto;
-    perspective: 1200px;
-}
-
-.pack-top-swipe-bar {
-    width: min(340px, 90vw);
-    height: 46px;
-    position: relative;
-    z-index: 20;
-    cursor: grab;
-    user-select: none;
-    touch-action: none;
-}
-
-.tear-swipe-track {
-    position: relative;
-    width: 100%;
-    height: 46px;
-    background: rgba(0, 0, 0, 0.9);
-    border: 2px solid rgba(255, 215, 0, 0.7);
-    border-radius: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
-}
-
-.tear-swipe-prompt {
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    color: #ffd700;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-    pointer-events: none;
-    animation: swipeHintGlow 1.4s ease-in-out infinite alternate;
-}
-
-.tear-swipe-blade {
-    position: absolute;
-    left: 4px;
-    top: 4px;
-    bottom: 4px;
-    width: 38px;
-    background: linear-gradient(135deg, #ffd700, #ff4500);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 1);
-    cursor: grab;
-    transition: transform 0.05s ease-out;
-}
-
-.tear-swipe-blade:active {
-    cursor: grabbing;
-    transform: scale(1.15);
+    position: relative !important;
+    z-index: 10 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    perspective: 1600px !important;
+    overflow: visible !important;
 }
 
 /* =========================================================
@@ -3081,15 +3034,14 @@ select,input{
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 16px !important;
-    position: relative;
-    perspective: 1400px;
-    min-height: 520px;
-    width: 100% !important;
+    position: relative !important;
+    perspective: 1600px !important;
+    width: auto !important;
     max-width: 98vw !important;
+    padding: 30px 10px !important;
+    margin: auto !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
-    padding: 30px 10px !important;
 }
 
 .single-pack-layout {
@@ -3097,19 +3049,19 @@ select,input{
 }
 
 .single-pack-layout .realistic-booster-pack {
-    width: 320px;
-    height: 490px;
-    margin: 0 auto;
+    width: 320px !important;
+    height: 490px !important;
+    margin: 0 auto !important;
 }
 
-/* 3-PACK HORIZONTAL FAN (LEFT TO RIGHT) */
+/* 3-PACK HORIZONTAL 3D FAN (LEFT TO RIGHT) */
 .multi-pack-3-layout {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 20px !important;
-    justify-content: center !important;
     align-items: center !important;
+    justify-content: center !important;
+    gap: 16px !important;
 }
 
 .multi-pack-3-layout .realistic-booster-pack {
@@ -3119,67 +3071,69 @@ select,input{
 }
 
 .multi-pack-3-layout .pack-fan-3-1 {
-    transform: perspective(1000px) rotateY(18deg) rotateZ(-3deg) translateY(12px) scale(0.92);
-    z-index: 1;
+    transform: perspective(1200px) rotateY(18deg) rotateZ(-3deg) translateY(12px) scale(0.94) !important;
+    z-index: 2 !important;
 }
 
 .multi-pack-3-layout .pack-fan-3-2 {
-    transform: perspective(1000px) rotateY(0deg) scale(1.05) translateZ(35px);
-    z-index: 10;
-    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.95), 0 0 70px var(--foil-glow);
+    transform: perspective(1200px) rotateY(0deg) scale(1.06) translateZ(40px) !important;
+    z-index: 10 !important;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.98), 0 0 75px var(--foil-glow) !important;
 }
 
 .multi-pack-3-layout .pack-fan-3-3 {
-    transform: perspective(1000px) rotateY(-18deg) rotateZ(3deg) translateY(12px) scale(0.92);
-    z-index: 1;
+    transform: perspective(1200px) rotateY(-18deg) rotateZ(3deg) translateY(12px) scale(0.94) !important;
+    z-index: 2 !important;
 }
 
-/* 5-PACK HORIZONTAL FAN (LEFT TO RIGHT AS DRAWN IN USER SKETCH) */
+/* 5-PACK HORIZONTAL 3D FAN (LEFT 2, CENTER, RIGHT 2 AS SKETCHED) */
 .multi-pack-5-layout {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 10px !important;
-    justify-content: center !important;
     align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: auto !important;
+    max-width: 98vw !important;
 }
 
 .multi-pack-5-layout .realistic-booster-pack {
-    width: 195px !important;
+    width: 190px !important;
     height: 330px !important;
     flex-shrink: 0 !important;
 }
 
 .multi-pack-5-layout .pack-fan-5-1 {
-    transform: perspective(1000px) rotateY(28deg) rotateZ(-6deg) translateY(24px) scale(0.82);
-    z-index: 1;
+    transform: perspective(1200px) rotateY(28deg) rotateZ(-6deg) translateY(24px) scale(0.84) !important;
+    z-index: 1 !important;
 }
 
 .multi-pack-5-layout .pack-fan-5-2 {
-    transform: perspective(1000px) rotateY(14deg) rotateZ(-3deg) translateY(10px) scale(0.92);
-    z-index: 5;
+    transform: perspective(1200px) rotateY(14deg) rotateZ(-3deg) translateY(10px) scale(0.94) !important;
+    z-index: 5 !important;
 }
 
 .multi-pack-5-layout .pack-fan-5-3 {
-    transform: perspective(1000px) rotateY(0deg) scale(1.08) translateZ(45px);
-    z-index: 15;
-    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.98), 0 0 80px var(--foil-glow);
+    transform: perspective(1200px) rotateY(0deg) scale(1.1) translateZ(50px) !important;
+    z-index: 20 !important;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.98), 0 0 85px var(--foil-glow) !important;
 }
 
 .multi-pack-5-layout .pack-fan-5-4 {
-    transform: perspective(1000px) rotateY(-14deg) rotateZ(3deg) translateY(10px) scale(0.92);
-    z-index: 5;
+    transform: perspective(1200px) rotateY(-14deg) rotateZ(3deg) translateY(10px) scale(0.94) !important;
+    z-index: 5 !important;
 }
 
 .multi-pack-5-layout .pack-fan-5-5 {
-    transform: perspective(1000px) rotateY(-28deg) rotateZ(6deg) translateY(24px) scale(0.82);
-    z-index: 1;
+    transform: perspective(1200px) rotateY(-28deg) rotateZ(6deg) translateY(24px) scale(0.84) !important;
+    z-index: 1 !important;
 }
 
 @media(max-width: 768px) {
     .packs-display-stage {
         justify-content: flex-start !important;
-        gap: 12px !important;
+        gap: 10px !important;
     }
     .multi-pack-3-layout .realistic-booster-pack {
         width: 170px !important;
@@ -3195,36 +3149,16 @@ select,input{
    AUTHENTIC POKÉMON-STYLE TRADING CARD BOOSTER PACKS
    ========================================================= */
 
-.starter-foil {
-    --foil-glow: rgba(16, 185, 129, 0.9);
-}
-
-.premium-foil {
-    --foil-glow: rgba(59, 130, 246, 0.9);
-}
-
-.champion-foil {
-    --foil-glow: rgba(168, 85, 247, 0.9);
-}
-
-.exclusive-foil {
-    --foil-glow: rgba(236, 72, 153, 0.9);
-}
-
-.mythic-foil {
-    --foil-glow: rgba(239, 68, 68, 0.95);
-}
-
-.secret-foil {
-    --foil-glow: rgba(6, 182, 212, 0.95);
-}
-
-.worldclass-foil {
-    --foil-glow: rgba(245, 158, 11, 1);
-}
+.starter-foil { --foil-glow: rgba(16, 185, 129, 0.95); }
+.premium-foil { --foil-glow: rgba(59, 130, 246, 0.95); }
+.champion-foil { --foil-glow: rgba(168, 85, 247, 0.95); }
+.exclusive-foil { --foil-glow: rgba(236, 72, 153, 0.95); }
+.mythic-foil { --foil-glow: rgba(239, 68, 68, 0.95); }
+.secret-foil { --foil-glow: rgba(6, 182, 212, 0.95); }
+.worldclass-foil { --foil-glow: rgba(245, 158, 11, 1); }
 
 .realistic-booster-pack {
-    position: relative;
+    position: relative !important;
     width: 320px;
     height: 490px;
     border-radius: 16px;
@@ -3232,7 +3166,7 @@ select,input{
     transform-style: preserve-3d;
     transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
     animation: packFloatRumble 2.4s ease-in-out infinite alternate;
-    overflow: visible;
+    overflow: visible !important;
     user-select: none;
     touch-action: none;
 }
@@ -3244,35 +3178,35 @@ select,input{
 
 /* POKÉMON STRIPED TOP CRIMP CAP (SWIPE TARGET) */
 .pack-foil-cap {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 76px;
-    border-radius: 16px 16px 0 0;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.45);
-    z-index: 6;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    transition: transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease 0.1s;
-    cursor: grab;
-    touch-action: none;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 76px !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.45) !important;
+    z-index: 6 !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    transition: transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease 0.1s !important;
+    cursor: grab !important;
+    touch-action: none !important;
 }
 
 .pack-foil-cap:active {
-    cursor: grabbing;
+    cursor: grabbing !important;
 }
 
 .pk-top-crimp-stripes {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     background: repeating-linear-gradient(90deg, 
         #0f172a 0px, 
         #94a3b8 2px, 
@@ -3280,95 +3214,95 @@ select,input{
         #cbd5e1 6px, 
         #475569 8px, 
         #0f172a 10px
-    );
-    opacity: 0.95;
-    box-shadow: inset 0 3px 6px rgba(0,0,0,0.8);
+    ) !important;
+    opacity: 0.95 !important;
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.8) !important;
 }
 
 .pk-crimp-hanger-hole {
-    position: absolute;
-    top: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 38px;
-    height: 10px;
-    border-radius: 6px;
-    background: #020617;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9);
-    z-index: 7;
+    position: absolute !important;
+    top: 14px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 38px !important;
+    height: 10px !important;
+    border-radius: 6px !important;
+    background: #020617 !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9) !important;
+    z-index: 7 !important;
 }
 
 .pk-tear-guideline {
-    position: absolute;
-    bottom: 6px;
-    left: 8px;
-    right: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-size: 10px;
-    font-weight: 900;
-    color: #ffd700;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(255, 215, 0, 0.8);
-    background: rgba(0,0,0,0.7);
-    padding: 3px 10px;
-    border-radius: 10px;
-    border: 1px dashed rgba(255, 215, 0, 0.7);
-    letter-spacing: 1.5px;
-    z-index: 8;
-    animation: swipeHintGlow 1.4s ease-in-out infinite alternate;
+    position: absolute !important;
+    bottom: 6px !important;
+    left: 8px !important;
+    right: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    color: #ffd700 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(255, 215, 0, 0.8) !important;
+    background: rgba(0,0,0,0.7) !important;
+    padding: 3px 10px !important;
+    border-radius: 10px !important;
+    border: 1px dashed rgba(255, 215, 0, 0.7) !important;
+    letter-spacing: 1.5px !important;
+    z-index: 8 !important;
+    animation: swipeHintGlow 1.4s ease-in-out infinite alternate !important;
 }
 
 .pack-cap-foil-shine {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%);
-    pointer-events: none;
-    z-index: 9;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%) !important;
+    pointer-events: none !important;
+    z-index: 9 !important;
 }
 
 /* LOWER METALLIC FOIL SLEEVE BODY (FULL BLEED POKÉMON SVG ARTWORK) */
 .pack-foil-body {
-    position: absolute;
-    top: 74px;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    border-radius: 0 0 16px 16px;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: absolute !important;
+    top: 74px !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    border-radius: 0 0 16px 16px !important;
+    z-index: 4 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     padding: 0 !important;
-    overflow: hidden;
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
-    background: #020617;
+    overflow: hidden !important;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6) !important;
+    background: #020617 !important;
 }
 
 .pk-booster-svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    border-radius: 0 0 16px 16px;
-    object-fit: fill;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    border-radius: 0 0 16px 16px !important;
+    object-fit: fill !important;
 }
 
 .foil-specular-sheen {
-    position: absolute;
-    top: -60%;
-    left: -60%;
-    width: 220%;
-    height: 220%;
-    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.3) 48%, rgba(255,215,0,0.4) 52%, rgba(0,255,255,0.3) 56%, transparent 65%);
-    pointer-events: none;
-    animation: foilSheen 3.2s infinite;
-    z-index: 5;
+    position: absolute !important;
+    top: -60% !important;
+    left: -60% !important;
+    width: 220% !important;
+    height: 220% !important;
+    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.3) 48%, rgba(255,215,0,0.4) 52%, rgba(0,255,255,0.3) 56%, transparent 65%) !important;
+    pointer-events: none !important;
+    animation: foilSheen 3.2s infinite !important;
+    z-index: 5 !important;
 }
 
 @keyframes foilSheen {
@@ -3378,78 +3312,78 @@ select,input{
 
 /* DETAILED 3D CARD INSERT INSIDE PACK */
 .pack-card-insert {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    height: 420px;
-    z-index: 2;
-    border-radius: 16px;
-    background: #09131e;
-    border: 2px solid rgba(255, 215, 0, 0.65);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.85);
-    transition: transform 0.85s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.85s ease;
+    position: absolute !important;
+    top: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    height: 420px !important;
+    z-index: 2 !important;
+    border-radius: 16px !important;
+    background: #09131e !important;
+    border: 2px solid rgba(255, 215, 0, 0.65) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.85) !important;
+    transition: transform 0.85s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.85s ease !important;
 }
 
 .card-insert-back {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 14px;
-    background: radial-gradient(circle at center, #0f2744 0%, #081422 60%, #030810 100%);
-    position: relative;
-    overflow: hidden;
-    border: 2px solid rgba(255, 215, 0, 0.7);
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.9);
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 14px !important;
+    background: radial-gradient(circle at center, #0f2744 0%, #081422 60%, #030810 100%) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border: 2px solid rgba(255, 215, 0, 0.7) !important;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.9) !important;
 }
 
 .card-back-pattern {
-    position: absolute;
-    inset: 0;
+    position: absolute !important;
+    inset: 0 !important;
     background-image: repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.04) 0px, rgba(255, 215, 0, 0.04) 8px, transparent 8px, transparent 16px),
-                      repeating-linear-gradient(-45deg, rgba(255, 215, 0, 0.04) 0px, rgba(255, 215, 0, 0.04) 8px, transparent 8px, transparent 16px);
+                      repeating-linear-gradient(-45deg, rgba(255, 215, 0, 0.04) 0px, rgba(255, 215, 0, 0.04) 8px, transparent 8px, transparent 16px) !important;
 }
 
 .card-back-frame {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid rgba(255, 215, 0, 0.5);
-    border-radius: 50%;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.15), rgba(0,0,0,0.85));
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+    position: relative !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid rgba(255, 215, 0, 0.5) !important;
+    border-radius: 50% !important;
+    width: 150px !important;
+    height: 150px !important;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15), rgba(0,0,0,0.85)) !important;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3) !important;
 }
 
 .card-back-crest {
-    font-size: 58px;
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9));
-    animation: spinSlow 12s linear infinite;
+    font-size: 58px !important;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9)) !important;
+    animation: spinSlow 12s linear infinite !important;
 }
 
 .card-back-title {
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    color: #ffd700;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.9);
-    margin-top: 4px;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    letter-spacing: 2px !important;
+    color: #ffd700 !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important;
+    margin-top: 4px !important;
 }
 
 .card-back-stars {
-    margin-top: 18px;
-    font-size: 13px;
-    letter-spacing: 4px;
-    color: #ffd700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-    z-index: 2;
+    margin-top: 18px !important;
+    font-size: 13px !important;
+    letter-spacing: 4px !important;
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8) !important;
+    z-index: 2 !important;
 }
 
 /* CLEAN RIP-OFF ANIMATION: Top striped crimp separates cleanly and flies away */
