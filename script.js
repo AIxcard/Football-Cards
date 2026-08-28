@@ -67,22 +67,46 @@ const AntiCheat = {
         st._sig = this.computeChecksum(st.coins || 0, (st.cards || []).length, st.level || 1);
         st._lastValidCoins = Number(st.coins) || 0;
     },
+    applyAutoBan(reason) {
+        if (!state) return;
+        const u = (state.accountUser || state.name || "").toLowerCase();
+        if (u === "alucard") return; // Owner cannot be banned
+
+        state.bannedUntil = Date.now() + 86400000; // 24 Hours
+        state.banReason = reason || "Unauthorized Script / Balance Injection Detected";
+        state.coins = 100; // Reset exploited balance
+        this.signState(state);
+        saveGame();
+        checkBanStatus();
+        if (typeof FirebaseSync !== "undefined" && FirebaseSync.setBan) {
+            FirebaseSync.setBan(state.accountUser || state.name, 86400000, state.banReason);
+        }
+        toast("⛔ Security Alert: Account suspended for 1 day due to script injection.");
+    },
     validateState(st) {
         if (!st) return true;
+        const u = (st.accountUser || st.name || "").toLowerCase();
+        if (u === "alucard") {
+            // Creator / Owner bypass
+            return true;
+        }
+
+        // Detect 1 Billion Coins / Impossible balance injections
+        if (Number(st.coins) >= 100000000) {
+            console.warn("Anti-Cheat: Extreme balance injection detected.");
+            this.applyAutoBan("Excessive Balance / Script Injection Detected (" + (Number(st.coins) || 0).toLocaleString() + " Coins)");
+            return false;
+        }
+
         if (!st._sig) {
             this.signState(st);
             return true;
         }
+
         const expected = this.computeChecksum(st.coins || 0, (st.cards || []).length, st.level || 1);
         if (st._sig !== expected) {
-            console.warn("Anti-Cheat: Unauthorized state injection detected. Restoring verified balance.");
-            if (st._lastValidCoins !== undefined) {
-                st.coins = st._lastValidCoins;
-            }
-            this.signState(st);
-            if (typeof toast === "function") {
-                toast("🛡️ Anti-Cheat: Unauthorized modification reverted!");
-            }
+            console.warn("Anti-Cheat: Direct state tampering detected.");
+            this.applyAutoBan("Client State Tampering & Script Modification Detected");
             return false;
         }
         return true;
@@ -499,10 +523,11 @@ const TITLES = [
     id: "owner",
     name: "Owner",
     cssClass: "title-owner",
-    requirement: "Reach Level 50 or 50,000+ Collection Value",
+    requirement: "Exclusive Creator Title (Alucard)",
     unlock: () => {
         try {
-            return (state.level >= 50 || calculateCollectionValue(state.cards || []) >= 50000);
+            const u = (state.accountUser || state.name || "").toLowerCase();
+            return u === "alucard";
         } catch (e) { return false; }
     }
 },
@@ -510,10 +535,11 @@ const TITLES = [
     id: "admin",
     name: "Admin",
     cssClass: "title-admin",
-    requirement: "Reach Level 25 or 25,000+ Collection Value",
+    requirement: "Granted exclusively by Owner (Alucard)",
     unlock: () => {
         try {
-            return (state.level >= 25 || calculateCollectionValue(state.cards || []) >= 25000);
+            const u = (state.accountUser || state.name || "").toLowerCase();
+            return u === "alucard" || (state.grantedTitles || []).includes("Admin") || !!state.isGrantedAdmin;
         } catch (e) { return false; }
     }
 },
@@ -521,10 +547,11 @@ const TITLES = [
     id: "staff",
     name: "Staff",
     cssClass: "title-staff",
-    requirement: "Reach Level 10 or 10,000+ Collection Value",
+    requirement: "Granted exclusively by Owner (Alucard)",
     unlock: () => {
         try {
-            return (state.level >= 10 || calculateCollectionValue(state.cards || []) >= 10000);
+            const u = (state.accountUser || state.name || "").toLowerCase();
+            return u === "alucard" || (state.grantedTitles || []).includes("Staff") || !!state.isGrantedStaff;
         } catch (e) { return false; }
     }
 }
@@ -623,6 +650,12 @@ function freshState() {
         missionClaimed: { hourly: [false, false, false], daily: [false, false, false], weekly: [false, false, false], monthly: [false, false, false] },
         missionReset: { hourly: Date.now(), daily: Date.now(), weekly: Date.now(), monthly: Date.now() },
 
+        bannedUntil: 0,
+        banReason: "",
+        grantedTitles: [],
+        isGrantedAdmin: false,
+        isGrantedStaff: false,
+
         dailyRewardClaimed: 0,
         freeKickClaimed: 0,
         worldClassPending: null,
@@ -686,7 +719,11 @@ function loadGame() {
             tournamentDraft: { ...fresh.tournamentDraft, ...(saved.tournamentDraft || {}) },
             missionProgress: { ...fresh.missionProgress, ...(saved.missionProgress || {}) },
             missionClaimed: { ...fresh.missionClaimed, ...(saved.missionClaimed || {}) },
-            missionReset: { ...fresh.missionReset, ...(saved.missionReset || {}) },
+            bannedUntil: saved.bannedUntil || 0,
+            banReason: saved.banReason || "",
+            grantedTitles: Array.isArray(saved.grantedTitles) ? saved.grantedTitles : [],
+            isGrantedAdmin: !!saved.isGrantedAdmin,
+            isGrantedStaff: !!saved.isGrantedStaff,
             unlockedCardNames: Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : [],
             serializedCounts: saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 },
             redeemedCodes: Array.isArray(saved.redeemedCodes) ? saved.redeemedCodes : []
@@ -740,12 +777,123 @@ function updatePlaytime() {
    CLOUD AUTH & TRADING BACKEND
    ========================================================= */
 
+const FIREBASE_DB_URL = "https://football-cards-global-default-rtdb.firebaseio.com";
 const ONLINE_BACKEND_URL = "https://keyvalue.immanuel.co/api/KeyVal";
-const ONLINE_BACKEND_KEY = "football_cards_global_hub_v2";
+const ONLINE_BACKEND_KEY = "football_cards_global_hub_v3";
+
+const FirebaseSync = {
+    async fetchLeaderboard() {
+        try {
+            const res = await fetch(`${FIREBASE_DB_URL}/leaderboard.json`, { cache: "no-store" });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && typeof data === "object") return data;
+            }
+        } catch (e) {}
+        return null;
+    },
+
+    async fetchAllUsers() {
+        try {
+            const res = await fetch(`${FIREBASE_DB_URL}/users.json`, { cache: "no-store" });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && typeof data === "object") return data;
+            }
+        } catch (e) {}
+        return null;
+    },
+
+    async fetchUser(username) {
+        if (!username) return null;
+        try {
+            const res = await fetch(`${FIREBASE_DB_URL}/users/${encodeURIComponent(username.toLowerCase())}.json`, { cache: "no-store" });
+            if (res.ok) return await res.json();
+        } catch (e) {}
+        return null;
+    },
+
+    async pushUser(username, accountPayload) {
+        if (!username) return;
+        const clean = username.trim().toLowerCase();
+        try {
+            await fetch(`${FIREBASE_DB_URL}/users/${encodeURIComponent(clean)}.json`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(accountPayload)
+            });
+
+            let pData = {};
+            try {
+                pData = typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : (accountPayload.saveData || {});
+            } catch(e) {}
+
+            const lbEntry = {
+                name: pData.name || accountPayload.username,
+                username: accountPayload.username,
+                gold: Number(pData.coins) || 0,
+                value: calculateCollectionValue(pData.cards || []),
+                cards: (pData.cards || []).length,
+                level: pData.level || 1,
+                equippedTitle: pData.equippedTitle || "Collector",
+                profileFrame: pData.profileFrame || "default",
+                bannedUntil: pData.bannedUntil || 0,
+                updatedAt: Date.now()
+            };
+
+            await fetch(`${FIREBASE_DB_URL}/leaderboard/${encodeURIComponent(clean)}.json`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(lbEntry)
+            });
+        } catch (e) {
+            console.warn("Firebase sync notice:", e);
+        }
+    },
+
+    async setBan(username, durationMs, reason) {
+        const clean = (username || "").trim().toLowerCase();
+        if (!clean || clean === "alucard") return;
+        const banObj = {
+            username: username,
+            bannedUntil: Date.now() + durationMs,
+            reason: reason || "Unauthorized Script / Balance Injection",
+            bannedAt: Date.now()
+        };
+        try {
+            await fetch(`${FIREBASE_DB_URL}/bans/${encodeURIComponent(clean)}.json`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(banObj)
+            });
+        } catch (e) {}
+    },
+
+    async removeBan(username) {
+        const clean = (username || "").trim().toLowerCase();
+        if (!clean) return;
+        try {
+            await fetch(`${FIREBASE_DB_URL}/bans/${encodeURIComponent(clean)}.json`, {
+                method: "DELETE"
+            });
+        } catch (e) {}
+    }
+};
 
 let onlineAccountsCache = {};
 
 async function fetchOnlineGlobalAccounts() {
+    try {
+        const fbUsers = await FirebaseSync.fetchAllUsers();
+        if (fbUsers && typeof fbUsers === "object") {
+            const localAccs = CloudSync.getAccounts();
+            const merged = { ...localAccs, ...fbUsers };
+            CloudSync.saveAccounts(merged);
+            onlineAccountsCache = merged;
+            return merged;
+        }
+    } catch (e) {}
+
     try {
         const res = await fetch(`${ONLINE_BACKEND_URL}/GetValue/${ONLINE_BACKEND_KEY}`, { cache: "no-store" });
         if (res.ok) {
@@ -762,9 +910,7 @@ async function fetchOnlineGlobalAccounts() {
                 }
             }
         }
-    } catch (e) {
-        console.warn("Online cloud sync offline fallback active", e);
-    }
+    } catch (e) {}
     return CloudSync.getAccounts();
 }
 
@@ -773,6 +919,7 @@ async function pushOnlineGlobalAccount(username, accountPayload) {
         const local = CloudSync.getAccounts();
         local[username.toLowerCase()] = accountPayload;
         CloudSync.saveAccounts(local);
+        FirebaseSync.pushUser(username, accountPayload);
         const payloadStr = JSON.stringify(local);
         await fetch(`${ONLINE_BACKEND_URL}/UpdateValue/${ONLINE_BACKEND_KEY}/${encodeURIComponent(payloadStr)}`);
     } catch (e) {}
@@ -833,21 +980,34 @@ const CloudSync = {
         saveGame();
         renderAll();
         updateAuthUI();
+        checkAdminStatus();
         return { success: true, msg: "Account created and online cloud synced!" };
     },
 
-    login(username, password) {
+    async login(username, password) {
         const u = username.trim();
         const p = password.trim();
-        const accs = this.getAccounts();
+        let accs = this.getAccounts();
         const key = u.toLowerCase();
-        const acc = accs[key];
+        let acc = accs[key];
+
+        // Check Firebase online database if not found locally
+        if (!acc) {
+            try {
+                const fbUser = await FirebaseSync.fetchUser(u);
+                if (fbUser && fbUser.password === p) {
+                    acc = fbUser;
+                    accs[key] = fbUser;
+                    this.saveAccounts(accs);
+                }
+            } catch (e) {}
+        }
 
         if (!acc || acc.password !== p) return { success: false, msg: "Invalid username or password." };
 
         if (acc.saveData) {
             try {
-                const cloudSave = JSON.parse(acc.saveData);
+                const cloudSave = typeof acc.saveData === "string" ? JSON.parse(acc.saveData) : acc.saveData;
                 state = {
                     ...freshState(),
                     ...cloudSave,
@@ -877,6 +1037,8 @@ const CloudSync = {
         saveGame();
         renderAll();
         updateAuthUI();
+        checkAdminStatus();
+        checkBanStatus();
         return { success: true, msg: "Welcome back! Online cloud progress loaded." };
     },
 
@@ -886,7 +1048,10 @@ const CloudSync = {
         saveGame();
         renderAll();
         updateAuthUI();
+        checkAdminStatus();
         closeAuthModal();
+        const bannedModal = document.getElementById("accountBannedModal");
+        if (bannedModal) bannedModal.classList.add("hidden");
         toast("Logged out. Started fresh guest session.");
     },
 
@@ -911,7 +1076,7 @@ function syncCloud() {
 function manualSyncCloud() {
     syncCloud();
     SoundFx.coin();
-    toast("☁️ Cloud state successfully saved!");
+    toast("Synced progress to Firebase online cloud!");
 }
 
 function openAuthModal() {
@@ -1105,6 +1270,8 @@ function renderAll() {
     try { renderMissions(); } catch(e) { console.error("Missions error", e); }
     try { renderSettings(); } catch(e) { console.error("Settings error", e); }
     try { updateAuthUI(); } catch(e) { console.error("AuthUI error", e); }
+    try { checkAdminStatus(); } catch(e) { console.error("AdminStatus error", e); }
+    try { checkBanStatus(); } catch(e) { console.error("BanStatus error", e); }
 }
 
 function renderSettings() {
@@ -2947,6 +3114,447 @@ function setLeaderboardTab(tab) {
     renderLeaderboard();
 }
 
+async function renderLeaderboard() {
+    const list = document.getElementById("globalLeaderboard") || document.getElementById("leaderboardList");
+    if (!list) return;
+
+    list.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);"><span class="pack-spinner" style="display:inline-block;width:24px;height:24px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;"></span><p style="margin-top:10px;">Connecting to Firebase Global Leaderboard...</p></div>`;
+
+    let fbLeaderboard = await FirebaseSync.fetchLeaderboard();
+    let fbUsers = await FirebaseSync.fetchAllUsers();
+    let localAccs = CloudSync.getAccounts();
+
+    let playersMap = {};
+
+    // 1. Ingest from Firebase leaderboard
+    if (fbLeaderboard && typeof fbLeaderboard === "object") {
+        for (const k in fbLeaderboard) {
+            const entry = fbLeaderboard[k];
+            if (entry && (entry.username || entry.name)) {
+                playersMap[k.toLowerCase()] = {
+                    name: entry.name || entry.username,
+                    username: entry.username || entry.name,
+                    gold: Number(entry.gold !== undefined ? entry.gold : (entry.coins || 0)) || 0,
+                    value: Number(entry.value || 0),
+                    cards: Number(entry.cards || 0),
+                    level: Number(entry.level || 1),
+                    equippedTitle: entry.equippedTitle || "Collector",
+                    profileFrame: entry.profileFrame || "default",
+                    bannedUntil: entry.bannedUntil || 0
+                };
+            }
+        }
+    }
+
+    // 2. Ingest from Firebase users
+    if (fbUsers && typeof fbUsers === "object") {
+        for (const k in fbUsers) {
+            const u = fbUsers[k];
+            let pData = {};
+            try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+            if (!playersMap[k.toLowerCase()]) {
+                playersMap[k.toLowerCase()] = {
+                    name: pData.name || u.username,
+                    username: u.username,
+                    gold: Number(pData.coins || 0),
+                    value: calculateCollectionValue(pData.cards || []),
+                    cards: (pData.cards || []).length,
+                    level: pData.level || 1,
+                    equippedTitle: pData.equippedTitle || "Collector",
+                    profileFrame: pData.profileFrame || "default",
+                    bannedUntil: pData.bannedUntil || 0
+                };
+            }
+        }
+    }
+
+    // 3. Ingest local accounts
+    for (const k in localAccs) {
+        const u = localAccs[k];
+        let pData = {};
+        try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+        if (!playersMap[k.toLowerCase()]) {
+            playersMap[k.toLowerCase()] = {
+                name: pData.name || u.username,
+                username: u.username,
+                gold: Number(pData.coins || 0),
+                value: calculateCollectionValue(pData.cards || []),
+                cards: (pData.cards || []).length,
+                level: pData.level || 1,
+                equippedTitle: pData.equippedTitle || "Collector",
+                profileFrame: pData.profileFrame || "default",
+                bannedUntil: pData.bannedUntil || 0
+            };
+        }
+    }
+
+    // 4. Ensure current active session is present
+    const currentName = state.accountUser || state.name || "Guest";
+    const currentKey = currentName.toLowerCase();
+    playersMap[currentKey] = {
+        name: state.name || currentName,
+        username: state.accountUser || currentName,
+        gold: Number(state.coins || 0),
+        value: calculateCollectionValue(state.cards || []),
+        cards: (state.cards || []).length,
+        level: state.level || 1,
+        equippedTitle: state.equippedTitle || "Collector",
+        profileFrame: state.profileFrame || "default",
+        bannedUntil: state.bannedUntil || 0,
+        isSelf: true
+    };
+
+    let playersList = Object.values(playersMap);
+
+    // Filter out banned accounts
+    playersList = playersList.filter(p => p.isSelf || !p.bannedUntil || p.bannedUntil <= Date.now());
+
+    // Sort according to tab
+    if (currentLeaderboardTab === "value") {
+        playersList.sort((a, b) => (b.value - a.value) || (b.gold - a.gold));
+    } else {
+        playersList.sort((a, b) => (b.gold - a.gold) || (b.value - a.value));
+    }
+
+    if (!playersList.length) {
+        list.innerHTML = `<p style="text-align:center;color:var(--muted);padding:30px;">No online players found yet.</p>`;
+        return;
+    }
+
+    const rankBadges = ["🥇", "🥈", "🥉"];
+
+    list.innerHTML = playersList.map((p, i) => {
+        const isMe = (state.accountUser && p.username.toLowerCase() === state.accountUser.toLowerCase()) || (p.isSelf);
+        const titleObj = TITLES.find(t => t.name === p.equippedTitle) || TITLES[0];
+        const rankIcon = i < 3 ? rankBadges[i] : `#${i + 1}`;
+        const scoreDisplay = currentLeaderboardTab === "value"
+            ? `💎 ${p.value.toLocaleString()} Value`
+            : `${p.gold.toLocaleString()} 🪙`;
+
+        return `
+        <div class="leaderboard-item ${isMe ? 'self' : ''}">
+            <div class="lb-left">
+                <span class="lb-rank">${rankIcon}</span>
+                <div class="lb-user-info">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <strong class="lb-name">${escapeHTML(p.name)} ${isMe ? '<span style="color:var(--green);font-size:12px;">(You)</span>' : ''}</strong>
+                        ${p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;">${escapeHTML(p.equippedTitle)}</span>` : ''}
+                    </div>
+                    <span class="lb-meta">Lvl ${p.level || 1} · ${p.cards || 0} Cards</span>
+                </div>
+            </div>
+            <div class="lb-score">${scoreDisplay}</div>
+        </div>
+        `;
+    }).join("");
+}
+
+/* =========================================================
+   ADMIN PANEL CONTROLLER (EXCLUSIVE FOR ALUCARD & GRANTED ADMINS)
+   ========================================================= */
+
+function isUserAdmin() {
+    const u = (state.accountUser || state.name || "").toLowerCase();
+    return u === "alucard" || !!state.isGrantedAdmin || (state.grantedTitles || []).includes("Admin") || (state.grantedTitles || []).includes("Owner");
+}
+
+function checkAdminStatus() {
+    const adminHeaderBtn = document.getElementById("adminHeaderBtn");
+    const adminSidebarBtn = document.getElementById("adminSidebarBtn");
+    const hasAdmin = isUserAdmin();
+
+    if (adminHeaderBtn) adminHeaderBtn.style.display = hasAdmin ? "inline-block" : "none";
+    if (adminSidebarBtn) adminSidebarBtn.style.display = hasAdmin ? "block" : "none";
+
+    const adminActiveUser = document.getElementById("adminActiveUser");
+    if (adminActiveUser) {
+        adminActiveUser.textContent = state.accountUser || state.name || "Alucard";
+    }
+}
+
+function openAdminPanel() {
+    if (!isUserAdmin()) {
+        toast("🔒 Access Denied: Creator / Admin authorization required.");
+        return;
+    }
+    populateAdminCardList();
+    const modal = document.getElementById("adminPanelModal");
+    if (modal) modal.classList.remove("hidden");
+    SoundFx.click();
+}
+
+function closeAdminPanel() {
+    const modal = document.getElementById("adminPanelModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function setAdminTab(tabName) {
+    const tabs = ["currency", "cards", "level", "titles", "moderation"];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`adminTabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const content = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.classList.toggle("active", t === tabName);
+        if (content) content.style.display = (t === tabName) ? "block" : "none";
+    });
+}
+
+function populateAdminCardList() {
+    const select = document.getElementById("adminCardSelect");
+    if (!select) return;
+    select.innerHTML = PLAYERS.map(p => `
+        <option value="${escapeHTML(p.name)}">[${p.rarity.toUpperCase()}] ${p.name} (${p.rating} OVR · ${p.pos})</option>
+    `).join("");
+}
+
+async function adminExecuteGiveGold() {
+    if (!isUserAdmin()) return;
+    const target = (document.getElementById("adminGoldTarget").value || "").trim();
+    const amount = Number(document.getElementById("adminGoldAmount").value) || 0;
+    if (amount <= 0) {
+        toast("Please enter a valid gold amount.");
+        return;
+    }
+
+    if (!target || target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        state.coins += amount;
+        state.stats.coinsEarned += amount;
+        AntiCheat.signState(state);
+        saveGame();
+        renderAll();
+        SoundFx.coin();
+        toast(`👑 Admin: Added +${amount.toLocaleString()} 🪙 to your account!`);
+    } else {
+        const accs = CloudSync.getAccounts();
+        const key = target.toLowerCase();
+        if (accs[key]) {
+            try {
+                const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+                s.coins = (s.coins || 0) + amount;
+                s.stats = s.stats || {};
+                s.stats.coinsEarned = (s.stats.coinsEarned || 0) + amount;
+                accs[key].saveData = JSON.stringify(s);
+                CloudSync.saveAccounts(accs);
+                FirebaseSync.pushUser(accs[key].username, accs[key]);
+                toast(`👑 Admin: Injected +${amount.toLocaleString()} 🪙 into player "${accs[key].username}"!`);
+            } catch(e) {}
+        } else {
+            FirebaseSync.pushUser(target, {
+                username: target,
+                saveData: JSON.stringify({ ...freshState(), name: target, accountUser: target, coins: amount })
+            });
+            toast(`👑 Admin: Online cloud synced +${amount.toLocaleString()} 🪙 for "${target}"!`);
+        }
+    }
+}
+
+async function adminExecuteSpawnCard() {
+    if (!isUserAdmin()) return;
+    const target = (document.getElementById("adminCardTarget").value || "").trim();
+    const cardName = document.getElementById("adminCardSelect").value;
+    const isSerialized = document.getElementById("adminCardSerialized").checked;
+
+    const p = PLAYERS.find(x => x.name === cardName);
+    if (!p) return;
+
+    let sNum = null;
+    let sGrad = null;
+    if (isSerialized) {
+        sNum = Math.floor(Math.random() * 10) + 1;
+        sGrad = generateRandomSerializedGradient(sNum);
+    }
+
+    const newCard = {
+        id: Date.now() + "_" + Math.random().toString(36).slice(2),
+        player: p.name,
+        rating: p.rating,
+        pos: p.pos,
+        rarity: p.rarity,
+        image: p.image || "",
+        obtained: Date.now(),
+        frame: "default",
+        serialNumber: sNum,
+        serialGradient: sGrad,
+        locked: true
+    };
+
+    if (!target || target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        state.cards.unshift(newCard);
+        state.stats.cardsPulled++;
+        if (!state.unlockedCardNames.includes(p.name)) state.unlockedCardNames.push(p.name);
+        AntiCheat.signState(state);
+        saveGame();
+        renderAll();
+        SoundFx.levelUp();
+        toast(`✨ Admin: Spawned ${p.name} ${isSerialized ? `(★ SERIAL #${sNum}/10)` : ""} to collection!`);
+    } else {
+        const accs = CloudSync.getAccounts();
+        const key = target.toLowerCase();
+        if (accs[key]) {
+            try {
+                const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+                s.cards = s.cards || [];
+                s.cards.unshift(newCard);
+                s.stats = s.stats || {};
+                s.stats.cardsPulled = (s.stats.cardsPulled || 0) + 1;
+                accs[key].saveData = JSON.stringify(s);
+                CloudSync.saveAccounts(accs);
+                FirebaseSync.pushUser(accs[key].username, accs[key]);
+                toast(`✨ Admin: Sent ${p.name} to player "${accs[key].username}"!`);
+            } catch(e) {}
+        } else {
+            toast(`Player "${target}" not found.`);
+        }
+    }
+}
+
+function adminExecuteSetLevel() {
+    if (!isUserAdmin()) return;
+    const target = (document.getElementById("adminLevelTarget").value || "").trim();
+    const lvl = Math.max(1, Number(document.getElementById("adminLevelInput").value) || 1);
+
+    if (!target || target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        state.level = lvl;
+        state.xp = 0;
+        AntiCheat.signState(state);
+        saveGame();
+        renderAll();
+        SoundFx.levelUp();
+        toast(`👑 Admin: Set your level to Level ${lvl}!`);
+    } else {
+        const accs = CloudSync.getAccounts();
+        const key = target.toLowerCase();
+        if (accs[key]) {
+            try {
+                const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+                s.level = lvl;
+                s.xp = 0;
+                accs[key].saveData = JSON.stringify(s);
+                CloudSync.saveAccounts(accs);
+                FirebaseSync.pushUser(accs[key].username, accs[key]);
+                toast(`👑 Admin: Set level of "${accs[key].username}" to Level ${lvl}!`);
+            } catch(e) {}
+        }
+    }
+}
+
+function adminExecuteGrantTitle() {
+    if (!isUserAdmin()) return;
+    const target = (document.getElementById("adminTitleTarget").value || "").trim();
+    const titleName = document.getElementById("adminTitleSelect").value;
+    if (!target) {
+        toast("Please enter a target username.");
+        return;
+    }
+
+    const accs = CloudSync.getAccounts();
+    const key = target.toLowerCase();
+    if (accs[key]) {
+        try {
+            const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+            s.grantedTitles = s.grantedTitles || [];
+            if (!s.grantedTitles.includes(titleName)) s.grantedTitles.push(titleName);
+            if (titleName === "Admin") s.isGrantedAdmin = true;
+            if (titleName === "Staff") s.isGrantedStaff = true;
+            s.equippedTitle = titleName;
+            accs[key].saveData = JSON.stringify(s);
+            CloudSync.saveAccounts(accs);
+            FirebaseSync.pushUser(accs[key].username, accs[key]);
+            toast(`👑 Admin: Granted title "${titleName}" to player "${accs[key].username}"!`);
+        } catch(e) {}
+    } else {
+        toast(`Player "${target}" not found.`);
+    }
+}
+
+async function adminExecuteBan(days = 1) {
+    if (!isUserAdmin()) return;
+    const target = (document.getElementById("adminModTarget").value || "").trim();
+    const reason = (document.getElementById("adminModReason").value || "Unauthorized Script / Balance Injection").trim();
+    if (!target) {
+        toast("Please enter a target username to ban.");
+        return;
+    }
+    if (target.toLowerCase() === "alucard") {
+        toast("Cannot ban the owner account.");
+        return;
+    }
+
+    const duration = days * 86400000;
+    const banUntil = Date.now() + duration;
+
+    const accs = CloudSync.getAccounts();
+    const key = target.toLowerCase();
+    if (accs[key]) {
+        try {
+            const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+            s.bannedUntil = banUntil;
+            s.banReason = reason;
+            s.coins = 100; // Reset exploited coins
+            accs[key].saveData = JSON.stringify(s);
+            CloudSync.saveAccounts(accs);
+        } catch(e) {}
+    }
+
+    await FirebaseSync.setBan(target, duration, reason);
+    SoundFx.sell();
+    toast(`⛔ Account "${target}" banned for ${days} Day(s).`);
+}
+
+async function adminExecuteUnban() {
+    if (!isUserAdmin()) return;
+    const target = (document.getElementById("adminModTarget").value || "").trim();
+    if (!target) {
+        toast("Please enter a target username to unban.");
+        return;
+    }
+
+    const accs = CloudSync.getAccounts();
+    const key = target.toLowerCase();
+    if (accs[key]) {
+        try {
+            const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+            s.bannedUntil = 0;
+            s.banReason = "";
+            accs[key].saveData = JSON.stringify(s);
+            CloudSync.saveAccounts(accs);
+        } catch(e) {}
+    }
+
+    await FirebaseSync.removeBan(target);
+    SoundFx.levelUp();
+    toast(`✓ Account "${target}" has been unbanned.`);
+}
+
+function checkBanStatus() {
+    const modal = document.getElementById("accountBannedModal");
+    if (!modal) return false;
+
+    const isOwner = (state.accountUser || state.name || "").toLowerCase() === "alucard";
+    if (isOwner) {
+        modal.classList.add("hidden");
+        state.bannedUntil = 0;
+        return false;
+    }
+
+    const now = Date.now();
+    if (state.bannedUntil && state.bannedUntil > now) {
+        modal.classList.remove("hidden");
+        setText("banUserText", state.accountUser || state.name || "Player");
+        setText("banReasonText", state.banReason || "Unauthorized Script / Balance Injection");
+        const remainingMs = state.bannedUntil - now;
+        setText("banCountdownText", formatCountdown(remainingMs));
+        return true;
+    } else {
+        modal.classList.add("hidden");
+        if (state.bannedUntil) {
+            state.bannedUntil = 0;
+            state.banReason = "";
+            saveGame();
+        }
+        return false;
+    }
+}
+
 /* =========================================================
    PROMO CODES
    ========================================================= */
@@ -3094,85 +3702,6 @@ function renderStatistics() {
     }
 }
 
-async function renderLeaderboard() {
-    const container = document.getElementById("globalLeaderboard");
-    if (!container) return;
-
-    // Fetch latest online cross-device accounts asynchronously
-    fetchOnlineGlobalAccounts().then(() => {
-        populateLeaderboardRows();
-    }).catch(() => {
-        populateLeaderboardRows();
-    });
-
-    populateLeaderboardRows();
-}
-
-function populateLeaderboardRows() {
-    const container = document.getElementById("globalLeaderboard");
-    if (!container) return;
-
-    const accs = CloudSync.getAccounts();
-    const rows = [];
-
-    for (const key in accs) {
-        try {
-            const d = JSON.parse(accs[key].saveData);
-            if (d) {
-                const totalVal = calculateCollectionValue(d.cards || []);
-                const gold = d.coins || 0;
-                rows.push({
-                    name: d.name || accs[key].username,
-                    gold: gold,
-                    value: totalVal,
-                    cards: (d.cards || []).length,
-                    level: d.level || 1
-                });
-            }
-        } catch (e) {}
-    }
-
-    const myName = state.name || state.accountUser || "Guest";
-    const myVal = calculateCollectionValue(state.cards);
-    if (!rows.some(r => r.name.toLowerCase() === myName.toLowerCase())) {
-        rows.push({
-            name: myName,
-            gold: state.coins,
-            value: myVal,
-            cards: (state.cards || []).length,
-            level: state.level || 1
-        });
-    }
-
-    if (currentLeaderboardTab === "gold") {
-        rows.sort((a, b) => b.gold - a.gold);
-    } else {
-        rows.sort((a, b) => b.value - a.value);
-    }
-
-    if (!rows.length) {
-        container.innerHTML = `<div class="empty-state">No players found yet. Create an Online Cloud Account to join!</div>`;
-        return;
-    }
-
-    container.innerHTML = rows.slice(0, 50).map((r, i) => {
-        const isMe = r.name.toLowerCase() === myName.toLowerCase();
-        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
-        const scoreDisplay = currentLeaderboardTab === "gold" ? `${r.gold.toLocaleString()} 🪙` : `${r.value.toLocaleString()} 💎 Value`;
-
-        return `
-        <div class="rank-row ${isMe ? 'highlight' : ''}" style="${isMe ? 'border:1px solid var(--green);background:rgba(34,199,122,0.1);' : ''}">
-            <b>${medal}</b>
-            <div>
-                <strong>${escapeHTML(r.name)} ${isMe ? '<small style="color:var(--green)">(You)</small>' : ''}</strong>
-                <p style="margin:2px 0 0;font-size:12px;color:var(--muted);">Lvl ${r.level} · ${r.cards} Cards</p>
-            </div>
-            <strong style="color:var(--gold);font-size:15px;">${scoreDisplay}</strong>
-        </div>
-        `;
-    }).join("");
-}
-
 /* =========================================================
    ECONOMY & XP (ANTI-CHEAT SECURED)
    ========================================================= */
@@ -3302,3 +3831,8 @@ function escapeHTML(value) {
 if (state.initialized) {
     renderAll();
 }
+
+setInterval(() => {
+    updateTimers();
+    checkBanStatus();
+}, 1000);
