@@ -2966,21 +2966,34 @@ select,input{
    REALISTIC 3D PHYSICAL BOOSTER PACK & TEAR MECHANIC
    ========================================================= */
 
+body.modal-open, html.modal-open {
+    overflow: hidden !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+}
+
 .pack-opening-modal {
     position: fixed !important;
-    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
+    height: 100dvh !important;
     display: none;
     align-items: center !important;
     justify-content: center !important;
-    background: radial-gradient(circle at 50% 50%, #0c1c38 0%, #030814 85%) !important;
-    backdrop-filter: blur(25px) !important;
-    -webkit-backdrop-filter: blur(25px) !important;
+    background: radial-gradient(circle at 50% 50%, #08162b 0%, #020610 90%) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
     z-index: 99999 !important;
     overflow: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
+    touch-action: none !important;
 }
 
 .pack-burst-rays {
@@ -2992,6 +3005,7 @@ select,input{
     filter: blur(80px);
     animation: spinRays 6s linear infinite;
     pointer-events: none;
+    z-index: 1;
 }
 
 @keyframes spinRays {
@@ -3005,6 +3019,7 @@ select,input{
     inset: 0;
     background: radial-gradient(circle at 50% 50%, rgba(30, 58, 138, 0.45) 0%, rgba(2, 6, 23, 0.98) 85%);
     pointer-events: none;
+    z-index: 1;
 }
 
 .pack-opening-container {
@@ -3014,14 +3029,13 @@ select,input{
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw !important;
-    max-height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     perspective: 1600px !important;
-    overflow: visible !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
 }
 
 /* =========================================================
@@ -3036,12 +3050,15 @@ select,input{
     justify-content: center !important;
     position: relative !important;
     perspective: 1600px !important;
-    width: auto !important;
-    max-width: 98vw !important;
-    padding: 20px 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    padding: 10px !important;
     margin: auto !important;
-    overflow-x: auto !important;
-    overflow-y: visible !important;
+    overflow: hidden !important;
+    z-index: 20 !important;
+    pointer-events: auto !important;
 }
 
 .starter-foil { --foil-glow: rgba(16, 185, 129, 0.95); }
@@ -3054,17 +3071,17 @@ select,input{
 
 .luxury-booster-pack {
     position: relative !important;
-    width: 310px !important;
-    height: 480px !important;
+    display: block !important;
     border-radius: 16px !important;
     box-shadow: 0 35px 80px rgba(0, 0, 0, 0.95), 0 0 60px var(--foil-glow) !important;
     transform-style: preserve-3d !important;
     transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease !important;
     animation: packFloatRumble 2.4s ease-in-out infinite alternate !important;
-    overflow: visible !important;
     user-select: none !important;
     touch-action: none !important;
     cursor: grab !important;
+    z-index: 30 !important;
+    pointer-events: auto !important;
 }
 
 .luxury-booster-pack:active {
@@ -3081,29 +3098,35 @@ select,input{
     height: 100% !important;
     border-radius: 16px !important;
     overflow: hidden !important;
+    display: block !important;
+    pointer-events: none !important;
 }
 
 .pk-booster-svg {
     width: 100% !important;
     height: 100% !important;
     display: block !important;
+    object-fit: fill !important;
+    pointer-events: none !important;
 }
 
-/* 1-PACK LAYOUT */
+/* 1-PACK LAYOUT (RESPONSIVE PC / IPAD / PHONE) */
 .single-pack-layout .luxury-booster-pack {
-    width: 320px !important;
-    height: 490px !important;
+    width: min(320px, 85vw) !important;
+    height: min(490px, 75vh) !important;
+    aspect-ratio: 320 / 490 !important;
     margin: 0 auto !important;
 }
 
 /* 3-PACK HORIZONTAL 3D FAN (LEFT TO RIGHT LIKE IMAGE 2) */
 .multi-pack-3-layout {
-    gap: 18px !important;
+    gap: 16px !important;
 }
 
 .multi-pack-3-layout .luxury-booster-pack {
-    width: 250px !important;
-    height: 390px !important;
+    width: min(250px, 30vw) !important;
+    height: min(385px, 60vh) !important;
+    aspect-ratio: 320 / 490 !important;
     flex-shrink: 0 !important;
 }
 
@@ -3125,12 +3148,13 @@ select,input{
 
 /* 5-PACK HORIZONTAL 3D FAN (LEFT TO RIGHT LIKE IMAGE 2) */
 .multi-pack-5-layout {
-    gap: 12px !important;
+    gap: 10px !important;
 }
 
 .multi-pack-5-layout .luxury-booster-pack {
-    width: 190px !important;
-    height: 310px !important;
+    width: min(190px, 18vw) !important;
+    height: min(290px, 48vh) !important;
+    aspect-ratio: 320 / 490 !important;
     flex-shrink: 0 !important;
 }
 
@@ -3177,6 +3201,7 @@ select,input{
     inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
+    height: 100dvh !important;
     background: radial-gradient(circle at 50% 40%, #0b1526 0%, #020612 90%) !important;
     backdrop-filter: blur(25px) !important;
     display: none;
@@ -3187,6 +3212,7 @@ select,input{
     overflow-y: hidden !important;
     margin: 0 !important;
     padding: 0 !important;
+    touch-action: none !important;
 }
 
 .multi-reveal-box {
@@ -3204,7 +3230,7 @@ select,input{
 }
 
 .multi-reveal-header h2 {
-    font-size: 30px !important;
+    font-size: 28px !important;
     margin: 4px 0 !important;
     color: #ffffff !important;
     text-shadow: 0 0 20px rgba(255, 215, 0, 0.5) !important;
@@ -3217,17 +3243,18 @@ select,input{
     flex-wrap: nowrap !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 30px !important;
-    margin: 30px 0 !important;
+    gap: 24px !important;
+    margin: 20px 0 !important;
     width: 100% !important;
     max-width: 100vw !important;
     overflow-x: auto !important;
-    padding: 30px 20px !important;
+    padding: 20px 10px !important;
 }
 
 .multi-table-card {
-    width: 240px !important;
-    height: 380px !important;
+    width: min(220px, 28vw) !important;
+    height: min(350px, 55vh) !important;
+    aspect-ratio: 220 / 350 !important;
     flex-shrink: 0 !important;
     border-radius: 18px !important;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(255, 215, 0, 0.25) !important;
@@ -3298,6 +3325,30 @@ select,input{
 
 .multi-reveal-footer {
     margin-top: 10px;
+}
+
+@media(max-width: 768px) {
+    .multi-pack-3-layout {
+        gap: 8px !important;
+    }
+    .multi-pack-3-layout .luxury-booster-pack {
+        width: min(105px, 29vw) !important;
+        height: min(160px, 35vh) !important;
+    }
+    .multi-pack-5-layout {
+        gap: 4px !important;
+    }
+    .multi-pack-5-layout .luxury-booster-pack {
+        width: min(64px, 18vw) !important;
+        height: min(100px, 22vh) !important;
+    }
+    .multi-reveal-grid {
+        gap: 10px !important;
+    }
+    .multi-table-card {
+        width: min(105px, 29vw) !important;
+        height: min(165px, 35vh) !important;
+    }
 }
 
 /* =========================================================
