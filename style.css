@@ -13,6 +13,22 @@
     --border:rgba(255,255,255,.08);
 }
 
+html, body {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
 body{
     margin:0;
     color:var(--text);
@@ -31,6 +47,7 @@ button,select,input{
 
 button{
     cursor:pointer;
+    touch-action: manipulation;
 }
 
 .topbar{
@@ -186,12 +203,16 @@ main{
 }
 
 .pack{
-    min-height:290px;
-    padding:24px;
+    position: relative;
+    min-height:310px;
+    padding:24px 20px;
     border:1px solid var(--border);
     border-radius:18px;
     background:linear-gradient(145deg,#101e28,#09131b);
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .pack:hover{
@@ -200,25 +221,153 @@ main{
     box-shadow: 0 12px 30px rgba(0,0,0,0.4);
 }
 
-.champion-pack {
-    border-color: rgba(244, 196, 78, 0.35);
-    background: radial-gradient(circle at 50% 0%, rgba(244, 196, 78, 0.12), transparent 70%), linear-gradient(145deg, #182216, #09131b);
+/* 1. STARTER PACK (EMERALD & SILVER STADIUM FOIL) */
+.starter-pack {
+    border-color: rgba(34, 199, 122, 0.35);
+    background: radial-gradient(circle at 50% 0%, rgba(34, 199, 122, 0.15), transparent 70%), linear-gradient(145deg, #091a14, #06110d);
+}
+.starter-pack:hover {
+    border-color: var(--green);
+    box-shadow: 0 0 25px rgba(34, 199, 122, 0.35);
 }
 
+/* 2. PREMIUM PACK (DEEP SAPPHIRE & HOLOGRAPHIC CYAN FOIL) */
+.premium-pack {
+    border-color: rgba(50, 149, 255, 0.4);
+    background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.18), transparent 70%), linear-gradient(145deg, #0a1b2a, #060e17);
+}
+.premium-pack:hover {
+    border-color: #00f2fe;
+    box-shadow: 0 0 30px rgba(0, 242, 254, 0.4);
+}
+
+/* 3. CHAMPION PACK (24K ROYAL GOLD & OBSIDIAN GEOMETRIC FOIL) */
+.champion-pack {
+    border-color: rgba(244, 196, 78, 0.45);
+    background: radial-gradient(circle at 50% 0%, rgba(244, 196, 78, 0.22), transparent 70%), linear-gradient(145deg, #221c0b, #0e0c05);
+}
 .champion-pack:hover {
     border-color: var(--gold);
-    box-shadow: 0 0 25px rgba(244, 196, 78, 0.3);
+    box-shadow: 0 0 30px rgba(244, 196, 78, 0.45);
 }
 
+/* 4. EXCLUSIVE PACK (COSMIC AMETHYST & MAGENTA PRISM FOIL) */
+.exclusive-pack {
+    border-color: rgba(168, 85, 247, 0.5);
+    background: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.25), transparent 70%), linear-gradient(145deg, #1f0b2e, #0c0413);
+}
+.exclusive-pack:hover {
+    border-color: #c084fc;
+    box-shadow: 0 0 35px rgba(168, 85, 247, 0.5);
+}
+
+/* 5. MYTHIC PACK (SOLAR CRIMSON FLARE & MOLTEN GOLD) */
+.mythic-pack {
+    border-color: rgba(255, 76, 99, 0.5);
+    background: radial-gradient(circle at 50% 0%, rgba(255, 76, 99, 0.25), transparent 70%), linear-gradient(145deg, #2a0b12, #110407);
+}
+.mythic-pack:hover {
+    border-color: #ff4c63;
+    box-shadow: 0 0 35px rgba(255, 76, 99, 0.55);
+}
+
+/* 6. SECRET PACK (DARK VOID & PLATINUM LIGHTNING FOIL) */
+.secret-pack {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.25), transparent 70%), linear-gradient(145deg, #1c1c24, #0a0a0d);
+}
+.secret-pack:hover {
+    border-color: #ffffff;
+    box-shadow: 0 0 35px rgba(255, 255, 255, 0.6);
+}
+
+/* 7. WORLD CLASS PACK (RADIANT CELESTIAL PLATINUM & GOAT CREST) */
 .worldclass-pack {
-    border-color: rgba(105, 199, 255, 0.5);
-    background: radial-gradient(circle at 50% 0%, rgba(105, 199, 255, 0.18), transparent 70%), linear-gradient(145deg, #0d1e2e, #071018);
-    box-shadow: 0 0 20px rgba(50, 149, 255, 0.2);
+    border-color: rgba(105, 199, 255, 0.6);
+    background: radial-gradient(circle at 50% 0%, rgba(105, 199, 255, 0.28), transparent 70%), linear-gradient(145deg, #0d2238, #050e18);
+    box-shadow: 0 0 25px rgba(50, 149, 255, 0.25);
 }
-
 .worldclass-pack:hover {
     border-color: #69c7ff;
-    box-shadow: 0 0 35px rgba(105, 199, 255, 0.45);
+    box-shadow: 0 0 45px rgba(105, 199, 255, 0.55);
+}
+
+/* PACK MULTIBUTTONS GRID */
+.pack-multibuttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.pack-multibuttons button {
+    padding: 10px 4px;
+    font-size: 11px;
+    font-weight: 900;
+    border: 0;
+    border-radius: 8px;
+    background: var(--green);
+    color: #04120c;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.pack-multibuttons button:hover {
+    transform: translateY(-2px);
+    background: #2fe08c;
+}
+
+.featured-btn-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.featured-btn-group .featured-open-btn.secondary,
+.featured-btn-group .limited-open-btn.secondary {
+    padding: 10px 16px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border: 1px solid var(--border);
+}
+
+.featured-btn-group .featured-open-btn.secondary:hover,
+.featured-btn-group .limited-open-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+/* PASSWORD INPUT WRAPPER & VISIBILITY TOGGLE */
+.password-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrap input {
+    width: 100%;
+    padding: 12px 45px 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #0c1722;
+    color: white;
+    box-sizing: border-box;
+}
+
+.pwd-toggle-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    font-size: 16px;
+    color: var(--muted);
+    padding: 6px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.pwd-toggle-btn:hover {
+    color: #ffffff;
 }
 
 .pack-ball{
@@ -2832,12 +2981,71 @@ select,input{
 .pack-anim-box p {
     font-size: 12px;
     color: #cbd5e1;
-    margin: 0 0 16px;
+    margin: 0 0 10px;
+}
+
+/* INTERACTIVE SWIPE TO RIP CONTROL */
+.pack-swipe-container {
+    width: 100%;
+    margin: 8px 0;
+}
+
+.pack-swipe-track {
+    position: relative;
+    width: 100%;
+    height: 46px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+}
+
+.pack-swipe-hint {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #e2e8f0;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    pointer-events: none;
+    animation: swipeHintGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes swipeHintGlow {
+    from { opacity: 0.55; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(4px); }
+}
+
+.pack-swipe-thumb {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    bottom: 4px;
+    width: 38px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    cursor: grab;
+    transition: transform 0.05s ease-out;
+}
+
+.pack-swipe-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
 }
 
 .pack-rip-track {
     width: 90%;
-    height: 8px;
+    height: 6px;
     background: rgba(0, 0, 0, 0.5);
     border-radius: 20px;
     overflow: hidden;
