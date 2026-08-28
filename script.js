@@ -1255,20 +1255,20 @@ function setAuthTab(tab) {
     }
 }
 
-function handleAuthSubmit() {
+async function handleAuthSubmit() {
     const u = document.getElementById("authUsername").value;
     const p = document.getElementById("authPassword").value;
     const err = document.getElementById("authError");
 
     let res;
     if (currentAuthTab === "signup") {
-        res = CloudSync.signUp(u, p);
+        res = await CloudSync.signUp(u, p);
     } else {
-        res = CloudSync.login(u, p);
+        res = await CloudSync.login(u, p);
     }
 
-    if (!res.success) {
-        if (err) err.textContent = res.msg;
+    if (!res || !res.success) {
+        if (err) err.textContent = res ? res.msg : "Login failed.";
     } else {
         toast(res.msg);
         closeAuthModal();
@@ -1718,10 +1718,6 @@ function initPackSwipeGesture(onTear) {
 
     window.onmousemove = (e) => { if (isDragging) handleMove(e.clientX, e.clientY); };
     window.onmouseup = handleEnd;
-}
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
 }
 
 function openPack(type, count = 1) {
