@@ -1783,6 +1783,12 @@ function renderBoosterPacksInStage(cfg, pullCount) {
         return `
         <div class="luxury-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}" style="position:relative; width:310px; height:480px; max-width:85vw; max-height:72vh; aspect-ratio:320/490; margin:0 auto; perspective:1500px; -webkit-perspective:1500px; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; display:block;">
             <div class="pack-3d-inner" style="position:relative; width:100%; height:100%; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; transition:transform 0.6s cubic-bezier(0.2,0.8,0.2,1); border-radius:16px; box-shadow:0 35px 80px rgba(0,0,0,0.95), 0 0 50px var(--foil-glow);">
+                <div class="pack-revealed-card-inner">
+                    <div class="pack-revealed-card-face">
+                        <div class="pack-revealed-card-holo"></div>
+                        <div class="pack-revealed-card-logo">⚽ FOOTBALL TCG</div>
+                    </div>
+                </div>
                 <div class="pack-face pack-face-front" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(0deg); z-index:2; background:#0d1a2d;">
                     ${getPackFrontSVG(cfg)}
                 </div>
@@ -1832,7 +1838,7 @@ function initPackSwipeGesture(onTear) {
                 packTearCallback = null;
                 cb();
             }
-        }, 750);
+        }, 800);
     }
 
     window.executePackTear = executeTear;
@@ -1842,7 +1848,6 @@ function initPackSwipeGesture(onTear) {
         let startX = 0, startY = 0;
         let rotX = 0, rotY = 0;
         let isFlipped = false;
-        let hasMoved = false;
         const inner = pack.querySelector(".pack-3d-inner");
 
         function updateTransform() {
@@ -1879,11 +1884,10 @@ function initPackSwipeGesture(onTear) {
             updateTransform();
         };
 
-        // 3. Mouse Down / Drag / Click on PC
+        // 3. Mouse Down & Horizontal Swipe Tear (PC) - MUST SWIPE, CLICK ALONE DOES NOT OPEN
         pack.onmousedown = (e) => {
-            if (e.button === 2) return; // right click handled
+            if (e.button === 2) return; // right click is flip
             isDragging = true;
-            hasMoved = false;
             startX = e.clientX;
             startY = e.clientY;
         };
@@ -1892,9 +1896,9 @@ function initPackSwipeGesture(onTear) {
             if (!isDragging || packTornExecuted) return;
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
-            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) hasMoved = true;
 
-            if (Math.abs(dx) >= 30) {
+            // SWIPING HORIZONTALLY (dx >= 25px) TRIGGERS THE TEAR
+            if (Math.abs(dx) >= 25) {
                 isDragging = false;
                 executeTear();
                 return;
@@ -1907,20 +1911,16 @@ function initPackSwipeGesture(onTear) {
             updateTransform();
         };
 
-        window.onmouseup = (e) => {
-            if (!isDragging) return;
+        window.onmouseup = () => {
             isDragging = false;
-            if (!hasMoved && e.button === 0) {
-                executeTear();
-            }
+            // No clicking to open
         };
 
-        // 4. Touch & Mobile / Tablet / iPad Controls
+        // 4. Touch Controls (Mobile / Tablet / iPad)
         let lastTap = 0;
         pack.ontouchstart = (e) => {
             if (!e.touches || !e.touches.length) return;
             isDragging = true;
-            hasMoved = false;
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
 
@@ -1938,9 +1938,9 @@ function initPackSwipeGesture(onTear) {
             if (!isDragging || !e.touches || !e.touches.length || packTornExecuted) return;
             const dx = e.touches[0].clientX - startX;
             const dy = e.touches[0].clientY - startY;
-            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) hasMoved = true;
 
-            if (Math.abs(dx) >= 30) {
+            // SWIPING HORIZONTALLY (dx >= 25px) TRIGGERS THE TEAR
+            if (Math.abs(dx) >= 25) {
                 isDragging = false;
                 executeTear();
                 return;
@@ -1954,11 +1954,8 @@ function initPackSwipeGesture(onTear) {
         };
 
         pack.ontouchend = () => {
-            if (!isDragging) return;
             isDragging = false;
-            if (!hasMoved) {
-                executeTear();
-            }
+            // No tapping to open - must swipe
         };
     });
 }
@@ -2097,6 +2094,8 @@ function openPack(type, count = 1) {
         lockModalScroll();
         animOverlay.classList.remove("hidden");
         animOverlay.style.display = "flex";
+        animOverlay.style.alignItems = "center";
+        animOverlay.style.justifyContent = "center";
 
         initPackSwipeGesture(() => {
             if (animOverlay) {
