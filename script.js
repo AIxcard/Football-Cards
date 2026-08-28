@@ -1630,33 +1630,64 @@ function renderBoosterPacksInStage(cfg, pullCount) {
         const fanClass = isMulti ? `pack-fan-${total}-${num}` : '';
         return `
         <div class="realistic-booster-pack ${cfg.css} ${fanClass}" data-pack-idx="${num}">
-            <!-- DETAILED 3D CARD INSERT READY TO POP UP -->
-            <div class="pack-card-insert">
-                <div class="card-insert-face card-insert-back">
-                    <div class="card-back-pattern"></div>
-                    <div class="card-back-frame">
-                        <div class="card-back-crest">⚽</div>
-                        <div class="card-back-title">FOOTBALL TCG</div>
+            <div class="pack-3d-box">
+                <!-- 1. DETAILED 3D CARD INSERT READY TO POP UP -->
+                <div class="pack-card-insert">
+                    <div class="card-insert-face card-insert-back">
+                        <div class="card-back-pattern"></div>
+                        <div class="card-back-frame">
+                            <div class="card-back-crest">⚽</div>
+                            <div class="card-back-title">FOOTBALL TCG</div>
+                        </div>
+                        <div class="card-back-stars">★★★★★</div>
                     </div>
-                    <div class="card-back-stars">★★★★★</div>
                 </div>
-            </div>
 
-            <!-- SEVERABLE POKÉMON STRIPED TOP CRIMP CAP (SWIPE HERE DIRECTLY ACROSS) -->
-            <div class="pack-foil-cap" title="Swipe across to tear open!">
-                <div class="pk-top-crimp-stripes"></div>
-                <div class="pk-crimp-hanger-hole"></div>
-                <div class="pk-tear-guideline">
-                    <span class="tear-notch-icon">✂</span>
-                    <span class="tear-dash-track">SWIPE TO TEAR ➔</span>
+                <!-- 2. FRONT FOIL SLEEVE -->
+                <div class="pack-foil-front">
+                    <!-- SEVERABLE POKÉMON STRIPED TOP CRIMP CAP (IMAGE 1) -->
+                    <div class="pack-foil-cap" title="Swipe across to tear open!">
+                        <div class="pk-top-crimp-stripes"></div>
+                        <div class="pk-crimp-hanger-hole"></div>
+                        <div class="pk-tear-guideline">
+                            <span class="tear-notch-icon">✂</span>
+                            <span class="tear-dash-track">SWIPE TO TEAR ➔</span>
+                        </div>
+                        <div class="pack-cap-foil-shine"></div>
+                    </div>
+
+                    <!-- FULL BLEED POKÉMON-STYLE VECTOR ARTWORK BODY -->
+                    <div class="pack-foil-body">
+                        <div class="foil-specular-sheen"></div>
+                        ${getPackSVGArtwork(cfg)}
+                    </div>
                 </div>
-                <div class="pack-cap-foil-shine"></div>
-            </div>
 
-            <!-- FULL BLEED POKÉMON-STYLE VECTOR ARTWORK BODY -->
-            <div class="pack-foil-body">
-                <div class="foil-specular-sheen"></div>
-                ${getPackSVGArtwork(cfg)}
+                <!-- 3. REALISTIC 3D BACK FOIL SLEEVE -->
+                <div class="pack-foil-back">
+                    <div class="pack-back-top-crimp"></div>
+                    <div class="pack-back-center-fin"></div>
+                    <div class="pack-back-details">
+                        <div class="pack-back-seal">
+                            <span class="seal-star">★</span>
+                            <span class="seal-text">OFFICIAL LICENSED TRADING CARDS</span>
+                        </div>
+                        <div class="pack-back-info">
+                            <p><b>SERIES 2026 EDITION</b></p>
+                            <p>1 OFFICIAL DIGITAL TRADING CARD</p>
+                            <p>COLLECT ALL LEGENDARY & SECRET ICONS</p>
+                        </div>
+                        <div class="pack-back-barcode-box">
+                            <div class="pack-back-barcode">||| | || ||| || ||| | ||| ||</div>
+                            <span class="pack-back-serial">2 02600 77890 4</span>
+                        </div>
+                        <div class="pack-back-footer">
+                            <span>FOOTBALL TCG INC.</span>
+                            <span class="pack-back-age-badge">6+</span>
+                        </div>
+                    </div>
+                    <div class="pack-back-bottom-crimp"></div>
+                </div>
             </div>
         </div>
         `;
