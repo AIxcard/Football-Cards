@@ -14,5 +14,21 @@
     },
     "revokedSessions": [],
     "updatedAt": 1787983690248
+  },
+  "test2": {
+    "username": "Test2",
+    "password": "Buno071013",
+    "saveData": "{\"initialized\":true,\"accountUser\":\"Test2\",\"accountPass\":\"Buno071013\",\"name\":\"Test2\",\"coins\":10105,\"xp\":75,\"level\":2,\"cards\":[{\"id\":\"1787920274271_0_3gglc1nvjjl\",\"player\":\"Destiny Udogie\",\"rating\":80,\"pos\":\"LB\",\"rarity\":\"Uncommon\",\"image\":\"player_temp.png\",\"frame\":\"default\",\"serialNumber\":null,\"serialGradient\":null,\"locked\":false,\"obtained\":1787920274271},{\"id\":\"1787920274283_1_2sbk45ypo4w\",\"player\":\"Bart Verbruggen\",\"rating\":78,\"pos\":\"GK\",\"rarity\":\"Uncommon\",\"image\":\"player_temp.png\",\"frame\":\"default\",\"serialNumber\":null,\"serialGradient\":null,\"locked\":false,\"obtained\":1787920274283},{\"id\":\"1787920274292_2_0ytfzjzoossf\",\"player\":\"Brennan Johnson\",\"rating\":79,\"pos\":\"RW\",\"rarity\":\"Uncommon\",\"image\":\"player_temp.png\",\"frame\":\"default\",\"serialNumber\":null,\"serialGradient\":null,\"locked\":false,\"obtained\":1787920274292},{\"id\":\"1787920274299_3_lwg379w2o18\",\"player\":\"Jarrod Bowen\",\"rating\":81,\"pos\":\"RW\",\"rarity\":\"Uncommon\",\"image\":\"player_temp.png\",\"frame\":\"default\",\"serialNumber\":null,\"serialGradient\":null,\"locked\":false,\"obtained\":1787920274299},{\"id\":\"1787920274307_4_etor1imi0za\",\"player\":\"Manuel Akanji\",\"rating\":83,\"pos\":\"CB\",\"rarity\":\"Rare\",\"image\":\"player_temp.png\",\"frame\":\"default\",\"serialNumber\":null,\"serialGradient\":null,\"locked\":false,\"obtained\":1787920274307}],\"showcase\":[null,null,null,null,null,null],\"ownedFrames\":[\"default\"],\"ownedBackgrounds\":[\"campnou\"],\"unlockedCardNames\":[\"Destiny Udogie\",\"Bart Verbruggen\",\"Brennan Johnson\",\"Jarrod Bowen\",\"Manuel Akanji\"],\"serializedCounts\":{\"Lionel Messi\":0,\"Cristiano Ronaldo\":0},\"profileBackground\":\"campnou\",\"profileFrame\":\"default\",\"avatar\":\"https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80\",\"equippedTitle\":\"Collector\",\"stats\":{\"playtime\":594,\"packsOpened\":5,\"cardsPulled\":5,\"duplicates\":0,\"cardsSold\":0,\"coinsEarned\":10130,\"coinsSpent\":125,\"worldClass\":0,\"secret\":0,\"mythic\":0,\"legendary\":0,\"rare\":1,\"epic\":0,\"uncommon\":4,\"common\":0,\"exclusive\":0,\"tournament\":0,\"highestRating\":83,\"highestRarity\":\"Rare\",\"tournamentEntries\":0,\"tournamentScore\":0},\"tournamentAttempts\":5,\"tournamentDraft\":{\"gold\":1000,\"score\":0,\"packsOpened\":0,\"cards\":[],\"active\":false},\"missionProgress\":{\"hourly\":[0,0,0],\"daily\":[5,5,1],\"weekly\":[5,5,0],\"monthly\":[5,5,0]},\"missionClaimed\":{\"hourly\":[false,false,false],\"daily\":[false,false,false],\"weekly\":[false,false,false],\"monthly\":[false,false,false]},\"missionReset\":{\"hourly\":1787983843737,\"daily\":1787912094999,\"weekly\":1787912094999,\"monthly\":1787912094999},\"bannedUntil\":0,\"banReason\":\"\",\"grantedTitles\":[],\"isGrantedAdmin\":false,\"isGrantedStaff\":false,\"dailyRewardClaimed\":0,\"freeKickClaimed\":0,\"worldClassPending\":null,\"redeemedCodes\":[\"EMANUEL\"],\"lastSave\":1787983843737,\"_sig\":\"5f35c6a1\",\"_lastValidCoins\":10105}",
+    "sessions": {
+      "dev_mtdzeyl8_1mcto9i": {
+        "deviceId": "dev_mtdzeyl8_1mcto9i",
+        "deviceName": "Android Device · Chrome",
+        "platform": "Mobile",
+        "icon": "📱",
+        "lastActive": 1787983844375
+      }
+    },
+    "revokedSessions": [],
+    "updatedAt": 1787983844375
   }
 }
