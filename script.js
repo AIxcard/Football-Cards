@@ -330,25 +330,54 @@ const SoundFx = {
             if (!this.ctx) return;
             const now = this.ctx.currentTime;
 
-            // 1. Deep Sub-Bass Riser
+            // 1. Warm Smooth Sub-Bass Riser (Sine Wave + Lowpass Filter, NO harsh sawtooth!)
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(theme === "worldclass" ? 45 : 38, now);
-            osc.frequency.exponentialRampToValueAtTime(theme === "worldclass" ? 220 : 180, now + 3.2);
+            const filter = this.ctx.createBiquadFilter();
+            
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(140, now);
+            filter.Q.setValueAtTime(1.5, now);
+
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(45, now);
+            osc.frequency.exponentialRampToValueAtTime(110, now + 3.0);
 
             gain.gain.setValueAtTime(0.01, now);
-            gain.gain.linearRampToValueAtTime(0.3, now + 3.0);
-            gain.gain.linearRampToValueAtTime(0.001, now + 3.2);
+            gain.gain.linearRampToValueAtTime(0.18, now + 2.8);
+            gain.gain.linearRampToValueAtTime(0.001, now + 3.1);
 
-            osc.connect(gain);
+            osc.connect(filter);
+            filter.connect(gain);
             gain.connect(this.ctx.destination);
             osc.start(now);
-            osc.stop(now + 3.2);
+            osc.stop(now + 3.1);
 
-            // 2. Accelerating Heartbeat Thumps
-            [0.0, 0.7, 1.3, 1.8, 2.2, 2.5, 2.7, 2.9, 3.05].forEach(t => {
-                this.playTone(theme === "worldclass" ? 80 : 65, "triangle", 0.18, 0.25, t);
+            // 2. Cinematic Soft Heartbeat Pulses (Gentle sine thump, 50Hz)
+            [0.0, 0.75, 1.45, 2.05, 2.5, 2.8, 3.0].forEach(t => {
+                const hOsc = this.ctx.createOscillator();
+                const hGain = this.ctx.createGain();
+                hOsc.type = "sine";
+                hOsc.frequency.setValueAtTime(60, now + t);
+                hOsc.frequency.exponentialRampToValueAtTime(35, now + t + 0.18);
+
+                hGain.gain.setValueAtTime(0.2, now + t);
+                hGain.gain.exponentialRampToValueAtTime(0.001, now + t + 0.18);
+
+                hOsc.connect(hGain);
+                hGain.connect(this.ctx.destination);
+                hOsc.start(now + t);
+                hOsc.stop(now + t + 0.18);
+            });
+
+            // 3. Ethereal Celestial Chimes
+            const notes = theme === "messi" ? [523.25, 659.25, 783.99, 1046.50]
+                : theme === "ronaldo" ? [440.0, 554.37, 659.25, 880.0]
+                : theme === "yamal" ? [587.33, 739.99, 880.00, 1174.66]
+                : [523.25, 659.25, 783.99, 1046.50];
+
+            notes.forEach((f, idx) => {
+                this.playTone(f, "sine", 0.6, 0.06, 0.8 + idx * 0.5);
             });
         } catch(e) {}
     },
@@ -358,30 +387,42 @@ const SoundFx = {
             if (!this.ctx) return;
             const now = this.ctx.currentTime;
 
-            // Massive Explosive Bass Impact
+            // Warm Cinematic Sub-Bass Drop (Sine wave, NO harsh noise!)
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(140, now);
-            osc.frequency.exponentialRampToValueAtTime(25, now + 1.2);
+            const filter = this.ctx.createBiquadFilter();
 
-            gain.gain.setValueAtTime(0.5, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(160, now);
+            filter.Q.setValueAtTime(1.0, now);
 
-            osc.connect(gain);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(95, now);
+            osc.frequency.exponentialRampToValueAtTime(28, now + 1.2);
+
+            gain.gain.setValueAtTime(0.35, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+            osc.connect(filter);
+            filter.connect(gain);
             gain.connect(this.ctx.destination);
             osc.start(now);
-            osc.stop(now + 1.4);
+            osc.stop(now + 1.2);
         } catch(e) {}
     },
     playSolsFanfare(theme) {
         try {
-            const chords = theme === "worldclass" 
-                ? [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00]
-                : [440.00, 554.37, 659.25, 880.00, 1108.73, 1318.51, 1760.00];
+            // Beautiful, satisfying crystalline chord sequence (Maj9 Pentatonic)
+            const chords = theme === "messi" 
+                ? [523.25, 659.25, 783.99, 987.77, 1174.66, 1318.51, 1567.98]
+                : theme === "ronaldo"
+                ? [440.00, 554.37, 659.25, 830.61, 987.77, 1108.73, 1318.51]
+                : theme === "yamal"
+                ? [587.33, 739.99, 880.00, 1108.73, 1318.51, 1479.98, 1760.00]
+                : [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
 
             chords.forEach((f, i) => {
-                this.playTone(f, "triangle", 0.7, 0.16, 0.05 + i * 0.08);
+                this.playTone(f, "sine", 0.7, 0.09, 0.05 + i * 0.08);
             });
         } catch(e) {}
     },
@@ -3091,10 +3132,20 @@ const SolsCutsceneEngine = {
         this.phase = 0;
         this.startTime = Date.now();
         this.particles = [];
+        this.lightningArcs = [];
 
-        if (card.rarity === "World Class") this.theme = "worldclass";
-        else if (card.rarity === "Secret") this.theme = "secret";
-        else this.theme = "mythic";
+        // 1. Determine Individual Custom Cutscene Theme
+        const nameLower = (card.player || "").toLowerCase();
+        let t = "mythic";
+        if (nameLower.includes("messi")) t = "messi";
+        else if (nameLower.includes("ronaldo")) t = "ronaldo";
+        else if (nameLower.includes("yamal")) t = "yamal";
+        else if (nameLower.includes("mbappé") || nameLower.includes("mbappe")) t = "mbappe";
+        else if (nameLower.includes("haaland")) t = "haaland";
+        else if (card.rarity === "World Class") t = "messi";
+        else if (card.rarity === "Secret") t = "yamal";
+        else t = "mythic";
+        this.theme = t;
 
         const overlay = document.getElementById("solsCinematicOverlay");
         const shakeWrap = document.getElementById("solsShakeWrap");
@@ -3110,36 +3161,50 @@ const SolsCutsceneEngine = {
 
         lockModalScroll();
 
-        // Configure class themes
-        overlay.className = `modal sols-cinematic-stage sols-theme-${this.theme}`;
+        // Configure class themes & activation
+        overlay.className = `modal sols-cinematic-stage sols-theme-${this.theme} active`;
         overlay.classList.remove("hidden");
         overlay.style.display = "flex";
 
         if (cardBox) {
             cardBox.style.display = "none";
-            cardBox.classList.remove("sols-card-slam-anim");
+            cardBox.classList.remove("sols-card-revealed", "sols-card-slam-anim");
         }
         if (flashbang) flashbang.classList.remove("sols-flashbang-active");
+
+        const preTexts = {
+            messi: "[ 🐐 THE 8th BALLON D'OR DIVINITY AWAKENS 🐐 ]",
+            ronaldo: "[ ⚡ RECORD BREAKER: CR7 PHENOMENON ⚡ ]",
+            yamal: "[ 🌀 QUANTUM DIMENSION TEAR: WUNDERKIND 🌀 ]",
+            mbappe: "[ 🌌 HYPER-SONIC TITAN SPEED REALITY BREAKER 🌌 ]",
+            haaland: "[ 🤖 CYBORG APEX STRIKER SINGULARITY 🤖 ]",
+            mythic: "[ 🔥 SUPERNOVA STAR IGNITION DETECTED 🔥 ]"
+        };
+        const rarityTexts = {
+            messi: "★ 1 IN 10,000 THE GREATEST OF ALL TIME ★",
+            ronaldo: "★ 1 IN 10,000 ALL-TIME TOP GOALSCORER · SIUUU! ★",
+            yamal: "✦ 1 IN 500 NEXT-GEN GOLDEN BOY ✦",
+            mbappe: "★ 1 IN 500 GENERATIONAL SPEED DEMON ★",
+            haaland: "★ 1 IN 500 UNSTOPPABLE GOAL MACHINE ★",
+            mythic: "★ 1 IN 50 MYTHIC SUPERSTAR CLASS ★"
+        };
+
         if (preText) {
             preText.style.opacity = "0";
             preText.style.transform = "scale(0.85)";
-            if (this.theme === "worldclass") preText.textContent = "[ ✦ A CELESTIAL GOD AWAKENS ✦ ]";
-            else if (this.theme === "secret") preText.textContent = "[ ! REALITY TEAR DETECTED ! ]";
-            else preText.textContent = "[ 🔥 A MYTHIC STAR RISES 🔥 ]";
+            preText.textContent = preTexts[this.theme] || preTexts.mythic;
         }
         if (rarityTag) {
             rarityTag.style.opacity = "0";
             rarityTag.style.transform = "translateY(20px)";
-            if (this.theme === "worldclass") rarityTag.textContent = "★ 1 IN 10,000 WORLD CLASS ★";
-            else if (this.theme === "secret") rarityTag.textContent = "★ 1 IN 500 SECRET PHENOMENON ★";
-            else rarityTag.textContent = "★ 1 IN 50 MYTHIC CLASS ★";
+            rarityTag.textContent = rarityTexts[this.theme] || rarityTexts.mythic;
         }
         if (runeRing) runeRing.style.opacity = "0";
         if (rift) rift.style.opacity = "0";
         if (textSeq) textSeq.style.display = "flex";
 
         this.initCanvas();
-        this.spawnVortexParticles();
+        this.spawnCustomParticles();
         this.animateCanvas();
 
         // Audio Tension Riser + Heartbeats
@@ -3156,7 +3221,7 @@ const SolsCutsceneEngine = {
                 preText.style.opacity = "1";
                 preText.style.transform = "scale(1.05)";
             }
-            SoundFx.playTone(this.theme === "worldclass" ? 440 : 220, "triangle", 0.3, 0.15);
+            SoundFx.playTone(this.theme === "messi" || this.theme === "ronaldo" ? 523.25 : 440, "sine", 0.4, 0.08);
         }, 800);
 
         // Phase 2: Rarity Flash & Turbo Vortex (1.8s)
@@ -3168,10 +3233,10 @@ const SolsCutsceneEngine = {
             }
             if (runeRing) runeRing.style.opacity = "1";
             this.turbochargeVortex();
-            SoundFx.playTone(this.theme === "worldclass" ? 880 : 330, "sawtooth", 0.5, 0.2);
+            SoundFx.playTone(this.theme === "messi" ? 659.25 : 554.37, "sine", 0.5, 0.1);
         }, 1800);
 
-        // Phase 3: SUPERNOVA FLASHBANG & BASS DROP (3.2s)
+        // Phase 3: SUPERNOVA FLASHBANG & WARM BASS DROP (3.2s)
         setTimeout(() => {
             if (this.isSkipped) return;
             this.triggerSupernova();
@@ -3184,15 +3249,35 @@ const SolsCutsceneEngine = {
         }, 3600);
     },
 
-    spawnVortexParticles() {
+    spawnCustomParticles() {
         this.particles = [];
-        const count = 150;
+        const count = 160;
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
 
         for (let i = 0; i < count; i++) {
             const angle = Math.random() * Math.PI * 2;
             const dist = 80 + Math.random() * (Math.max(cx, cy) * 1.3);
+
+            let hue = 45;
+            let type = "vortex";
+
+            if (this.theme === "messi") {
+                hue = Math.random() > 0.4 ? 48 : 190; // Gold & Argentine Cyan
+            } else if (this.theme === "ronaldo") {
+                hue = Math.random() > 0.5 ? 350 : 45; // Crimson & Gold Lightning
+                type = Math.random() > 0.7 ? "lightning" : "vortex";
+            } else if (this.theme === "yamal") {
+                hue = Math.random() > 0.5 ? 165 : 280; // Quantum Neon Turquoise & Violet
+                type = Math.random() > 0.6 ? "cube" : "vortex";
+            } else if (this.theme === "mbappe" || this.theme === "haaland") {
+                hue = Math.random() > 0.5 ? 200 : 270; // Warp Speed Cyan & Ultra-Violet
+                type = "warp";
+            } else {
+                hue = 15 + Math.random() * 30; // Solar Magma Orange
+                type = "fire";
+            }
+
             this.particles.push({
                 x: cx + Math.cos(angle) * dist,
                 y: cy + Math.sin(angle) * dist,
@@ -3200,9 +3285,10 @@ const SolsCutsceneEngine = {
                 dist: dist,
                 speed: 0.02 + Math.random() * 0.035,
                 radialSpeed: 1.8 + Math.random() * 3.0,
-                size: 2 + Math.random() * 4,
+                size: 2 + Math.random() * 4.5,
                 alpha: 0.3 + Math.random() * 0.7,
-                hue: this.theme === "worldclass" ? (40 + Math.random() * 20) : this.theme === "secret" ? (190 + Math.random() * 80) : (0 + Math.random() * 35),
+                hue: hue,
+                type: type,
                 pulse: Math.random() * Math.PI
             });
         }
@@ -3226,16 +3312,23 @@ const SolsCutsceneEngine = {
         if (textSeq) textSeq.style.display = "none";
         if (shakeWrap) {
             shakeWrap.classList.add("sols-shake-rumble");
-            setTimeout(() => { if (shakeWrap) shakeWrap.classList.remove("sols-shake-rumble"); }, 1200);
+            setTimeout(() => { if (shakeWrap) shakeWrap.classList.remove("sols-shake-rumble"); }, 1000);
         }
 
         // Spawn Supernova Exploding Particles
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
         this.particles = [];
-        for (let i = 0; i < 240; i++) {
+        for (let i = 0; i < 220; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const spd = 6 + Math.random() * 24;
+            const spd = 6 + Math.random() * 22;
+            let hue = 45;
+            if (this.theme === "messi") hue = Math.random() > 0.4 ? 48 : 190;
+            else if (this.theme === "ronaldo") hue = Math.random() > 0.5 ? 350 : 45;
+            else if (this.theme === "yamal") hue = Math.random() > 0.5 ? 165 : 280;
+            else if (this.theme === "mbappe" || this.theme === "haaland") hue = 200;
+            else hue = 20;
+
             this.particles.push({
                 x: cx,
                 y: cy,
@@ -3243,8 +3336,8 @@ const SolsCutsceneEngine = {
                 vy: Math.sin(angle) * spd,
                 size: 3 + Math.random() * 6,
                 alpha: 1.0,
-                decay: 0.01 + Math.random() * 0.02,
-                hue: this.theme === "worldclass" ? 45 : this.theme === "secret" ? 195 : 0,
+                decay: 0.015 + Math.random() * 0.02,
+                hue: hue,
                 isExplosion: true
             });
         }
@@ -3268,6 +3361,9 @@ const SolsCutsceneEngine = {
 
         const isMessi = c.player && c.player.includes("Messi");
         const isRonaldo = c.player && c.player.includes("Ronaldo");
+        const isYamal = c.player && c.player.includes("Yamal");
+        const isMbappe = c.player && c.player.includes("Mbappé");
+        const isHaaland = c.player && c.player.includes("Haaland");
         const isSerial = !!c.serialNumber;
 
         if (img) img.src = c.image || "player_temp.png";
@@ -3279,6 +3375,9 @@ const SolsCutsceneEngine = {
             if (isSerial) crest.textContent = `★ SERIALIZED #${c.serialNumber}/10 ★`;
             else if (isMessi) crest.textContent = "🐐 8x BALLON D'OR GOAT 🐐";
             else if (isRonaldo) crest.textContent = "🐐 5x UCL CHAMPION GOAT 🐐";
+            else if (isYamal) crest.textContent = "✦ 2024 GOLDEN BOY PRODIGY ✦";
+            else if (isMbappe) crest.textContent = "⚡ WORLD CUP GOLDEN BOOT ⚡";
+            else if (isHaaland) crest.textContent = "🤖 RECORD PREMIER LEAGUE TITAN 🤖";
             else if (c.rarity === "Secret") crest.textContent = "✦ SECRET PHENOMENON ✦";
             else if (c.rarity === "Mythic") crest.textContent = "🔥 MYTHIC SUPERSTAR 🔥";
             else crest.textContent = "★ WORLD CLASS LEGEND ★";
@@ -3287,14 +3386,20 @@ const SolsCutsceneEngine = {
         if (emblem) {
             if (isMessi) emblem.textContent = "🇦🇷";
             else if (isRonaldo) emblem.textContent = "🇵🇹";
+            else if (isYamal) emblem.textContent = "🇪🇸";
+            else if (isMbappe) emblem.textContent = "🇫🇷";
+            else if (isHaaland) emblem.textContent = "🇳🇴";
             else if (c.rarity === "Secret") emblem.textContent = "💎";
             else if (c.rarity === "Mythic") emblem.textContent = "🔥";
             else emblem.textContent = "🌎";
         }
 
         if (quote) {
-            if (isMessi) quote.textContent = '"The Argentine Magician · World Champion · The Greatest of All Time"';
-            else if (isRonaldo) quote.textContent = '"The Portuguese Legend · All-Time Top Goalscorer · SIUUU!"';
+            if (isMessi) quote.textContent = '"The Argentine Magician · World Champion · 8x Ballon d\'Or Winner"';
+            else if (isRonaldo) quote.textContent = '"The Portuguese Emperor · All-Time Top Goalscorer · SIUUU!"';
+            else if (isYamal) quote.textContent = '"The Next Generation Football Prodigy · Euro Champion"';
+            else if (isMbappe) quote.textContent = '"Lightning Speed Real Madrid Galactico · Generational Striker"';
+            else if (isHaaland) quote.textContent = '"The Norwegian Goal Scoring Cyborg · Treble Winner"';
             else quote.textContent = '"Generational Football Icon · Master of the Beautiful Game"';
         }
 
@@ -3305,7 +3410,7 @@ const SolsCutsceneEngine = {
 
         if (cardBox) {
             cardBox.style.display = "flex";
-            cardBox.classList.add("sols-card-slam-anim");
+            cardBox.classList.add("sols-card-revealed", "sols-card-slam-anim");
         }
 
         SoundFx.playSolsFanfare(this.theme);
@@ -3322,11 +3427,33 @@ const SolsCutsceneEngine = {
         if (this.animFrame) cancelAnimationFrame(this.animFrame);
         const overlay = document.getElementById("solsCinematicOverlay");
         if (overlay) {
+            overlay.classList.remove("active");
             overlay.classList.add("hidden");
             overlay.style.display = "none";
         }
         SoundFx.coin();
         if (typeof createConfetti === "function") createConfetti();
+
+        // Check if part of multi-pack opening sequence (e.g. 3-pack, 5-pack)
+        if (activePackSequence) {
+            activePackSequence.currentIndex++;
+            if (activePackSequence.currentIndex < activePackSequence.total) {
+                // Continue opening next pack in sequence!
+                openNextSequentialPack();
+                return;
+            } else {
+                // All packs in sequence opened! Show multi-summary!
+                const allCards = activePackSequence.queue;
+                activePackSequence = null;
+                if (allCards && allCards.length > 1) {
+                    showMultiCardResult(allCards);
+                } else {
+                    unlockModalScroll();
+                    renderAll();
+                }
+                return;
+            }
+        }
 
         if (this.onCompleteCallback) {
             const cb = this.onCompleteCallback;
@@ -3373,10 +3500,41 @@ const SolsCutsceneEngine = {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fillStyle = `hsla(${p.hue}, 100%, 75%, ${p.alpha})`;
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = 12;
                 ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
                 ctx.fill();
+            } else if (p.type === "warp") {
+                // Hyper-speed warp tunnel streak lines
+                p.dist += p.radialSpeed * 1.5;
+                if (p.dist > Math.max(cx, cy) * 1.4) p.dist = 40;
+
+                const px = cx + Math.cos(p.angle) * p.dist;
+                const py = cy + Math.sin(p.angle) * p.dist;
+                const tailX = cx + Math.cos(p.angle) * (p.dist - 25);
+                const tailY = cy + Math.sin(p.angle) * (p.dist - 25);
+
+                ctx.beginPath();
+                ctx.moveTo(tailX, tailY);
+                ctx.lineTo(px, py);
+                ctx.strokeStyle = `hsla(${p.hue}, 100%, 80%, ${p.alpha})`;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+                ctx.stroke();
+            } else if (p.type === "cube") {
+                // Floating quantum holographic cubes
+                p.angle += p.speed;
+                p.dist -= p.radialSpeed * 0.8;
+                if (p.dist <= 15) p.dist = 80 + Math.random() * (Math.max(cx, cy) * 1.2);
+
+                const px = cx + Math.cos(p.angle) * p.dist;
+                const py = cy + Math.sin(p.angle) * p.dist;
+
+                ctx.strokeStyle = `hsla(${p.hue}, 100%, 75%, ${p.alpha})`;
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(px - p.size, py - p.size, p.size * 2, p.size * 2);
             } else {
+                // Standard vortex particles
                 p.angle += p.speed;
                 p.dist -= p.radialSpeed;
 
@@ -3394,17 +3552,9 @@ const SolsCutsceneEngine = {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
                 ctx.fillStyle = `hsla(${p.hue}, 100%, 70%, ${p.alpha})`;
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 10;
                 ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
                 ctx.fill();
-
-                // Particle tail line into vortex
-                ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p.x - Math.cos(p.angle) * 10, p.y - Math.sin(p.angle) * 10);
-                ctx.strokeStyle = `hsla(${p.hue}, 100%, 80%, ${p.alpha * 0.5})`;
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
             }
         }
 
@@ -3417,15 +3567,15 @@ function claimSolsCard() { SolsCutsceneEngine.claim(); }
 function replaySolsCutscene() { SolsCutsceneEngine.replay(); }
 
 function showWorldClass(card) {
-    SolsCutsceneEngine.start(card, cutscenePostCallback);
+    SolsCutsceneEngine.start(card);
 }
 
 function showSecretCutscene(card) {
-    SolsCutsceneEngine.start(card, cutscenePostCallback);
+    SolsCutsceneEngine.start(card);
 }
 
 function showMythicCutscene(card) {
-    SolsCutsceneEngine.start(card, cutscenePostCallback);
+    SolsCutsceneEngine.start(card);
 }
 
 function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPacks = 1) {
