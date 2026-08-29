@@ -4767,10 +4767,378 @@ body {
     .pack-grid {
         grid-template-columns: 1fr !important;
     }
-    .sols-grand-card-box {
-        transform: scale(0.68) !important;
+}
+
+/* =========================================================
+   CONFIRM DEVICE LOGOUT MODAL CENTERING FIX
+   ========================================================= */
+#kickDeviceModal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+#kickDeviceModal.hidden {
+    display: none !important;
+}
+
+#kickDeviceModal .modal-box {
+    margin: auto !important;
+    transform: none !important;
+    background: #0d1a26 !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* =========================================================
+   ROBLOX-STYLE LIVE TRADING ROOM & IN-TRADE CHAT STYLES
+   ========================================================= */
+.trade-room-box {
+    width: min(940px, 95vw) !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 24px !important;
+    background: linear-gradient(145deg, #09131d, #04090f) !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(56, 189, 248, 0.15) !important;
+    overflow: hidden !important;
+}
+
+.trade-room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 16px;
+}
+
+.trade-live-badge {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    background: rgba(0, 255, 135, 0.18);
+    color: var(--green);
+    border: 1px solid rgba(0, 255, 135, 0.4);
+    padding: 3px 8px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    animation: pulse 2s infinite;
+}
+
+.trade-room-main-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+@media (max-width: 768px) {
+    .trade-room-main-grid {
+        grid-template-columns: 1fr;
     }
 }
+
+.trade-offers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.trade-offer-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.trade-offer-box.ready-active {
+    border-color: var(--green) !important;
+    background: rgba(0, 255, 135, 0.04) !important;
+}
+
+.trade-box-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.trade-status-pill {
+    font-size: 10px;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+}
+
+.trade-status-pill.unready {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--muted);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.trade-status-pill.ready {
+    background: rgba(0, 255, 135, 0.25);
+    color: var(--green);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 10px rgba(0, 255, 135, 0.4);
+}
+
+.trade-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.trade-slot {
+    height: 90px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.trade-slot.empty:hover {
+    border-color: var(--cyan);
+    background: rgba(56, 189, 248, 0.06);
+}
+
+.trade-slot-card {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(0,0,0,0.4));
+    position: relative;
+    border-radius: 11px;
+}
+
+.trade-slot-remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.85);
+    color: #fff;
+    border: none;
+    font-size: 10px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.trade-slot-remove-btn:hover {
+    background: #ff1744;
+    transform: scale(1.15);
+}
+
+.trade-slot-name {
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    line-height: 1.1;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.trade-slot-rating {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--gold);
+}
+
+.trade-slot-rarity {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trade-partner-status-note {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    font-style: italic;
+}
+
+/* LIVE CHAT SIDEBAR */
+.trade-chat-sidebar {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 280px;
+}
+
+.trade-chat-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.trade-chat-messages {
+    flex: 1;
+    min-height: 140px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+.trade-chat-msg {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    max-width: 90%;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.trade-chat-msg.mine {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.trade-chat-msg.theirs {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trade-chat-system-msg {
+    font-size: 11px;
+    color: var(--cyan);
+    text-align: center;
+    padding: 4px 8px;
+    background: rgba(56, 189, 248, 0.08);
+    border-radius: 8px;
+}
+
+.trade-quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.trade-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.trade-chip:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: var(--cyan);
+    color: #fff;
+}
+
+.trade-chat-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.trade-chat-input-row input {
+    flex: 1;
+    background: #09131d;
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.trade-action-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.trade-countdown-text {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--gold);
+    min-height: 20px;
+}
+
+.trade-footer-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.trade-ready-btn {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    font-weight: 900 !important;
+    padding: 10px 22px !important;
+}
+
+.trade-confirm-btn {
+    background: linear-gradient(135deg, #ffd700, #ff8c00) !important;
+    color: #000 !important;
+    font-weight: 900 !important;
+    padding: 10px 26px !important;
+    animation: pulse 1s infinite;
+}
+
 
 
 
