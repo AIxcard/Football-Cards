@@ -3415,6 +3415,23 @@ const SolsCutsceneEngine = {
         }
 
         SoundFx.playSolsFanfare(this.theme);
+
+        // 1. Click / Tap ANYWHERE on the screen to instantly claim and continue
+        const overlay = document.getElementById("solsCinematicOverlay");
+        if (overlay) {
+            overlay.onclick = (e) => {
+                if (e.target && e.target.id === "solsReplayBtn") return;
+                this.claim();
+            };
+        }
+
+        // 2. Fail-safe Auto-Claim after 3.8s so the user is NEVER stuck on a black screen!
+        if (this.autoClaimTimer) clearTimeout(this.autoClaimTimer);
+        this.autoClaimTimer = setTimeout(() => {
+            if (this.activeCard) {
+                this.claim();
+            }
+        }, 3800);
     },
 
     skip() {
@@ -3425,9 +3442,14 @@ const SolsCutsceneEngine = {
     },
 
     claim() {
+        if (this.autoClaimTimer) {
+            clearTimeout(this.autoClaimTimer);
+            this.autoClaimTimer = null;
+        }
         if (this.animFrame) cancelAnimationFrame(this.animFrame);
         const overlay = document.getElementById("solsCinematicOverlay");
         if (overlay) {
+            overlay.onclick = null;
             overlay.classList.remove("active");
             overlay.classList.add("hidden");
             overlay.style.display = "none";
