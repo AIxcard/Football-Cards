@@ -1,1 +1,13 @@
-{"alucard":{"name":"Alucard","username":"Alucard","gold":1419468,"value":250000,"cards":263,"level":21,"equippedTitle":"Owner","updatedAt":1772195000000}}
+{
+  "alucard": {
+    "name": "Alucard",
+    "username": "Alucard",
+    "gold": 0,
+    "value": 0,
+    "cards": 0,
+    "level": 1,
+    "equippedTitle": "Collector",
+    "bannedUntil": 0,
+    "updatedAt": 1787983620964
+  }
+}
