@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=245.0">
+<link rel="stylesheet" href="style.css?v=265.0">
 </head>
 
 <body>
@@ -303,8 +303,10 @@
 </div>
 
 <header class="topbar">
-    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-    <div class="logo">⚽ <span>Football Cards</span></div>
+    <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle Navigation Menu">☰</button>
+        <div class="logo">⚽ <span>Football Cards</span></div>
+    </div>
     
     <div class="topbar-right">
         <button id="adminHeaderBtn" class="admin-top-pill" style="display:none;" onclick="openAdminPanel()">👑 Admin Panel</button>
@@ -331,6 +333,9 @@
     <button class="nav" data-page="missions" onclick="showPage('missions')">🎯 Missions</button>
     <button class="nav" data-page="settings" onclick="showPage('settings')">⚙️ Settings</button>
 </aside>
+
+<!-- Sidebar Overlay Backdrop (mobile/tablet tap-to-close) -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <main>
 
@@ -578,7 +583,9 @@
             <p id="collectionCount">0 cards collected</p>
         </div>
 
-        <div class="collection-controls-row">
+        <div class="collection-controls-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <input id="cardSearchInput" type="text" placeholder="🔍 Search cards (e.g. Messi, ST, 95)..." style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#09131d;color:white;font-size:13px;min-width:200px;flex:1;" oninput="renderCards()">
+
             <select id="cardFilter" onchange="renderCards()">
                 <option value="all">All Rarities</option>
                 <option value="World Class">World Class</option>
@@ -596,9 +603,11 @@
             </select>
 
             <select id="cardSorter" onchange="renderCards()">
+                <option value="rap_desc">Sort: Highest RAP (Value) 💎</option>
+                <option value="rap_asc">Sort: Lowest RAP (Value) 💎</option>
                 <option value="rarity_desc">Sort: Highest Rarity</option>
                 <option value="rarity_asc">Sort: Lowest Rarity</option>
-                <option value="value_desc">Sort: Highest Value</option>
+                <option value="value_desc">Sort: Highest Gold Value</option>
                 <option value="rating_desc">Sort: Highest Rating</option>
                 <option value="newest">Sort: Newest First</option>
             </select>
@@ -876,9 +885,10 @@
         </div>
     </div>
 
-    <div class="mission-tabs" style="margin-bottom:18px;">
+    <div class="mission-tabs" style="margin-bottom:18px;flex-wrap:wrap;">
         <button id="lbTabGold" class="mission-tab active" onclick="setLeaderboardTab('gold')">💰 Most Gold</button>
         <button id="lbTabValue" class="mission-tab" onclick="setLeaderboardTab('value')">💎 Highest Card Value</button>
+        <button id="lbTabLevel" class="mission-tab" onclick="setLeaderboardTab('level')">⭐ Highest Level</button>
     </div>
 
     <div id="leaderboardAuthWarning" class="panel" style="display:none;border-color:var(--gold);text-align:center;">
@@ -1021,6 +1031,23 @@
         <button class="danger-btn" onclick="resetGame()">Reset Game</button>
     </div>
 
+    <!-- 🗑️ DELETE ACCOUNT (Danger Zone) -->
+    <div id="settingsDeleteAccountPanel" class="panel" style="border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.04);">
+        <h2 style="color:var(--red);">🗑️ Delete Account</h2>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">
+            Permanently deletes your cloud account, all saved progress, cards, and removes you from the leaderboard. <strong style="color:var(--red);">This cannot be undone.</strong>
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
+            <label style="margin:0;font-size:12px;color:var(--muted);">Confirm Password to Delete Account</label>
+            <div class="password-input-wrap">
+                <input id="deleteAccountPasswordInput" type="password" placeholder="Enter your password to confirm" autocomplete="current-password">
+                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('deleteAccountPasswordInput', this)">👁️</button>
+            </div>
+            <p id="deleteAccountError" style="color:var(--red);font-size:12px;margin:0;font-weight:700;"></p>
+            <button class="danger-btn" style="margin-top:4px;" onclick="handleDeleteAccount()">🗑️ Permanently Delete My Account</button>
+        </div>
+    </div>
+
 </section>
 
 </main>
@@ -1048,6 +1075,7 @@
             <button id="adminTabBtnTitles" class="admin-tab" onclick="setAdminTab('titles')">🎖️ Grant Titles</button>
             <button id="adminTabBtnTournament" class="admin-tab" onclick="setAdminTab('tournament')">🏆 Tournament</button>
             <button id="adminTabBtnModeration" class="admin-tab" onclick="setAdminTab('moderation')">🛡️ Moderation</button>
+            <button id="adminTabBtnDelete" class="admin-tab" onclick="setAdminTab('delete')" style="border-color:rgba(239,68,68,0.5);color:var(--red);">🗑️ Delete Account</button>
         </div>
 
         <!-- 1. ECONOMY TAB -->
@@ -1078,10 +1106,10 @@
 
             <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:12px;margin-bottom:14px;">
                 <div style="font-weight:900;color:var(--gold);font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-                    <span>🐵</span> Exclusive Secret Admin Card
+                    <span>🐵</span> Exclusive Developer Admin Card
                 </div>
-                <p style="font-size:12px;color:#e2e8f0;margin:0 0 10px;">Hidden from the Card Index album. 99 OVR ST with custom Godly Sols cutscene.</p>
-                <button class="primary-btn" style="background:linear-gradient(135deg,#ffd700,#ff6b00);color:#000;font-weight:900;" onclick="adminSpawnMonkeyCard()">🐵 Spawn Secret Monkey Card (99 OVR)</button>
+                <p style="font-size:12px;color:#e2e8f0;margin:0 0 10px;">Hidden from the Card Index album. 99 OVR ST Developer rarity with custom Godly Sols cutscene.</p>
+                <button class="primary-btn" style="background:linear-gradient(135deg,#ffd700,#ff6b00);color:#000;font-weight:900;" onclick="adminSpawnMonkeyCard()">🐵 Spawn Developer Monkey King Card (99 OVR)</button>
             </div>
             
             <label>Target Username (Leave blank for yourself)</label>
@@ -1166,6 +1194,27 @@
                 <button class="ghost-btn" style="flex:1;border-color:var(--green);color:var(--green);font-weight:900;" onclick="adminExecuteUnban()">✓ Unban Account</button>
             </div>
         </div>
+
+        <!-- 7. DELETE ACCOUNT TAB -->
+        <div id="adminTabDelete" class="admin-tab-content" style="display:none;">
+            <h3 style="color:var(--red);">🗑️ Delete Player Account</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+                Permanently wipes a player account from the cloud database, leaderboard, trade history, and all cloud storage.
+                <strong style="color:var(--red);">This is irreversible.</strong>
+            </p>
+
+            <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);border-radius:14px;padding:14px;margin-bottom:14px;">
+                <label>Target Username to Delete</label>
+                <input id="adminDeleteTarget" placeholder="Username to permanently delete (e.g. Timekung2835)" style="width:100%;margin-bottom:12px;">
+
+                <label style="font-size:12px;color:var(--muted);">Admin Confirmation (type DELETE to confirm)</label>
+                <input id="adminDeleteConfirm" placeholder='Type DELETE to confirm' style="width:100%;margin-bottom:14px;border-color:rgba(239,68,68,0.4);">
+
+                <button class="danger-btn" style="width:100%;" onclick="adminExecuteDeleteAccount()">🗑️ Permanently Delete Account</button>
+            </div>
+
+            <div id="adminDeleteStatus" style="font-size:13px;color:var(--muted);margin-top:8px;"></div>
+        </div>
     </div>
 </div>
 
@@ -1226,9 +1275,10 @@
     <div class="modal-box trade-room-box">
         <!-- HEADER -->
         <div class="trade-room-header">
-            <div style="display:flex;align-items:center;gap:12px;">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                 <span class="trade-live-badge">● LIVE TRADE ROOM</span>
                 <h2 style="margin:0;font-size:18px;color:#fff;">Trading with <span id="liveTradePartnerName" style="color:var(--cyan);">Partner</span></h2>
+                <div id="tradeFairnessMeter" class="trade-fairness-meter even">⚖️ Fair Trade (0 💎)</div>
             </div>
             <button class="ghost-btn danger-text" style="padding:6px 14px;font-size:12px;" onclick="cancelLiveTradeSession()">✕ Cancel Trade</button>
         </div>
@@ -1240,19 +1290,25 @@
                 <!-- YOUR OFFER -->
                 <div class="trade-offer-box your-offer-box" id="yourOfferBox">
                     <div class="trade-box-title">
-                        <span style="font-weight:800;color:#fff;">Your Offer (<span id="yourOfferCount">0</span>/6)</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-weight:800;color:#fff;">Your Offer (<span id="yourOfferCount">0</span>/6)</span>
+                            <span id="yourOfferRapBadge" class="trade-rap-badge">💎 0 RAP</span>
+                        </div>
                         <span id="yourReadyBadge" class="trade-status-pill unready">NOT READY</span>
                     </div>
                     <div class="trade-slots-grid" id="yourTradeSlots">
                         <!-- 6 Interactive Slots -->
                     </div>
-                    <button class="primary-btn add-card-to-trade-btn" onclick="openTradeCardPicker()">+ Add Card from Collection</button>
+                    <button class="primary-btn add-card-to-trade-btn" style="background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;" onclick="openTradeCardPicker()">+ Add Card from Collection</button>
                 </div>
 
                 <!-- THEIR OFFER -->
                 <div class="trade-offer-box their-offer-box" id="theirOfferBox">
                     <div class="trade-box-title">
-                        <span style="font-weight:800;color:#fff;"><span id="theirOfferPartnerTitle">Partner's Offer</span> (<span id="theirOfferCount">0</span>/6)</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-weight:800;color:#fff;"><span id="theirOfferPartnerTitle">Partner's Offer</span> (<span id="theirOfferCount">0</span>/6)</span>
+                            <span id="theirOfferRapBadge" class="trade-rap-badge">💎 0 RAP</span>
+                        </div>
                         <span id="theirReadyBadge" class="trade-status-pill unready">NOT READY</span>
                     </div>
                     <div class="trade-slots-grid" id="theirTradeSlots">
@@ -1283,10 +1339,10 @@
                     <button class="trade-chip" onclick="sendQuickTradeChat('Deal, thanks!')">🤝 Deal</button>
                 </div>
 
-                <!-- Chat Input Row -->
+                <!-- Chat Input Row (Pixel-Perfect Aligned) -->
                 <div class="trade-chat-input-row">
                     <input id="tradeChatInput" type="text" placeholder="Type a message to partner..." maxlength="100" onkeydown="if(event.key==='Enter') sendTradeChat();">
-                    <button class="primary-btn" style="width:auto;padding:8px 16px;" onclick="sendTradeChat()">Send</button>
+                    <button class="primary-btn" style="background:linear-gradient(135deg,#00f2fe,#4facfe);" onclick="sendTradeChat()">Send</button>
                 </div>
             </div>
         </div>
@@ -1303,25 +1359,64 @@
 </div>
 
 <!-- =========================================================
-     TRADE CARD PICKER MODAL (SELECT FROM INVENTORY)
+     HUGE TRADE CARD PICKER MODAL (WITH SEARCH & RAP FILTERS)
      ========================================================= -->
 <div id="tradeCardPickerModal" class="modal hidden" style="z-index:100000;background:rgba(2,6,14,0.92);">
-    <div class="modal-box" style="max-width:720px;max-height:85vh;display:flex;flex-direction:column;text-align:left;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div class="modal-box trade-picker-huge-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
             <div>
-                <h2 style="margin:0;font-size:20px;color:#fff;">Select Card to Add to Offer</h2>
-                <p style="font-size:12px;color:var(--muted);margin:2px 0 0;">Click any unlocked card from your collection to add it to your trade slot.</p>
+                <h2 style="margin:0;font-size:22px;color:#fff;">Select Card to Add to Offer</h2>
+                <p style="font-size:12px;color:var(--muted);margin:2px 0 0;">Click any card to add it to your trade slot. Use search and RAP filters to pick the best cards.</p>
             </div>
-            <button class="ghost-btn" onclick="closeTradeCardPicker()">✕ Close</button>
+            <button class="ghost-btn" style="padding:6px 16px;font-size:13px;" onclick="closeTradeCardPicker()">✕ Close</button>
         </div>
 
-        <div id="tradeCardPickerGrid" class="cards-grid" style="overflow-y:auto;max-height:60vh;padding:8px;gap:12px;">
-            <!-- Unlocked Cards -->
+        <!-- SEARCH & FILTER TOOLBAR -->
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <input id="tradeCardSearchInput" type="text" placeholder="🔍 Search by player name (e.g. Messi, Haaland, Mbappé)..." style="flex:1;min-width:200px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:13px;" oninput="filterTradeCardPicker()">
+            <select id="tradeCardRarityFilter" style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:13px;" onchange="filterTradeCardPicker()">
+                <option value="ALL">All Rarities</option>
+                <option value="World Class">World Class</option>
+                <option value="Exclusive">Exclusive</option>
+                <option value="Secret">Secret</option>
+                <option value="Mythic">Mythic</option>
+                <option value="Legendary">Legendary</option>
+                <option value="Epic">Epic</option>
+                <option value="Rare">Rare</option>
+                <option value="Uncommon">Uncommon</option>
+                <option value="Common">Common</option>
+            </select>
+            <select id="tradeCardSortFilter" style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:13px;" onchange="filterTradeCardPicker()">
+                <option value="RAP_DESC">Highest RAP (Value) 💎</option>
+                <option value="RAP_ASC">Lowest RAP (Value) 💎</option>
+                <option value="RATING_DESC">Highest OVR</option>
+                <option value="RATING_ASC">Lowest OVR</option>
+                <option value="RECENT">Recently Obtained</option>
+            </select>
+        </div>
+
+        <div id="tradeCardPickerGrid" class="cards-grid" style="overflow-y:auto;flex:1;max-height:58vh;padding:8px 4px;gap:14px;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));">
+            <!-- Dynamically populated cards with RAP values -->
         </div>
     </div>
 </div>
 
+<!-- =========================================================
+     DEVTOOLS & CONSOLE LOCKDOWN SHIELD
+     ========================================================= -->
+<div id="devToolsShieldModal" class="modal hidden" style="z-index:999999;background:rgba(3,7,18,0.98);backdrop-filter:blur(24px);">
+    <div class="modal-box" style="max-width:560px;text-align:center;padding:36px 28px;border:1px solid rgba(239,68,68,0.4);box-shadow:0 0 60px rgba(239,68,68,0.3);background:#09101a;border-radius:24px;margin:auto;">
+        <div style="font-size:56px;margin-bottom:12px;">🛡️</div>
+        <h2 style="font-size:24px;color:#ef4444;margin:0 0 10px;font-weight:900;letter-spacing:0.5px;">INSPECTION &amp; CONSOLE BLOCKED</h2>
+        <p style="color:#cbd5e1;font-size:14px;line-height:1.6;margin:0 0 20px;">
+            Developer Tools and Console inspection have been strictly disabled to protect player accounts and ensure fair play.
+        </p>
+        <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:14px;border-radius:12px;font-size:13px;color:#fca5a5;font-weight:700;">
+            ⚠️ Please close Developer Tools / Console window to resume playing Football Cards.
+        </div>
+    </div>
+</div>
 
-<script src="script.js?v=245.0"></script>
+<script src="script.js?v=265.0"></script>
 </body>
 </html>
