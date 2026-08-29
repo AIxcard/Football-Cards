@@ -41,19 +41,20 @@
 
 
 
-    const CURRENT_SAVE_KEY = "footballCardsSave_v9";
+    const CURRENT_SAVE_KEY = "footballCardsSave_v10_reset";
     const PREVIOUS_SAVE_KEYS = [
+        "footballCardsSave_v9",
         "footballCardsSave_v8",
         "footballCardsSave_v7",
         "footballCardsSave_v6",
-    "footballCardsSave_v5",
-    "footballCardsSave_v4",
-    "footballCardsSave_v3",
-    "footballCardsSave_v2",
-    "footballCardsSave_v1",
-    "footballCardsSave",
-    "footballCards"
-];
+        "footballCardsSave_v5",
+        "footballCardsSave_v4",
+        "footballCardsSave_v3",
+        "footballCardsSave_v2",
+        "footballCardsSave_v1",
+        "footballCardsSave",
+        "footballCards"
+    ];
 
 const CLOUD_STORAGE_KEY = "football_cards_cloud_accounts";
 const CLOUD_TRADES_KEY = "football_cards_cloud_trades";
@@ -190,24 +191,61 @@ function calculateCollectionValue(cards) {
     return cards.reduce((sum, c) => sum + getCardValue(c), 0);
 }
 
-const SERIALIZED_PALETTES = [
-    "linear-gradient(135deg, #1f0036 0%, #7928ca 50%, #ffffff 100%)", // #1 Dark Purple White
-    "linear-gradient(135deg, #ff0844 0%, #7928ca 60%, #ff007f 100%)", // #2 Red Purple Fire
-    "linear-gradient(135deg, #f9d423 0%, #ff4e50 50%, #0055a5 100%)", // #3 Yellow Blue Contrast
-    "linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #111111 100%)", // #4 24K Gold Obsidian
-    "linear-gradient(135deg, #051937 0%, #004d7a 40%, #008793 70%, #00bf72 100%)", // #5 Deep Cyber Mint
-    "linear-gradient(135deg, #4a00e0 0%, #8e2de2 50%, #00f2fe 100%)", // #6 Violet Cyan Plasma
-    "linear-gradient(135deg, #ff0055 0%, #ffffff 50%, #000000 100%)", // #7 Crimson Silver Onyx
-    "linear-gradient(135deg, #f12711 0%, #f5af19 50%, #ffffff 100%)", // #8 Fiery Solar Gold
-    "linear-gradient(135deg, #11998e 0%, #38ef7d 50%, #ffffff 100%)", // #9 Mint Emerald Ice
-    "linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%)"  // #10 Sunset Royal Magenta
+const RONALDO_SERIALIZED_PALETTES = [
+    "linear-gradient(135deg, #1f0036 0%, #7c3aed 40%, #ffffff 60%, #c084fc 80%, #1e0538 100%)", // CR7 #1 Royal Purple & Diamond White
+    "linear-gradient(135deg, #001f54 0%, #0077b6 40%, #e0f2fe 65%, #03045e 100%)",             // CR7 #2 Sapphire Cobalt & Silver
+    "linear-gradient(135deg, #0a0a0a 0%, #ffd700 45%, #fff176 60%, #ff8c00 80%, #050505 100%)", // CR7 #3 Royal 24K Gold & Onyx
+    "linear-gradient(135deg, #083344 0%, #06b6d4 40%, #f0fdfa 60%, #0891b2 80%, #02121a 100%)", // CR7 #4 Imperial Electric Cyan
+    "linear-gradient(135deg, #450a0a 0%, #dc2626 40%, #ffffff 60%, #991b1b 85%, #050202 100%)", // CR7 #5 Crimson Velvet & White Lightning
+    "linear-gradient(135deg, #3b0764 0%, #a21caf 45%, #fbcfe8 65%, #701a75 100%)",             // CR7 #6 Deep Amethyst & Rose Gold
+    "linear-gradient(135deg, #022c22 0%, #059669 45%, #ecfdf5 65%, #064e3b 100%)",             // CR7 #7 Emerald Dragon & Pure Diamond
+    "linear-gradient(135deg, #1e1b4b 0%, #4338ca 40%, #ffd700 65%, #312e81 100%)",             // CR7 #8 Midnight Celestial Indigo & Gold
+    "linear-gradient(135deg, #4c0519 0%, #f43f5e 40%, #2dd4bf 70%, #0f172a 100%)",             // CR7 #9 Cyberpunk Neon Violet & Turquoise
+    "linear-gradient(135deg, #7c3aed 0%, #00f2fe 30%, #ffd700 60%, #ff007f 85%, #ffffff 100%)"  // CR7 #10 5x UCL Emperor Rainbow Prism
 ];
 
-function generateRandomSerializedGradient(serialNum) {
-    if (serialNum && serialNum >= 1 && serialNum <= SERIALIZED_PALETTES.length) {
-        return SERIALIZED_PALETTES[serialNum - 1];
+const MESSI_SERIALIZED_PALETTES = [
+    "linear-gradient(135deg, #450a0a 0%, #ea580c 35%, #ff8c00 55%, #ffd700 75%, #1a0500 100%)", // Messi #1 Solar Orange & Fiery Crimson
+    "linear-gradient(135deg, #0c4a6e 0%, #38bdf8 40%, #ffd700 60%, #bae6fd 80%, #082f49 100%)", // Messi #2 Albiceleste Sky Cyan & Gold
+    "linear-gradient(135deg, #422006 0%, #eab308 35%, #fef08a 55%, #ca8a04 75%, #0a0500 100%)", // Messi #3 8x Ballon d'Or Pure Golden Glow
+    "linear-gradient(135deg, #7c2d12 0%, #f97316 40%, #fef9c3 60%, #c2410c 100%)",             // Messi #4 Argentine Magician Neon Coral
+    "linear-gradient(135deg, #4a044e 0%, #9f1239 45%, #ffd700 70%, #1e1b4b 100%)",             // Messi #5 Royal Blaugrana Burgundy & Gold
+    "linear-gradient(135deg, #064e3b 0%, #10b981 40%, #f59e0b 65%, #022c22 100%)",             // Messi #6 Cosmic Emerald Gold & Amber
+    "linear-gradient(135deg, #7c2d12 0%, #fb923c 45%, #ffffff 65%, #9a3412 100%)",             // Messi #7 Electric Starlight Tangerine
+    "linear-gradient(135deg, #581c87 0%, #c026d3 40%, #fbbf24 70%, #1e1b4b 100%)",             // Messi #8 Rosario Sunset Violet & Fiery Gold
+    "linear-gradient(135deg, #881337 0%, #f43f5e 40%, #fb923c 65%, #4c0519 100%)",             // Messi #9 Hyper Solar Flare & Neon Ruby
+    "linear-gradient(135deg, #ff4500 0%, #ffd700 30%, #00f5d4 60%, #9333ea 85%, #ffffff 100%)"  // Messi #10 The GOAT Ultimate Holographic Prism
+];
+
+const MONKEY_SERIALIZED_PALETTES = [
+    "linear-gradient(135deg, #451a03 0%, #d97706 40%, #fef08a 60%, #b45309 85%, #1c0a00 100%)",
+    "linear-gradient(135deg, #78350f 0%, #ffd700 45%, #ffffff 65%, #d97706 100%)",
+    "linear-gradient(135deg, #064e3b 0%, #10b981 40%, #ffd700 65%, #022c22 100%)",
+    "linear-gradient(135deg, #7f1d1d 0%, #ef4444 40%, #fef08a 65%, #450a0a 100%)",
+    "linear-gradient(135deg, #0c4a6e 0%, #06b6d4 40%, #ffd700 65%, #082f49 100%)",
+    "linear-gradient(135deg, #581c87 0%, #a855f7 40%, #fef08a 65%, #3b0764 100%)",
+    "linear-gradient(135deg, #18181b 0%, #f59e0b 45%, #ffd700 70%, #09090b 100%)",
+    "linear-gradient(135deg, #374151 0%, #e5e7eb 45%, #fbbf24 70%, #1f2937 100%)",
+    "linear-gradient(135deg, #4c0519 0%, #f43f5e 40%, #38bdf8 70%, #020617 100%)",
+    "linear-gradient(135deg, #ffd700 0%, #ff6b00 35%, #9333ea 70%, #ffffff 100%)"
+];
+
+const SERIALIZED_PALETTES = RONALDO_SERIALIZED_PALETTES;
+
+function generateRandomSerializedGradient(serialNum, playerName = "") {
+    const norm = (playerName || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const num = Math.min(10, Math.max(1, Number(serialNum) || 1));
+
+    if (norm.includes("ronaldo")) {
+        return RONALDO_SERIALIZED_PALETTES[num - 1] || RONALDO_SERIALIZED_PALETTES[0];
     }
-    return SERIALIZED_PALETTES[Math.floor(Math.random() * SERIALIZED_PALETTES.length)];
+    if (norm.includes("messi")) {
+        return MESSI_SERIALIZED_PALETTES[num - 1] || MESSI_SERIALIZED_PALETTES[0];
+    }
+    if (norm.includes("monkey") || norm.includes("wukong")) {
+        return MONKEY_SERIALIZED_PALETTES[num - 1] || MONKEY_SERIALIZED_PALETTES[0];
+    }
+    return (num % 2 === 0 ? RONALDO_SERIALIZED_PALETTES : MESSI_SERIALIZED_PALETTES)[num - 1] || RONALDO_SERIALIZED_PALETTES[0];
 }
 
 const DISCOVERY_BONUS = {
@@ -625,27 +663,34 @@ const BACKGROUNDS = [
 
 const MISSION_TEMPLATES = {
 hourly: [
-    ["Open 2 scouting packs", 2, 20, "packs"],
-    ["Earn 50 coins", 50, 25, "coins"],
-    ["Collect 3 player cards", 3, 25, "cards"]
+    ["Open 3 scouting packs", 3, 50, "packs"],
+    ["Earn 200 total coins", 200, 60, "coins"],
+    ["Collect 5 player cards", 5, 60, "cards"],
+    ["Pull 1 Rare or better card", 1, 80, "rare"]
 ],
 daily: [
-    ["Open 8 scouting packs", 8, 80, "packs"],
-    ["Collect 12 cards", 12, 100, "cards"],
-    ["Pull 2 Rare or better cards", 2, 120, "rare"],
-    ["Sell 3 duplicate cards", 3, 70, "duplicates"]
+    ["Open 15 booster packs", 15, 250, "packs"],
+    ["Collect 25 player cards", 25, 300, "cards"],
+    ["Pull 5 Rare or better cards", 5, 400, "rare"],
+    ["Pull 2 Epic or better cards", 2, 500, "epic"],
+    ["Pull 1 Legendary or better card", 1, 750, "legendary"],
+    ["Earn 2,000 gold coins", 2000, 600, "coins"]
 ],
 weekly: [
-    ["Open 30 scouting packs", 30, 450, "packs"],
-    ["Collect 45 cards", 45, 500, "cards"],
-    ["Pull 5 Epic or better cards", 5, 650, "epic"],
-    ["Earn 2,500 total coins", 2500, 750, "coins"]
+    ["Open 75 booster packs", 75, 2500, "packs"],
+    ["Collect 120 player cards", 120, 3000, "cards"],
+    ["Pull 15 Epic or better cards", 15, 3500, "epic"],
+    ["Pull 6 Legendary or better cards", 6, 5000, "legendary"],
+    ["Pull 2 Mythic or Secret cards", 2, 7500, "mythic"],
+    ["Earn 15,000 gold coins", 15000, 6000, "coins"]
 ],
 monthly: [
-    ["Open 100 scouting packs", 100, 2000, "packs"],
-    ["Collect 150 cards", 150, 2500, "cards"],
-    ["Pull 4 Legendary or better cards", 4, 3500, "legendary"],
-    ["Earn 10,000 total coins", 10000, 4000, "coins"]
+    ["Open 350 booster packs", 350, 15000, "packs"],
+    ["Collect 600 player cards", 600, 20000, "cards"],
+    ["Pull 30 Legendary or better cards", 30, 25000, "legendary"],
+    ["Pull 8 Mythic or Secret cards", 8, 35000, "mythic"],
+    ["Pull or Own a World Class / Secret Icon", 1, 50000, "worldclass"],
+    ["Earn 75,000 gold coins", 75000, 40000, "coins"]
 ]
 };
 
@@ -654,6 +699,17 @@ monthly: [
    ========================================================= */
 
 const TITLES = [
+{
+    id: "unique",
+    name: "Unique",
+    cssClass: "title-unique",
+    requirement: "Own any Serialized (#1-10) card",
+    unlock: () => {
+        try {
+            return Array.isArray(state.cards) && state.cards.some(c => !!c.serialNumber || !!c.isSerialized);
+        } catch (e) { return false; }
+    }
+},
 {
     id: "collector",
     name: "Collector",
@@ -893,13 +949,14 @@ function freshState() {
 
 function loadGame() {
     try {
+        let isFreshV10 = true;
         let raw = localStorage.getItem(CURRENT_SAVE_KEY);
         if (!raw) {
+            isFreshV10 = false;
             for (const prevKey of PREVIOUS_SAVE_KEYS) {
                 const prevData = localStorage.getItem(prevKey);
                 if (prevData) {
                     raw = prevData;
-                    try { localStorage.setItem(CURRENT_SAVE_KEY, prevData); } catch (e) {}
                     break;
                 }
             }
@@ -917,43 +974,33 @@ function loadGame() {
         const ownedFrames = Array.isArray(saved.ownedFrames) && saved.ownedFrames.length ? saved.ownedFrames : ["default"];
         const ownedBackgrounds = Array.isArray(saved.ownedBackgrounds) && saved.ownedBackgrounds.length ? saved.ownedBackgrounds : ["campnou"];
 
-        let showcase = Array.isArray(saved.showcase) ? [...saved.showcase] : [null, null, null, null, null, null];
-        while (showcase.length < 6) showcase.push(null);
-        showcase = showcase.slice(0, 6);
+        // Perform global card & serialization reset for v10
+        const isReset = !isFreshV10 || saved.resetV10Done !== true;
 
         return {
             ...fresh,
             ...saved,
+            resetV10Done: true,
             name: activeName,
+            accountUser: saved.accountUser || "",
+            accountPass: saved.accountPass || "",
+            coins: isReset ? Math.max(500, Number(saved.coins) || 500) : (saved.coins || 100),
             ownedFrames: ownedFrames,
             ownedBackgrounds: ownedBackgrounds,
-            showcase: showcase,
+            showcase: [null, null, null, null, null, null],
+            cards: isReset ? [] : (Array.isArray(saved.cards) ? saved.cards : []),
+            unlockedCardNames: isReset ? [] : (Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : []),
+            serializedCounts: isReset ? { "Lionel Messi": 0, "Cristiano Ronaldo": 0, "Monkey King": 0 } : (saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 }),
             profileFrame: saved.profileFrame || "default",
             profileBackground: saved.profileBackground || "campnou",
             equippedTitle: saved.equippedTitle || "Collector",
-            cards: Array.isArray(saved.cards) ? saved.cards.map((c, idx) => {
-                let sGrad = c.serialGradient;
-                if (c.serialNumber && !sGrad) {
-                    sGrad = generateRandomSerializedGradient(c.serialNumber);
-                }
-                return {
-                    ...c,
-                    serialGradient: sGrad,
-                    locked: c.locked !== undefined ? c.locked : (c.rarity === "World Class" || c.rarity === "Secret" || !!c.serialNumber)
-                };
-            }) : fresh.cards,
-            stats: { ...fresh.stats, ...(saved.stats || {}) },
-            tournamentDraft: { ...fresh.tournamentDraft, ...(saved.tournamentDraft || {}) },
-            missionProgress: { ...fresh.missionProgress, ...(saved.missionProgress || {}) },
-            missionClaimed: { ...fresh.missionClaimed, ...(saved.missionClaimed || {}) },
-            bannedUntil: (saved.banReason && (saved.banReason.includes("Tampering") || saved.banReason.includes("Trade") || saved.banReason.includes("Script Modification"))) ? 0 : (saved.bannedUntil || 0),
-            banReason: (saved.banReason && (saved.banReason.includes("Tampering") || saved.banReason.includes("Trade") || saved.banReason.includes("Script Modification"))) ? "" : (saved.banReason || ""),
+            stats: { ...fresh.stats, ...(isReset ? {} : (saved.stats || {})) },
+            tournamentDraft: { ...fresh.tournamentDraft },
+            missionProgress: { ...fresh.missionProgress },
+            missionClaimed: { ...fresh.missionClaimed },
             grantedTitles: Array.isArray(saved.grantedTitles) ? saved.grantedTitles : [],
             isGrantedAdmin: !!saved.isGrantedAdmin,
-            isGrantedStaff: !!saved.isGrantedStaff,
-            unlockedCardNames: Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : [],
-            serializedCounts: saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 },
-            redeemedCodes: Array.isArray(saved.redeemedCodes) ? saved.redeemedCodes : []
+            isGrantedStaff: !!saved.isGrantedStaff
         };
     } catch (e) {
         return freshState();
@@ -2777,7 +2824,7 @@ function openPack(type, count = 1) {
             if (state.serializedCounts[player.name] < 10) {
                 state.serializedCounts[player.name]++;
                 serialNum = state.serializedCounts[player.name];
-                serialGrad = generateRandomSerializedGradient(serialNum);
+                serialGrad = generateRandomSerializedGradient(serialNum, player.name);
             }
         }
 
@@ -2809,6 +2856,8 @@ function openPack(type, count = 1) {
         if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Rare) progressMission("rare", 1);
         if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Epic) progressMission("epic", 1);
         if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Legendary) progressMission("legendary", 1);
+        if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Mythic || rarity === "Secret") progressMission("mythic", 1);
+        if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER["World Class"] || rarity === "Secret" || serialNum !== null) progressMission("worldclass", 1);
 
         pulledCards.push({ card, duplicate, isFirstDiscovery });
 
@@ -5049,9 +5098,9 @@ function renderMissions() {
     const list = document.getElementById("missionList");
     const homeList = document.getElementById("homeMissionList");
 
-    const missions = MISSION_TEMPLATES[currentMissionType];
-    const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType]) || [false, false, false];
-    const progress = (state.missionProgress && state.missionProgress[currentMissionType]) || [0, 0, 0];
+    const missions = MISSION_TEMPLATES[currentMissionType] || [];
+    const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType]) || [];
+    const progress = (state.missionProgress && state.missionProgress[currentMissionType]) || [];
 
     function createMissionHTML(mission, i, type, isClaimed, amount) {
         const max = mission[1];
@@ -5083,8 +5132,8 @@ function renderMissions() {
 
     if (homeList) {
         const dailyMissions = MISSION_TEMPLATES.daily;
-        const dailyProg = (state.missionProgress && state.missionProgress.daily) || [0, 0, 0];
-        const dailyClaimed = (state.missionClaimed && state.missionClaimed.daily) || [false, false, false];
+        const dailyProg = (state.missionProgress && state.missionProgress.daily) || [];
+        const dailyClaimed = (state.missionClaimed && state.missionClaimed.daily) || [];
 
         homeList.innerHTML = dailyMissions.map((m, i) => createMissionHTML(m, i, "daily", dailyClaimed[i], dailyProg[i] || 0)).join("");
     }
@@ -5100,7 +5149,7 @@ function progressMission(kind, amount) {
 
         missions.forEach((mission, i) => {
             if (mission[3] === kind) {
-                if (!state.missionProgress[type]) state.missionProgress[type] = [0, 0, 0];
+                if (!state.missionProgress[type]) state.missionProgress[type] = [];
                 state.missionProgress[type][i] = (state.missionProgress[type][i] || 0) + amount;
                 updated = true;
             }
@@ -5114,18 +5163,19 @@ function progressMission(kind, amount) {
 }
 
 function claimMission(type, index) {
-    const mission = MISSION_TEMPLATES[type][index];
+    const mission = MISSION_TEMPLATES[type] && MISSION_TEMPLATES[type][index];
+    if (!mission) return;
     const progress = (state.missionProgress[type] && state.missionProgress[type][index]) || 0;
 
     if (progress < mission[1]) return;
     if (state.missionClaimed[type] && state.missionClaimed[type][index]) return;
 
-    if (!state.missionClaimed[type]) state.missionClaimed[type] = [false, false, false];
+    if (!state.missionClaimed[type]) state.missionClaimed[type] = [];
     state.missionClaimed[type][index] = true;
 
     SoundFx.coin();
     addCoins(mission[2]);
-    addXP(Math.min(50, Math.floor(mission[2] / 2)));
+    addXP(Math.min(100, Math.floor(mission[2] / 2)));
     saveGame();
     renderMissions();
     toast(`Mission complete: +${mission[2]} coins!`);
@@ -5133,29 +5183,33 @@ function claimMission(type, index) {
 
 function checkMissionResets() {
     const now = Date.now();
-    if (now - state.missionReset.daily >= 86400000) {
+    if (!state.missionReset) state.missionReset = { hourly: now, daily: now, weekly: now, monthly: now };
+    if (!state.missionProgress) state.missionProgress = { hourly: [], daily: [], weekly: [], monthly: [] };
+    if (!state.missionClaimed) state.missionClaimed = { hourly: [], daily: [], weekly: [], monthly: [] };
+
+    if (now - (state.missionReset.daily || 0) >= 86400000) {
         state.missionReset.daily = now;
-        state.missionProgress.daily = [0, 0, 0];
-        state.missionClaimed.daily = [false, false, false];
+        state.missionProgress.daily = [];
+        state.missionClaimed.daily = [];
         saveGame();
     }
-    if (now - state.missionReset.weekly >= 604800000) {
+    if (now - (state.missionReset.weekly || 0) >= 604800000) {
         state.missionReset.weekly = now;
-        state.missionProgress.weekly = [0, 0, 0];
-        state.missionClaimed.weekly = [false, false, false];
+        state.missionProgress.weekly = [];
+        state.missionClaimed.weekly = [];
         state.tournamentAttempts = 5;
         saveGame();
     }
-    if (now - state.missionReset.monthly >= 2592000000) {
+    if (now - (state.missionReset.monthly || 0) >= 2592000000) {
         state.missionReset.monthly = now;
-        state.missionProgress.monthly = [0, 0, 0];
-        state.missionClaimed.monthly = [false, false, false];
+        state.missionProgress.monthly = [];
+        state.missionClaimed.monthly = [];
         saveGame();
     }
-    if (now - state.missionReset.hourly >= 3600000) {
+    if (now - (state.missionReset.hourly || 0) >= 3600000) {
         state.missionReset.hourly = now;
-        state.missionProgress.hourly = [0, 0, 0];
-        state.missionClaimed.hourly = [false, false, false];
+        state.missionProgress.hourly = [];
+        state.missionClaimed.hourly = [];
         saveGame();
     }
 }
@@ -5640,11 +5694,11 @@ async function adminExecuteSpawnCard() {
     if (isSerialized) {
         if (p.rarity === "World Class" || p.devCard || p.name === "Monkey King") {
             sNum = Math.floor(Math.random() * 10) + 1;
-            sGrad = generateRandomSerializedGradient(sNum);
+            sGrad = generateRandomSerializedGradient(sNum, p.name);
         } else {
             toast("Note: Serialization applied as custom developer edition.");
             sNum = 1;
-            sGrad = generateRandomSerializedGradient(1);
+            sGrad = generateRandomSerializedGradient(1, p.name);
         }
     }
 
@@ -6388,6 +6442,7 @@ document.addEventListener("contextmenu", function(e) {
         adminResetTournamentCooldown,
         adminGrantTournamentChampion,
         populateAdminTitleList,
+        generateRandomSerializedGradient,
         renderCards,
         renderIndex,
         renderTradeHub,
