@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=145.0">
+<link rel="stylesheet" href="style.css?v=150.0">
 </head>
 
 <body>
@@ -961,17 +961,19 @@
         </div>
     </div>
 
-    <!-- 📱 ACTIVE DEVICES & SESSIONS PANEL -->
+    <!-- 📱 CONNECTED DEVICES & ACTIVE LOGINS PANEL -->
     <div id="settingsDevicesPanel" class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:6px;">
             <div>
-                <h2>📱 Logged-In Devices &amp; Active Sessions</h2>
-                <p style="color:var(--muted);font-size:13px;margin:0;">View and manage devices currently authorized on your cloud account.</p>
+                <h2>📱 Connected Devices &amp; Remote Logins</h2>
+                <p style="color:var(--muted);font-size:13px;margin:0;">View all devices logged into your account. You can remotely disconnect any device with your password.</p>
             </div>
-            <button class="ghost-btn" style="height:36px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;" onclick="renderActiveDevices()">🔄 Refresh Devices</button>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="ghost-btn" style="height:38px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;" onclick="renderActiveDevices()">🔄 Refresh Devices</button>
+            </div>
         </div>
 
-        <div id="activeDevicesList" style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+        <div id="activeDevicesList" style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
             <!-- Rendered dynamically -->
         </div>
     </div>
@@ -1117,21 +1119,21 @@
 </div>
 
 <!-- =========================================================
-     KICK DEVICE PASSWORD CONFIRMATION MODAL
+     REMOTE DEVICE LOGOUT PASSWORD CONFIRMATION MODAL
      ========================================================= -->
 <div id="kickDeviceModal" class="modal hidden">
-    <div class="modal-box" style="max-width:440px;text-align:left;">
+    <div class="modal-box" style="max-width:460px;text-align:left;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
             <span style="font-size:32px;">🔒</span>
             <div>
-                <h2 style="margin:0;font-size:20px;">Disconnect Device</h2>
-                <p style="color:var(--muted);font-size:12px;margin:0;">Authorization required to kick device session</p>
+                <h2 style="margin:0;font-size:20px;">Confirm Device Logout</h2>
+                <p style="color:var(--muted);font-size:12px;margin:0;">Enter your password to log out this remote session</p>
             </div>
         </div>
         
-        <p id="kickDeviceTargetInfo" style="font-size:13px;background:rgba(255,255,255,0.05);padding:10px 14px;border-radius:10px;border:1px solid var(--border);margin-bottom:14px;"></p>
+        <div id="kickDeviceTargetInfo" style="font-size:13px;background:rgba(255,255,255,0.05);padding:12px 14px;border-radius:12px;border:1px solid var(--border);margin-bottom:14px;"></div>
 
-        <label style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;display:block;">Enter Your Account Password:</label>
+        <label style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;display:block;">Your Account Password:</label>
         <div class="password-input-wrap">
             <input id="kickPasswordConfirmInput" type="password" placeholder="Enter your current password" autocomplete="current-password">
             <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('kickPasswordConfirmInput', this)">👁️</button>
@@ -1140,7 +1142,7 @@
 
         <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end;">
             <button class="ghost-btn" onclick="closeKickDeviceModal()">Cancel</button>
-            <button class="danger-btn" style="width:auto;padding:10px 20px;" onclick="executeConfirmedKickDevice()">Kick Device Now</button>
+            <button class="danger-btn" style="width:auto;padding:10px 20px;" onclick="executeConfirmedKickDevice()">🚪 Confirm &amp; Log Out</button>
         </div>
     </div>
 </div>
@@ -1167,6 +1169,6 @@
     </div>
 </div>
 
-<script src="script.js?v=145.0"></script>
+<script src="script.js?v=150.0"></script>
 </body>
 </html>
