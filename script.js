@@ -41,8 +41,9 @@
 
 
 
-    const CURRENT_SAVE_KEY = "footballCardsSave_v10_reset";
+    const CURRENT_SAVE_KEY = "footballCardsSave_v11_hard_reset";
     const PREVIOUS_SAVE_KEYS = [
+        "footballCardsSave_v10_reset",
         "footballCardsSave_v9",
         "footballCardsSave_v8",
         "footballCardsSave_v7",
@@ -663,10 +664,17 @@ const BACKGROUNDS = [
 
 const MISSION_TEMPLATES = {
 hourly: [
-    ["Open 3 scouting packs", 3, 50, "packs"],
-    ["Earn 200 total coins", 200, 60, "coins"],
-    ["Collect 5 player cards", 5, 60, "cards"],
-    ["Pull 1 Rare or better card", 1, 80, "rare"]
+    ["Open 2 scouting packs", 2, 40, "packs"],
+    ["Open 5 booster packs", 5, 100, "packs"],
+    ["Open 10 booster packs", 10, 220, "packs"],
+    ["Collect 6 player cards", 6, 75, "cards"],
+    ["Collect 15 player cards", 15, 180, "cards"],
+    ["Pull 1 Rare or better card", 1, 80, "rare"],
+    ["Pull 3 Rare or better cards", 3, 200, "rare"],
+    ["Pull 1 Epic or better card", 1, 250, "epic"],
+    ["Earn 250 gold coins", 250, 80, "coins"],
+    ["Earn 600 gold coins", 600, 200, "coins"],
+    ["Sell 3 duplicate cards", 3, 100, "sell"]
 ],
 daily: [
     ["Open 15 booster packs", 15, 250, "packs"],
@@ -949,10 +957,10 @@ function freshState() {
 
 function loadGame() {
     try {
-        let isFreshV10 = true;
+        let isFreshV11 = true;
         let raw = localStorage.getItem(CURRENT_SAVE_KEY);
         if (!raw) {
-            isFreshV10 = false;
+            isFreshV11 = false;
             for (const prevKey of PREVIOUS_SAVE_KEYS) {
                 const prevData = localStorage.getItem(prevKey);
                 if (prevData) {
@@ -971,36 +979,36 @@ function loadGame() {
             activeName = saved.accountUser || fresh.name;
         }
 
-        const ownedFrames = Array.isArray(saved.ownedFrames) && saved.ownedFrames.length ? saved.ownedFrames : ["default"];
-        const ownedBackgrounds = Array.isArray(saved.ownedBackgrounds) && saved.ownedBackgrounds.length ? saved.ownedBackgrounds : ["campnou"];
-
-        // Perform global card & serialization reset for v10
-        const isReset = !isFreshV10 || saved.resetV10Done !== true;
+        // Perform full zero hard reset (gold, cards, titles, backgrounds, stats, serialization)
+        const isReset = !isFreshV11 || saved.resetV11HardResetDone !== true;
+        const isAdminUser = (saved.accountUser || "").toLowerCase() === "alucard" || !!saved.isGrantedAdmin;
 
         return {
             ...fresh,
-            ...saved,
-            resetV10Done: true,
+            resetV11HardResetDone: true,
             name: activeName,
             accountUser: saved.accountUser || "",
             accountPass: saved.accountPass || "",
-            coins: isReset ? Math.max(500, Number(saved.coins) || 500) : (saved.coins || 100),
-            ownedFrames: ownedFrames,
-            ownedBackgrounds: ownedBackgrounds,
+            coins: isReset ? 100 : (saved.coins !== undefined ? saved.coins : 100),
+            xp: isReset ? 0 : (saved.xp || 0),
+            level: isReset ? 1 : (saved.level || 1),
+            ownedFrames: ["default"],
+            ownedBackgrounds: ["campnou"],
+            profileFrame: "default",
+            profileBackground: "campnou",
+            equippedTitle: "Collector",
             showcase: [null, null, null, null, null, null],
             cards: isReset ? [] : (Array.isArray(saved.cards) ? saved.cards : []),
             unlockedCardNames: isReset ? [] : (Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : []),
             serializedCounts: isReset ? { "Lionel Messi": 0, "Cristiano Ronaldo": 0, "Monkey King": 0 } : (saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 }),
-            profileFrame: saved.profileFrame || "default",
-            profileBackground: saved.profileBackground || "campnou",
-            equippedTitle: saved.equippedTitle || "Collector",
-            stats: { ...fresh.stats, ...(isReset ? {} : (saved.stats || {})) },
+            stats: isReset ? { ...fresh.stats } : { ...fresh.stats, ...(saved.stats || {}) },
             tournamentDraft: { ...fresh.tournamentDraft },
-            missionProgress: { ...fresh.missionProgress },
-            missionClaimed: { ...fresh.missionClaimed },
-            grantedTitles: Array.isArray(saved.grantedTitles) ? saved.grantedTitles : [],
-            isGrantedAdmin: !!saved.isGrantedAdmin,
-            isGrantedStaff: !!saved.isGrantedStaff
+            missionProgress: isReset ? { hourly: [], daily: [], weekly: [], monthly: [] } : (saved.missionProgress || { hourly: [], daily: [], weekly: [], monthly: [] }),
+            missionClaimed: isReset ? { hourly: [], daily: [], weekly: [], monthly: [] } : (saved.missionClaimed || { hourly: [], daily: [], weekly: [], monthly: [] }),
+            missionReset: { hourly: Date.now(), daily: Date.now(), weekly: Date.now(), monthly: Date.now() },
+            grantedTitles: isAdminUser ? (saved.grantedTitles && saved.grantedTitles.includes("Admin") ? saved.grantedTitles : ["Admin", "Owner"]) : [],
+            isGrantedAdmin: isAdminUser,
+            isGrantedStaff: !isReset && !!saved.isGrantedStaff
         };
     } catch (e) {
         return freshState();
@@ -4106,6 +4114,7 @@ function confirmMultiSell() {
     state.cards = state.cards.filter(c => !sellIds.has(c.id));
     state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
 
+    progressMission("sell", cardsToSell.length);
     addCoins(totalGain);
     SoundFx.sell();
     saveGame();
@@ -4133,6 +4142,7 @@ function quickSellRarity(targetRarity) {
     state.cards = state.cards.filter(c => !sellIds.has(c.id));
     state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
 
+    progressMission("sell", unlocked.length);
     addCoins(totalGain);
     SoundFx.sell();
     saveGame();
@@ -4170,12 +4180,13 @@ function quickSellDuplicates() {
     state.cards = state.cards.filter(c => !sellIds.has(c.id));
     state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
 
+    progressMission("sell", toSell.length);
     addCoins(totalGain);
     SoundFx.sell();
     saveGame();
     renderCards();
     renderShowcase();
-    toast(`💰 Sold ${toSell.length} duplicate cards for +${totalGain.toLocaleString()} 🪙!`);
+    toast(`⚡ Quick Sold ${toSell.length} duplicate cards for +${totalGain.toLocaleString()} 🪙!`);
 }
 
 function renderCards() {
@@ -4287,6 +4298,7 @@ function sellCard(id) {
     state.cards.splice(index, 1);
     state.stats.cardsSold++;
     SoundFx.sell();
+    progressMission("sell", 1);
     addCoins(value);
 
     state.showcase = state.showcase.map(slotId => slotId === id ? null : slotId);
