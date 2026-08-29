@@ -39,27 +39,7 @@
         }
     }, true);
 
-    // 3. Infinite Debugger Trap (Freezes DevTools if opened)
-    (function antiDebugLoop() {
-        function trap() {
-            try {
-                (function() {
-                    return false;
-                }["constructor"]("debugger")());
-            } catch (e) {}
-        }
-        setInterval(trap, 250);
-    })();
 
-    // 4. Console Neutralization
-    (function secureConsole() {
-        try {
-            const noop = function() {};
-            ['log', 'warn', 'info', 'debug', 'table', 'dir', 'dirxml', 'trace'].forEach(m => {
-                try { console[m] = noop; } catch(e) {}
-            });
-        } catch(e) {}
-    })();
 
     const CURRENT_SAVE_KEY = "footballCardsSave_v9";
     const PREVIOUS_SAVE_KEYS = [
@@ -5927,7 +5907,8 @@ document.addEventListener("contextmenu", function(e) {
         closeKickDeviceModal,
         executeConfirmedKickDevice,
         togglePasswordVisibility,
-        showShowcasePicker,
+        openShowcasePicker,
+        setShowcaseCard,
         closeShowcaseModal,
         clearShowcaseSlot,
         searchPlayerProfile,
@@ -5938,30 +5919,22 @@ document.addEventListener("contextmenu", function(e) {
         declineTrade,
         equipTitle,
         setLeaderboardTab,
-        filterCards,
-        sortCards,
         closeCardRevealModal,
         closeMultiRevealModal,
         skipSolsCutscene,
         claimSolsCard,
         replaySolsCutscene,
-        playFreeKickGame,
-        aimFreeKick,
-        shootFreeKick,
-        closeFreeKickModal,
-        enterTournamentModal,
+        openTournamentEnterModal,
         closeTournamentEnterModal,
         confirmTournamentEntry,
-        openTournamentDraftPack,
-        endTournamentDraftRun,
+        openTournamentPack,
+        finishTournamentDraft,
         openAdminPanel,
         closeAdminPanel,
         setAdminTab,
         adminExecuteGiveGold,
         adminExecuteSpawnCard,
         adminExecuteSetLevel,
-        adminExecuteBanUser,
-        adminExecuteUnbanUser,
         adminExecuteBan,
         adminExecuteGrantTitle,
         adminExecuteUnban,
@@ -5981,17 +5954,20 @@ document.addEventListener("contextmenu", function(e) {
         setMissionType,
         setProfileBackground,
         toggleMultiSellMode,
-        toggleSelectCardForSell,
+        toggleCardSelection,
         multiSelectAllUnlocked,
         multiSelectClear,
         confirmMultiSell,
         quickSellDuplicates,
         quickSellRarity,
-        open3DCardInspector,
+        open3DCard,
         close3DCardModal,
         toggle3DCardFlip,
         handleAvatarFileUpload,
         resetDefaultAvatar,
+        claimMission,
+        buyBackground,
+        toggleCardLock,
         CloudSync,
         SoundFx,
         SolsCutsceneEngine
