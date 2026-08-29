@@ -1611,23 +1611,38 @@ select,input{
    ========================================================= */
 
 .reveal-modal {
-    background: radial-gradient(circle at center, rgba(16, 38, 58, 0.95), rgba(4, 10, 16, 0.98));
-    perspective: 1200px;
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    background: radial-gradient(circle at center, rgba(16, 38, 58, 0.96), rgba(2, 6, 12, 0.99)) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    perspective: 1200px !important;
     display: none;
-    align-items: center;
-    justify-content: center;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 100000 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .reveal-card-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     gap: 14px;
     width: min(320px, 85vw) !important;
     max-width: 320px !important;
     margin: 0 auto !important;
     animation: revealEntry 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    z-index: 10 !important;
 }
 
 @keyframes revealEntry {
@@ -2959,6 +2974,10 @@ select,input{
     }
 
     .showcase-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+}
 /* =========================================================
    AVATAR FRAMES & BORDERS (AUTHENTIC STYLED DESIGNS)
    ========================================================= */
@@ -3933,8 +3952,8 @@ body.modal-open, html.modal-open {
 }
 
 .sols-theme-ronaldo .sols-atmosphere-rift {
-    background: radial-gradient(circle at center, rgba(255, 0, 60, 0.55) 0%, rgba(255, 215, 0, 0.3) 45%, rgba(0, 0, 0, 0.96) 80%);
-    animation: solsCosmicSpin 9s linear infinite !important;
+    background: radial-gradient(circle at center, rgba(0, 242, 254, 0.7) 0%, rgba(30, 64, 175, 0.5) 35%, rgba(255, 215, 0, 0.3) 60%, rgba(2, 6, 18, 0.98) 85%) !important;
+    animation: solsCosmicSpin 7s linear infinite !important;
 }
 
 .sols-theme-yamal .sols-atmosphere-rift {
@@ -3989,8 +4008,8 @@ body.modal-open, html.modal-open {
 }
 
 .sols-theme-ronaldo .sols-glitch-pretext {
-    color: #ff003c !important;
-    text-shadow: 0 0 35px #ff003c, 0 0 70px #ff9100 !important;
+    color: #00f2fe !important;
+    text-shadow: 0 0 30px #00f2fe, 0 0 60px #ffd700, 0 0 90px #3b82f6 !important;
 }
 
 .sols-theme-yamal .sols-glitch-pretext {
@@ -4019,7 +4038,7 @@ body.modal-open, html.modal-open {
 }
 
 .sols-theme-messi .sols-rarity-flash { color: #ffffff !important; text-shadow: 0 0 25px #ffd700, 0 0 50px #00f2fe !important; }
-.sols-theme-ronaldo .sols-rarity-flash { color: #ffffff !important; text-shadow: 0 0 25px #ff003c, 0 0 50px #ff9100 !important; }
+.sols-theme-ronaldo .sols-rarity-flash { color: #ffffff !important; text-shadow: 0 0 25px #00f2fe, 0 0 50px #ffd700, 0 0 80px #1d4ed8 !important; }
 .sols-theme-yamal .sols-rarity-flash { color: #ffffff !important; text-shadow: 0 0 25px #00f5d4, 0 0 50px #c084fc !important; }
 .sols-theme-mbappe .sols-rarity-flash, .sols-theme-haaland .sols-rarity-flash, .sols-theme-secret .sols-rarity-flash { color: #ffffff !important; text-shadow: 0 0 25px #38bdf8, 0 0 50px #a855f7 !important; }
 .sols-theme-mythic .sols-rarity-flash { color: #ffffff !important; text-shadow: 0 0 25px #ff4d4d, 0 0 50px #ff9100 !important; }
@@ -4036,7 +4055,7 @@ body.modal-open, html.modal-open {
 }
 
 .sols-theme-messi .sols-rune-ring { border-color: rgba(255, 215, 0, 0.7) !important; box-shadow: 0 0 50px rgba(255, 215, 0, 0.5), inset 0 0 50px rgba(0, 242, 254, 0.4) !important; }
-.sols-theme-ronaldo .sols-rune-ring { border-color: rgba(255, 0, 60, 0.7) !important; box-shadow: 0 0 50px rgba(255, 0, 60, 0.5), inset 0 0 50px rgba(255, 215, 0, 0.4) !important; }
+.sols-theme-ronaldo .sols-rune-ring { border-color: rgba(0, 242, 254, 0.9) !important; box-shadow: 0 0 60px rgba(0, 242, 254, 0.8), inset 0 0 60px rgba(255, 215, 0, 0.6) !important; }
 .sols-theme-yamal .sols-rune-ring { border-color: rgba(0, 245, 212, 0.7) !important; box-shadow: 0 0 50px rgba(0, 245, 212, 0.5), inset 0 0 50px rgba(123, 44, 191, 0.4) !important; }
 .sols-theme-mbappe .sols-rune-ring, .sols-theme-haaland .sols-rune-ring, .sols-theme-secret .sols-rune-ring { border-color: rgba(56, 189, 248, 0.7) !important; box-shadow: 0 0 50px rgba(56, 189, 248, 0.5), inset 0 0 50px rgba(168, 85, 247, 0.4) !important; }
 .sols-theme-mythic .sols-rune-ring { border-color: rgba(255, 107, 0, 0.7) !important; box-shadow: 0 0 50px rgba(255, 107, 0, 0.5), inset 0 0 50px rgba(255, 23, 68, 0.4) !important; }
@@ -4073,6 +4092,8 @@ body.modal-open, html.modal-open {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
+    width: min(350px, 90vw) !important;
+    margin: 0 auto !important;
     opacity: 1 !important;
 }
 
@@ -4120,7 +4141,7 @@ body.modal-open, html.modal-open {
 }
 
 .sols-theme-messi .sols-aura-beams { background: conic-gradient(from 0deg, rgba(0, 242, 254, 0.7), rgba(255, 215, 0, 0.9), rgba(255, 255, 255, 0.9), rgba(0, 242, 254, 0.7)) !important; }
-.sols-theme-ronaldo .sols-aura-beams { background: conic-gradient(from 0deg, rgba(255, 0, 60, 0.7), rgba(255, 215, 0, 0.9), rgba(255, 255, 255, 0.9), rgba(255, 0, 60, 0.7)) !important; }
+.sols-theme-ronaldo .sols-aura-beams { background: conic-gradient(from 0deg, rgba(0, 242, 254, 0.9), rgba(255, 215, 0, 0.95), rgba(255, 255, 255, 1), rgba(29, 78, 216, 0.85), rgba(0, 242, 254, 0.9)) !important; }
 .sols-theme-yamal .sols-aura-beams { background: conic-gradient(from 0deg, rgba(0, 245, 212, 0.7), rgba(123, 44, 191, 0.9), rgba(255, 255, 255, 0.9), rgba(0, 245, 212, 0.7)) !important; }
 .sols-theme-mbappe .sols-aura-beams, .sols-theme-haaland .sols-aura-beams, .sols-theme-secret .sols-aura-beams { background: conic-gradient(from 0deg, rgba(56, 189, 248, 0.7), rgba(168, 85, 247, 0.9), rgba(255, 255, 255, 0.9), rgba(56, 189, 248, 0.7)) !important; }
 .sols-theme-mythic .sols-aura-beams { background: conic-gradient(from 0deg, rgba(255, 107, 0, 0.7), rgba(255, 23, 68, 0.9), rgba(255, 215, 0, 0.9), rgba(255, 107, 0, 0.7)) !important; }
@@ -4151,9 +4172,9 @@ body.modal-open, html.modal-open {
 }
 
 .sols-theme-ronaldo .sols-card-content {
-    background: radial-gradient(circle at 50% 30%, #8b0014 0%, #3d0008 60%, #050202 100%) !important;
-    border-color: #ff003c !important;
-    box-shadow: 0 0 60px rgba(255, 0, 60, 0.95), 0 35px 90px rgba(0, 0, 0, 0.98) !important;
+    background: radial-gradient(circle at 50% 25%, #0b2246 0%, #061226 55%, #020612 100%) !important;
+    border-color: #00f2fe !important;
+    box-shadow: 0 0 70px rgba(0, 242, 254, 0.95), 0 0 110px rgba(255, 215, 0, 0.6), 0 35px 90px rgba(0, 0, 0, 0.98) !important;
 }
 
 .sols-theme-yamal .sols-card-content {
