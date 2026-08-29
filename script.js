@@ -7,10 +7,74 @@
     "use strict";
 
     // =========================================================
-    // ANTI-CHEAT & DEVTOOLS DEFENSE SUITE
+    // ANTI-CHEAT & DEVTOOLS ABSOLUTE DEFENSE SUITE
     // =========================================================
 
-    // 1. Keyboard Shortcut & View Source Lockdown (F12, Ctrl+Shift+I/J/C, Ctrl+U, Ctrl+S)
+    // 1. Console Neutralization & Continuous Auto-Purge
+    (function lockDownConsole() {
+        try {
+            const noop = function() {};
+            const consoleProps = ["log", "warn", "error", "info", "debug", "table", "dir", "trace", "dirxml", "group", "groupCollapsed", "groupEnd", "time", "timeEnd", "timeLog", "profile", "profileEnd", "count", "countReset", "assert"];
+            consoleProps.forEach(fn => {
+                if (window.console && typeof window.console[fn] === "function") {
+                    try { window.console[fn] = noop; } catch(e) {}
+                }
+            });
+            // Continuous console wipe
+            setInterval(() => {
+                try { if (window.console && window.console.clear) window.console.clear(); } catch(e) {}
+            }, 300);
+        } catch(e) {}
+    })();
+
+    // 2. Active DevTools Detection & Shield Enforcement
+    let isDevToolsOpen = false;
+    function checkDevToolsStatus() {
+        try {
+            const threshold = 160;
+            const widthDiff = window.outerWidth - window.innerWidth > threshold;
+            const heightDiff = window.outerHeight - window.innerHeight > threshold;
+            const modal = document.getElementById("devToolsShieldModal");
+            
+            if (widthDiff || heightDiff) {
+                if (!isDevToolsOpen) {
+                    isDevToolsOpen = true;
+                    if (modal) {
+                        modal.classList.remove("hidden");
+                        modal.style.display = "flex";
+                    }
+                }
+            } else {
+                if (isDevToolsOpen) {
+                    isDevToolsOpen = false;
+                    if (modal) {
+                        modal.classList.add("hidden");
+                        modal.style.display = "none";
+                    }
+                }
+            }
+        } catch(e) {}
+    }
+    window.addEventListener("resize", checkDevToolsStatus);
+    setInterval(checkDevToolsStatus, 500);
+
+    // 3. Anti-Debugging Timing Loop
+    setInterval(() => {
+        try {
+            const before = performance.now();
+            (function(){}).constructor("debugger")();
+            const after = performance.now();
+            if (after - before > 100) {
+                const modal = document.getElementById("devToolsShieldModal");
+                if (modal) {
+                    modal.classList.remove("hidden");
+                    modal.style.display = "flex";
+                }
+            }
+        } catch(e) {}
+    }, 1000);
+
+    // 4. Keyboard Shortcut & View Source Lockdown (F12, Ctrl+Shift+I/J/C/K, Ctrl+U, Ctrl+S)
     window.addEventListener('keydown', function(e) {
         if (e.keyCode === 123 || e.key === "F12") {
             e.preventDefault();
@@ -29,7 +93,7 @@
         }
     }, true);
 
-    // 2. Disable Right Click Context Menu
+    // 5. Disable Right Click Context Menu
     window.addEventListener('contextmenu', function(e) {
         const tag = (e.target && e.target.tagName) || "";
         if (tag !== "INPUT" && tag !== "TEXTAREA") {
@@ -39,7 +103,70 @@
         }
     }, true);
 
+    // 6. Cryptographic SHA-256 Password Hash Engine
+    async function hashPassword(plainText) {
+        if (!plainText) return "";
+        const salt = "football_tcg_secure_salt_2026_@!";
+        const str = String(plainText) + salt;
+        if (typeof crypto !== "undefined" && crypto.subtle && typeof TextEncoder !== "undefined") {
+            try {
+                const utf8 = new TextEncoder().encode(str);
+                const hashBuffer = await crypto.subtle.digest("SHA-256", utf8);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+            } catch(e) {}
+        }
+        // Deterministic Fallback Hash
+        let hash = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash ^ str.charCodeAt(i)) * 0x01000193;
+            hash = (hash >>> 0);
+        }
+        return "sec_" + hash.toString(16).padStart(8, "0");
+    }
+    // Expose globally so functions outside this IIFE can call hashPassword(...)
+    window.hashPassword = hashPassword;
 
+    // 7. Auto-Sanitize Existing LocalStorage Passwords on Startup
+    (async function sanitizeStoredPasswords() {
+        try {
+            // Sanitize Cloud Accounts in LocalStorage
+            const raw = localStorage.getItem("football_cards_cloud_accounts");
+            if (raw) {
+                const accs = JSON.parse(raw);
+                let modified = false;
+                for (const k in accs) {
+                    const acc = accs[k];
+                    if (acc && acc.password) {
+                        acc.passwordHash = await hashPassword(acc.password);
+                        delete acc.password;
+                        modified = true;
+                    }
+                }
+                if (modified) {
+                    localStorage.setItem("football_cards_cloud_accounts", JSON.stringify(accs));
+                }
+            }
+
+            // Sanitize Save States in LocalStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith("footballCardsSave")) {
+                    try {
+                        const saveRaw = localStorage.getItem(key);
+                        if (saveRaw && saveRaw.includes('"accountPass"')) {
+                            const saveData = JSON.parse(saveRaw);
+                            if (saveData.accountPass) {
+                                saveData.accountPassHash = await hashPassword(saveData.accountPass);
+                                delete saveData.accountPass;
+                                localStorage.setItem(key, JSON.stringify(saveData));
+                            }
+                        }
+                    } catch(e) {}
+                }
+            }
+        } catch(e) {}
+    })();
 
     const CURRENT_SAVE_KEY = "footballCardsSave_v11_hard_reset";
     const PREVIOUS_SAVE_KEYS = [
@@ -70,7 +197,8 @@ const RARITY_ORDER = {
     Secret: 7,
     Exclusive: 8,
     "World Class": 9,
-    Tournament: 10
+    Tournament: 10,
+    Developer: 99
 };
 
 function formatPlaytime(seconds) {
@@ -158,7 +286,8 @@ const DUPLICATE_VALUES = {
     Secret: 500,
     Exclusive: 750,
     "World Class": 1000,
-    Tournament: 2000
+    Tournament: 2000,
+    Developer: 10000
 };
 
 const CARD_VALUES = {
@@ -171,7 +300,8 @@ const CARD_VALUES = {
     Mythic: 1000,
     Secret: 2500,
     "World Class": 5000,
-    Tournament: 15000
+    Tournament: 15000,
+    Developer: 50000
 };
 
 const FRAMES = [
@@ -482,7 +612,7 @@ const SoundFx = {
 
 const PLAYERS = [
 // --- SECRET DEVELOPER / ADMIN REWARD (HIDDEN FROM CARD INDEX) ---
-{ name: "Monkey King", rating: 99, pos: "ST", rarity: "Secret", image: "player_temp.png", hiddenFromIndex: true, devCard: true },
+{ name: "Monkey King", rating: 99, pos: "ST", rarity: "Developer", image: "monkey_king.png", hiddenFromIndex: true, devCard: true },
 
 // --- TOURNAMENT REWARD ---
 { name: "Emanuel", rating: 99, pos: "CAM", rarity: "Tournament", image: "player_temp.png" },
@@ -886,7 +1016,7 @@ function freshState() {
     return {
         initialized: true,
         accountUser: "",
-        accountPass: "",
+        accountPassHash: "",
         name: defaultName,
         coins: 100,
         xp: 25,
@@ -989,7 +1119,7 @@ function loadGame() {
             resetV11HardResetDone: true,
             name: activeName,
             accountUser: saved.accountUser || "",
-            accountPass: saved.accountPass || "",
+            accountPassHash: saved.accountPassHash || "",
             coins: isReset ? 100 : (saved.coins !== undefined ? saved.coins : 100),
             xp: isReset ? 0 : (saved.xp || 0),
             level: isReset ? 1 : (saved.level || 1),
@@ -999,7 +1129,12 @@ function loadGame() {
             profileBackground: "campnou",
             equippedTitle: "Collector",
             showcase: [null, null, null, null, null, null],
-            cards: isReset ? [] : (Array.isArray(saved.cards) ? saved.cards : []),
+            cards: isReset ? [] : (Array.isArray(saved.cards) ? saved.cards.map(c => {
+                if (c && (c.player === "Monkey King" || (c.player && c.player.toLowerCase().includes("monkey")))) {
+                    return { ...c, image: "monkey_king.png", rarity: "Developer", devCard: true };
+                }
+                return c;
+            }) : []),
             unlockedCardNames: isReset ? [] : (Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : []),
             serializedCounts: isReset ? { "Lionel Messi": 0, "Cristiano Ronaldo": 0, "Monkey King": 0 } : (saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 }),
             stats: isReset ? { ...fresh.stats } : { ...fresh.stats, ...(saved.stats || {}) },
@@ -1279,9 +1414,14 @@ const GlobalCloudRest = {
             const sessions = existing.sessions || {};
             if (devInfo.deviceId) sessions[devInfo.deviceId] = devInfo;
 
+            let passHash = accountPayload.passwordHash || existing.passwordHash || "";
+            if (!passHash && (accountPayload.password || existing.password)) {
+                passHash = await hashPassword(accountPayload.password || existing.password);
+            }
+
             const userDoc = {
                 username: username,
-                password: accountPayload.password || existing.password || "",
+                passwordHash: passHash,
                 saveData: typeof accountPayload.saveData === "string" ? accountPayload.saveData : JSON.stringify(accountPayload.saveData || {}),
                 sessions: sessions,
                 revokedSessions: existing.revokedSessions || [],
@@ -1366,6 +1506,8 @@ const GlobalCloudRest = {
                 cards: Number((pData.cards || []).length || pData.cardsCount || 0),
                 level: Number(pData.level || 1),
                 equippedTitle: pData.equippedTitle || "Collector",
+                profileFrame: pData.profileFrame || (state && state.profileFrame) || "default",
+                avatar: pData.avatar || (state && state.avatar) || "player_temp.png",
                 bannedUntil: Number(pData.bannedUntil || 0),
                 updatedAt: Date.now()
             };
@@ -1484,7 +1626,8 @@ async function handleChangePassword() {
         return;
     }
 
-    if (state.accountPass && currentPass !== state.accountPass) {
+    const currentHash = await hashPassword(currentPass);
+    if (state.accountPassHash && currentHash !== state.accountPassHash) {
         toast("Current password is incorrect.");
         return;
     }
@@ -1499,16 +1642,18 @@ async function handleChangePassword() {
         return;
     }
 
-    state.accountPass = newPass;
+    const newHash = await hashPassword(newPass);
+    state.accountPassHash = newHash;
     const accs = CloudSync.getAccounts();
     const key = state.accountUser.toLowerCase();
     if (accs[key]) {
-        accs[key].password = newPass;
+        accs[key].passwordHash = newHash;
+        delete accs[key].password; // Strip plaintext
         CloudSync.saveAccounts(accs);
     }
     await GlobalCloudRest.pushUser(state.accountUser, {
         username: state.accountUser,
-        password: newPass,
+        passwordHash: newHash,
         saveData: JSON.stringify(state)
     });
 
@@ -1517,7 +1662,7 @@ async function handleChangePassword() {
     confirmInput.value = "";
     saveGame();
     SoundFx.levelUp();
-    toast("✓ Account password updated successfully on server!");
+    toast("✓ Account password updated securely on server!");
 }
 
 /* =========================================================
@@ -1643,11 +1788,17 @@ async function executeConfirmedKickDevice() {
         return;
     }
 
-    // Verify Password against cloud user record or state
+    // Verify Password Hash against cloud user record or state
     let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
-    const validPass = (cloudUser && cloudUser.password) ? cloudUser.password : state.accountPass;
+    const enteredHash = await hashPassword(enteredPass);
+    let validHash = (cloudUser && cloudUser.passwordHash) ? cloudUser.passwordHash : state.accountPassHash;
+    
+    // Support legacy fallback
+    if (!validHash && cloudUser && cloudUser.password) {
+        validHash = await hashPassword(cloudUser.password);
+    }
 
-    if (enteredPass !== validPass) {
+    if (enteredHash !== validHash) {
         if (err) err.textContent = "❌ Incorrect password! Authorization failed.";
         SoundFx.click();
         return;
@@ -1944,10 +2095,11 @@ const CloudSync = {
             }
         } catch (e) {}
 
-        // 3. Register New Account
+        // 3. Register New Account with Cryptographic Hash
+        const passHash = await hashPassword(p);
         const fresh = freshState();
         fresh.accountUser = u;
-        fresh.accountPass = p;
+        fresh.accountPassHash = passHash;
         fresh.name = u;
         fresh.initialized = true;
         fresh.cards = [];
@@ -1960,7 +2112,7 @@ const CloudSync = {
 
         const accObj = {
             username: u,
-            password: p,
+            passwordHash: passHash,
             saveData: JSON.stringify(state),
             updatedAt: Date.now()
         };
@@ -1996,12 +2148,21 @@ const CloudSync = {
             return { success: false, msg: `Account "${u}" not found. Please check spelling or create an account.` };
         }
 
-        // 2. Strict Password Verification (or set password if first cloud login)
-        if (acc.password && acc.password !== p) {
-            return { success: false, msg: "Incorrect password! Access denied." };
-        }
-        if (!acc.password) {
-            acc.password = p;
+        // 2. Strict Password Verification via Cryptographic SHA-256 Hash
+        const passHash = await hashPassword(p);
+        if (acc.passwordHash) {
+            if (acc.passwordHash !== passHash) {
+                return { success: false, msg: "Incorrect password! Access denied." };
+            }
+        } else if (acc.password) {
+            // Legacy plaintext fallback: verify and upgrade immediately to hash
+            if (acc.password !== p) {
+                return { success: false, msg: "Incorrect password! Access denied." };
+            }
+            acc.passwordHash = passHash;
+            delete acc.password; // Strip plaintext permanently!
+        } else {
+            acc.passwordHash = passHash;
         }
 
         // Save authenticated credential locally & push to cloud
@@ -2016,7 +2177,7 @@ const CloudSync = {
                     ...freshState(),
                     ...cloudSave,
                     accountUser: acc.username || u,
-                    accountPass: p,
+                    accountPassHash: passHash,
                     name: cloudSave.name || acc.username || u,
                     cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : [],
                     stats: { ...freshState().stats, ...(cloudSave.stats || {}) },
@@ -2025,14 +2186,14 @@ const CloudSync = {
             } catch (e) {
                 const fresh = freshState();
                 fresh.accountUser = acc.username || u;
-                fresh.accountPass = p;
+                fresh.accountPassHash = passHash;
                 fresh.name = acc.username || u;
                 state = fresh;
             }
         } else {
             const fresh = freshState();
             fresh.accountUser = acc.username || u;
-            fresh.accountPass = p;
+            fresh.accountPassHash = passHash;
             fresh.name = acc.username || u;
             state = fresh;
         }
@@ -2183,6 +2344,9 @@ function updateAuthUI() {
         lWarning.style.display = user ? "none" : "block";
         lList.style.display = user ? "block" : "none";
     }
+
+    // Sync settings panel visibility
+    try { renderSettings(); } catch(e) {}
 }
 
 /* =========================================================
@@ -2288,6 +2452,27 @@ function renderAll() {
 function renderSettings() {
     setText("settingsCurrentName", state.name || state.accountUser || "Player");
     setText("settingsAccountName", state.accountUser ? `${state.accountUser} (Cloud Synced)` : `${state.name || 'Guest'} (Local)`);
+
+    const isLoggedIn = !!state.accountUser;
+    const changePassPanel = document.getElementById("settingsChangePassPanel");
+    const devicesPanel = document.getElementById("settingsDevicesPanel");
+    const deletePanel = document.getElementById("settingsDeleteAccountPanel");
+    const logoutBtn = document.getElementById("settingsLogoutBtn");
+    const syncBtn = document.getElementById("settingsSyncBtn");
+    const authBtn = document.getElementById("settingsAuthBtn");
+
+    if (changePassPanel) changePassPanel.style.display = isLoggedIn ? "" : "none";
+    if (devicesPanel) devicesPanel.style.display = isLoggedIn ? "" : "none";
+    if (deletePanel) deletePanel.style.display = isLoggedIn ? "" : "none";
+    if (logoutBtn) logoutBtn.style.display = isLoggedIn ? "inline-flex" : "none";
+    if (syncBtn) syncBtn.style.display = isLoggedIn ? "inline-flex" : "none";
+    if (authBtn) authBtn.style.display = isLoggedIn ? "none" : "inline-flex";
+
+    // Clear any error messages
+    const deleteErr = document.getElementById("deleteAccountError");
+    if (deleteErr) deleteErr.textContent = "";
+    const deletePassInput = document.getElementById("deleteAccountPasswordInput");
+    if (deletePassInput) deletePassInput.value = "";
 }
 
 function updateCoinDisplay() {
@@ -3558,9 +3743,9 @@ const SolsCutsceneEngine = {
         if (ovr) ovr.textContent = `${c.rating || 90} OVR`;
         if (pos) pos.textContent = c.pos || "ST";
 
-        // Fix Rarity Banner so Secret is SECRET, Mythic is MYTHIC, World Class is WORLD CLASS
+        // Fix Rarity Banner so Developer is DEVELOPER, Secret is SECRET, Mythic is MYTHIC, World Class is WORLD CLASS
         if (banner) {
-            banner.textContent = isMonkey ? "SECRET DEV CARD" : (c.rarity || "WORLD CLASS").toUpperCase();
+            banner.textContent = (c.rarity === "Developer" || isMonkey) ? "DEVELOPER" : (c.rarity || "WORLD CLASS").toUpperCase();
             const rKey = (c.rarity || "worldclass").toLowerCase().replace(/\s+/g, "");
             banner.className = `sols-rarity-banner sols-banner-${rKey}`;
         }
@@ -4278,38 +4463,64 @@ function renderCards() {
     const grid = document.getElementById("cardsGrid");
     const filter = document.getElementById("cardFilter");
     const sorter = document.getElementById("cardSorter");
+    const searchInput = document.getElementById("cardSearchInput");
     if (!grid) return;
 
     let cards = [...state.cards];
+
+    // Search filter
+    const query = (searchInput ? searchInput.value : "").trim().toLowerCase();
+    if (query) {
+        cards = cards.filter(c => 
+            (c.player || "").toLowerCase().includes(query) ||
+            (c.pos || "").toLowerCase().includes(query) ||
+            (c.rarity || "").toLowerCase().includes(query) ||
+            String(c.rating || "").includes(query) ||
+            (c.serialNumber && String(c.serialNumber).includes(query))
+        );
+    }
+
     if (filter && filter.value !== "all") {
         if (filter.value === "locked") cards = cards.filter(c => c.locked);
         else if (filter.value === "unlocked") cards = cards.filter(c => !c.locked);
         else cards = cards.filter(c => c.rarity.toLowerCase() === filter.value.toLowerCase());
     }
 
-    const sortMode = sorter ? sorter.value : "rarity_desc";
-    if (sortMode === "rarity_desc") {
-        cards.sort((a, b) => (RARITY_ORDER[b.rarity] || 0) - (RARITY_ORDER[a.rarity] || 0) || b.rating - a.rating);
-    } else if (sortMode === "rarity_asc") {
-        cards.sort((a, b) => (RARITY_ORDER[a.rarity] || 0) - (RARITY_ORDER[b.rarity] || 0) || a.rating - b.rating);
-    } else if (sortMode === "value_desc") {
-        cards.sort((a, b) => getCardValue(b) - getCardValue(a) || b.rating - a.rating);
-    } else if (sortMode === "rating_desc") {
-        cards.sort((a, b) => b.rating - a.rating);
-    } else if (sortMode === "newest") {
-        cards.sort((a, b) => (b.obtained || 0) - (a.obtained || 0));
-    }
+    const sortMode = sorter ? sorter.value : "rap_desc";
+    cards.sort((a, b) => {
+        const aDev = (a.rarity === "Developer" || a.devCard || (a.player && a.player.toLowerCase().includes("monkey"))) ? 1 : 0;
+        const bDev = (b.rarity === "Developer" || b.devCard || (b.player && b.player.toLowerCase().includes("monkey"))) ? 1 : 0;
+        if (aDev !== bDev) return bDev - aDev; // Developer card ALWAYS at the very top!
 
-    setText("collectionCount", `${state.cards.length} cards collected`);
+        if (sortMode === "rap_desc") {
+            return (calculateCardRAP(b) - calculateCardRAP(a)) || (b.rating - a.rating);
+        } else if (sortMode === "rap_asc") {
+            return (calculateCardRAP(a) - calculateCardRAP(b)) || (a.rating - b.rating);
+        } else if (sortMode === "rarity_desc") {
+            return ((RARITY_ORDER[b.rarity] || 0) - (RARITY_ORDER[a.rarity] || 0)) || (b.rating - a.rating);
+        } else if (sortMode === "rarity_asc") {
+            return ((RARITY_ORDER[a.rarity] || 0) - (RARITY_ORDER[b.rarity] || 0)) || (a.rating - b.rating);
+        } else if (sortMode === "value_desc") {
+            return (getCardValue(b) - getCardValue(a)) || (b.rating - a.rating);
+        } else if (sortMode === "rating_desc") {
+            return b.rating - a.rating;
+        } else if (sortMode === "newest") {
+            return (b.obtained || 0) - (a.obtained || 0);
+        }
+        return 0;
+    });
+
+    setText("collectionCount", `${state.cards.length} cards collected${query ? ` (${cards.length} matching search)` : ''}`);
 
     if (!cards.length) {
-        grid.innerHTML = `<div class="empty-state">No cards found.<br>Open scouting packs to add cards to your collection.</div>`;
+        grid.innerHTML = `<div class="empty-state">No cards found matching your search/filters.<br>Open scouting packs to add cards to your collection.</div>`;
         return;
     }
 
     grid.innerHTML = cards.map(card => {
         const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
         const value = DUPLICATE_VALUES[card.rarity] || 5;
+        const rap = calculateCardRAP(card);
 
         let themeClass = `theme-${rarityClassName(card.rarity)}`;
         if (card.rarity === "World Class") {
@@ -4340,7 +4551,10 @@ function renderCards() {
             <div class="card-rating">${card.rating}</div>
             <div class="card-position">${escapeHTML(card.pos)}</div>
             <h3>${escapeHTML(card.player)}</h3>
-            <small>${escapeHTML(card.rarity)}</small>
+            <div style="display:flex;justify-content:center;gap:6px;align-items:center;margin-top:2px;">
+                <small>${escapeHTML(card.rarity)}</small>
+                <span style="font-size:10px;font-weight:900;color:#38bdf8;background:rgba(56,189,248,0.12);padding:1px 6px;border-radius:6px;">💎 ${formatRAP(rap)}</span>
+            </div>
 
             <div class="card-actions">
                 <button onclick="event.stopPropagation(); open3DCard('${card.id}')">3D View</button>
@@ -4584,7 +4798,64 @@ function initiateTradeWithSearchedUser() {
    ========================================================= */
 
 /* =========================================================
-   HYBRID REAL-TIME TRADING SUITE (BROADCAST + KVDB + RATE LIMIT GUARD)
+   ROBLOX RAP VALUE SYSTEM (RECENT AVERAGE PRICE / CARD VALUE)
+   ========================================================= */
+
+function calculateCardRAP(card) {
+    if (!card) return 0;
+    const baseTable = {
+        "Common": 100,
+        "Uncommon": 350,
+        "Rare": 1200,
+        "Epic": 6000,
+        "Legendary": 30000,
+        "World Class": 120000,
+        "Exclusive": 300000,
+        "Mythic": 750000,
+        "Secret": 3000000,
+        "Tournament": 150000,
+        "Developer": 10000000
+    };
+    const ratingMultiplier = {
+        "Common": 2,
+        "Uncommon": 5,
+        "Rare": 15,
+        "Epic": 60,
+        "Legendary": 250,
+        "World Class": 1200,
+        "Exclusive": 2500,
+        "Mythic": 6000,
+        "Secret": 25000,
+        "Tournament": 1500,
+        "Developer": 100000
+    };
+
+    const rarity = card.rarity || "Common";
+    let rap = (baseTable[rarity] || 100) + (Number(card.rating) || 75) * (ratingMultiplier[rarity] || 2);
+
+    // Serialized Card Multiplier
+    if (card.serialNumber) {
+        const s = Number(card.serialNumber);
+        if (s === 1) rap *= 10;
+        else if (s <= 5) rap *= 5;
+        else if (s <= 10) rap *= 3;
+        else if (s <= 25) rap *= 2;
+        else if (s <= 100) rap *= 1.5;
+        else rap *= 1.25;
+    }
+
+    return Math.round(rap);
+}
+
+function formatRAP(val) {
+    const num = Number(val) || 0;
+    if (num >= 1000000) return (num / 1000000).toFixed(2) + "M 💎";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K 💎";
+    return num.toLocaleString() + " 💎";
+}
+
+/* =========================================================
+   HYBRID REAL-TIME TRADING SUITE (BROADCAST + KVDB + RAP)
    ========================================================= */
 
 let activeLiveTradeSession = null;
@@ -4662,8 +4933,8 @@ const LiveTradeNetwork = {
     syncSessionData(data) {
         if (!activeLiveTradeSession || activeLiveTradeSession.tradeId !== data.id) return;
 
-        if (data.status === "cancelled") {
-            toast(`Trade was cancelled by ${activeLiveTradeSession.partner}.`);
+        if (data.status === "cancelled" || data.status === "declined") {
+            toast(`Trade session was closed by ${activeLiveTradeSession.partner}.`);
             closeLiveTradeRoom();
             return;
         }
@@ -4673,12 +4944,15 @@ const LiveTradeNetwork = {
             return;
         }
 
-        const partnerOffer = activeLiveTradeSession.isSender ? data.offer2 : data.offer1;
-        const partnerReady = activeLiveTradeSession.isSender ? data.ready2 : data.ready1;
+        const myKey = state.accountUser.toLowerCase();
+        const partnerKey = (activeLiveTradeSession.partner || "").toLowerCase();
 
-        if (JSON.stringify(partnerOffer || []) !== JSON.stringify(activeLiveTradeSession.theirOffer)) {
-            activeLiveTradeSession.theirOffer = partnerOffer || [];
-            activeLiveTradeSession.myReady = false;
+        const partnerOffer = (data.offers && data.offers[partnerKey]) || [];
+        const partnerReady = !!(data.ready && data.ready[partnerKey]);
+
+        if (JSON.stringify(partnerOffer) !== JSON.stringify(activeLiveTradeSession.theirOffer)) {
+            activeLiveTradeSession.theirOffer = partnerOffer;
+            activeLiveTradeSession.myReady = false; // Safety unready on change
             renderLiveTradeSlots();
         }
 
@@ -4703,7 +4977,7 @@ const LiveTradeNetwork = {
                 body: JSON.stringify(data)
             });
             if (res.status === 429) {
-                this.rateLimitedUntil = Date.now() + 5000;
+                this.rateLimitedUntil = Date.now() + 3000;
                 return false;
             }
             return res.ok;
@@ -4717,7 +4991,7 @@ const LiveTradeNetwork = {
         try {
             const res = await fetch(`https://kvdb.io/MmjyNhMePJggoofHrX9cjo/${key}?t=${Date.now()}`);
             if (res.status === 429) {
-                this.rateLimitedUntil = Date.now() + 5000;
+                this.rateLimitedUntil = Date.now() + 3000;
                 return null;
             }
             if (!res.ok) return null;
@@ -4776,7 +5050,6 @@ async function sendTradeOffer(targetUsername) {
         timestamp: Date.now()
     };
 
-    // Instant local broadcast + Cloud write
     LiveTradeNetwork.broadcast("TRADE_REQUEST", tradeReqDoc);
     LiveTradeNetwork.pushCloud(`trade_req_${recipient.toLowerCase()}`, tradeReqDoc);
 
@@ -4849,14 +5122,21 @@ async function acceptIncomingLiveTrade() {
     const trade = currentIncomingTrade;
     closeIncomingTradeModal();
 
+    const myKey = state.accountUser.toLowerCase();
+    const partnerKey = (trade.sender || "").toLowerCase();
+
     const initialSession = {
         id: trade.id,
-        partner1: trade.sender,
-        partner2: state.accountUser,
-        offer1: [],
-        offer2: [],
-        ready1: false,
-        ready2: false,
+        sender: trade.sender,
+        receiver: state.accountUser,
+        offers: {
+            [partnerKey]: [],
+            [myKey]: []
+        },
+        ready: {
+            [partnerKey]: false,
+            [myKey]: false
+        },
         chat: [
             { sender: "System", text: `Trade room connected! Add cards to your slots or chat on the right.`, time: Date.now() }
         ],
@@ -4864,7 +5144,6 @@ async function acceptIncomingLiveTrade() {
         updatedAt: Date.now()
     };
 
-    // Instant local broadcast + Cloud write
     LiveTradeNetwork.broadcast("TRADE_RESPONSE", { id: trade.id, sender: trade.sender, receiver: state.accountUser, status: "session_active" });
     LiveTradeNetwork.broadcast("TRADE_SESSION_UPDATE", initialSession);
     LiveTradeNetwork.pushCloud(`session_${trade.id}`, initialSession);
@@ -4880,6 +5159,7 @@ async function declineIncomingLiveTrade() {
 
     LiveTradeNetwork.broadcast("TRADE_RESPONSE", { id: trade.id, sender: trade.sender, receiver: state.accountUser, status: "declined" });
     LiveTradeNetwork.pushCloud(`trade_req_${state.accountUser.toLowerCase()}`, { ...trade, status: "declined" });
+    LiveTradeNetwork.pushCloud(`session_${trade.id}`, { id: trade.id, status: "declined" });
 
     SoundFx.click();
     toast(`Trade request from "${trade.sender}" declined.`);
@@ -4899,6 +5179,7 @@ async function blockIncomingTradeSender() {
 
     LiveTradeNetwork.broadcast("TRADE_RESPONSE", { id: trade.id, sender: trade.sender, receiver: state.accountUser, status: "blocked" });
     LiveTradeNetwork.pushCloud(`trade_req_${state.accountUser.toLowerCase()}`, { ...trade, status: "blocked" });
+    LiveTradeNetwork.pushCloud(`session_${trade.id}`, { id: trade.id, status: "blocked" });
 
     saveGame();
     SoundFx.click();
@@ -4942,14 +5223,21 @@ async function openLiveTradeRoom(tradeId, partnerName, isSender) {
 
 async function pushLiveTradeSession() {
     if (!activeLiveTradeSession) return;
+    const myKey = state.accountUser.toLowerCase();
+    const partnerKey = (activeLiveTradeSession.partner || "").toLowerCase();
+
     const payload = {
         id: activeLiveTradeSession.tradeId,
-        partner1: activeLiveTradeSession.isSender ? state.accountUser : activeLiveTradeSession.partner,
-        partner2: activeLiveTradeSession.isSender ? activeLiveTradeSession.partner : state.accountUser,
-        offer1: activeLiveTradeSession.isSender ? activeLiveTradeSession.myOffer : activeLiveTradeSession.theirOffer,
-        offer2: activeLiveTradeSession.isSender ? activeLiveTradeSession.theirOffer : activeLiveTradeSession.myOffer,
-        ready1: activeLiveTradeSession.isSender ? activeLiveTradeSession.myReady : activeLiveTradeSession.theirReady,
-        ready2: activeLiveTradeSession.isSender ? activeLiveTradeSession.theirReady : activeLiveTradeSession.myReady,
+        sender: activeLiveTradeSession.isSender ? state.accountUser : activeLiveTradeSession.partner,
+        receiver: activeLiveTradeSession.isSender ? activeLiveTradeSession.partner : state.accountUser,
+        offers: {
+            [myKey]: activeLiveTradeSession.myOffer,
+            [partnerKey]: activeLiveTradeSession.theirOffer
+        },
+        ready: {
+            [myKey]: activeLiveTradeSession.myReady,
+            [partnerKey]: activeLiveTradeSession.theirReady
+        },
         chat: activeLiveTradeSession.chat,
         status: activeLiveTradeSession.status,
         updatedAt: Date.now()
@@ -4970,13 +5258,35 @@ async function pullLiveTradeSession() {
 function renderLiveTradeSlots() {
     if (!activeLiveTradeSession) return;
 
-    // YOUR SLOTS
+    // RAP CALCULATIONS
+    const myTotalRap = activeLiveTradeSession.myOffer.reduce((sum, c) => sum + calculateCardRAP(c), 0);
+    const theirTotalRap = activeLiveTradeSession.theirOffer.reduce((sum, c) => sum + calculateCardRAP(c), 0);
+    const rapDiff = theirTotalRap - myTotalRap;
+
+    // FAIRNESS METER
+    const meter = document.getElementById("tradeFairnessMeter");
+    if (meter) {
+        if (rapDiff > 500) {
+            meter.className = "trade-fairness-meter win";
+            meter.textContent = `🟢 Gain: +${formatRAP(rapDiff)} (WIN)`;
+        } else if (rapDiff < -500) {
+            meter.className = "trade-fairness-meter lose";
+            meter.textContent = `🔴 Loss: -${formatRAP(Math.abs(rapDiff))} (LOSE)`;
+        } else {
+            meter.className = "trade-fairness-meter even";
+            meter.textContent = `⚖️ Fair Trade (EVEN)`;
+        }
+    }
+
+    // YOUR SLOTS & RAP BADGE
     const yourGrid = document.getElementById("yourTradeSlots");
     const yourCount = document.getElementById("yourOfferCount");
+    const yourRapBadge = document.getElementById("yourOfferRapBadge");
     const yourReadyBadge = document.getElementById("yourReadyBadge");
     const yourBox = document.getElementById("yourOfferBox");
 
     if (yourCount) yourCount.textContent = activeLiveTradeSession.myOffer.length;
+    if (yourRapBadge) yourRapBadge.textContent = `💎 ${formatRAP(myTotalRap)} RAP`;
     if (yourReadyBadge) {
         yourReadyBadge.className = `trade-status-pill ${activeLiveTradeSession.myReady ? 'ready' : 'unready'}`;
         yourReadyBadge.textContent = activeLiveTradeSession.myReady ? "✓ READY" : "NOT READY";
@@ -4988,12 +5298,14 @@ function renderLiveTradeSlots() {
         for (let i = 0; i < 6; i++) {
             const card = activeLiveTradeSession.myOffer[i];
             if (card) {
+                const cardRap = calculateCardRAP(card);
                 html += `
                     <div class="trade-slot filled">
                         <div class="trade-slot-card frame-${rarityClassName(card.rarity)}">
                             <button class="trade-slot-remove-btn" onclick="removeCardFromMyTradeOffer('${card.id}')" title="Remove Card">✕</button>
                             <div class="trade-slot-rating">${card.rating}</div>
                             <div class="trade-slot-name">${escapeHTML(card.player)}</div>
+                            <div class="trade-slot-rap">${formatRAP(cardRap)}</div>
                             <div class="trade-slot-rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</div>
                         </div>
                     </div>
@@ -5010,14 +5322,16 @@ function renderLiveTradeSlots() {
         yourGrid.innerHTML = html;
     }
 
-    // PARTNER SLOTS
+    // PARTNER SLOTS & RAP BADGE
     const theirGrid = document.getElementById("theirTradeSlots");
     const theirCount = document.getElementById("theirOfferCount");
+    const theirRapBadge = document.getElementById("theirOfferRapBadge");
     const theirReadyBadge = document.getElementById("theirReadyBadge");
     const theirBox = document.getElementById("theirOfferBox");
     const noteEl = document.getElementById("tradePartnerStatusNote");
 
     if (theirCount) theirCount.textContent = activeLiveTradeSession.theirOffer.length;
+    if (theirRapBadge) theirRapBadge.textContent = `💎 ${formatRAP(theirTotalRap)} RAP`;
     if (theirReadyBadge) {
         theirReadyBadge.className = `trade-status-pill ${activeLiveTradeSession.theirReady ? 'ready' : 'unready'}`;
         theirReadyBadge.textContent = activeLiveTradeSession.theirReady ? "✓ READY" : "NOT READY";
@@ -5039,11 +5353,13 @@ function renderLiveTradeSlots() {
         for (let i = 0; i < 6; i++) {
             const card = activeLiveTradeSession.theirOffer[i];
             if (card) {
+                const cardRap = calculateCardRAP(card);
                 html += `
                     <div class="trade-slot filled">
                         <div class="trade-slot-card frame-${rarityClassName(card.rarity)}">
                             <div class="trade-slot-rating">${card.rating}</div>
                             <div class="trade-slot-name">${escapeHTML(card.player)}</div>
+                            <div class="trade-slot-rap">${formatRAP(cardRap)}</div>
                             <div class="trade-slot-rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</div>
                         </div>
                     </div>
@@ -5075,31 +5391,86 @@ function renderLiveTradeSlots() {
     }
 }
 
+// HUGE TRADE CARD PICKER MODAL FILTER & SEARCH CONTROLLER
+function filterTradeCardPicker() {
+    if (!activeLiveTradeSession) return;
+    const grid = document.getElementById("tradeCardPickerGrid");
+    const searchInput = document.getElementById("tradeCardSearchInput");
+    const raritySelect = document.getElementById("tradeCardRarityFilter");
+    const sortSelect = document.getElementById("tradeCardSortFilter");
+    if (!grid) return;
+
+    const query = (searchInput ? searchInput.value : "").trim().toLowerCase();
+    const rarityFilter = (raritySelect ? raritySelect.value : "ALL").toUpperCase();
+    const sortMode = sortSelect ? sortSelect.value : "RAP_DESC";
+
+    const offeredIds = new Set(activeLiveTradeSession.myOffer.map(c => c.id));
+    let availableCards = state.cards.filter(c => !c.locked && !offeredIds.has(c.id));
+
+    // Filter by search query
+    if (query) {
+        availableCards = availableCards.filter(c => 
+            (c.player || "").toLowerCase().includes(query) ||
+            (c.pos || "").toLowerCase().includes(query) ||
+            (c.rarity || "").toLowerCase().includes(query) ||
+            String(c.rating || "").includes(query) ||
+            (c.serialNumber && String(c.serialNumber).includes(query))
+        );
+    }
+
+    // Filter by rarity
+    if (rarityFilter !== "ALL") {
+        availableCards = availableCards.filter(c => (c.rarity || "").toUpperCase() === rarityFilter);
+    }
+
+    // Sort cards
+    if (sortMode === "RAP_DESC") {
+        availableCards.sort((a, b) => calculateCardRAP(b) - calculateCardRAP(a) || b.rating - a.rating);
+    } else if (sortMode === "RAP_ASC") {
+        availableCards.sort((a, b) => calculateCardRAP(a) - calculateCardRAP(b) || a.rating - b.rating);
+    } else if (sortMode === "RATING_DESC") {
+        availableCards.sort((a, b) => b.rating - a.rating);
+    } else if (sortMode === "RATING_ASC") {
+        availableCards.sort((a, b) => a.rating - b.rating);
+    } else if (sortMode === "RECENT") {
+        availableCards.sort((a, b) => (b.obtained || 0) - (a.obtained || 0));
+    }
+
+    if (!availableCards.length) {
+        grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;font-size:14px;">No unlocked cards match your search and filter criteria.</p>`;
+        return;
+    }
+
+    grid.innerHTML = availableCards.map(c => {
+        const cardRap = calculateCardRAP(c);
+        return `
+        <article class="card frame-${rarityClassName(c.rarity)}" style="cursor:pointer;padding:12px;transform:scale(0.98);" onclick="addCardToMyTradeOffer('${c.id}')" title="Click to add to offer">
+            <span class="rarity ${rarityClassName(c.rarity)}">${escapeHTML(c.rarity)}</span>
+            ${c.serialNumber ? `<span class="serial-badge" style="display:inline-block;margin:4px 0 2px;">★ #${c.serialNumber} ★</span>` : ""}
+            <div class="card-image-wrap" style="height:90px;">
+                <img class="card-photo" src="${c.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}">
+            </div>
+            <div class="card-rating">${c.rating}</div>
+            <div class="card-position">${escapeHTML(c.pos)}</div>
+            <h4 style="margin:4px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(c.player)}</h4>
+            <div style="font-size:11px;font-weight:900;color:#38bdf8;margin:2px 0;">💎 ${formatRAP(cardRap)}</div>
+            <button class="primary-btn" style="padding:6px;font-size:11px;margin-top:4px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;">+ Add to Offer</button>
+        </article>
+        `;
+    }).join("");
+}
+
 function openTradeCardPicker() {
     if (!activeLiveTradeSession) return;
     const modal = document.getElementById("tradeCardPickerModal");
-    const grid = document.getElementById("tradeCardPickerGrid");
-    if (!modal || !grid) return;
+    const searchInput = document.getElementById("tradeCardSearchInput");
+    const raritySelect = document.getElementById("tradeCardRarityFilter");
+    if (!modal) return;
 
-    const offeredIds = new Set(activeLiveTradeSession.myOffer.map(c => c.id));
-    const availableCards = state.cards.filter(c => !c.locked && !offeredIds.has(c.id));
+    if (searchInput) searchInput.value = "";
+    if (raritySelect) raritySelect.value = "ALL";
 
-    if (!availableCards.length) {
-        grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px;">No available unlocked cards in your collection. Unlock cards from the Collection tab to trade.</p>`;
-    } else {
-        grid.innerHTML = availableCards.map(c => `
-            <article class="card frame-${rarityClassName(c.rarity)}" style="cursor:pointer;padding:12px;transform:scale(0.95);" onclick="addCardToMyTradeOffer('${c.id}')" title="Click to add to offer">
-                <span class="rarity ${rarityClassName(c.rarity)}">${escapeHTML(c.rarity)}</span>
-                <div class="card-image-wrap" style="height:90px;">
-                    <img class="card-photo" src="${c.image || ''}">
-                </div>
-                <div class="card-rating">${c.rating}</div>
-                <div class="card-position">${escapeHTML(c.pos)}</div>
-                <h4 style="margin:4px 0 2px;">${escapeHTML(c.player)}</h4>
-                <button class="primary-btn" style="padding:6px;font-size:11px;margin-top:6px;">+ Add to Offer</button>
-            </article>
-        `).join("");
-    }
+    filterTradeCardPicker();
 
     modal.classList.remove("hidden");
     modal.style.display = "flex";
@@ -5337,7 +5708,7 @@ async function pollLiveTradeRequests() {
                     toast(`🚫 "${activeOutgoingTradeRequest.recipient}" has blocked you from trading.`);
                     SoundFx.click();
                     activeOutgoingTradeRequest = null;
-                } else if (outDoc.status === "declined") {
+                } else if (outDoc.status === "declined" || outDoc.status === "cancelled") {
                     const banner = document.getElementById("tradeOutgoingStatusBanner");
                     if (banner) banner.style.display = "none";
                     toast(`"${activeOutgoingTradeRequest.recipient}" declined your trade request.`);
@@ -6023,8 +6394,10 @@ function setLeaderboardTab(tab) {
     currentLeaderboardTab = tab;
     const tabGold = document.getElementById("lbTabGold");
     const tabValue = document.getElementById("lbTabValue");
+    const tabLevel = document.getElementById("lbTabLevel");
     if (tabGold) tabGold.classList.toggle("active", tab === "gold");
     if (tabValue) tabValue.classList.toggle("active", tab === "value");
+    if (tabLevel) tabLevel.classList.toggle("active", tab === "level");
     renderLeaderboard();
 }
 
@@ -6134,6 +6507,8 @@ async function renderLeaderboard() {
 
     if (currentLeaderboardTab === "value") {
         playersList.sort((a, b) => (b.value - a.value) || (b.gold - a.gold));
+    } else if (currentLeaderboardTab === "level") {
+        playersList.sort((a, b) => (b.level - a.level) || (b.gold - a.gold));
     } else {
         playersList.sort((a, b) => (b.gold - a.gold) || (b.value - a.value));
     }
@@ -6154,6 +6529,8 @@ async function renderLeaderboard() {
         const titleObj = TITLES.find(t => t.name === p.equippedTitle) || TITLES[0];
         const scoreDisplay = currentLeaderboardTab === "value"
             ? `💎 ${p.value.toLocaleString()}`
+            : currentLeaderboardTab === "level"
+            ? `⭐ Level ${p.level || 1}`
             : `${p.gold.toLocaleString()} 🪙`;
 
         const crown = rankNum === 1 ? `<div class="lb-podium-crown">👑</div>` : "";
@@ -6195,6 +6572,8 @@ async function renderLeaderboard() {
             const titleObj = TITLES.find(t => t.name === p.equippedTitle) || TITLES[0];
             const scoreDisplay = currentLeaderboardTab === "value"
                 ? `💎 ${p.value.toLocaleString()}`
+                : currentLeaderboardTab === "level"
+                ? `⭐ Level ${p.level || 1}`
                 : `${p.gold.toLocaleString()} 🪙`;
 
             html += `
@@ -6267,13 +6646,134 @@ function closeAdminPanel() {
 }
 
 function setAdminTab(tabName) {
-    const tabs = ["currency", "cards", "level", "titles", "tournament", "moderation"];
+    const tabs = ["currency", "cards", "level", "titles", "tournament", "moderation", "delete"];
     tabs.forEach(t => {
         const btn = document.getElementById(`adminTabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
         if (btn) btn.classList.toggle("active", t === tabName);
         if (content) content.style.display = (t === tabName) ? "block" : "none";
     });
+}
+
+async function wipeAccountEverywhere(username) {
+    if (!username) return false;
+    const u = username.trim().toLowerCase();
+    try {
+        // 1. Wipe from cloud user record (KVDB)
+        const BUCKET = GlobalCloudRest.BUCKET_URL;
+        const userKey = `user_${u}`;
+        const lbKey = `lb_${u}`;
+        const tradeKey = `trade_${u}`;
+
+        // Delete user record
+        try { await fetch(`${BUCKET}/${userKey}`, { method: "DELETE" }); } catch(e) {}
+        // Delete leaderboard entry
+        try { await fetch(`${BUCKET}/${lbKey}`, { method: "DELETE" }); } catch(e) {}
+        // Delete any trade sessions involving this user
+        try { await fetch(`${BUCKET}/${tradeKey}`, { method: "DELETE" }); } catch(e) {}
+
+        // 2. Wipe from local CloudSync accounts
+        const accs = CloudSync.getAccounts();
+        if (accs[u]) {
+            delete accs[u];
+            CloudSync.saveAccounts(accs);
+        }
+
+        // 3. Wipe from leaderboard data (KVDB lb_ key already done above)
+        // If the deleted user was the current user, log them out
+        if (state.accountUser && state.accountUser.toLowerCase() === u) {
+            state = freshState();
+            AntiCheat.signState(state);
+            try { localStorage.removeItem(CURRENT_SAVE_KEY); } catch(e) {}
+            saveGame();
+            renderAll();
+            updateAuthUI();
+            checkAdminStatus();
+        }
+
+        return true;
+    } catch(e) {
+        return false;
+    }
+}
+
+// Admin: Delete any player's account
+async function adminExecuteDeleteAccount() {
+    if (!checkIsAdmin()) {
+        toast("🔒 Access Denied: Creator / Admin authorization required.");
+        return;
+    }
+    const targetInput = document.getElementById("adminDeleteTarget");
+    const confirmInput = document.getElementById("adminDeleteConfirm");
+    const statusDiv = document.getElementById("adminDeleteStatus");
+    const target = (targetInput ? targetInput.value.trim() : "").toLowerCase();
+    const confirm = (confirmInput ? confirmInput.value.trim() : "");
+
+    if (!target) {
+        if (statusDiv) statusDiv.innerHTML = `<span style="color:var(--red);">❌ Please enter a target username.</span>`;
+        return;
+    }
+    if (confirm !== "DELETE") {
+        if (statusDiv) statusDiv.innerHTML = `<span style="color:var(--red);">❌ Type DELETE (in caps) in the confirmation field to proceed.</span>`;
+        return;
+    }
+    if (target === "alucard") {
+        if (statusDiv) statusDiv.innerHTML = `<span style="color:var(--red);">❌ Cannot delete the owner account.</span>`;
+        return;
+    }
+
+    if (statusDiv) statusDiv.innerHTML = `<span style="color:var(--muted);">⏳ Deleting account <strong>${escapeHTML(target)}</strong>…</span>`;
+    const ok = await wipeAccountEverywhere(target);
+    if (ok) {
+        if (statusDiv) statusDiv.innerHTML = `<span style="color:var(--green);">✅ Account <strong>${escapeHTML(target)}</strong> permanently deleted from all systems.</span>`;
+        if (targetInput) targetInput.value = "";
+        if (confirmInput) confirmInput.value = "";
+        SoundFx.levelUp();
+        try { renderLeaderboard(); } catch(e) {}
+    } else {
+        if (statusDiv) statusDiv.innerHTML = `<span style="color:var(--red);">❌ Deletion failed. Please try again.</span>`;
+    }
+}
+
+// Self-service: Delete your own account from settings
+async function handleDeleteAccount() {
+    const errEl = document.getElementById("deleteAccountError");
+    const passInput = document.getElementById("deleteAccountPasswordInput");
+    const enteredPass = passInput ? passInput.value.trim() : "";
+
+    if (!state.accountUser) {
+        if (errEl) errEl.textContent = "You must be logged in to delete an account.";
+        return;
+    }
+    if (!enteredPass) {
+        if (errEl) errEl.textContent = "Please enter your password to confirm.";
+        return;
+    }
+
+    const enteredHash = await hashPassword(enteredPass);
+    // Verify against stored hash
+    let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
+    let validHash = (cloudUser && cloudUser.passwordHash) ? cloudUser.passwordHash : state.accountPassHash;
+    if (!validHash && cloudUser && cloudUser.password) {
+        validHash = await hashPassword(cloudUser.password);
+    }
+
+    if (enteredHash !== validHash) {
+        if (errEl) errEl.textContent = "❌ Incorrect password. Account not deleted.";
+        return;
+    }
+
+    if (errEl) errEl.textContent = "";
+    const username = state.accountUser;
+    toast("⏳ Permanently deleting your account…");
+    const ok = await wipeAccountEverywhere(username);
+    if (ok) {
+        toast(`✅ Account "${username}" permanently deleted. You have been logged out.`);
+        showPage("home");
+        renderAll();
+    } else {
+        toast("❌ Account deletion failed. Please try again.");
+    }
 }
 
 function populateAdminCardList() {
@@ -6345,8 +6845,8 @@ async function adminSpawnMonkeyCard() {
         name: "Monkey King",
         rating: 99,
         pos: "ST",
-        rarity: "Secret",
-        image: "player_temp.png",
+        rarity: "Developer",
+        image: "monkey_king.png",
         hiddenFromIndex: true,
         devCard: true
     };
@@ -6356,8 +6856,8 @@ async function adminSpawnMonkeyCard() {
         player: monkeyPlayer.name,
         rating: monkeyPlayer.rating,
         pos: monkeyPlayer.pos,
-        rarity: monkeyPlayer.rarity,
-        image: monkeyPlayer.image || "player_temp.png",
+        rarity: monkeyPlayer.rarity || "Developer",
+        image: monkeyPlayer.image || "monkey_king.png",
         obtained: Date.now(),
         frame: "default",
         serialNumber: null,
@@ -6979,8 +7479,8 @@ function showPage(pageId, skipScroll = false) {
     const targetNav = document.querySelector(`button.nav[data-page="${pageId}"]`);
     if (targetNav) targetNav.classList.add("active");
 
-    const sidebar = document.getElementById("sidebar");
-    if (sidebar && window.innerWidth <= 768) sidebar.classList.remove("open");
+    // Close sidebar on mobile/tablet (<=1024px) when navigating
+    if (window.innerWidth <= 1024) closeSidebar();
 
     // Save active page in localStorage so refreshing preserves the user's current page!
     try {
@@ -7004,7 +7504,19 @@ function showPage(pageId, skipScroll = false) {
 
 function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
-    if (sidebar) sidebar.classList.toggle("open");
+    const overlay = document.getElementById("sidebarOverlay");
+    if (!sidebar) return;
+    const isOpen = sidebar.classList.toggle("open");
+    if (overlay) {
+        overlay.classList.toggle("visible", isOpen);
+    }
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    if (sidebar) sidebar.classList.remove("open");
+    if (overlay) overlay.classList.remove("visible");
 }
 
 function toast(msg) {
@@ -7057,7 +7569,8 @@ setInterval(() => {
     }
 
     tradePollerCounter++;
-    if (tradePollerCounter >= 2) {
+    const pollThreshold = activeLiveTradeSession ? 1 : 2;
+    if (tradePollerCounter >= pollThreshold) {
         tradePollerCounter = 0;
         pollLiveTradeRequests();
     }
@@ -7140,6 +7653,7 @@ document.addEventListener("contextmenu", function(e) {
         renderLiveTradeSlots,
         openTradeCardPicker,
         closeTradeCardPicker,
+        filterTradeCardPicker,
         addCardToMyTradeOffer,
         removeCardFromMyTradeOffer,
         toggleTradeReady,
@@ -7150,6 +7664,8 @@ document.addEventListener("contextmenu", function(e) {
         cancelLiveTradeSession,
         closeLiveTradeRoom,
         pollLiveTradeRequests,
+        calculateCardRAP,
+        formatRAP,
         equipTitle,
         setLeaderboardTab,
         closeCardRevealModal,
@@ -7179,6 +7695,9 @@ document.addEventListener("contextmenu", function(e) {
         adminGrantPackStock,
         adminResetTournamentCooldown,
         adminGrantTournamentChampion,
+        adminExecuteDeleteAccount,
+        handleDeleteAccount,
+        wipeAccountEverywhere,
         populateAdminTitleList,
         generateRandomSerializedGradient,
         renderCards,
@@ -7211,6 +7730,7 @@ document.addEventListener("contextmenu", function(e) {
         claimMission,
         buyBackground,
         toggleCardLock,
+        closeSidebar,
         CloudSync,
         SoundFx,
         SolsCutsceneEngine
