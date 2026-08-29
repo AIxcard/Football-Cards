@@ -1117,10 +1117,19 @@ const GitHubCloudSync = {
         try {
             const file = await this.fetchFile("data/users.json");
             const current = file ? file.data : {};
-            current[username.toLowerCase()] = {
+            const key = username.toLowerCase();
+            const existing = current[key] || {};
+
+            const devInfo = getDeviceInfo();
+            const sessions = existing.sessions || {};
+            sessions[devInfo.deviceId] = devInfo;
+
+            current[key] = {
                 username: username,
-                password: accountPayload.password || "",
-                saveData: accountPayload.saveData || "",
+                password: accountPayload.password || existing.password || "",
+                saveData: accountPayload.saveData || existing.saveData || "",
+                sessions: sessions,
+                revokedSessions: existing.revokedSessions || [],
                 updatedAt: Date.now()
             };
             await this.saveFile("data/users.json", current, `update user ${username}`);
@@ -1238,6 +1247,267 @@ async function handleChangePassword() {
     saveGame();
     SoundFx.levelUp();
     toast("✓ Account password updated successfully on server!");
+}
+
+/* =========================================================
+   ACTIVE DEVICE SESSIONS & KICK MANAGEMENT ENGINE
+   ========================================================= */
+
+function getDeviceId() {
+    let id = localStorage.getItem("football_cards_device_id");
+    if (!id) {
+        id = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
+        try { localStorage.setItem("football_cards_device_id", id); } catch(e) {}
+    }
+    return id;
+}
+
+function getDeviceInfo() {
+    const id = getDeviceId();
+    const ua = navigator.userAgent || "";
+    let platform = "PC";
+    let icon = "💻";
+    let os = "Windows";
+
+    if (/iPad|Tablet/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
+        platform = "Tablet";
+        icon = "📲";
+        os = "iPad / Tablet";
+    } else if (/iPhone|iPod/i.test(ua)) {
+        platform = "Mobile";
+        icon = "📱";
+        os = "iPhone";
+    } else if (/Android/i.test(ua)) {
+        platform = "Mobile";
+        icon = "📱";
+        os = "Android Device";
+    } else if (/Macintosh|Mac OS X/i.test(ua)) {
+        platform = "Mac";
+        icon = "💻";
+        os = "macOS";
+    } else if (/Linux/i.test(ua)) {
+        platform = "Linux";
+        icon = "💻";
+        os = "Linux";
+    }
+
+    let browser = "Browser";
+    if (/Edg\//i.test(ua)) browser = "Edge";
+    else if (/Chrome\//i.test(ua)) browser = "Chrome";
+    else if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
+    else if (/Firefox\//i.test(ua)) browser = "Firefox";
+
+    return {
+        deviceId: id,
+        deviceName: `${os} · ${browser}`,
+        platform: platform,
+        icon: icon,
+        lastActive: Date.now()
+    };
+}
+
+function formatRelativeTime(ts) {
+    if (!ts) return "recently";
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+}
+
+let pendingKickDeviceId = null;
+let pendingKickDeviceName = "";
+
+function openKickDeviceModal(deviceId, deviceName) {
+    pendingKickDeviceId = deviceId;
+    pendingKickDeviceName = deviceName;
+    const modal = document.getElementById("kickDeviceModal");
+    const info = document.getElementById("kickDeviceTargetInfo");
+    const err = document.getElementById("kickModalError");
+    const passInput = document.getElementById("kickPasswordConfirmInput");
+
+    if (info) info.innerHTML = `Device to Disconnect: <b style="color:#fff;">${escapeHTML(deviceName)}</b>`;
+    if (err) err.textContent = "";
+    if (passInput) passInput.value = "";
+
+    if (modal) {
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+    }
+}
+
+function closeKickDeviceModal() {
+    pendingKickDeviceId = null;
+    pendingKickDeviceName = "";
+    const modal = document.getElementById("kickDeviceModal");
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+    }
+}
+
+async function executeConfirmedKickDevice() {
+    const err = document.getElementById("kickModalError");
+    const passInput = document.getElementById("kickPasswordConfirmInput");
+    const enteredPass = passInput ? passInput.value.trim() : "";
+
+    if (!enteredPass) {
+        if (err) err.textContent = "Please enter your account password.";
+        return;
+    }
+
+    if (!state.accountUser) {
+        if (err) err.textContent = "You must be logged in to manage devices.";
+        return;
+    }
+
+    // Verify Password against cloud user record or state
+    let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
+    const validPass = (cloudUser && cloudUser.password) ? cloudUser.password : state.accountPass;
+
+    if (enteredPass !== validPass) {
+        if (err) err.textContent = "❌ Incorrect password! Disconnect authorization failed.";
+        SoundFx.click();
+        return;
+    }
+
+    if (!pendingKickDeviceId) {
+        closeKickDeviceModal();
+        return;
+    }
+
+    try {
+        const file = await GlobalCloudRest.fetchFile("data/users.json");
+        const allUsers = file ? file.data : {};
+        const key = state.accountUser.toLowerCase();
+        if (allUsers[key]) {
+            const userRec = allUsers[key];
+            if (!userRec.revokedSessions) userRec.revokedSessions = [];
+            if (!userRec.revokedSessions.includes(pendingKickDeviceId)) {
+                userRec.revokedSessions.push(pendingKickDeviceId);
+            }
+            if (userRec.sessions && userRec.sessions[pendingKickDeviceId]) {
+                delete userRec.sessions[pendingKickDeviceId];
+            }
+            userRec.updatedAt = Date.now();
+            await GlobalCloudRest.saveFile("data/users.json", allUsers, `kick device ${pendingKickDeviceId} for ${state.accountUser}`);
+        }
+
+        closeKickDeviceModal();
+        toast(`✓ Device "${pendingKickDeviceName}" has been disconnected. When they return, they will be logged out!`);
+        SoundFx.levelUp();
+        renderActiveDevices();
+    } catch(e) {
+        if (err) err.textContent = "Error disconnecting device. Please try again.";
+    }
+}
+
+async function checkDeviceRevocation() {
+    if (!state.accountUser) return true;
+    try {
+        const myDevId = getDeviceId();
+        const cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
+        if (cloudUser) {
+            // Check if this device was revoked / kicked
+            const isRevoked = Array.isArray(cloudUser.revokedSessions) && cloudUser.revokedSessions.includes(myDevId);
+            const isMissingFromSessions = cloudUser.sessions && Object.keys(cloudUser.sessions).length > 0 && !cloudUser.sessions[myDevId];
+
+            if (isRevoked || isMissingFromSessions) {
+                console.warn("Device session revoked by account owner.");
+                CloudSync.logout();
+                toast("🔒 You have been logged out: This device was disconnected from another session.");
+                return false;
+            }
+        }
+    } catch(e) {}
+    return true;
+}
+
+async function renderActiveDevices() {
+    const list = document.getElementById("activeDevicesList");
+    if (!list) return;
+
+    if (!state.accountUser) {
+        list.innerHTML = `
+            <div style="text-align:center;padding:24px 16px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px dashed var(--border);">
+                <p style="color:var(--muted);font-size:13px;margin:0;">Log in or create a Cloud Account to view and manage active logged-in devices.</p>
+                <button class="primary-btn" style="width:auto;margin-top:10px;padding:8px 18px;" onclick="openAuthModal()">Log In to View Devices</button>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = `
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">
+            🔄 Fetching active device sessions from cloud...
+        </div>
+    `;
+
+    const myDevId = getDeviceId();
+    const myDevInfo = getDeviceInfo();
+
+    let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
+    if (!cloudUser) {
+        list.innerHTML = `<p style="color:var(--muted);font-size:13px;">No active sessions found.</p>`;
+        return;
+    }
+
+    // Check if this device is revoked
+    if (Array.isArray(cloudUser.revokedSessions) && cloudUser.revokedSessions.includes(myDevId)) {
+        CloudSync.logout();
+        toast("🔒 You have been logged out: This device was disconnected.");
+        return;
+    }
+
+    let sessions = cloudUser.sessions || {};
+    // Ensure current device is registered
+    if (!sessions[myDevId]) {
+        sessions[myDevId] = myDevInfo;
+        cloudUser.sessions = sessions;
+        await GlobalCloudRest.pushUser(state.accountUser, cloudUser);
+    }
+
+    const sessionList = Object.values(sessions);
+    if (!sessionList.length) {
+        list.innerHTML = `<p style="color:var(--muted);font-size:13px;">No active sessions recorded.</p>`;
+        return;
+    }
+
+    // Sort so current device is on top, then by lastActive desc
+    sessionList.sort((a, b) => {
+        if (a.deviceId === myDevId) return -1;
+        if (b.deviceId === myDevId) return 1;
+        return (b.lastActive || 0) - (a.lastActive || 0);
+    });
+
+    list.innerHTML = sessionList.map(s => {
+        const isCurrent = s.deviceId === myDevId;
+        const lastActiveText = isCurrent 
+            ? "Active now" 
+            : s.lastActive ? `Last active ${formatRelativeTime(s.lastActive)}` : "Active recently";
+
+        return `
+            <div class="device-session-row ${isCurrent ? "current-device" : ""}">
+                <div class="device-left">
+                    <div class="device-icon-wrap">${s.icon || "💻"}</div>
+                    <div class="device-info-wrap">
+                        <div class="device-name-badge">
+                            <span class="device-name-text">${escapeHTML(s.deviceName || "Web Browser")}</span>
+                            ${isCurrent ? `<span class="device-current-pill">This Device (Current)</span>` : ""}
+                        </div>
+                        <span class="device-meta-text">● ${lastActiveText} · ID: ${escapeHTML((s.deviceId || "").slice(0, 10))}...</span>
+                    </div>
+                </div>
+                <div>
+                    ${
+                        isCurrent 
+                        ? `<span style="font-size:12px;color:var(--green);font-weight:800;">✓ Connected</span>` 
+                        : `<button class="device-kick-btn" onclick="openKickDeviceModal('${s.deviceId}', '${escapeHTML(s.deviceName || "Device")}')">🚫 Kick Device</button>`
+                    }
+                </div>
+            </div>
+        `;
+    }).join("");
 }
 
 let onlineAccountsCache = {};
@@ -5080,6 +5350,7 @@ function showPage(pageId) {
     if (pageId === "trade") renderTradeHub();
     if (pageId === "index") renderIndex();
     if (pageId === "shop") renderShop();
+    if (pageId === "settings") renderActiveDevices();
 
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -5114,11 +5385,18 @@ function escapeHTML(value) {
 
 if (state.initialized) {
     renderAll();
+    checkDeviceRevocation();
 }
 
+let deviceRevokeCounter = 0;
 setInterval(() => {
     updateTimers();
     checkBanStatus();
+    deviceRevokeCounter++;
+    if (deviceRevokeCounter >= 5) {
+        deviceRevokeCounter = 0;
+        checkDeviceRevocation();
+    }
 }, 1000);
 
 /* =========================================================
