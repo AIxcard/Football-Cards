@@ -3137,15 +3137,21 @@ const SolsCutsceneEngine = {
         this.lightningArcs = [];
 
         // 1. Determine Individual Custom Cutscene Theme
-        const nameLower = (card.player || "").toLowerCase();
+        const nameLower = (card.player || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         let t = "mythic";
         if (nameLower.includes("messi")) t = "messi";
         else if (nameLower.includes("ronaldo")) t = "ronaldo";
-        else if (nameLower.includes("yamal")) t = "yamal";
-        else if (nameLower.includes("mbappé") || nameLower.includes("mbappe")) t = "mbappe";
         else if (nameLower.includes("haaland")) t = "haaland";
+        else if (nameLower.includes("mbappe")) t = "mbappe";
+        else if (nameLower.includes("yamal")) t = "yamal";
+        else if (nameLower.includes("neymar")) t = "neymar";
+        else if (nameLower.includes("bruyne") || nameLower.includes("kdb")) t = "kdb";
+        else if (nameLower.includes("vinicius") || nameLower.includes("vini")) t = "vini";
+        else if (nameLower.includes("bellingham")) t = "bellingham";
+        else if (nameLower.includes("salah")) t = "salah";
+        else if (nameLower.includes("lewandowski") || nameLower.includes("lewa")) t = "lewa";
         else if (card.rarity === "World Class") t = "messi";
-        else if (card.rarity === "Secret") t = "yamal";
+        else if (card.rarity === "Secret") t = "haaland";
         else t = "mythic";
         this.theme = t;
 
@@ -3175,19 +3181,31 @@ const SolsCutsceneEngine = {
         if (flashbang) flashbang.classList.remove("sols-flashbang-active");
 
         const preTexts = {
-            messi: "[ 🐐 THE 8th BALLON D'OR DIVINITY AWAKENS 🐐 ]",
-            ronaldo: "[ ⚡ CR7: THE ROYAL EMPEROR & 5x UCL KING ⚡ ]",
-            yamal: "[ 🌀 QUANTUM DIMENSION TEAR: WUNDERKIND 🌀 ]",
-            mbappe: "[ 🌌 HYPER-SONIC TITAN SPEED REALITY BREAKER 🌌 ]",
-            haaland: "[ 🤖 CYBORG APEX STRIKER SINGULARITY 🤖 ]",
-            mythic: "[ 🔥 SUPERNOVA STAR IGNITION DETECTED 🔥 ]"
+            messi: '[ 🐐 "LA PULGA" : LIONEL MESSI 🐐 ]',
+            ronaldo: '[ 👑 "EL BICHO" : CRISTIANO RONALDO 👑 ]',
+            haaland: '[ ⚔️ "THE VIKING" : ERLING HAALAND ⚔️ ]',
+            mbappe: '[ ⚡ "DICTATOR MBAPPÉ" : KYLIAN MBAPPÉ ⚡ ]',
+            yamal: '[ ✦ "THE WUNDERKIND" : LAMINE YAMAL ✦ ]',
+            neymar: '[ 🇧🇷 "O MÁGICO" : NEYMAR JR 🇧🇷 ]',
+            kdb: '[ 🎯 "THE ASSIST KING" : KEVIN DE BRUYNE 🎯 ]',
+            vini: '[ ⚡ "VINI JR" : SAMBA DANCER ⚡ ]',
+            bellingham: '[ 👑 "BELLI-GOAL" : JUDE BELLINGHAM 👑 ]',
+            salah: '[ 👑 "THE EGYPTIAN KING" : MO SALAH 👑 ]',
+            lewa: '[ ⚽ "LEWANGOALSKI" : ROBERT LEWANDOWSKI ⚽ ]',
+            mythic: '[ 🔥 MYTHIC SUPERSTAR CLASS 🔥 ]'
         };
         const rarityTexts = {
-            messi: "★ 1 IN 10,000 THE GREATEST OF ALL TIME ★",
-            ronaldo: "★ 1 IN 10,000 ALL-TIME TOP GOALSCORER · SIUUU! ★",
-            yamal: "✦ 1 IN 500 NEXT-GEN GOLDEN BOY ✦",
-            mbappe: "★ 1 IN 500 GENERATIONAL SPEED DEMON ★",
-            haaland: "★ 1 IN 500 UNSTOPPABLE GOAL MACHINE ★",
+            messi: "★ 1 IN 10,000 THE GREATEST OF ALL TIME · 8x BALLON D'OR ★",
+            ronaldo: "★ 1 IN 10,000 ALL-TIME TOP GOALSCORER · 5x UCL KING ★",
+            haaland: "✦ 1 IN 500 THE UNSTOPPABLE VIKING GOAL MACHINE ✦",
+            mbappe: "✦ 1 IN 500 REAL MADRID GALACTICO · GENERATIONAL STRIKER ✦",
+            yamal: "✦ 1 IN 500 2024 GOLDEN BOY · EL NIÑO PRODIGIO ✦",
+            neymar: "★ 1 IN 50 BRAZILIAN SAMBA MAGICIAN ★",
+            kdb: "★ 1 IN 50 PREMIER LEAGUE MIDFIELD MAESTRO ★",
+            vini: "★ 1 IN 50 REAL MADRID ELECTRIC WINGER ★",
+            bellingham: "★ 1 IN 50 GOLDEN BOY MIDFIELD TITAN ★",
+            salah: "★ 1 IN 50 ANFIELD EGYPTIAN KING ★",
+            lewa: "★ 1 IN 50 5-GOAL RECORD GOALSCORER ★",
             mythic: "★ 1 IN 50 MYTHIC SUPERSTAR CLASS ★"
         };
 
@@ -3354,15 +3372,17 @@ const SolsCutsceneEngine = {
         const crest = document.getElementById("solsTopCrest");
         const emblem = document.getElementById("solsEmblemIcon");
         const serial = document.getElementById("solsSerialBadge");
+        const banner = document.getElementById("solsRarityBanner");
 
         const c = this.activeCard;
         if (!c) return;
 
-        const isMessi = c.player && c.player.includes("Messi");
-        const isRonaldo = c.player && c.player.includes("Ronaldo");
-        const isYamal = c.player && c.player.includes("Yamal");
-        const isMbappe = c.player && c.player.includes("Mbappé");
-        const isHaaland = c.player && c.player.includes("Haaland");
+        const normName = (c.player || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const isMessi = normName.includes("messi");
+        const isRonaldo = normName.includes("ronaldo");
+        const isYamal = normName.includes("yamal");
+        const isMbappe = normName.includes("mbappe");
+        const isHaaland = normName.includes("haaland");
         const isSerial = !!c.serialNumber;
 
         if (img) img.src = c.image || "player_temp.png";
@@ -3370,13 +3390,26 @@ const SolsCutsceneEngine = {
         if (ovr) ovr.textContent = `${c.rating || 90} OVR`;
         if (pos) pos.textContent = c.pos || "ST";
 
+        // Fix Rarity Banner so Secret is SECRET, Mythic is MYTHIC, World Class is WORLD CLASS
+        if (banner) {
+            banner.textContent = (c.rarity || "WORLD CLASS").toUpperCase();
+            const rKey = (c.rarity || "worldclass").toLowerCase().replace(/\s+/g, "");
+            banner.className = `sols-rarity-banner sols-banner-${rKey}`;
+        }
+
         if (crest) {
             if (isSerial) crest.textContent = `★ SERIALIZED #${c.serialNumber}/10 ★`;
-            else if (isMessi) crest.textContent = "🐐 8x BALLON D'OR GOAT 🐐";
-            else if (isRonaldo) crest.textContent = "🐐 5x UCL CHAMPION GOAT 🐐";
-            else if (isYamal) crest.textContent = "✦ 2024 GOLDEN BOY PRODIGY ✦";
-            else if (isMbappe) crest.textContent = "⚡ WORLD CUP GOLDEN BOOT ⚡";
-            else if (isHaaland) crest.textContent = "🤖 RECORD PREMIER LEAGUE TITAN 🤖";
+            else if (isMessi) crest.textContent = "🐐 8x BALLON D'OR · LA PULGA 🐐";
+            else if (isRonaldo) crest.textContent = "👑 5x UCL KING · EL BICHO 👑";
+            else if (isHaaland) crest.textContent = "⚔️ THE VIKING · ERLING HAALAND ⚔️";
+            else if (isMbappe) crest.textContent = "⚡ DICTATOR MBAPPÉ · GOLDEN BOOT ⚡";
+            else if (isYamal) crest.textContent = "✦ THE WUNDERKIND · GOLDEN BOY ✦";
+            else if (c.player && c.player.includes("Neymar")) crest.textContent = "🔥 O MÁGICO · NEYMAR JR 🔥";
+            else if (c.player && c.player.includes("Bruyne")) crest.textContent = "🎯 THE ASSIST KING · KDB 🎯";
+            else if (c.player && c.player.includes("Vin")) crest.textContent = "⚡ VINI JR · SAMBA DANCER ⚡";
+            else if (c.player && c.player.includes("Bellingham")) crest.textContent = "👑 BELLI-GOAL · GOLDEN BOY 👑";
+            else if (c.player && c.player.includes("Salah")) crest.textContent = "👑 THE EGYPTIAN KING · MO SALAH 👑";
+            else if (c.player && c.player.includes("Lewandowski")) crest.textContent = "⚽ LEWANGOALSKI · THE MACHINE ⚽";
             else if (c.rarity === "Secret") crest.textContent = "✦ SECRET PHENOMENON ✦";
             else if (c.rarity === "Mythic") crest.textContent = "🔥 MYTHIC SUPERSTAR 🔥";
             else crest.textContent = "★ WORLD CLASS LEGEND ★";
@@ -3388,17 +3421,29 @@ const SolsCutsceneEngine = {
             else if (isYamal) emblem.textContent = "🇪🇸";
             else if (isMbappe) emblem.textContent = "🇫🇷";
             else if (isHaaland) emblem.textContent = "🇳🇴";
+            else if (c.player && c.player.includes("Neymar")) emblem.textContent = "🇧🇷";
+            else if (c.player && c.player.includes("Bruyne")) emblem.textContent = "🇧🇪";
+            else if (c.player && c.player.includes("Vin")) emblem.textContent = "🇧🇷";
+            else if (c.player && c.player.includes("Bellingham")) emblem.textContent = "🏴󠁧󠁢󠁥󠁮󠁧󠁿";
+            else if (c.player && c.player.includes("Salah")) emblem.textContent = "🇪🇬";
+            else if (c.player && c.player.includes("Lewandowski")) emblem.textContent = "🇵🇱";
             else if (c.rarity === "Secret") emblem.textContent = "💎";
             else if (c.rarity === "Mythic") emblem.textContent = "🔥";
             else emblem.textContent = "🌎";
         }
 
         if (quote) {
-            if (isMessi) quote.textContent = '"The Argentine Magician · World Champion · 8x Ballon d\'Or Winner"';
-            else if (isRonaldo) quote.textContent = '"The Portuguese Emperor · All-Time Top Goalscorer · SIUUU!"';
-            else if (isYamal) quote.textContent = '"The Next Generation Football Prodigy · Euro Champion"';
-            else if (isMbappe) quote.textContent = '"Lightning Speed Real Madrid Galactico · Generational Striker"';
-            else if (isHaaland) quote.textContent = '"The Norwegian Goal Scoring Cyborg · Treble Winner"';
+            if (isMessi) quote.textContent = '"Lionel Messi · \'La Pulga\' · 8x Ballon d\'Or Winner · World Champion"';
+            else if (isRonaldo) quote.textContent = '"Cristiano Ronaldo · \'El Bicho\' · All-Time Top Goalscorer · SIUUU!"';
+            else if (isHaaland) quote.textContent = '"Erling Haaland · \'The Viking\' · Unstoppable Goal Machine"';
+            else if (isMbappe) quote.textContent = '"Kylian Mbappé · \'Dictator Mbappé\' · World Cup Golden Boot Winner"';
+            else if (isYamal) quote.textContent = '"Lamine Yamal · \'The Wunderkind\' · Euro Champion & Golden Boy Prodigy"';
+            else if (c.player && c.player.includes("Neymar")) quote.textContent = '"Neymar Jr · \'O Mágico\' · Brazilian Samba Joga Bonito Master"';
+            else if (c.player && c.player.includes("Bruyne")) quote.textContent = '"Kevin De Bruyne · \'The Assist King\' · Master Midfield Playmaker"';
+            else if (c.player && c.player.includes("Vin")) quote.textContent = '"Vinícius Júnior · \'Vini Jr\' · Real Madrid Samba Winger"';
+            else if (c.player && c.player.includes("Bellingham")) quote.textContent = '"Jude Bellingham · \'Belli-Goal\' · Real Madrid Midfield Superstar"';
+            else if (c.player && c.player.includes("Salah")) quote.textContent = '"Mohamed Salah · \'The Egyptian King\' · Liverpool Legend"';
+            else if (c.player && c.player.includes("Lewandowski")) quote.textContent = '"Robert Lewandowski · \'Lewangoalski\' · Master Goal Machine"';
             else quote.textContent = '"Generational Football Icon · Master of the Beautiful Game"';
         }
 
