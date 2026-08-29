@@ -2525,7 +2525,10 @@ function initPackSwipeGesture(onTear) {
     packTornExecuted = false;
 
     const overlay = document.getElementById("packOpeningOverlay");
+    const stage = document.getElementById("packsDisplayStage");
     const packs = document.querySelectorAll("#packsDisplayStage .luxury-booster-pack");
+    const prompt = document.getElementById("tearSwipePrompt");
+
     if (!overlay || !packs.length) return;
 
     function executeTear() {
@@ -2535,10 +2538,11 @@ function initPackSwipeGesture(onTear) {
         packs.forEach((p, idx) => {
             setTimeout(() => {
                 p.classList.add("pack-torn");
-            }, idx * 75);
+            }, idx * 50);
         });
         
         SoundFx.packTear();
+        if (typeof createConfetti === "function") createConfetti();
 
         setTimeout(() => {
             if (packTearCallback) {
@@ -2546,11 +2550,20 @@ function initPackSwipeGesture(onTear) {
                 packTearCallback = null;
                 cb();
             }
-        }, 800);
+        }, 750);
     }
 
     window.executePackTear = executeTear;
 
+    // 1. Direct Tap / Click on Prompt Button
+    if (prompt) {
+        prompt.onclick = (e) => {
+            e.stopPropagation();
+            executeTear();
+        };
+    }
+
+    // 2. Click or Drag handling across all packs & stage
     packs.forEach(pack => {
         let isDragging = false;
         let startX = 0, startY = 0;
@@ -2564,7 +2577,7 @@ function initPackSwipeGesture(onTear) {
             inner.style.transform = `rotateX(${rotX}deg) rotateY(${rotY + flip}deg) scale3d(1.03, 1.03, 1.03)`;
         }
 
-        // 1. Right Click to Flip (PC / Mouse)
+        // Right Click to Flip 3D (PC)
         pack.oncontextmenu = (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -2574,27 +2587,33 @@ function initPackSwipeGesture(onTear) {
             return false;
         };
 
-        // 2. Mouse Hover 3D Tilt (PC Inspector feel)
+        // Mouse Move Tilt
         pack.onmousemove = (e) => {
-            if (isDragging || packTornExecuted) return;
+            if (packTornExecuted) return;
             const rect = pack.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width - 0.5;
             const y = (e.clientY - rect.top) / rect.height - 0.5;
-            rotY = x * 26;
-            rotX = -y * 26;
+            rotY = x * 20;
+            rotX = -y * 20;
             updateTransform();
         };
 
         pack.onmouseleave = () => {
-            if (isDragging || packTornExecuted) return;
+            if (packTornExecuted) return;
             rotX = 0;
             rotY = 0;
             updateTransform();
         };
 
-        // 3. Mouse Down & Horizontal Swipe Tear (PC) - MUST SWIPE, CLICK ALONE DOES NOT OPEN
+        // Click or Tap anywhere on pack to tear!
+        pack.onclick = (e) => {
+            e.stopPropagation();
+            executeTear();
+        };
+
+        // Mouse Down / Touch Drag
         pack.onmousedown = (e) => {
-            if (e.button === 2) return; // right click is flip
+            if (e.button === 2) return;
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
@@ -2604,66 +2623,47 @@ function initPackSwipeGesture(onTear) {
             if (!isDragging || packTornExecuted) return;
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-            // SWIPING HORIZONTALLY (dx >= 25px) TRIGGERS THE TEAR
-            if (Math.abs(dx) >= 25) {
+            // Any swipe >= 12px tears the pack
+            if (dist >= 12) {
                 isDragging = false;
                 executeTear();
-                return;
             }
-
-            rotY += dx * 0.4;
-            rotX = Math.max(-45, Math.min(45, rotX - dy * 0.4));
-            startX = e.clientX;
-            startY = e.clientY;
-            updateTransform();
         };
 
         window.onmouseup = () => {
-            isDragging = false;
-            // No clicking to open
+            if (isDragging && !packTornExecuted) {
+                isDragging = false;
+                executeTear();
+            }
         };
 
-        // 4. Touch Controls (Mobile / Tablet / iPad)
-        let lastTap = 0;
+        // Mobile / Tablet Touch
         pack.ontouchstart = (e) => {
             if (!e.touches || !e.touches.length) return;
             isDragging = true;
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
-
-            // Double tap = Flip 3D (Phone / iPad)
-            const now = Date.now();
-            if (now - lastTap < 320) {
-                isFlipped = !isFlipped;
-                updateTransform();
-                SoundFx.cardReveal ? SoundFx.cardReveal("Rare") : SoundFx.click();
-            }
-            lastTap = now;
         };
 
         pack.ontouchmove = (e) => {
             if (!isDragging || !e.touches || !e.touches.length || packTornExecuted) return;
             const dx = e.touches[0].clientX - startX;
             const dy = e.touches[0].clientY - startY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-            // SWIPING HORIZONTALLY (dx >= 25px) TRIGGERS THE TEAR
-            if (Math.abs(dx) >= 25) {
+            if (dist >= 10) {
                 isDragging = false;
                 executeTear();
-                return;
             }
-
-            rotY += dx * 0.5;
-            rotX = Math.max(-45, Math.min(45, rotX - dy * 0.5));
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            updateTransform();
         };
 
         pack.ontouchend = () => {
-            isDragging = false;
-            // No tapping to open - must swipe
+            if (isDragging && !packTornExecuted) {
+                isDragging = false;
+                executeTear();
+            }
         };
     });
 }
