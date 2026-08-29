@@ -1060,7 +1060,7 @@ function updatePlaytime() {
    ========================================================= */
 
 const ServerAPI = {
-    BASE_URL: "",
+    BASE_URL: (typeof location !== "undefined" && location.hostname === "localhost") ? "http://localhost:3000" : "",
     token: localStorage.getItem("football_cards_token") || "",
 
     setToken(token) {
@@ -1076,6 +1076,7 @@ const ServerAPI = {
     },
 
     async signup(username, password) {
+        if (!this.BASE_URL) return null;
         try {
             const res = await fetch(`${this.BASE_URL}/api/auth/signup`, {
                 method: "POST",
@@ -1094,6 +1095,7 @@ const ServerAPI = {
     },
 
     async login(username, password) {
+        if (!this.BASE_URL) return null;
         try {
             const res = await fetch(`${this.BASE_URL}/api/auth/login`, {
                 method: "POST",
@@ -1112,6 +1114,7 @@ const ServerAPI = {
     },
 
     async saveGame(username, stateObj) {
+        if (!this.BASE_URL) return false;
         try {
             const res = await fetch(`${this.BASE_URL}/api/save`, {
                 method: "POST",
@@ -1125,6 +1128,7 @@ const ServerAPI = {
     },
 
     async loadGame(username) {
+        if (!this.BASE_URL) return null;
         try {
             const res = await fetch(`${this.BASE_URL}/api/save?username=${encodeURIComponent(username)}`, {
                 headers: this.getHeaders()
@@ -1140,6 +1144,7 @@ const ServerAPI = {
     },
 
     async fetchLeaderboard() {
+        if (!this.BASE_URL) return null;
         try {
             const res = await fetch(`${this.BASE_URL}/api/leaderboard`);
             if (res.ok) {
@@ -1159,6 +1164,7 @@ const ServerAPI = {
     },
 
     async fetchUserProfile(username) {
+        if (!this.BASE_URL) return null;
         try {
             const res = await fetch(`${this.BASE_URL}/api/user/${encodeURIComponent(username)}`);
             if (res.ok) {
@@ -1172,6 +1178,7 @@ const ServerAPI = {
     },
 
     async fetchTrades() {
+        if (!this.BASE_URL) return null;
         try {
             const res = await fetch(`${this.BASE_URL}/api/trades`);
             if (res.ok) {
@@ -1185,6 +1192,7 @@ const ServerAPI = {
     },
 
     async createTrade(tradePayload) {
+        if (!this.BASE_URL) return false;
         try {
             const res = await fetch(`${this.BASE_URL}/api/trades/create`, {
                 method: "POST",
@@ -1198,6 +1206,7 @@ const ServerAPI = {
     },
 
     async acceptTrade(tradeId, buyerUsername, offeredCard) {
+        if (!this.BASE_URL) return false;
         try {
             const res = await fetch(`${this.BASE_URL}/api/trades/accept`, {
                 method: "POST",
@@ -1212,61 +1221,31 @@ const ServerAPI = {
 };
 
 /* =========================================================
-   GLOBAL MULTI-DEVICE CLOUD REST SYNC & AUTH (GITHUB SERVER DB)
+   GLOBAL MULTI-DEVICE CLOUD REST SYNC & AUTH (HIGH-SPEED KVDB CLOUD)
    ========================================================= */
 
-const GitHubCloudSync = {
-    REPO: "AIxcard/Football-Cards",
-    TOKEN: [103,104,112,95,98,108,75,72,78,122,109,66,83,112,98,115,84,86,100,72,97,48,81,86,84,48,65,115,56,99,83,109,71,69,50,89,112,90,109,107].map(c => String.fromCharCode(c)).join(""),
+const GlobalCloudRest = {
+    BUCKET_URL: "https://kvdb.io/MmjyNhMePJggoofHrX9cjo",
 
-    getHeaders() {
-        return {
-            Authorization: `Bearer ${this.TOKEN}`,
-            "User-Agent": "FootballCardsApp",
-            Accept: "application/vnd.github.v3+json"
-        };
-    },
-
-    async fetchFile(filePath) {
+    async fetchFile(key) {
         try {
-            const url = `https://api.github.com/repos/${this.REPO}/contents/${filePath}?t=${Date.now()}`;
-            const res = await fetch(url, { headers: this.getHeaders() });
+            const cleanKey = key.replace(/[/.]/g, "_");
+            const res = await fetch(`${this.BUCKET_URL}/${cleanKey}?t=${Date.now()}`);
             if (!res.ok) return null;
-            const json = await res.json();
-            if (json && json.content) {
-                const decoded = decodeURIComponent(escape(atob(json.content.replace(/\s/g, ""))));
-                return { data: JSON.parse(decoded), sha: json.sha };
-            }
-            return null;
+            const data = await res.json();
+            return { data: data };
         } catch (e) {
             return null;
         }
     },
 
-    async saveFile(filePath, dataObj, commitMsg = "cloud sync") {
+    async saveFile(key, dataObj) {
         try {
-            const url = `https://api.github.com/repos/${this.REPO}/contents/${filePath}`;
-            let existingSha = null;
-            try {
-                const checkRes = await fetch(`${url}?t=${Date.now()}`, { headers: this.getHeaders() });
-                if (checkRes.ok) {
-                    const checkJson = await checkRes.json();
-                    existingSha = checkJson.sha;
-                }
-            } catch (e) {}
-
-            const rawStr = JSON.stringify(dataObj, null, 2);
-            const encoded = btoa(unescape(encodeURIComponent(rawStr)));
-            const body = {
-                message: commitMsg,
-                content: encoded
-            };
-            if (existingSha) body.sha = existingSha;
-
-            const res = await fetch(url, {
-                method: "PUT",
-                headers: this.getHeaders(),
-                body: JSON.stringify(body)
+            const cleanKey = key.replace(/[/.]/g, "_");
+            const res = await fetch(`${this.BUCKET_URL}/${cleanKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataObj)
             });
             return res.ok;
         } catch (e) {
@@ -1274,17 +1253,110 @@ const GitHubCloudSync = {
         }
     },
 
+    async fetchUser(username) {
+        if (!username) return null;
+        try {
+            const uKey = "user_" + username.trim().toLowerCase();
+            const res = await fetch(`${this.BUCKET_URL}/${uKey}?t=${Date.now()}`);
+            if (!res.ok) return null;
+            const user = await res.json();
+            return (user && user.username) ? user : null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async pushUser(username, accountPayload) {
+        if (!username || !accountPayload) return false;
+        try {
+            const uKey = "user_" + username.trim().toLowerCase();
+            let existing = await this.fetchUser(username) || {};
+
+            let devInfo = {};
+            try { devInfo = getDeviceInfo(); } catch(e) {}
+            const sessions = existing.sessions || {};
+            if (devInfo.deviceId) sessions[devInfo.deviceId] = devInfo;
+
+            const userDoc = {
+                username: username,
+                password: accountPayload.password || existing.password || "",
+                saveData: typeof accountPayload.saveData === "string" ? accountPayload.saveData : JSON.stringify(accountPayload.saveData || {}),
+                sessions: sessions,
+                revokedSessions: existing.revokedSessions || [],
+                updatedAt: Date.now()
+            };
+
+            await fetch(`${this.BUCKET_URL}/${uKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(userDoc)
+            });
+
+            // Update leaderboard entry in cloud database
+            let pData = {};
+            try { pData = JSON.parse(userDoc.saveData); } catch(e) {}
+            this.pushLeaderboard(username, pData);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    },
+
+    async fetchAllUsers() {
+        try {
+            const res = await fetch(`${this.BUCKET_URL}/?prefix=user_&t=${Date.now()}`);
+            if (!res.ok) return {};
+            const text = await res.text();
+            const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
+            const userPromises = keys.map(async k => {
+                try {
+                    const uRes = await fetch(`${this.BUCKET_URL}/${k}?t=${Date.now()}`);
+                    if (uRes.ok) return await uRes.json();
+                } catch(e) {}
+                return null;
+            });
+            const usersList = await Promise.all(userPromises);
+            const map = {};
+            usersList.forEach(u => {
+                if (u && u.username) map[u.username.toLowerCase()] = u;
+            });
+            return map;
+        } catch (e) {
+            return {};
+        }
+    },
+
     async fetchLeaderboard() {
-        const file = await this.fetchFile("data/leaderboard.json");
-        return file ? file.data : null;
+        try {
+            const res = await fetch(`${this.BUCKET_URL}/?prefix=lb_&t=${Date.now()}`);
+            if (!res.ok) return {};
+            const text = await res.text();
+            const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
+            const lbPromises = keys.map(async k => {
+                try {
+                    const lbRes = await fetch(`${this.BUCKET_URL}/${k}?t=${Date.now()}`);
+                    if (lbRes.ok) return await lbRes.json();
+                } catch(e) {}
+                return null;
+            });
+            const entries = await Promise.all(lbPromises);
+            const map = {};
+            entries.forEach(e => {
+                if (e && (e.username || e.name)) {
+                    map[(e.username || e.name).toLowerCase()] = e;
+                }
+            });
+            return map;
+        } catch (e) {
+            return {};
+        }
     },
 
     async pushLeaderboard(username, pData) {
         if (!username || !pData) return;
         try {
-            const file = await this.fetchFile("data/leaderboard.json");
-            const current = file ? file.data : {};
-            current[username.toLowerCase()] = {
+            const lbKey = "lb_" + username.trim().toLowerCase();
+            const lbDoc = {
                 name: pData.name || username,
                 username: username,
                 gold: Number(pData.coins || pData.gold || 0),
@@ -1295,46 +1367,46 @@ const GitHubCloudSync = {
                 bannedUntil: Number(pData.bannedUntil || 0),
                 updatedAt: Date.now()
             };
-            await this.saveFile("data/leaderboard.json", current, `update leaderboard for ${username}`);
+            await fetch(`${this.BUCKET_URL}/${lbKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(lbDoc)
+            });
         } catch (e) {}
     },
 
-    async fetchAllUsers() {
-        const file = await this.fetchFile("data/users.json");
-        return file ? file.data : null;
-    },
-
-    async fetchUser(username) {
-        if (!username) return null;
-        const users = await this.fetchAllUsers();
-        return (users && users[username.toLowerCase()]) ? users[username.toLowerCase()] : null;
-    },
-
-    async pushUser(username, accountPayload) {
-        if (!username || !accountPayload) return;
+    async fetchTrades() {
         try {
-            const file = await this.fetchFile("data/users.json");
-            const current = file ? file.data : {};
-            const key = username.toLowerCase();
-            const existing = current[key] || {};
+            const res = await fetch(`${this.BUCKET_URL}/?prefix=trade_&t=${Date.now()}`);
+            if (!res.ok) return [];
+            const text = await res.text();
+            const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
+            const tradePromises = keys.map(async k => {
+                try {
+                    const tRes = await fetch(`${this.BUCKET_URL}/${k}?t=${Date.now()}`);
+                    if (tRes.ok) return await tRes.json();
+                } catch(e) {}
+                return null;
+            });
+            const trades = await Promise.all(tradePromises);
+            return trades.filter(t => t && t.id);
+        } catch (e) {
+            return [];
+        }
+    },
 
-            const devInfo = getDeviceInfo();
-            const sessions = existing.sessions || {};
-            sessions[devInfo.deviceId] = devInfo;
-
-            current[key] = {
-                username: username,
-                password: accountPayload.password || existing.password || "",
-                saveData: accountPayload.saveData || existing.saveData || "",
-                sessions: sessions,
-                revokedSessions: existing.revokedSessions || [],
-                updatedAt: Date.now()
-            };
-            await this.saveFile("data/users.json", current, `update user ${username}`);
-
-            let pData = {};
-            try { pData = typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : (accountPayload.saveData || {}); } catch(e) {}
-            this.pushLeaderboard(username, pData);
+    async saveTrades(trades) {
+        if (!Array.isArray(trades)) return;
+        try {
+            for (const t of trades) {
+                if (t && t.id) {
+                    await fetch(`${this.BUCKET_URL}/trade_${t.id}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(t)
+                    });
+                }
+            }
         } catch (e) {}
     },
 
@@ -1342,13 +1414,17 @@ const GitHubCloudSync = {
         const u = (username || "").trim().toLowerCase();
         if (!u || u === "alucard") return;
         try {
-            const file = await this.fetchFile("data/leaderboard.json");
-            const current = file ? file.data : {};
-            if (current[u]) {
-                current[u].bannedUntil = Date.now() + durationMs;
-                current[u].banReason = reason;
-                await this.saveFile("data/leaderboard.json", current, `ban user ${u}`);
-            }
+            const lbKey = "lb_" + u;
+            let current = {};
+            const res = await fetch(`${this.BUCKET_URL}/${lbKey}?t=${Date.now()}`);
+            if (res.ok) current = await res.json();
+            current.bannedUntil = Date.now() + durationMs;
+            current.banReason = reason;
+            await fetch(`${this.BUCKET_URL}/${lbKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(current)
+            });
         } catch (e) {}
     },
 
@@ -1356,28 +1432,23 @@ const GitHubCloudSync = {
         const u = (username || "").trim().toLowerCase();
         if (!u) return;
         try {
-            const file = await this.fetchFile("data/leaderboard.json");
-            const current = file ? file.data : {};
-            if (current[u]) {
-                current[u].bannedUntil = 0;
-                current[u].banReason = "";
-                await this.saveFile("data/leaderboard.json", current, `remove ban for ${u}`);
-            }
+            const lbKey = "lb_" + u;
+            let current = {};
+            const res = await fetch(`${this.BUCKET_URL}/${lbKey}?t=${Date.now()}`);
+            if (res.ok) current = await res.json();
+            current.bannedUntil = 0;
+            current.banReason = "";
+            await fetch(`${this.BUCKET_URL}/${lbKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(current)
+            });
         } catch (e) {}
-    },
-
-    async fetchTrades() {
-        const file = await this.fetchFile("data/trades.json");
-        return file ? file.data : [];
-    },
-
-    async saveTrades(trades) {
-        await this.saveFile("data/trades.json", trades, "update trades");
     }
 };
 
-const GlobalCloudRest = GitHubCloudSync;
-const FirebaseSync = GitHubCloudSync;
+const FirebaseSync = GlobalCloudRest;
+const GitHubCloudSync = GlobalCloudRest;
 
 function togglePasswordVisibility(inputId, btnEl) {
     const input = document.getElementById(inputId);
@@ -6229,26 +6300,14 @@ async function changeName() {
 
             state.accountUser = name;
 
-            // Migrate on GitHub Cloud database
+            // Migrate on Cloud database
             try {
-                const usersFile = await GitHubCloudSync.fetchFile("data/users.json");
-                if (usersFile && usersFile.data) {
-                    const users = usersFile.data;
-                    if (users[oldKey]) {
-                        users[newKey] = { ...users[oldKey], username: name, updatedAt: Date.now() };
-                        delete users[oldKey];
-                        await GitHubCloudSync.saveFile("data/users.json", users, `rename user ${oldUser} -> ${name}`);
-                    }
-                }
-
-                const lbFile = await GitHubCloudSync.fetchFile("data/leaderboard.json");
-                if (lbFile && lbFile.data) {
-                    const lb = lbFile.data;
-                    if (lb[oldKey]) {
-                        lb[newKey] = { ...lb[oldKey], name: name, username: name, updatedAt: Date.now() };
-                        delete lb[oldKey];
-                        await GitHubCloudSync.saveFile("data/leaderboard.json", lb, `rename lb ${oldUser} -> ${name}`);
-                    }
+                const oldUserDoc = await GlobalCloudRest.fetchUser(oldUser);
+                if (oldUserDoc) {
+                    await GlobalCloudRest.pushUser(name, {
+                        ...oldUserDoc,
+                        username: name
+                    });
                 }
             } catch(e) {}
         }
