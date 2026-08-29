@@ -5510,7 +5510,14 @@ async function renderLeaderboard() {
     };
 
     let playersList = Object.values(playersMap);
-    playersList = playersList.filter(p => p.isSelf || !p.bannedUntil || p.bannedUntil <= Date.now());
+    playersList = playersList.filter(p => {
+        if (!p || !p.username) return false;
+        const u = p.username.toLowerCase();
+        if (u.includes("_1787") || u.includes("ipadtest_") || u.includes("testuser") || u === "ipadtester" || u === "playertwo") {
+            return false;
+        }
+        return p.isSelf || !p.bannedUntil || p.bannedUntil <= Date.now();
+    });
 
     if (currentLeaderboardTab === "value") {
         playersList.sort((a, b) => (b.value - a.value) || (b.gold - a.gold));
