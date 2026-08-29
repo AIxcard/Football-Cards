@@ -2,12 +2,12 @@
   "alucard": {
     "name": "Alucard",
     "username": "Alucard",
-    "gold": 0,
-    "value": 0,
-    "cards": 0,
-    "level": 1,
+    "gold": 1419088,
+    "value": 318640,
+    "cards": 287,
+    "level": 22,
     "equippedTitle": "Collector",
     "bannedUntil": 0,
-    "updatedAt": 1787983620964
+    "updatedAt": 1787983622779
   }
 }
