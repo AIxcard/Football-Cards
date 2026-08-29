@@ -3951,6 +3951,11 @@ body.modal-open, html.modal-open {
 }
 
 /* CUSTOM THEME ATMOSPHERES */
+.sols-theme-monkey .sols-atmosphere-rift {
+    background: radial-gradient(circle at center, rgba(255, 215, 0, 0.6) 0%, rgba(255, 107, 0, 0.4) 45%, rgba(0, 0, 0, 0.96) 80%);
+    animation: solsCosmicSpin 6s linear infinite !important;
+}
+
 .sols-theme-messi .sols-atmosphere-rift {
     background: radial-gradient(circle at center, rgba(0, 242, 254, 0.5) 0%, rgba(255, 215, 0, 0.35) 45%, rgba(0, 0, 0, 0.96) 80%);
     animation: solsCosmicSpin 10s linear infinite !important;
@@ -4184,6 +4189,12 @@ body.modal-open, html.modal-open {
         transform: scale(0.72) !important;
         transform-origin: center center !important;
     }
+}
+
+.sols-theme-monkey .sols-card-content {
+    background: radial-gradient(circle at 50% 30%, #4a2800 0%, #211200 60%, #050300 100%) !important;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 70px rgba(255, 215, 0, 0.95), 0 0 120px rgba(255, 107, 0, 0.7), 0 35px 90px rgba(0, 0, 0, 0.98) !important;
 }
 
 .sols-theme-messi .sols-card-content {
