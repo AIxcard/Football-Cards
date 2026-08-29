@@ -344,6 +344,67 @@ const SoundFx = {
             this.playTone(f, "triangle", 0.6, 0.15, 0.4 + i * 0.08);
         });
     },
+    playSolsRiser(theme) {
+        try {
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+
+            // 1. Deep Sub-Bass Riser
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(theme === "worldclass" ? 45 : 38, now);
+            osc.frequency.exponentialRampToValueAtTime(theme === "worldclass" ? 220 : 180, now + 3.2);
+
+            gain.gain.setValueAtTime(0.01, now);
+            gain.gain.linearRampToValueAtTime(0.3, now + 3.0);
+            gain.gain.linearRampToValueAtTime(0.001, now + 3.2);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 3.2);
+
+            // 2. Accelerating Heartbeat Thumps
+            [0.0, 0.7, 1.3, 1.8, 2.2, 2.5, 2.7, 2.9, 3.05].forEach(t => {
+                this.playTone(theme === "worldclass" ? 80 : 65, "triangle", 0.18, 0.25, t);
+            });
+        } catch(e) {}
+    },
+    playSolsSupernova(theme) {
+        try {
+            this.init();
+            if (!this.ctx) return;
+            const now = this.ctx.currentTime;
+
+            // Massive Explosive Bass Impact
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.exponentialRampToValueAtTime(25, now + 1.2);
+
+            gain.gain.setValueAtTime(0.5, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 1.4);
+        } catch(e) {}
+    },
+    playSolsFanfare(theme) {
+        try {
+            const chords = theme === "worldclass" 
+                ? [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00]
+                : [440.00, 554.37, 659.25, 880.00, 1108.73, 1318.51, 1760.00];
+
+            chords.forEach((f, i) => {
+                this.playTone(f, "triangle", 0.7, 0.16, 0.05 + i * 0.08);
+            });
+        } catch(e) {}
+    },
     levelUp() {
         [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
             this.playTone(f, "triangle", 0.3, 0.12, i * 0.09);
@@ -2938,34 +2999,6 @@ function showSecretCutscene(card) {
     SoundFx.worldClassCinematic();
 }
 
-function closeSecretCutscene() {
-    const overlay = document.getElementById("secretOverlay");
-    if (overlay) overlay.classList.add("hidden");
-    SoundFx.click();
-    if (cutscenePostCallback) {
-        const cb = cutscenePostCallback;
-        cutscenePostCallback = null;
-        cb();
-    } else {
-        unlockModalScroll();
-        renderAll();
-    }
-}
-
-function closeWorldClass() {
-    const overlay = document.getElementById("worldClassOverlay");
-    if (overlay) overlay.classList.add("hidden");
-    SoundFx.click();
-    if (cutscenePostCallback) {
-        const cb = cutscenePostCallback;
-        cutscenePostCallback = null;
-        cb();
-    } else {
-        unlockModalScroll();
-        renderAll();
-    }
-}
-
 function rollRarity(rates) {
     let random = Math.random() * 100;
     for (const rarity of Object.keys(rates)) {
@@ -3042,70 +3075,377 @@ function closePackOddsModal() {
 }
 
 /* =========================================================
-   WORLD CLASS SOL'S RNG CUTSCENES (MESSI & RONALDO)
+   SOL'S RNG ULTRA-CINEMATIC CUTSCENE ENGINE
+   BLACKOUT + 60FPS VORTEX + FLASHBANG + 3D CARD SLAM
    ========================================================= */
 
+const SolsCutsceneEngine = {
+    activeCard: null,
+    onCompleteCallback: null,
+    canvas: null,
+    ctx: null,
+    animFrame: null,
+    particles: [],
+    phase: 0,
+    startTime: 0,
+    isSkipped: false,
+    theme: "worldclass",
+
+    initCanvas() {
+        this.canvas = document.getElementById("solsCanvas");
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext("2d");
+        this.resize();
+    },
+
+    resize() {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    },
+
+    start(card, onComplete) {
+        this.activeCard = card;
+        this.onCompleteCallback = onComplete;
+        this.isSkipped = false;
+        this.phase = 0;
+        this.startTime = Date.now();
+        this.particles = [];
+
+        if (card.rarity === "World Class") this.theme = "worldclass";
+        else if (card.rarity === "Secret") this.theme = "secret";
+        else this.theme = "mythic";
+
+        const overlay = document.getElementById("solsCinematicOverlay");
+        const shakeWrap = document.getElementById("solsShakeWrap");
+        const textSeq = document.getElementById("solsTextSequence");
+        const preText = document.getElementById("solsPhasePreText");
+        const rarityTag = document.getElementById("solsPhaseRarityTag");
+        const runeRing = document.getElementById("solsRuneRing");
+        const flashbang = document.getElementById("solsFlashbang");
+        const cardBox = document.getElementById("solsCardBox");
+        const rift = document.getElementById("solsAtmosphereRift");
+
+        if (!overlay) return;
+
+        lockModalScroll();
+
+        // Configure class themes
+        overlay.className = `modal sols-cinematic-stage sols-theme-${this.theme}`;
+        overlay.classList.remove("hidden");
+        overlay.style.display = "flex";
+
+        if (cardBox) {
+            cardBox.style.display = "none";
+            cardBox.classList.remove("sols-card-slam-anim");
+        }
+        if (flashbang) flashbang.classList.remove("sols-flashbang-active");
+        if (preText) {
+            preText.style.opacity = "0";
+            preText.style.transform = "scale(0.85)";
+            if (this.theme === "worldclass") preText.textContent = "[ ✦ A CELESTIAL GOD AWAKENS ✦ ]";
+            else if (this.theme === "secret") preText.textContent = "[ ! REALITY TEAR DETECTED ! ]";
+            else preText.textContent = "[ 🔥 A MYTHIC STAR RISES 🔥 ]";
+        }
+        if (rarityTag) {
+            rarityTag.style.opacity = "0";
+            rarityTag.style.transform = "translateY(20px)";
+            if (this.theme === "worldclass") rarityTag.textContent = "★ 1 IN 10,000 WORLD CLASS ★";
+            else if (this.theme === "secret") rarityTag.textContent = "★ 1 IN 500 SECRET PHENOMENON ★";
+            else rarityTag.textContent = "★ 1 IN 50 MYTHIC CLASS ★";
+        }
+        if (runeRing) runeRing.style.opacity = "0";
+        if (rift) rift.style.opacity = "0";
+        if (textSeq) textSeq.style.display = "flex";
+
+        this.initCanvas();
+        this.spawnVortexParticles();
+        this.animateCanvas();
+
+        // Audio Tension Riser + Heartbeats
+        SoundFx.playSolsRiser(this.theme);
+
+        // Phase 0: Instant Blackout & Screen Rumble (0.0s)
+        if (shakeWrap) shakeWrap.classList.add("sols-shake-rumble");
+        if (rift) setTimeout(() => { if (!this.isSkipped && rift) rift.style.opacity = "1"; }, 300);
+
+        // Phase 1: Pre-Text Eerie Reveal (0.8s)
+        setTimeout(() => {
+            if (this.isSkipped) return;
+            if (preText) {
+                preText.style.opacity = "1";
+                preText.style.transform = "scale(1.05)";
+            }
+            SoundFx.playTone(this.theme === "worldclass" ? 440 : 220, "triangle", 0.3, 0.15);
+        }, 800);
+
+        // Phase 2: Rarity Flash & Turbo Vortex (1.8s)
+        setTimeout(() => {
+            if (this.isSkipped) return;
+            if (rarityTag) {
+                rarityTag.style.opacity = "1";
+                rarityTag.style.transform = "translateY(0)";
+            }
+            if (runeRing) runeRing.style.opacity = "1";
+            this.turbochargeVortex();
+            SoundFx.playTone(this.theme === "worldclass" ? 880 : 330, "sawtooth", 0.5, 0.2);
+        }, 1800);
+
+        // Phase 3: SUPERNOVA FLASHBANG & BASS DROP (3.2s)
+        setTimeout(() => {
+            if (this.isSkipped) return;
+            this.triggerSupernova();
+        }, 3200);
+
+        // Phase 4: GRAND 3D CARD SLAM (3.6s)
+        setTimeout(() => {
+            if (this.isSkipped) return;
+            this.revealGrandCard();
+        }, 3600);
+    },
+
+    spawnVortexParticles() {
+        this.particles = [];
+        const count = 150;
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 80 + Math.random() * (Math.max(cx, cy) * 1.3);
+            this.particles.push({
+                x: cx + Math.cos(angle) * dist,
+                y: cy + Math.sin(angle) * dist,
+                angle: angle,
+                dist: dist,
+                speed: 0.02 + Math.random() * 0.035,
+                radialSpeed: 1.8 + Math.random() * 3.0,
+                size: 2 + Math.random() * 4,
+                alpha: 0.3 + Math.random() * 0.7,
+                hue: this.theme === "worldclass" ? (40 + Math.random() * 20) : this.theme === "secret" ? (190 + Math.random() * 80) : (0 + Math.random() * 35),
+                pulse: Math.random() * Math.PI
+            });
+        }
+    },
+
+    turbochargeVortex() {
+        this.particles.forEach(p => {
+            p.speed *= 2.6;
+            p.radialSpeed *= 2.2;
+        });
+    },
+
+    triggerSupernova() {
+        const flashbang = document.getElementById("solsFlashbang");
+        const shakeWrap = document.getElementById("solsShakeWrap");
+        const textSeq = document.getElementById("solsTextSequence");
+
+        if (flashbang) {
+            flashbang.classList.add("sols-flashbang-active");
+        }
+        if (textSeq) textSeq.style.display = "none";
+        if (shakeWrap) {
+            shakeWrap.classList.add("sols-shake-rumble");
+            setTimeout(() => { if (shakeWrap) shakeWrap.classList.remove("sols-shake-rumble"); }, 1200);
+        }
+
+        // Spawn Supernova Exploding Particles
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        this.particles = [];
+        for (let i = 0; i < 240; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const spd = 6 + Math.random() * 24;
+            this.particles.push({
+                x: cx,
+                y: cy,
+                vx: Math.cos(angle) * spd,
+                vy: Math.sin(angle) * spd,
+                size: 3 + Math.random() * 6,
+                alpha: 1.0,
+                decay: 0.01 + Math.random() * 0.02,
+                hue: this.theme === "worldclass" ? 45 : this.theme === "secret" ? 195 : 0,
+                isExplosion: true
+            });
+        }
+
+        SoundFx.playSolsSupernova(this.theme);
+    },
+
+    revealGrandCard() {
+        const cardBox = document.getElementById("solsCardBox");
+        const img = document.getElementById("solsCardImg");
+        const name = document.getElementById("solsCardPlayerName");
+        const ovr = document.getElementById("solsCardOvr");
+        const pos = document.getElementById("solsCardPos");
+        const quote = document.getElementById("solsCardQuote");
+        const crest = document.getElementById("solsTopCrest");
+        const emblem = document.getElementById("solsEmblemIcon");
+        const serial = document.getElementById("solsSerialBadge");
+
+        const c = this.activeCard;
+        if (!c) return;
+
+        const isMessi = c.player && c.player.includes("Messi");
+        const isRonaldo = c.player && c.player.includes("Ronaldo");
+        const isSerial = !!c.serialNumber;
+
+        if (img) img.src = c.image || "player_temp.png";
+        if (name) name.textContent = (c.player || "PLAYER").toUpperCase();
+        if (ovr) ovr.textContent = `${c.rating || 90} OVR`;
+        if (pos) pos.textContent = c.pos || "ST";
+
+        if (crest) {
+            if (isSerial) crest.textContent = `★ SERIALIZED #${c.serialNumber}/10 ★`;
+            else if (isMessi) crest.textContent = "🐐 8x BALLON D'OR GOAT 🐐";
+            else if (isRonaldo) crest.textContent = "🐐 5x UCL CHAMPION GOAT 🐐";
+            else if (c.rarity === "Secret") crest.textContent = "✦ SECRET PHENOMENON ✦";
+            else if (c.rarity === "Mythic") crest.textContent = "🔥 MYTHIC SUPERSTAR 🔥";
+            else crest.textContent = "★ WORLD CLASS LEGEND ★";
+        }
+
+        if (emblem) {
+            if (isMessi) emblem.textContent = "🇦🇷";
+            else if (isRonaldo) emblem.textContent = "🇵🇹";
+            else if (c.rarity === "Secret") emblem.textContent = "💎";
+            else if (c.rarity === "Mythic") emblem.textContent = "🔥";
+            else emblem.textContent = "🌎";
+        }
+
+        if (quote) {
+            if (isMessi) quote.textContent = '"The Argentine Magician · World Champion · The Greatest of All Time"';
+            else if (isRonaldo) quote.textContent = '"The Portuguese Legend · All-Time Top Goalscorer · SIUUU!"';
+            else quote.textContent = '"Generational Football Icon · Master of the Beautiful Game"';
+        }
+
+        if (serial) {
+            serial.style.display = isSerial ? "inline-block" : "none";
+            if (isSerial) serial.textContent = `★ SERIAL #${c.serialNumber}/10 ★`;
+        }
+
+        if (cardBox) {
+            cardBox.style.display = "flex";
+            cardBox.classList.add("sols-card-slam-anim");
+        }
+
+        SoundFx.playSolsFanfare(this.theme);
+    },
+
+    skip() {
+        if (this.isSkipped) return;
+        this.isSkipped = true;
+        this.triggerSupernova();
+        this.revealGrandCard();
+    },
+
+    claim() {
+        if (this.animFrame) cancelAnimationFrame(this.animFrame);
+        const overlay = document.getElementById("solsCinematicOverlay");
+        if (overlay) {
+            overlay.classList.add("hidden");
+            overlay.style.display = "none";
+        }
+        SoundFx.coin();
+        if (typeof createConfetti === "function") createConfetti();
+
+        if (this.onCompleteCallback) {
+            const cb = this.onCompleteCallback;
+            this.onCompleteCallback = null;
+            cb();
+        } else {
+            unlockModalScroll();
+            renderAll();
+        }
+    },
+
+    replay() {
+        if (this.activeCard) {
+            this.start(this.activeCard, this.onCompleteCallback);
+        }
+    },
+
+    animateCanvas() {
+        if (!this.ctx || !this.canvas) return;
+        const ctx = this.ctx;
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw and update particles
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+
+            if (p.isExplosion) {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= 0.94;
+                p.vy *= 0.94;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    this.particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${p.hue}, 100%, 75%, ${p.alpha})`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+                ctx.fill();
+            } else {
+                p.angle += p.speed;
+                p.dist -= p.radialSpeed;
+
+                if (p.dist <= 15) {
+                    p.dist = 80 + Math.random() * (Math.max(cx, cy) * 1.3);
+                    p.angle = Math.random() * Math.PI * 2;
+                }
+
+                p.x = cx + Math.cos(p.angle) * p.dist;
+                p.y = cy + Math.sin(p.angle) * p.dist;
+                p.pulse += 0.05;
+
+                const currentSize = p.size * (0.8 + 0.4 * Math.sin(p.pulse));
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${p.hue}, 100%, 70%, ${p.alpha})`;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+                ctx.fill();
+
+                // Particle tail line into vortex
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x - Math.cos(p.angle) * 10, p.y - Math.sin(p.angle) * 10);
+                ctx.strokeStyle = `hsla(${p.hue}, 100%, 80%, ${p.alpha * 0.5})`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        this.animFrame = requestAnimationFrame(() => this.animateCanvas());
+    }
+};
+
+function skipSolsCutscene() { SolsCutsceneEngine.skip(); }
+function claimSolsCard() { SolsCutsceneEngine.claim(); }
+function replaySolsCutscene() { SolsCutsceneEngine.replay(); }
+
 function showWorldClass(card) {
-    const animOverlay = document.getElementById("packOpeningOverlay");
-    if (animOverlay) animOverlay.classList.add("hidden");
+    SolsCutsceneEngine.start(card, cutscenePostCallback);
+}
 
-    const overlay = document.getElementById("worldClassOverlay");
-    if (!overlay) return;
+function showSecretCutscene(card) {
+    SolsCutsceneEngine.start(card, cutscenePostCallback);
+}
 
-    const isMessi = card.player.includes("Messi");
-    const isRonaldo = card.player.includes("Ronaldo");
-    const isSerialized = !!card.serialNumber;
-
-    const badge = document.getElementById("wcGoatBadge");
-    const quote = document.getElementById("wcPlayerQuote");
-    const icon = document.getElementById("wcIcon");
-    const cardBox = overlay.querySelector(".world-card");
-    const rift = overlay.querySelector(".sols-rift");
-
-    if (isSerialized) {
-        if (badge) badge.textContent = `★ SERIALIZED #${card.serialNumber}/10 WORLD CLASS GOAT ★`;
-        if (cardBox) {
-            cardBox.style.background = card.serialGradient || "linear-gradient(135deg, #1f0036 0%, #7928ca 50%, #ffffff 100%)";
-            cardBox.style.borderColor = "#ffd700";
-            cardBox.style.boxShadow = "0 0 60px rgba(255, 215, 0, 0.8), 0 0 120px rgba(121, 40, 202, 0.6)";
-        }
-        if (rift) {
-            rift.style.background = card.serialGradient || "conic-gradient(from 0deg, #ff0844, #7928ca, #00f2fe, #ffd700, #ff0844)";
-        }
-    } else {
-        if (badge) badge.textContent = isMessi ? "🐐 8x BALLON D'OR GOAT 🐐" : isRonaldo ? "🐐 5x CHAMPIONS LEAGUE GOAT 🐐" : "★ WORLD CLASS LEGEND ★";
-        if (cardBox) {
-            cardBox.style.background = isMessi
-                ? "linear-gradient(135deg, #003b7a 0%, #0099ff 40%, #ffffff 70%, #003b7a 100%)"
-                : "linear-gradient(135deg, #8b0014 0%, #ff1744 40%, #ffffff 70%, #8b0014 100%)";
-            cardBox.style.borderColor = isMessi ? "#69c7ff" : "#ff5252";
-            cardBox.style.boxShadow = isMessi
-                ? "0 0 60px rgba(105, 199, 255, 0.8), 0 0 120px rgba(0, 153, 255, 0.5)"
-                : "0 0 60px rgba(255, 23, 68, 0.8), 0 0 120px rgba(255, 76, 99, 0.5)";
-        }
-        if (rift) {
-            rift.style.background = isMessi
-                ? "conic-gradient(from 0deg, #003b7a, #0099ff, #ffffff, #0099ff, #003b7a)"
-                : "conic-gradient(from 0deg, #8b0014, #ff1744, #ffffff, #ff1744, #8b0014)";
-        }
-    }
-
-    if (icon) icon.textContent = isMessi ? "🇦🇷" : isRonaldo ? "🇵🇹" : "🌎";
-    if (quote) quote.textContent = isMessi ? '"The Argentine Magician · World Champion · The Greatest of All Time"' : isRonaldo ? '"The Portuguese Legend · All-Time Top Goalscorer · SIUUU!"' : '"Generational Football Icon"';
-
-    const photo = document.getElementById("wcPlayerPhoto");
-    if (photo && card.image) {
-        photo.src = card.image;
-    }
-
-    setText("wcPlayerName", card.player.toUpperCase());
-    setText("wcPlayerMeta", `${card.rating} OVR · ${card.pos} · ★ 1 IN 10,000 WORLD CLASS ★`);
-
-    overlay.classList.remove("hidden");
-    overlay.style.display = "grid";
-    SoundFx.worldClassCinematic();
-    state.worldClassPending = card.id;
-    saveGame();
+function showMythicCutscene(card) {
+    SolsCutsceneEngine.start(card, cutscenePostCallback);
 }
 
 function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPacks = 1) {
@@ -5602,9 +5942,9 @@ document.addEventListener("contextmenu", function(e) {
         sortCards,
         closeCardRevealModal,
         closeMultiRevealModal,
-        closeSecretCutscene,
-        closeMythicCutscene,
-        closeWorldClassCutscene,
+        skipSolsCutscene,
+        claimSolsCard,
+        replaySolsCutscene,
         playFreeKickGame,
         aimFreeKick,
         shootFreeKick,
