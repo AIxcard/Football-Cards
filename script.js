@@ -442,6 +442,9 @@ const SoundFx = {
    ========================================================= */
 
 const PLAYERS = [
+// --- SECRET DEVELOPER / ADMIN REWARD (HIDDEN FROM CARD INDEX) ---
+{ name: "Monkey King", rating: 99, pos: "ST", rarity: "Secret", image: "player_temp.png", hiddenFromIndex: true, devCard: true },
+
 // --- TOURNAMENT REWARD ---
 { name: "Emanuel", rating: 99, pos: "CAM", rarity: "Tournament", image: "player_temp.png" },
 
@@ -1614,10 +1617,27 @@ async function renderActiveDevices() {
     const myDevId = getDeviceId();
     const myDevInfo = getDeviceInfo();
 
-    let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
+    let cloudUser = null;
+    try {
+        cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
+    } catch(e) {
+        cloudUser = null;
+    }
+
     if (!cloudUser) {
-        list.innerHTML = `<p style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">Unable to load device sessions from cloud database.</p>`;
-        return;
+        const accs = typeof CloudSync !== "undefined" && CloudSync.getAccounts ? CloudSync.getAccounts() : {};
+        const localAcc = accs[(state.accountUser || "").toLowerCase()];
+        if (localAcc) {
+            cloudUser = {
+                username: localAcc.username || state.accountUser,
+                sessions: localAcc.sessions || { [myDevId]: myDevInfo }
+            };
+        } else {
+            cloudUser = {
+                username: state.accountUser,
+                sessions: { [myDevId]: myDevInfo }
+            };
+        }
     }
 
     // Check if this device was revoked
@@ -1632,7 +1652,9 @@ async function renderActiveDevices() {
     if (!sessions[myDevId]) {
         sessions[myDevId] = myDevInfo;
         cloudUser.sessions = sessions;
-        await GlobalCloudRest.pushUser(state.accountUser, cloudUser);
+        try {
+            await GlobalCloudRest.pushUser(state.accountUser, cloudUser);
+        } catch(e) {}
     }
 
     const sessionList = Object.values(sessions);
@@ -3032,7 +3054,7 @@ function rollRarity(rates) {
 }
 
 function choosePlayer(rarity) {
-    let pool = PLAYERS.filter(p => p.rarity === rarity);
+    let pool = PLAYERS.filter(p => p.rarity === rarity && !p.hiddenFromIndex);
     if (!pool.length) return null;
     return pool[Math.floor(Math.random() * pool.length)];
 }
@@ -3139,7 +3161,8 @@ const SolsCutsceneEngine = {
         // 1. Determine Individual Custom Cutscene Theme
         const nameLower = (card.player || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         let t = "mythic";
-        if (nameLower.includes("messi")) t = "messi";
+        if (nameLower.includes("monkey") || nameLower.includes("wukong")) t = "monkey";
+        else if (nameLower.includes("messi")) t = "messi";
         else if (nameLower.includes("ronaldo")) t = "ronaldo";
         else if (nameLower.includes("haaland")) t = "haaland";
         else if (nameLower.includes("mbappe")) t = "mbappe";
@@ -3181,6 +3204,7 @@ const SolsCutsceneEngine = {
         if (flashbang) flashbang.classList.remove("sols-flashbang-active");
 
         const preTexts = {
+            monkey: '[ 🐵 "THE MONKEY KING" : SUN WUKONG 🐵 ]',
             messi: '[ 🐐 "LA PULGA" : LIONEL MESSI 🐐 ]',
             ronaldo: '[ 👑 "EL BICHO" : CRISTIANO RONALDO 👑 ]',
             haaland: '[ ⚔️ "THE VIKING" : ERLING HAALAND ⚔️ ]',
@@ -3195,6 +3219,7 @@ const SolsCutsceneEngine = {
             mythic: '[ 🔥 MYTHIC SUPERSTAR CLASS 🔥 ]'
         };
         const rarityTexts = {
+            monkey: "★ 1 IN 1,000,000 MYTHICAL DEVELOPER CARD ★",
             messi: "★ 1 IN 10,000 THE GREATEST OF ALL TIME · 8x BALLON D'OR ★",
             ronaldo: "★ 1 IN 10,000 ALL-TIME TOP GOALSCORER · 5x UCL KING ★",
             haaland: "✦ 1 IN 500 THE UNSTOPPABLE VIKING GOAL MACHINE ✦",
@@ -3378,6 +3403,7 @@ const SolsCutsceneEngine = {
         if (!c) return;
 
         const normName = (c.player || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const isMonkey = normName.includes("monkey") || normName.includes("wukong");
         const isMessi = normName.includes("messi");
         const isRonaldo = normName.includes("ronaldo");
         const isYamal = normName.includes("yamal");
@@ -3392,13 +3418,14 @@ const SolsCutsceneEngine = {
 
         // Fix Rarity Banner so Secret is SECRET, Mythic is MYTHIC, World Class is WORLD CLASS
         if (banner) {
-            banner.textContent = (c.rarity || "WORLD CLASS").toUpperCase();
+            banner.textContent = isMonkey ? "SECRET DEV CARD" : (c.rarity || "WORLD CLASS").toUpperCase();
             const rKey = (c.rarity || "worldclass").toLowerCase().replace(/\s+/g, "");
             banner.className = `sols-rarity-banner sols-banner-${rKey}`;
         }
 
         if (crest) {
             if (isSerial) crest.textContent = `★ SERIALIZED #${c.serialNumber}/10 ★`;
+            else if (isMonkey) crest.textContent = "👑 THE MONKEY KING · 99 OVR 👑";
             else if (isMessi) crest.textContent = "🐐 8x BALLON D'OR · LA PULGA 🐐";
             else if (isRonaldo) crest.textContent = "👑 5x UCL KING · EL BICHO 👑";
             else if (isHaaland) crest.textContent = "⚔️ THE VIKING · ERLING HAALAND ⚔️";
@@ -3416,7 +3443,8 @@ const SolsCutsceneEngine = {
         }
 
         if (emblem) {
-            if (isMessi) emblem.textContent = "🇦🇷";
+            if (isMonkey) emblem.textContent = "🐵";
+            else if (isMessi) emblem.textContent = "🇦🇷";
             else if (isRonaldo) emblem.textContent = "🇵🇹";
             else if (isYamal) emblem.textContent = "🇪🇸";
             else if (isMbappe) emblem.textContent = "🇫🇷";
@@ -3433,7 +3461,8 @@ const SolsCutsceneEngine = {
         }
 
         if (quote) {
-            if (isMessi) quote.textContent = '"Lionel Messi · \'La Pulga\' · 8x Ballon d\'Or Winner · World Champion"';
+            if (isMonkey) quote.textContent = '"Sun Wukong · \'The Monkey King\' · Ultimate Football Divinity & Ruler"';
+            else if (isMessi) quote.textContent = '"Lionel Messi · \'La Pulga\' · 8x Ballon d\'Or Winner · World Champion"';
             else if (isRonaldo) quote.textContent = '"Cristiano Ronaldo · \'El Bicho\' · All-Time Top Goalscorer · SIUUU!"';
             else if (isHaaland) quote.textContent = '"Erling Haaland · \'The Viking\' · Unstoppable Goal Machine"';
             else if (isMbappe) quote.textContent = '"Kylian Mbappé · \'Dictator Mbappé\' · World Cup Golden Boot Winner"';
@@ -3876,13 +3905,14 @@ function renderIndex() {
     const filter = document.getElementById("indexFilter");
     if (!grid) return;
 
-    let list = [...PLAYERS];
+    const basePlayers = PLAYERS.filter(p => !p.hiddenFromIndex);
+    let list = [...basePlayers];
     if (filter && filter.value !== "all") {
         list = list.filter(p => p.rarity.toLowerCase() === filter.value.toLowerCase());
     }
 
-    const total = PLAYERS.length;
-    const discoveredCount = PLAYERS.filter(p => state.unlockedCardNames.includes(p.name) || state.cards.some(c => c.player === p.name)).length;
+    const total = basePlayers.length;
+    const discoveredCount = basePlayers.filter(p => state.unlockedCardNames.includes(p.name) || state.cards.some(c => c.player === p.name)).length;
     const pct = Math.round((discoveredCount / total) * 100);
 
     setText("indexProgressText", `${discoveredCount} / ${total} Players Discovered (${pct}%)`);
@@ -5450,6 +5480,7 @@ function openAdminPanel() {
         return;
     }
     populateAdminCardList();
+    populateAdminTitleList();
     const modal = document.getElementById("adminPanelModal");
     if (modal) modal.classList.remove("hidden");
     SoundFx.click();
@@ -5461,7 +5492,7 @@ function closeAdminPanel() {
 }
 
 function setAdminTab(tabName) {
-    const tabs = ["currency", "cards", "level", "titles", "moderation"];
+    const tabs = ["currency", "cards", "level", "titles", "tournament", "moderation"];
     tabs.forEach(t => {
         const btn = document.getElementById(`adminTabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -5474,7 +5505,15 @@ function populateAdminCardList() {
     const select = document.getElementById("adminCardSelect");
     if (!select) return;
     select.innerHTML = PLAYERS.map(p => `
-        <option value="${escapeHTML(p.name)}">[${p.rarity.toUpperCase()}] ${p.name} (${p.rating} OVR · ${p.pos})</option>
+        <option value="${escapeHTML(p.name)}">[${p.rarity.toUpperCase()}${p.hiddenFromIndex ? " · SECRET DEV" : ""}] ${p.name} (${p.rating} OVR · ${p.pos})</option>
+    `).join("");
+}
+
+function populateAdminTitleList() {
+    const select = document.getElementById("adminTitleSelect");
+    if (!select) return;
+    select.innerHTML = TITLES.map(t => `
+        <option value="${escapeHTML(t.name)}">${t.name} — ${escapeHTML(t.requirement)}</option>
     `).join("");
 }
 
@@ -5522,6 +5561,68 @@ async function adminExecuteGiveGold() {
     }
 }
 
+async function adminSpawnMonkeyCard() {
+    if (!checkIsAdmin()) {
+        toast("🔒 Access Denied: Creator / Admin authorization required.");
+        return;
+    }
+    const monkeyPlayer = PLAYERS.find(p => p.name === "Monkey King") || {
+        name: "Monkey King",
+        rating: 99,
+        pos: "ST",
+        rarity: "Secret",
+        image: "player_temp.png",
+        hiddenFromIndex: true,
+        devCard: true
+    };
+
+    const newCard = {
+        id: "dev_monkey_" + Date.now() + "_" + Math.random().toString(36).slice(2),
+        player: monkeyPlayer.name,
+        rating: monkeyPlayer.rating,
+        pos: monkeyPlayer.pos,
+        rarity: monkeyPlayer.rarity,
+        image: monkeyPlayer.image || "player_temp.png",
+        obtained: Date.now(),
+        frame: "default",
+        serialNumber: null,
+        serialGradient: null,
+        locked: true,
+        devCard: true
+    };
+
+    state.cards.unshift(newCard);
+    state.stats.cardsPulled = (state.stats.cardsPulled || 0) + 1;
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    closeAdminPanel();
+
+    // Trigger full 3D Sols Cutscene for Monkey King!
+    SolsCutsceneEngine.start(newCard, () => {
+        showCardResult(newCard, false, true, 1, 1);
+    });
+}
+
+function adminPreviewCardCutscene() {
+    if (!checkIsAdmin()) return;
+    const cardName = document.getElementById("adminCardSelect").value;
+    const p = PLAYERS.find(x => x.name === cardName);
+    if (!p) return;
+
+    closeAdminPanel();
+    const tempCard = {
+        player: p.name,
+        rating: p.rating,
+        pos: p.pos,
+        rarity: p.rarity,
+        image: p.image || "player_temp.png"
+    };
+    SolsCutsceneEngine.start(tempCard, () => {
+        showCardResult(tempCard, false, false, 1, 1);
+    });
+}
+
 async function adminExecuteSpawnCard() {
     if (!checkIsAdmin()) {
         toast("🔒 Access Denied: Creator / Admin authorization required.");
@@ -5537,11 +5638,13 @@ async function adminExecuteSpawnCard() {
     let sNum = null;
     let sGrad = null;
     if (isSerialized) {
-        if (p.rarity === "World Class") {
+        if (p.rarity === "World Class" || p.devCard || p.name === "Monkey King") {
             sNum = Math.floor(Math.random() * 10) + 1;
             sGrad = generateRandomSerializedGradient(sNum);
         } else {
-            toast("Note: Serialization is exclusive to World Class cards.");
+            toast("Note: Serialization applied as custom developer edition.");
+            sNum = 1;
+            sGrad = generateRandomSerializedGradient(1);
         }
     }
 
@@ -5562,7 +5665,9 @@ async function adminExecuteSpawnCard() {
     if (!target || target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
         state.cards.unshift(newCard);
         state.stats.cardsPulled++;
-        if (!state.unlockedCardNames.includes(p.name)) state.unlockedCardNames.push(p.name);
+        if (!p.hiddenFromIndex && !state.unlockedCardNames.includes(p.name)) {
+            state.unlockedCardNames.push(p.name);
+        }
         AntiCheat.signState(state);
         saveGame();
         renderAll();
@@ -5619,12 +5724,109 @@ function adminExecuteSetLevel() {
     }
 }
 
+function adminUnlockAllFrames() {
+    if (!checkIsAdmin()) return;
+    toast("🖼️ Admin: All card frames unlocked and accessible!");
+    SoundFx.levelUp();
+}
+
+function adminUnlockAllTitles() {
+    if (!checkIsAdmin()) return;
+    state.grantedTitles = state.grantedTitles || [];
+    TITLES.forEach(t => {
+        if (!state.grantedTitles.includes(t.name)) state.grantedTitles.push(t.name);
+    });
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    SoundFx.levelUp();
+    toast("🎖️ Admin: All in-game equippable titles granted!");
+}
+
+function adminCompleteAllMissions() {
+    if (!checkIsAdmin()) return;
+    if (state.missionProgress) {
+        state.missionProgress.packs = 100;
+        state.missionProgress.cards = 500;
+        state.missionProgress.rare = 50;
+        state.missionProgress.epic = 20;
+        state.missionProgress.legendary = 10;
+    }
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    SoundFx.levelUp();
+    toast("✅ Admin: All daily missions set to 100% completed!");
+}
+
+function adminGrantPackStock() {
+    if (!checkIsAdmin()) return;
+    state.coins += 50000;
+    state.stats.coinsEarned += 50000;
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    SoundFx.coin();
+    toast("📦 Admin: Added +50,000 🪙 pack allowance!");
+}
+
+function adminResetTournamentCooldown() {
+    if (!checkIsAdmin()) return;
+    if (state.tournamentDraft) {
+        state.tournamentDraft.lastPlayed = 0;
+        state.tournamentDraft.attemptsLeft = 99;
+    }
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    SoundFx.levelUp();
+    toast("🔄 Admin: Tournament cooldown reset to 0!");
+}
+
+function adminGrantTournamentChampion() {
+    if (!checkIsAdmin()) return;
+    state.grantedTitles = state.grantedTitles || [];
+    if (!state.grantedTitles.includes("Season 1 Champion")) state.grantedTitles.push("Season 1 Champion");
+    state.equippedTitle = "Season 1 Champion";
+    
+    // Spawn Emanuel (Tournament 99 OVR)
+    const emanuel = PLAYERS.find(p => p.name === "Emanuel");
+    if (emanuel && !state.cards.some(c => c.player === "Emanuel")) {
+        state.cards.unshift({
+            id: "champ_" + Date.now(),
+            player: emanuel.name,
+            rating: emanuel.rating,
+            pos: emanuel.pos,
+            rarity: emanuel.rarity,
+            image: emanuel.image || "player_temp.png",
+            obtained: Date.now(),
+            frame: "default",
+            locked: true
+        });
+    }
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    SoundFx.levelUp();
+    toast("🥇 Admin: Granted Season 1 Champion status & Emanuel 99 OVR!");
+}
+
 function adminExecuteGrantTitle() {
-    if (!isUserAdmin()) return;
+    if (!checkIsAdmin()) return;
     const target = (document.getElementById("adminTitleTarget").value || "").trim();
     const titleName = document.getElementById("adminTitleSelect").value;
-    if (!target) {
-        toast("Please enter a target username.");
+    
+    if (!target || target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        state.grantedTitles = state.grantedTitles || [];
+        if (!state.grantedTitles.includes(titleName)) state.grantedTitles.push(titleName);
+        if (titleName === "Admin") state.isGrantedAdmin = true;
+        if (titleName === "Staff") state.isGrantedStaff = true;
+        state.equippedTitle = titleName;
+        AntiCheat.signState(state);
+        saveGame();
+        renderAll();
+        SoundFx.levelUp();
+        toast(`👑 Admin: Granted & equipped title "${titleName}" to your account!`);
         return;
     }
 
@@ -6177,6 +6379,15 @@ document.addEventListener("contextmenu", function(e) {
         adminExecuteBan,
         adminExecuteGrantTitle,
         adminExecuteUnban,
+        adminSpawnMonkeyCard,
+        adminPreviewCardCutscene,
+        adminUnlockAllFrames,
+        adminUnlockAllTitles,
+        adminCompleteAllMissions,
+        adminGrantPackStock,
+        adminResetTournamentCooldown,
+        adminGrantTournamentChampion,
+        populateAdminTitleList,
         renderCards,
         renderIndex,
         renderTradeHub,
