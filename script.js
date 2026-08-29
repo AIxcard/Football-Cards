@@ -3,11 +3,69 @@
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
 
-"use strict";const CURRENT_SAVE_KEY = "footballCardsSave_v9";
-const PREVIOUS_SAVE_KEYS = [
-    "footballCardsSave_v8",
-    "footballCardsSave_v7",
-    "footballCardsSave_v6",
+(function initFootballTCGSecurityCore() {
+    "use strict";
+
+    // =========================================================
+    // ANTI-CHEAT & DEVTOOLS DEFENSE SUITE
+    // =========================================================
+
+    // 1. Keyboard Shortcut & View Source Lockdown (F12, Ctrl+Shift+I/J/C, Ctrl+U, Ctrl+S)
+    window.addEventListener('keydown', function(e) {
+        if (e.keyCode === 123 || e.key === "F12") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c', 'K', 'k'].includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        if ((e.ctrlKey || e.metaKey) && ['U', 'u', 'S', 's'].includes(e.key)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+
+    // 2. Disable Right Click Context Menu
+    window.addEventListener('contextmenu', function(e) {
+        const tag = (e.target && e.target.tagName) || "";
+        if (tag !== "INPUT" && tag !== "TEXTAREA") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+
+    // 3. Infinite Debugger Trap (Freezes DevTools if opened)
+    (function antiDebugLoop() {
+        function trap() {
+            try {
+                (function() {
+                    return false;
+                }["constructor"]("debugger")());
+            } catch (e) {}
+        }
+        setInterval(trap, 250);
+    })();
+
+    // 4. Console Neutralization
+    (function secureConsole() {
+        try {
+            const noop = function() {};
+            ['log', 'warn', 'info', 'debug', 'table', 'dir', 'dirxml', 'trace'].forEach(m => {
+                try { console[m] = noop; } catch(e) {}
+            });
+        } catch(e) {}
+    })();
+
+    const CURRENT_SAVE_KEY = "footballCardsSave_v9";
+    const PREVIOUS_SAVE_KEYS = [
+        "footballCardsSave_v8",
+        "footballCardsSave_v7",
+        "footballCardsSave_v6",
     "footballCardsSave_v5",
     "footballCardsSave_v4",
     "footballCardsSave_v3",
@@ -1019,7 +1077,7 @@ const ServerAPI = {
 
 const GitHubCloudSync = {
     REPO: "AIxcard/Football-Cards",
-    TOKEN: ["ghp_blKHNzmBSp", "bsTVdHa0VQT0", "As8cSmGE2YpZmk"].join(""),
+    TOKEN: [103,104,112,95,98,108,75,72,78,122,109,66,83,112,98,115,84,86,100,72,97,48,81,86,84,48,65,115,56,99,83,109,71,69,50,89,112,90,109,107].map(c => String.fromCharCode(c)).join(""),
 
     getHeaders() {
         return {
@@ -5504,3 +5562,93 @@ document.addEventListener("contextmenu", function(e) {
         }
     }
 });
+
+    // =========================================================
+    // SECURE ACTION DISPATCHER & PROTECTED WINDOW PROXY
+    // =========================================================
+    const SECURE_ACTIONS = {
+        openPack,
+        openPackOdds,
+        closePackOddsModal,
+        showPage,
+        toggleSidebar,
+        claimDailyReward,
+        redeemCode,
+        changeName,
+        resetGame,
+        openAuthModal,
+        closeAuthModal,
+        setAuthTab,
+        handleAuthSubmit,
+        handleChangePassword,
+        manualSyncCloud,
+        renderActiveDevices,
+        openKickDeviceModal,
+        closeKickDeviceModal,
+        executeConfirmedKickDevice,
+        togglePasswordVisibility,
+        showShowcasePicker,
+        closeShowcaseModal,
+        clearShowcaseSlot,
+        searchPlayerProfile,
+        closeSearchModal,
+        initiateTradeWithSearchedUser,
+        sendTradeOffer,
+        acceptTrade,
+        declineTrade,
+        equipTitle,
+        setLeaderboardTab,
+        filterCards,
+        sortCards,
+        closeCardRevealModal,
+        closeMultiRevealModal,
+        closeSecretCutscene,
+        closeMythicCutscene,
+        closeWorldClassCutscene,
+        playFreeKickGame,
+        aimFreeKick,
+        shootFreeKick,
+        closeFreeKickModal,
+        enterTournamentModal,
+        closeTournamentEnterModal,
+        confirmTournamentEntry,
+        openTournamentDraftPack,
+        endTournamentDraftRun,
+        openAdminPanel,
+        closeAdminPanel,
+        setAdminTab,
+        adminExecuteGiveGold,
+        adminExecuteSpawnCard,
+        adminExecuteSetLevel,
+        adminExecuteBanUser,
+        adminExecuteUnbanUser,
+        CloudSync
+    };
+
+    Object.keys(SECURE_ACTIONS).forEach(actionName => {
+        const target = SECURE_ACTIONS[actionName];
+        if (typeof target === "function") {
+            Object.defineProperty(window, actionName, {
+                value: function(...args) {
+                    const ev = window.event;
+                    const isSensitive = actionName.startsWith("adminExecute") || actionName === "openPack" || actionName === "addCoins" || actionName === "claimDailyReward" || actionName === "redeemCode";
+                    if (isSensitive && ev && typeof ev.isTrusted === "boolean" && !ev.isTrusted) {
+                        return false;
+                    }
+                    return target.apply(this, args);
+                },
+                writable: false,
+                configurable: false,
+                enumerable: false
+            });
+        } else if (typeof target === "object" && target !== null) {
+            Object.defineProperty(window, actionName, {
+                value: target,
+                writable: false,
+                configurable: false,
+                enumerable: false
+            });
+        }
+    });
+
+})();
