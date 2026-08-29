@@ -3214,7 +3214,7 @@ const SolsCutsceneEngine = {
         if (shakeWrap) shakeWrap.classList.add("sols-shake-rumble");
         if (rift) setTimeout(() => { if (!this.isSkipped && rift) rift.style.opacity = "1"; }, 300);
 
-        // Phase 1: Pre-Text Eerie Reveal (0.8s)
+        // Phase 1: Pre-Text Eerie Reveal (0.6s)
         setTimeout(() => {
             if (this.isSkipped) return;
             if (preText) {
@@ -3222,9 +3222,9 @@ const SolsCutsceneEngine = {
                 preText.style.transform = "scale(1.05)";
             }
             SoundFx.playTone(this.theme === "messi" || this.theme === "ronaldo" ? 523.25 : 440, "sine", 0.4, 0.08);
-        }, 800);
+        }, 600);
 
-        // Phase 2: Rarity Flash & Turbo Vortex (1.8s)
+        // Phase 2: Rarity Flash & Turbo Vortex (1.4s)
         setTimeout(() => {
             if (this.isSkipped) return;
             if (rarityTag) {
@@ -3234,19 +3234,14 @@ const SolsCutsceneEngine = {
             if (runeRing) runeRing.style.opacity = "1";
             this.turbochargeVortex();
             SoundFx.playTone(this.theme === "messi" ? 659.25 : 554.37, "sine", 0.5, 0.1);
-        }, 1800);
+        }, 1400);
 
-        // Phase 3: SUPERNOVA FLASHBANG & WARM BASS DROP (3.2s)
+        // Phase 3: SUPERNOVA FLASHBANG + INSTANT CARD SLAM (2.5s)
         setTimeout(() => {
             if (this.isSkipped) return;
             this.triggerSupernova();
-        }, 3200);
-
-        // Phase 4: GRAND 3D CARD SLAM (3.6s)
-        setTimeout(() => {
-            if (this.isSkipped) return;
             this.revealGrandCard();
-        }, 3600);
+        }, 2500);
     },
 
     spawnCustomParticles() {
@@ -3307,6 +3302,8 @@ const SolsCutsceneEngine = {
         const textSeq = document.getElementById("solsTextSequence");
 
         if (flashbang) {
+            flashbang.classList.remove("sols-flashbang-active");
+            void flashbang.offsetWidth;
             flashbang.classList.add("sols-flashbang-active");
         }
         if (textSeq) textSeq.style.display = "none";
@@ -3410,6 +3407,8 @@ const SolsCutsceneEngine = {
 
         if (cardBox) {
             cardBox.style.display = "flex";
+            cardBox.classList.remove("sols-card-slam-anim");
+            void cardBox.offsetWidth;
             cardBox.classList.add("sols-card-revealed", "sols-card-slam-anim");
         }
 
@@ -5931,7 +5930,9 @@ function resetGame() {
    NAVIGATION & UTILITIES
    ========================================================= */
 
-function showPage(pageId) {
+function showPage(pageId, skipScroll = false) {
+    if (!pageId || !document.getElementById(pageId)) pageId = "home";
+
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active-page"));
     document.querySelectorAll("button.nav").forEach(n => n.classList.remove("active"));
 
@@ -5944,6 +5945,11 @@ function showPage(pageId) {
     const sidebar = document.getElementById("sidebar");
     if (sidebar && window.innerWidth <= 768) sidebar.classList.remove("open");
 
+    // Save active page in localStorage so refreshing preserves the user's current page!
+    try {
+        localStorage.setItem("football_tcg_active_page", pageId);
+    } catch(e) {}
+
     if (pageId === "statistics") renderStatistics();
     if (pageId === "leaderboard") renderLeaderboard();
     if (pageId === "cards") renderCards();
@@ -5952,8 +5958,11 @@ function showPage(pageId) {
     if (pageId === "index") renderIndex();
     if (pageId === "shop") renderShop();
     if (pageId === "settings") renderActiveDevices();
+    if (pageId === "missions" && typeof renderMissions === "function") renderMissions();
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!skipScroll) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 }
 
 function toggleSidebar() {
@@ -5987,6 +5996,14 @@ function escapeHTML(value) {
 if (state.initialized) {
     renderAll();
     checkDeviceRevocation();
+
+    // Restore last visited page if present
+    try {
+        const savedPage = localStorage.getItem("football_tcg_active_page");
+        if (savedPage && document.getElementById(savedPage)) {
+            showPage(savedPage, true);
+        }
+    } catch(e) {}
 }
 
 let deviceRevokeCounter = 0;
