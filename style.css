@@ -4089,101 +4089,97 @@ body.modal-open, html.modal-open {
    LOGGED-IN DEVICES & SESSIONS PANEL
    ========================================================= */
 
-.device-session-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    border-radius: 14px;
-    background: linear-gradient(145deg, #0e1e2d, #07131e);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: border-color 0.2s ease, transform 0.2s ease;
+.device-session-card {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 16px !important;
+    padding: 16px 20px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(135deg, rgba(14, 30, 45, 0.95), rgba(7, 19, 30, 0.95)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45) !important;
+    transition: all 0.25s ease !important;
 }
 
-.device-session-row:hover {
-    border-color: rgba(50, 149, 255, 0.3);
+.device-session-card:hover {
+    border-color: rgba(56, 189, 248, 0.4) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
 }
 
-.device-session-row.current-device {
-    border-color: rgba(0, 255, 135, 0.4);
-    background: linear-gradient(145deg, rgba(0, 255, 135, 0.08), #071410);
+.device-session-card.current-device {
+    border-color: rgba(0, 255, 135, 0.45) !important;
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.08), rgba(6, 24, 18, 0.95)) !important;
+    box-shadow: 0 0 25px rgba(0, 255, 135, 0.12), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
 }
 
-.device-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+.device-left-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex: 1 !important;
 }
 
-.device-icon-wrap {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: #112233;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    display: grid;
-    place-items: center;
-    font-size: 22px;
-    flex-shrink: 0;
-}
-
-.device-info-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.device-name-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.device-name-text {
-    font-weight: 800;
-    font-size: 15px;
-    color: #ffffff;
+.device-icon-box {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, #13273c, #0a1622) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 24px !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
 }
 
 .device-current-pill {
-    font-size: 10px;
-    font-weight: 900;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background: rgba(0, 255, 135, 0.18);
-    color: var(--green);
-    border: 1px solid rgba(0, 255, 135, 0.4);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    padding: 3px 10px !important;
+    border-radius: 12px !important;
+    background: rgba(0, 255, 135, 0.2) !important;
+    color: var(--green) !important;
+    border: 1px solid rgba(0, 255, 135, 0.5) !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
 }
 
-.device-meta-text {
-    font-size: 12px;
-    color: var(--muted);
+.device-remote-pill {
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    padding: 3px 10px !important;
+    border-radius: 12px !important;
+    background: rgba(56, 189, 248, 0.18) !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
 }
 
-.device-kick-btn {
-    background: rgba(255, 77, 77, 0.12);
-    color: #ff6b6b;
-    border: 1px solid rgba(255, 77, 77, 0.35);
-    font-size: 12px;
-    font-weight: 800;
-    padding: 8px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+.device-logout-btn {
+    background: linear-gradient(135deg, #ff3b30, #d32f2f) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    padding: 10px 18px !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(255, 59, 48, 0.35) !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
-.device-kick-btn:hover {
-    background: #ff4d4d;
-    color: #ffffff;
-    transform: scale(1.03);
+.device-logout-btn:hover {
+    background: linear-gradient(135deg, #ff453a, #e53935) !important;
+    transform: scale(1.04) !important;
+    box-shadow: 0 6px 20px rgba(255, 59, 48, 0.6) !important;
 }
 
 
