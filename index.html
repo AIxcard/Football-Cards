@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=205.0">
+<link rel="stylesheet" href="style.css?v=210.0">
 </head>
 
 <body>
@@ -1025,8 +1025,9 @@
         <div class="admin-tabs-row">
             <button id="adminTabBtnCurrency" class="admin-tab active" onclick="setAdminTab('currency')">🪙 Economy</button>
             <button id="adminTabBtnCards" class="admin-tab" onclick="setAdminTab('cards')">🎴 Card Spawner</button>
-            <button id="adminTabBtnLevel" class="admin-tab" onclick="setAdminTab('level')">⭐ Levels</button>
+            <button id="adminTabBtnLevel" class="admin-tab" onclick="setAdminTab('level')">⭐ Unlocks &amp; XP</button>
             <button id="adminTabBtnTitles" class="admin-tab" onclick="setAdminTab('titles')">🎖️ Grant Titles</button>
+            <button id="adminTabBtnTournament" class="admin-tab" onclick="setAdminTab('tournament')">🏆 Tournament</button>
             <button id="adminTabBtnModeration" class="admin-tab" onclick="setAdminTab('moderation')">🛡️ Moderation</button>
         </div>
 
@@ -1044,6 +1045,7 @@
                 <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=1000000">+1M</button>
                 <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=10000000">+10M</button>
                 <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=50000000">+50M</button>
+                <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=999999999">Max (999M)</button>
             </div>
             <input id="adminGoldAmount" type="number" placeholder="Enter custom amount (e.g. 1000000)" value="1000000" style="width:100%;margin-bottom:14px;">
             
@@ -1052,8 +1054,16 @@
 
         <!-- 2. CARD SPAWNER TAB -->
         <div id="adminTabCards" class="admin-tab-content" style="display:none;">
-            <h3>🎴 Master Card Spawner</h3>
+            <h3>🎴 Master Card Spawner &amp; Secret Vault</h3>
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Spawn any card directly into your collection or send to another player.</p>
+
+            <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:12px;margin-bottom:14px;">
+                <div style="font-weight:900;color:var(--gold);font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+                    <span>🐵</span> Exclusive Secret Admin Card
+                </div>
+                <p style="font-size:12px;color:#e2e8f0;margin:0 0 10px;">Hidden from the Card Index album. 99 OVR ST with custom Godly Sols cutscene.</p>
+                <button class="primary-btn" style="background:linear-gradient(135deg,#ffd700,#ff6b00);color:#000;font-weight:900;" onclick="adminSpawnMonkeyCard()">🐵 Spawn Secret Monkey Card (99 OVR)</button>
+            </div>
             
             <label>Target Username (Leave blank for yourself)</label>
             <input id="adminCardTarget" placeholder="e.g. Alucard" style="width:100%;margin-bottom:10px;">
@@ -1066,13 +1076,16 @@
                 <label for="adminCardSerialized" style="margin:0;cursor:pointer;color:var(--gold);font-weight:900;">★ Make Serialized (1 of 10 Procedural Holographic Gradient)</label>
             </div>
             
-            <button class="primary-btn" onclick="adminExecuteSpawnCard()">✨ Spawn Card</button>
+            <div style="display:flex;gap:10px;">
+                <button class="primary-btn" style="flex:2;" onclick="adminExecuteSpawnCard()">✨ Spawn Card</button>
+                <button class="ghost-btn" style="flex:1;" onclick="adminPreviewCardCutscene()">🎬 Preview Cutscene</button>
+            </div>
         </div>
 
-        <!-- 3. LEVEL & XP TAB -->
+        <!-- 3. LEVEL, XP & UNLOCKS TAB -->
         <div id="adminTabLevel" class="admin-tab-content" style="display:none;">
-            <h3>⭐ Level / XP Adjustment</h3>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Set level instantly for yourself or target account.</p>
+            <h3>⭐ Level, XP &amp; Quick Unlocks</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Instant power tools to unlock cosmetics and progression.</p>
             
             <label>Target Username (Leave blank for yourself)</label>
             <input id="adminLevelTarget" placeholder="Target Username" style="width:100%;margin-bottom:10px;">
@@ -1080,31 +1093,47 @@
             <label>Set Level (1 - 999)</label>
             <input id="adminLevelInput" type="number" value="99" min="1" max="999" style="width:100%;margin-bottom:14px;">
             
-            <button class="primary-btn" onclick="adminExecuteSetLevel()">⚡ Set Player Level</button>
+            <button class="primary-btn" style="margin-bottom:14px;" onclick="adminExecuteSetLevel()">⚡ Set Player Level</button>
+            
+            <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:14px 0;">
+            
+            <h4 style="margin:0 0 10px;font-size:14px;color:var(--cyan);">🚀 One-Click Master Unlocks (For You)</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <button class="ghost-btn" style="padding:10px;" onclick="adminUnlockAllFrames()">🖼️ Unlock All Frames</button>
+                <button class="ghost-btn" style="padding:10px;" onclick="adminUnlockAllTitles()">🎖️ Unlock All Titles</button>
+                <button class="ghost-btn" style="padding:10px;" onclick="adminCompleteAllMissions()">✅ Complete Missions</button>
+                <button class="ghost-btn" style="padding:10px;" onclick="adminGrantPackStock()">📦 +50 Free Packs</button>
+            </div>
         </div>
 
         <!-- 4. GRANT TITLES TAB -->
         <div id="adminTabTitles" class="admin-tab-content" style="display:none;">
-            <h3>🎖️ Grant Special Roles & Titles</h3>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Grant exclusive Admin, Staff, or Tournament Champion status to players.</p>
+            <h3>🎖️ Grant Special Roles &amp; Titles</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Grant any official in-game title directly to yourself or any player.</p>
             
-            <label>Target Account Username</label>
+            <label>Target Account Username (Leave blank for yourself)</label>
             <input id="adminTitleTarget" placeholder="Target Username (e.g. Timekung2835)" style="width:100%;margin-bottom:10px;">
             
-            <label>Select Title / Role</label>
-            <select id="adminTitleSelect" style="width:100%;margin-bottom:14px;">
-                <option value="Admin">Admin (Gradient Orange-Red)</option>
-                <option value="Staff">Staff (Gradient Cyan-Purple)</option>
-                <option value="Tournament Champion">Tournament Champion (Rainbow Gold)</option>
-                <option value="GOAT Hunter">GOAT Hunter (World Class Gradient)</option>
-            </select>
+            <label>Select In-Game Title</label>
+            <select id="adminTitleSelect" style="width:100%;margin-bottom:14px;"></select>
             
             <button class="primary-btn" onclick="adminExecuteGrantTitle()">👑 Grant Title to Player</button>
         </div>
 
-        <!-- 5. MODERATION / BAN TAB -->
+        <!-- 5. TOURNAMENT CONTROLLER TAB -->
+        <div id="adminTabTournament" class="admin-tab-content" style="display:none;">
+            <h3>🏆 Tournament Controller</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Reset tournament attempts, drafts, and manage championship states.</p>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                <button class="ghost-btn" style="padding:12px;" onclick="adminResetTournamentCooldown()">🔄 Clear Tournament Cooldown</button>
+                <button class="ghost-btn" style="padding:12px;" onclick="adminGrantTournamentChampion()">🥇 Grant S1 Champion Role</button>
+            </div>
+        </div>
+
+        <!-- 6. MODERATION / BAN TAB -->
         <div id="adminTabModeration" class="admin-tab-content" style="display:none;">
-            <h3>🛡️ Player Moderation & Suspension Controller</h3>
+            <h3>🛡️ Player Moderation &amp; Suspension Controller</h3>
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Ban or unban accounts that use unauthorized scripts or exploit currency.</p>
             
             <label>Target Username</label>
@@ -1172,6 +1201,6 @@
     </div>
 </div>
 
-<script src="script.js?v=205.0"></script>
+<script src="script.js?v=210.0"></script>
 </body>
 </html>
