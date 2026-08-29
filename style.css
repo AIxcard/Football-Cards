@@ -3916,7 +3916,10 @@ body.modal-open, html.modal-open {
 }
 
 .sols-shake-container {
-    position: relative !important;
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     height: 100dvh !important;
@@ -3924,6 +3927,7 @@ body.modal-open, html.modal-open {
     align-items: center !important;
     justify-content: center !important;
     z-index: 20 !important;
+    overflow: hidden !important;
 }
 
 .sols-shake-rumble {
@@ -3938,11 +3942,12 @@ body.modal-open, html.modal-open {
 
 .sols-atmosphere-rift {
     position: absolute !important;
-    inset: -20% !important;
+    inset: 0 !important;
     opacity: 0;
     pointer-events: none !important;
     z-index: 5 !important;
     transition: opacity 1s ease !important;
+    overflow: hidden !important;
 }
 
 /* CUSTOM THEME ATMOSPHERES */
@@ -4155,7 +4160,9 @@ body.modal-open, html.modal-open {
     position: relative !important;
     z-index: 10 !important;
     width: min(340px, 86vw) !important;
-    padding: 24px 20px 20px !important;
+    max-height: 88vh !important;
+    max-height: 88dvh !important;
+    padding: clamp(14px, 2.5vh, 22px) clamp(12px, 3vw, 20px) !important;
     border-radius: 24px !important;
     text-align: center !important;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95) !important;
@@ -4163,6 +4170,20 @@ body.modal-open, html.modal-open {
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
     transition: transform 0.3s ease !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-height: 720px) {
+    .sols-grand-card-box {
+        transform: scale(0.85) !important;
+        transform-origin: center center !important;
+    }
+}
+@media (max-height: 560px) {
+    .sols-grand-card-box {
+        transform: scale(0.72) !important;
+        transform-origin: center center !important;
+    }
 }
 
 .sols-theme-messi .sols-card-content {
