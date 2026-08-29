@@ -3176,7 +3176,7 @@ const SolsCutsceneEngine = {
 
         const preTexts = {
             messi: "[ 🐐 THE 8th BALLON D'OR DIVINITY AWAKENS 🐐 ]",
-            ronaldo: "[ ⚡ RECORD BREAKER: CR7 PHENOMENON ⚡ ]",
+            ronaldo: "[ ⚡ CR7: THE ROYAL EMPEROR & 5x UCL KING ⚡ ]",
             yamal: "[ 🌀 QUANTUM DIMENSION TEAR: WUNDERKIND 🌀 ]",
             mbappe: "[ 🌌 HYPER-SONIC TITAN SPEED REALITY BREAKER 🌌 ]",
             haaland: "[ 🤖 CYBORG APEX STRIKER SINGULARITY 🤖 ]",
@@ -3214,9 +3214,9 @@ const SolsCutsceneEngine = {
 
         // Phase 0: Instant Blackout & Screen Rumble (0.0s)
         if (shakeWrap) shakeWrap.classList.add("sols-shake-rumble");
-        if (rift) setTimeout(() => { if (!this.isSkipped && rift) rift.style.opacity = "1"; }, 300);
+        if (rift) setTimeout(() => { if (!this.isSkipped && rift) rift.style.opacity = "1"; }, 200);
 
-        // Phase 1: Pre-Text Eerie Reveal (0.6s)
+        // Phase 1: Pre-Text Eerie Reveal (0.4s)
         setTimeout(() => {
             if (this.isSkipped) return;
             if (preText) {
@@ -3224,9 +3224,9 @@ const SolsCutsceneEngine = {
                 preText.style.transform = "scale(1.05)";
             }
             SoundFx.playTone(this.theme === "messi" || this.theme === "ronaldo" ? 523.25 : 440, "sine", 0.4, 0.08);
-        }, 600);
+        }, 400);
 
-        // Phase 2: Rarity Flash & Turbo Vortex (1.4s)
+        // Phase 2: Rarity Flash & Turbo Vortex (1.0s)
         setTimeout(() => {
             if (this.isSkipped) return;
             if (rarityTag) {
@@ -3235,15 +3235,15 @@ const SolsCutsceneEngine = {
             }
             if (runeRing) runeRing.style.opacity = "1";
             this.turbochargeVortex();
-            SoundFx.playTone(this.theme === "messi" ? 659.25 : 554.37, "sine", 0.5, 0.1);
-        }, 1400);
+            SoundFx.playTone(this.theme === "messi" || this.theme === "ronaldo" ? 659.25 : 554.37, "sine", 0.5, 0.1);
+        }, 1000);
 
-        // Phase 3: SUPERNOVA FLASHBANG + INSTANT CARD SLAM (2.5s)
+        // Phase 3: SUPERNOVA FLASHBANG + INSTANT CARD SLAM (1.8s)
         setTimeout(() => {
             if (this.isSkipped) return;
             this.triggerSupernova();
             this.revealGrandCard();
-        }, 2500);
+        }, 1800);
     },
 
     spawnCustomParticles() {
@@ -3262,8 +3262,8 @@ const SolsCutsceneEngine = {
             if (this.theme === "messi") {
                 hue = Math.random() > 0.4 ? 48 : 190; // Gold & Argentine Cyan
             } else if (this.theme === "ronaldo") {
-                hue = Math.random() > 0.5 ? 350 : 45; // Crimson & Gold Lightning
-                type = Math.random() > 0.7 ? "lightning" : "vortex";
+                hue = Math.random() > 0.5 ? 195 : 48; // Electric Cyan & Imperial Gold
+                type = "lightning";
             } else if (this.theme === "yamal") {
                 hue = Math.random() > 0.5 ? 165 : 280; // Quantum Neon Turquoise & Violet
                 type = Math.random() > 0.6 ? "cube" : "vortex";
@@ -3323,7 +3323,7 @@ const SolsCutsceneEngine = {
             const spd = 6 + Math.random() * 22;
             let hue = 45;
             if (this.theme === "messi") hue = Math.random() > 0.4 ? 48 : 190;
-            else if (this.theme === "ronaldo") hue = Math.random() > 0.5 ? 350 : 45;
+            else if (this.theme === "ronaldo") hue = Math.random() > 0.5 ? 195 : 48; // Electric Cyan & Imperial Gold
             else if (this.theme === "yamal") hue = Math.random() > 0.5 ? 165 : 280;
             else if (this.theme === "mbappe" || this.theme === "haaland") hue = 200;
             else hue = 20;
