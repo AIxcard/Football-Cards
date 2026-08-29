@@ -5904,9 +5904,9 @@ document.addEventListener("contextmenu", function(e) {
 });
 
     // =========================================================
-    // SECURE ACTION DISPATCHER & PROTECTED WINDOW PROXY
+    // GLOBAL ACTION ATTACHMENT & WINDOW BRIDGE
     // =========================================================
-    const SECURE_ACTIONS = {
+    const EXPORTED_ACTIONS = {
         openPack,
         openPackOdds,
         closePackOddsModal,
@@ -5962,33 +5962,43 @@ document.addEventListener("contextmenu", function(e) {
         adminExecuteSetLevel,
         adminExecuteBanUser,
         adminExecuteUnbanUser,
-        CloudSync
+        adminExecuteBan,
+        adminExecuteGrantTitle,
+        adminExecuteUnban,
+        renderCards,
+        renderIndex,
+        renderTradeHub,
+        renderShowcase,
+        renderShop,
+        renderProfile,
+        renderHero,
+        renderStatistics,
+        renderLeaderboard,
+        renderTournament,
+        renderMissions,
+        renderSettings,
+        renderAll,
+        setMissionType,
+        setProfileBackground,
+        toggleMultiSellMode,
+        toggleSelectCardForSell,
+        multiSelectAllUnlocked,
+        multiSelectClear,
+        confirmMultiSell,
+        quickSellDuplicates,
+        quickSellRarity,
+        open3DCardInspector,
+        close3DCardModal,
+        toggle3DCardFlip,
+        handleAvatarFileUpload,
+        resetDefaultAvatar,
+        CloudSync,
+        SoundFx,
+        SolsCutsceneEngine
     };
 
-    Object.keys(SECURE_ACTIONS).forEach(actionName => {
-        const target = SECURE_ACTIONS[actionName];
-        if (typeof target === "function") {
-            Object.defineProperty(window, actionName, {
-                value: function(...args) {
-                    const ev = window.event;
-                    const isSensitive = actionName.startsWith("adminExecute") || actionName === "openPack" || actionName === "addCoins" || actionName === "claimDailyReward" || actionName === "redeemCode";
-                    if (isSensitive && ev && typeof ev.isTrusted === "boolean" && !ev.isTrusted) {
-                        return false;
-                    }
-                    return target.apply(this, args);
-                },
-                writable: false,
-                configurable: false,
-                enumerable: false
-            });
-        } else if (typeof target === "object" && target !== null) {
-            Object.defineProperty(window, actionName, {
-                value: target,
-                writable: false,
-                configurable: false,
-                enumerable: false
-            });
-        }
+    Object.keys(EXPORTED_ACTIONS).forEach(key => {
+        window[key] = EXPORTED_ACTIONS[key];
     });
 
 })();
