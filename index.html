@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=240.0">
+<link rel="stylesheet" href="style.css?v=245.0">
 </head>
 
 <body>
@@ -698,34 +698,53 @@
     </div>
 
     <div id="tradeHubContent">
-        <!-- SEND TRADE PROPOSAL -->
-        <div class="panel">
-            <h2>📤 Send Trade Offer</h2>
-            <div class="trade-send-grid">
+        <!-- DIRECT TRADE INVITATION PANEL -->
+        <div class="panel" style="border:1px solid rgba(56,189,248,0.3);box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <span style="font-size:32px;">🤝</span>
                 <div>
-                    <label>Recipient Username</label>
-                    <input id="tradeRecipientInput" placeholder="Enter player username (e.g. b)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;margin-bottom:12px;">
-                    
-                    <label>Select Card You Offer</label>
-                    <select id="tradeOfferCardSelect" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;margin-bottom:12px;"></select>
-
-                    <label>What You Request (Note / Player)</label>
-                    <input id="tradeRequestNoteInput" placeholder="e.g. Any Epic midfielder or Mbappé" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;margin-bottom:14px;">
-
-                    <button class="primary-btn" onclick="sendTradeOffer()">Send Trade Request</button>
+                    <h2 style="margin:0;font-size:20px;color:#fff;">Start Live Trade</h2>
+                    <p style="margin:2px 0 0;font-size:12px;color:var(--muted);">Send a live trade invite to any online player. When they accept, you'll both join the Live Roblox Trading Room!</p>
                 </div>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+                <input id="tradeRecipientInput" placeholder="Enter username (e.g. Alucard, AdminAccount)..." style="flex:1;min-width:220px;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:14px;">
+                <button class="primary-btn" style="width:auto;padding:12px 24px;font-weight:900;background:linear-gradient(135deg,#00f2fe,#4facfe);" onclick="sendTradeOffer()">🚀 Send Live Trade Request</button>
+            </div>
+
+            <div id="tradeOutgoingStatusBanner" style="display:none;margin-top:14px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:12px 16px;align-items:center;justify-content:space-between;gap:12px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="pack-spinner" style="display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.8s linear infinite;"></span>
+                    <span id="tradeOutgoingStatusText" style="font-size:13px;color:#e2e8f0;font-weight:700;">Waiting for player to respond...</span>
+                </div>
+                <button class="ghost-btn danger-text" style="padding:4px 10px;font-size:11px;" onclick="cancelOutgoingTradeRequest()">✕ Cancel</button>
+            </div>
+        </div>
+
+        <!-- ONLINE PLAYERS TO TRADE WITH -->
+        <div class="panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:20px;">🌐</span>
+                    <h2 style="margin:0;font-size:18px;color:#fff;">Online Players Available to Trade</h2>
+                </div>
+                <button class="ghost-btn" style="padding:6px 14px;font-size:12px;" onclick="renderTradeHub()">🔄 Refresh List</button>
+            </div>
+            <div id="tradeOnlinePlayersList" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px;">
+                <!-- Dynamically populated from cloud database -->
             </div>
         </div>
 
         <!-- TRADE INBOX (PENDING REQUESTS) -->
         <div class="panel">
-            <h2>📥 Trade Inbox (<span id="tradeInboxCount">0</span>)</h2>
+            <h2>📥 Pending Trade Invitations (<span id="tradeInboxCount">0</span>)</h2>
             <div id="tradeInboxList" class="trade-inbox-list"></div>
         </div>
 
         <!-- TRADE HISTORY -->
         <div class="panel">
-            <h2>📜 Trade History</h2>
+            <h2>📜 Recent Completed Swaps</h2>
             <div id="tradeHistoryList" class="trade-history-list"></div>
         </div>
     </div>
@@ -1303,6 +1322,6 @@
 </div>
 
 
-<script src="script.js?v=240.0"></script>
+<script src="script.js?v=245.0"></script>
 </body>
 </html>
