@@ -1326,7 +1326,18 @@ function openKickDeviceModal(deviceId, deviceName) {
     const err = document.getElementById("kickModalError");
     const passInput = document.getElementById("kickPasswordConfirmInput");
 
-    if (info) info.innerHTML = `Device to Disconnect: <b style="color:#fff;">${escapeHTML(deviceName)}</b>`;
+    if (info) {
+        info.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:24px;">📱</span>
+                <div>
+                    <span style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:800;display:block;">Target Device:</span>
+                    <strong style="color:#ffffff;font-size:15px;">${escapeHTML(deviceName)}</strong>
+                </div>
+            </div>
+            <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">When confirmed, this device will be immediately signed out from your account.</p>
+        `;
+    }
     if (err) err.textContent = "";
     if (passInput) passInput.value = "";
 
@@ -1352,7 +1363,7 @@ async function executeConfirmedKickDevice() {
     const enteredPass = passInput ? passInput.value.trim() : "";
 
     if (!enteredPass) {
-        if (err) err.textContent = "Please enter your account password.";
+        if (err) err.textContent = "Please enter your account password to confirm.";
         return;
     }
 
@@ -1366,7 +1377,7 @@ async function executeConfirmedKickDevice() {
     const validPass = (cloudUser && cloudUser.password) ? cloudUser.password : state.accountPass;
 
     if (enteredPass !== validPass) {
-        if (err) err.textContent = "❌ Incorrect password! Disconnect authorization failed.";
+        if (err) err.textContent = "❌ Incorrect password! Authorization failed.";
         SoundFx.click();
         return;
     }
@@ -1380,21 +1391,38 @@ async function executeConfirmedKickDevice() {
         const file = await GlobalCloudRest.fetchFile("data/users.json");
         const allUsers = file ? file.data : {};
         const key = state.accountUser.toLowerCase();
+        const myDevId = getDeviceId();
+
         if (allUsers[key]) {
             const userRec = allUsers[key];
             if (!userRec.revokedSessions) userRec.revokedSessions = [];
-            if (!userRec.revokedSessions.includes(pendingKickDeviceId)) {
-                userRec.revokedSessions.push(pendingKickDeviceId);
+
+            if (pendingKickDeviceId === "all_others") {
+                // Revoke all sessions except this device
+                const currentSessions = userRec.sessions || {};
+                for (const devId in currentSessions) {
+                    if (devId !== myDevId) {
+                        if (!userRec.revokedSessions.includes(devId)) userRec.revokedSessions.push(devId);
+                        delete currentSessions[devId];
+                    }
+                }
+                userRec.sessions = currentSessions;
+            } else {
+                if (!userRec.revokedSessions.includes(pendingKickDeviceId)) {
+                    userRec.revokedSessions.push(pendingKickDeviceId);
+                }
+                if (userRec.sessions && userRec.sessions[pendingKickDeviceId]) {
+                    delete userRec.sessions[pendingKickDeviceId];
+                }
             }
-            if (userRec.sessions && userRec.sessions[pendingKickDeviceId]) {
-                delete userRec.sessions[pendingKickDeviceId];
-            }
+
             userRec.updatedAt = Date.now();
             await GlobalCloudRest.saveFile("data/users.json", allUsers, `kick device ${pendingKickDeviceId} for ${state.accountUser}`);
         }
 
+        const kickedName = pendingKickDeviceName;
         closeKickDeviceModal();
-        toast(`✓ Device "${pendingKickDeviceName}" has been disconnected. When they return, they will be logged out!`);
+        toast(`✓ "${kickedName}" successfully logged out!`);
         SoundFx.levelUp();
         renderActiveDevices();
     } catch(e) {
@@ -1429,17 +1457,17 @@ async function renderActiveDevices() {
 
     if (!state.accountUser) {
         list.innerHTML = `
-            <div style="text-align:center;padding:24px 16px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px dashed var(--border);">
-                <p style="color:var(--muted);font-size:13px;margin:0;">Log in or create a Cloud Account to view and manage active logged-in devices.</p>
-                <button class="primary-btn" style="width:auto;margin-top:10px;padding:8px 18px;" onclick="openAuthModal()">Log In to View Devices</button>
+            <div style="text-align:center;padding:24px 16px;background:rgba(255,255,255,0.03);border-radius:14px;border:1px dashed rgba(255,255,255,0.15);">
+                <p style="color:var(--muted);font-size:14px;margin:0 0 10px;">You are currently in Guest mode. Log into a Cloud Account to view and manage connected devices.</p>
+                <button class="primary-btn" style="width:auto;padding:10px 20px;" onclick="openAuthModal()">Log In to View Devices</button>
             </div>
         `;
         return;
     }
 
     list.innerHTML = `
-        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">
-            🔄 Fetching active device sessions from cloud...
+        <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
+            🔄 Checking active device sessions on server...
         </div>
     `;
 
@@ -1448,11 +1476,11 @@ async function renderActiveDevices() {
 
     let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
     if (!cloudUser) {
-        list.innerHTML = `<p style="color:var(--muted);font-size:13px;">No active sessions found.</p>`;
+        list.innerHTML = `<p style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">Unable to load device sessions from cloud database.</p>`;
         return;
     }
 
-    // Check if this device is revoked
+    // Check if this device was revoked
     if (Array.isArray(cloudUser.revokedSessions) && cloudUser.revokedSessions.includes(myDevId)) {
         CloudSync.logout();
         toast("🔒 You have been logged out: This device was disconnected.");
@@ -1468,46 +1496,91 @@ async function renderActiveDevices() {
     }
 
     const sessionList = Object.values(sessions);
-    if (!sessionList.length) {
-        list.innerHTML = `<p style="color:var(--muted);font-size:13px;">No active sessions recorded.</p>`;
-        return;
-    }
+    const currentDevice = sessionList.find(s => s.deviceId === myDevId) || myDevInfo;
+    const otherDevices = sessionList.filter(s => s.deviceId !== myDevId);
 
-    // Sort so current device is on top, then by lastActive desc
-    sessionList.sort((a, b) => {
-        if (a.deviceId === myDevId) return -1;
-        if (b.deviceId === myDevId) return 1;
-        return (b.lastActive || 0) - (a.lastActive || 0);
-    });
+    let html = "";
 
-    list.innerHTML = sessionList.map(s => {
-        const isCurrent = s.deviceId === myDevId;
-        const lastActiveText = isCurrent 
-            ? "Active now" 
-            : s.lastActive ? `Last active ${formatRelativeTime(s.lastActive)}` : "Active recently";
-
-        return `
-            <div class="device-session-row ${isCurrent ? "current-device" : ""}">
-                <div class="device-left">
-                    <div class="device-icon-wrap">${s.icon || "💻"}</div>
-                    <div class="device-info-wrap">
-                        <div class="device-name-badge">
-                            <span class="device-name-text">${escapeHTML(s.deviceName || "Web Browser")}</span>
-                            ${isCurrent ? `<span class="device-current-pill">This Device (Current)</span>` : ""}
+    // 1. CURRENT DEVICE CARD (Always clear & distinct)
+    html += `
+        <div style="margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:900;letter-spacing:1px;color:var(--green);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                <span>🟢</span> Your Current Device (Active Now)
+            </div>
+            <div class="device-session-card current-device" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-radius:16px;background:linear-gradient(135deg,rgba(0,255,135,0.08),#061812);border:1px solid rgba(0,255,135,0.45);box-shadow:0 0 25px rgba(0,255,135,0.12);">
+                <div class="device-left-wrap" style="display:flex;align-items:center;gap:16px;flex:1;">
+                    <div class="device-icon-box" style="width:48px;height:48px;border-radius:14px;background:#13273c;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;">
+                        ${currentDevice.icon || "💻"}
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <strong style="font-size:15px;color:#ffffff;font-weight:800;">${escapeHTML(currentDevice.deviceName || "Web Browser")}</strong>
+                            <span class="device-current-pill" style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;background:rgba(0,255,135,0.2);color:var(--green);border:1px solid rgba(0,255,135,0.4);">YOU ARE HERE</span>
                         </div>
-                        <span class="device-meta-text">● ${lastActiveText} · ID: ${escapeHTML((s.deviceId || "").slice(0, 10))}...</span>
+                        <span style="font-size:12px;color:#94a3b8;">● Active right now · Session ID: ${escapeHTML((currentDevice.deviceId || "").slice(0, 12))}...</span>
                     </div>
                 </div>
                 <div>
-                    ${
-                        isCurrent 
-                        ? `<span style="font-size:12px;color:var(--green);font-weight:800;">✓ Connected</span>` 
-                        : `<button class="device-kick-btn" onclick="openKickDeviceModal('${s.deviceId}', '${escapeHTML(s.deviceName || "Device")}')">🚫 Kick Device</button>`
-                    }
+                    <span style="font-size:12px;color:var(--green);font-weight:800;background:rgba(0,255,135,0.1);padding:6px 12px;border-radius:10px;border:1px solid rgba(0,255,135,0.3);">✓ Active Session</span>
                 </div>
             </div>
+        </div>
+    `;
+
+    // 2. OTHER LOGGED-IN DEVICES SECTION
+    html += `
+        <div style="margin-top:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+                <div style="font-size:12px;font-weight:900;letter-spacing:1px;color:var(--blue);text-transform:uppercase;display:flex;align-items:center;gap:6px;">
+                    <span>📱</span> Other Connected Devices (${otherDevices.length})
+                </div>
+                ${
+                    otherDevices.length > 1 
+                    ? `<button class="device-logout-btn" style="padding:6px 14px;font-size:11px;" onclick="openKickDeviceModal('all_others', 'All Other Logged-In Devices')">🚪 Log Out All Others</button>` 
+                    : ""
+                }
+            </div>
+    `;
+
+    if (!otherDevices.length) {
+        html += `
+            <div style="background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:14px;padding:20px;text-align:center;">
+                <div style="font-size:28px;margin-bottom:6px;">🔒</div>
+                <h4 style="margin:0 0 4px;font-size:15px;color:#ffffff;">No Other Devices Connected</h4>
+                <p style="color:var(--muted);font-size:13px;margin:0;line-height:1.5;">Your account is currently only active on this device. If you log in from your phone, tablet, or another browser, it will appear here so you can view it and remotely log it out with your password.</p>
+            </div>
         `;
-    }).join("");
+    } else {
+        html += `<div style="display:flex;flex-direction:column;gap:10px;">`;
+        otherDevices.forEach(s => {
+            const lastActiveText = s.lastActive ? `Last active ${formatRelativeTime(s.lastActive)}` : "Active recently";
+            html += `
+                <div class="device-session-card" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-radius:16px;background:linear-gradient(135deg,#0e1e2d,#07131e);border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 25px rgba(0,0,0,0.45);">
+                    <div class="device-left-wrap" style="display:flex;align-items:center;gap:16px;flex:1;">
+                        <div class="device-icon-box" style="width:48px;height:48px;border-radius:14px;background:#13273c;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;">
+                            ${s.icon || "📱"}
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:3px;">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <strong style="font-size:15px;color:#ffffff;font-weight:800;">${escapeHTML(s.deviceName || "Remote Device")}</strong>
+                                <span class="device-remote-pill" style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;background:rgba(56,189,248,0.18);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);">REMOTE</span>
+                            </div>
+                            <span style="font-size:12px;color:#94a3b8;">● ${lastActiveText} · Session ID: ${escapeHTML((s.deviceId || "").slice(0, 12))}...</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="device-logout-btn" onclick="openKickDeviceModal('${s.deviceId}', '${escapeHTML(s.deviceName || "Remote Device")}')">
+                            🚪 Log Out Device
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    list.innerHTML = html;
 }
 
 let onlineAccountsCache = {};
