@@ -1,1 +1,18 @@
-{"alucard":{"username":"Alucard","salt":"8f2a1b9c3d4e5f6a","hash":"e1b3d7","registeredAt":1772195000000}}
+{
+  "alucard": {
+    "username": "Alucard",
+    "password": "",
+    "saveData": "",
+    "sessions": {
+      "dev_mtdza2fs_4tmtr1k": {
+        "deviceId": "dev_mtdza2fs_4tmtr1k",
+        "deviceName": "Windows · Chrome",
+        "platform": "PC",
+        "icon": "💻",
+        "lastActive": 1787983618094
+      }
+    },
+    "revokedSessions": [],
+    "updatedAt": 1787983618094
+  }
+}
