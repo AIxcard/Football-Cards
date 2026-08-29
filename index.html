@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=235.0">
+<link rel="stylesheet" href="style.css?v=240.0">
 </head>
 
 <body>
@@ -1180,27 +1180,129 @@
 </div>
 
 <!-- =========================================================
-     1-DAY SUSPENSION / BAN SCREEN (HIGH SECURITY BLOCKER)
+     INCOMING LIVE TRADE REQUEST NOTIFICATION MODAL
      ========================================================= -->
-<div id="accountBannedModal" class="modal hidden banned-modal" style="z-index:999999;background:rgba(4,8,16,0.97);">
-    <div class="modal-box banned-box">
-        <div class="ban-shield-icon">⛔</div>
-        <h1 style="color:#ff1744;margin:10px 0 6px;font-size:26px;letter-spacing:1px;">ACCOUNT SUSPENDED</h1>
-        <p style="color:var(--muted);margin-bottom:16px;font-size:14px;">This account has been temporarily restricted due to client script tampering & unauthorized balance modification.</p>
+<div id="incomingTradeModal" class="modal hidden" style="z-index:99998;background:rgba(2,6,14,0.88);backdrop-filter:blur(12px);">
+    <div class="modal-box" style="max-width:480px;text-align:center;border:1px solid rgba(56,189,248,0.4);box-shadow:0 0 50px rgba(56,189,248,0.25);">
+        <div style="font-size:42px;margin-bottom:6px;animation:pulse 1.5s infinite;">🤝</div>
+        <span style="font-size:11px;font-weight:900;letter-spacing:1.5px;color:var(--cyan);text-transform:uppercase;">Live Trade Request</span>
+        <h2 style="margin:6px 0 12px;font-size:22px;color:#ffffff;">Incoming Trade Invitation!</h2>
         
-        <div class="ban-info-card">
-            <div class="ban-info-row"><span>Account:</span> <b id="banUserText" style="color:#fff;">Username</b></div>
-            <div class="ban-info-row"><span>Reason:</span> <b id="banReasonText" style="color:#ff8a80;">Unauthorized Script / Balance Injection</b></div>
-            <div class="ban-info-row"><span>Penalty:</span> <b style="color:var(--gold)">1 Day Suspension (24 Hours)</b></div>
-            <div class="ban-info-row"><span>Time Remaining:</span> <b id="banCountdownText" style="color:#00f2fe;font-size:18px;">23h 59m 45s</b></div>
+        <div id="incomingTradeSenderInfo" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;margin-bottom:16px;text-align:left;">
+            <!-- Dynamic Sender Info & Note -->
         </div>
 
-        <div style="margin-top:22px;">
-            <button class="danger-btn" style="width:100%;padding:14px;" onclick="CloudSync.logout()">Log Out & Continue as Guest</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="primary-btn" style="background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;" onclick="acceptIncomingLiveTrade()">🟢 Accept</button>
+            <button class="ghost-btn" style="color:#e2e8f0;" onclick="declineIncomingLiveTrade()">🔴 Decline</button>
+            <button class="danger-btn" style="background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#ef4444;" onclick="blockIncomingTradeSender()">🚫 Block</button>
         </div>
     </div>
 </div>
 
-<script src="script.js?v=235.0"></script>
+<!-- =========================================================
+     ROBLOX-STYLE LIVE TRADING ROOM MODAL
+     ========================================================= -->
+<div id="liveTradingRoomModal" class="modal hidden" style="z-index:99999;background:rgba(3,7,18,0.94);backdrop-filter:blur(14px);">
+    <div class="modal-box trade-room-box">
+        <!-- HEADER -->
+        <div class="trade-room-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span class="trade-live-badge">● LIVE TRADE ROOM</span>
+                <h2 style="margin:0;font-size:18px;color:#fff;">Trading with <span id="liveTradePartnerName" style="color:var(--cyan);">Partner</span></h2>
+            </div>
+            <button class="ghost-btn danger-text" style="padding:6px 14px;font-size:12px;" onclick="cancelLiveTradeSession()">✕ Cancel Trade</button>
+        </div>
+
+        <!-- MAIN TRADING GRID -->
+        <div class="trade-room-main-grid">
+            <!-- OFFERS SIDE -->
+            <div class="trade-offers-container">
+                <!-- YOUR OFFER -->
+                <div class="trade-offer-box your-offer-box" id="yourOfferBox">
+                    <div class="trade-box-title">
+                        <span style="font-weight:800;color:#fff;">Your Offer (<span id="yourOfferCount">0</span>/6)</span>
+                        <span id="yourReadyBadge" class="trade-status-pill unready">NOT READY</span>
+                    </div>
+                    <div class="trade-slots-grid" id="yourTradeSlots">
+                        <!-- 6 Interactive Slots -->
+                    </div>
+                    <button class="primary-btn add-card-to-trade-btn" onclick="openTradeCardPicker()">+ Add Card from Collection</button>
+                </div>
+
+                <!-- THEIR OFFER -->
+                <div class="trade-offer-box their-offer-box" id="theirOfferBox">
+                    <div class="trade-box-title">
+                        <span style="font-weight:800;color:#fff;"><span id="theirOfferPartnerTitle">Partner's Offer</span> (<span id="theirOfferCount">0</span>/6)</span>
+                        <span id="theirReadyBadge" class="trade-status-pill unready">NOT READY</span>
+                    </div>
+                    <div class="trade-slots-grid" id="theirTradeSlots">
+                        <!-- 6 Partner Slots -->
+                    </div>
+                    <div class="trade-partner-status-note" id="tradePartnerStatusNote">Waiting for partner to place cards...</div>
+                </div>
+            </div>
+
+            <!-- CHAT & QUICK REQUESTS SIDEBAR -->
+            <div class="trade-chat-sidebar">
+                <div class="trade-chat-title">
+                    <span>💬 Live In-Trade Chat</span>
+                    <span id="tradeChatPartnerTyping" style="font-size:10px;color:var(--cyan);display:none;">Partner is typing...</span>
+                </div>
+
+                <div class="trade-chat-messages" id="tradeChatMessages">
+                    <div class="trade-chat-system-msg">Trade session connected. Talk with your partner or send requests below.</div>
+                </div>
+
+                <!-- Built-In Quick Request Chips -->
+                <div class="trade-quick-chips">
+                    <button class="trade-chip" onclick="sendQuickTradeChat('Can you add more value?')">➕ Add value</button>
+                    <button class="trade-chip" onclick="sendQuickTradeChat('Please remove that card.')">➖ Remove card</button>
+                    <button class="trade-chip" onclick="sendQuickTradeChat('Looking for a Striker (ST).')">⚽ Need ST</button>
+                    <button class="trade-chip" onclick="sendQuickTradeChat('Looking for a Mythic / Secret.')">🔥 Need Mythic</button>
+                    <button class="trade-chip" onclick="sendQuickTradeChat('Ready to accept!')">✅ Ready</button>
+                    <button class="trade-chip" onclick="sendQuickTradeChat('Deal, thanks!')">🤝 Deal</button>
+                </div>
+
+                <!-- Chat Input Row -->
+                <div class="trade-chat-input-row">
+                    <input id="tradeChatInput" type="text" placeholder="Type a message to partner..." maxlength="100" onkeydown="if(event.key==='Enter') sendTradeChat();">
+                    <button class="primary-btn" style="width:auto;padding:8px 16px;" onclick="sendTradeChat()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION BAR / 2-STEP CONFIRMATION -->
+        <div class="trade-action-footer">
+            <div id="tradeCountdownText" class="trade-countdown-text"></div>
+            <div class="trade-footer-buttons">
+                <button id="tradeReadyBtn" class="primary-btn trade-ready-btn" onclick="toggleTradeReady()">🔒 Ready to Trade</button>
+                <button id="tradeConfirmBtn" class="primary-btn trade-confirm-btn hidden" onclick="confirmFinalSwap()">🤝 Confirm Swap (3s)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     TRADE CARD PICKER MODAL (SELECT FROM INVENTORY)
+     ========================================================= -->
+<div id="tradeCardPickerModal" class="modal hidden" style="z-index:100000;background:rgba(2,6,14,0.92);">
+    <div class="modal-box" style="max-width:720px;max-height:85vh;display:flex;flex-direction:column;text-align:left;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div>
+                <h2 style="margin:0;font-size:20px;color:#fff;">Select Card to Add to Offer</h2>
+                <p style="font-size:12px;color:var(--muted);margin:2px 0 0;">Click any unlocked card from your collection to add it to your trade slot.</p>
+            </div>
+            <button class="ghost-btn" onclick="closeTradeCardPicker()">✕ Close</button>
+        </div>
+
+        <div id="tradeCardPickerGrid" class="cards-grid" style="overflow-y:auto;max-height:60vh;padding:8px;gap:12px;">
+            <!-- Unlocked Cards -->
+        </div>
+    </div>
+</div>
+
+
+<script src="script.js?v=240.0"></script>
 </body>
 </html>
