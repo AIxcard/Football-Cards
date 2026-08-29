@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=140.0">
+<link rel="stylesheet" href="style.css?v=145.0">
 </head>
 
 <body>
@@ -961,6 +961,21 @@
         </div>
     </div>
 
+    <!-- 📱 ACTIVE DEVICES & SESSIONS PANEL -->
+    <div id="settingsDevicesPanel" class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div>
+                <h2>📱 Logged-In Devices &amp; Active Sessions</h2>
+                <p style="color:var(--muted);font-size:13px;margin:0;">View and manage devices currently authorized on your cloud account.</p>
+            </div>
+            <button class="ghost-btn" style="height:36px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;" onclick="renderActiveDevices()">🔄 Refresh Devices</button>
+        </div>
+
+        <div id="activeDevicesList" style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
     <div class="panel">
         <h2>🎁 Redeem Promo Codes</h2>
         <p>Enter promo codes to receive free rewards &amp; unlock features!</p>
@@ -1102,6 +1117,35 @@
 </div>
 
 <!-- =========================================================
+     KICK DEVICE PASSWORD CONFIRMATION MODAL
+     ========================================================= -->
+<div id="kickDeviceModal" class="modal hidden">
+    <div class="modal-box" style="max-width:440px;text-align:left;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <span style="font-size:32px;">🔒</span>
+            <div>
+                <h2 style="margin:0;font-size:20px;">Disconnect Device</h2>
+                <p style="color:var(--muted);font-size:12px;margin:0;">Authorization required to kick device session</p>
+            </div>
+        </div>
+        
+        <p id="kickDeviceTargetInfo" style="font-size:13px;background:rgba(255,255,255,0.05);padding:10px 14px;border-radius:10px;border:1px solid var(--border);margin-bottom:14px;"></p>
+
+        <label style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;display:block;">Enter Your Account Password:</label>
+        <div class="password-input-wrap">
+            <input id="kickPasswordConfirmInput" type="password" placeholder="Enter your current password" autocomplete="current-password">
+            <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('kickPasswordConfirmInput', this)">👁️</button>
+        </div>
+        <p id="kickModalError" style="color:var(--red);font-size:12px;margin-top:6px;font-weight:700;"></p>
+
+        <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end;">
+            <button class="ghost-btn" onclick="closeKickDeviceModal()">Cancel</button>
+            <button class="danger-btn" style="width:auto;padding:10px 20px;" onclick="executeConfirmedKickDevice()">Kick Device Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
      1-DAY SUSPENSION / BAN SCREEN (HIGH SECURITY BLOCKER)
      ========================================================= -->
 <div id="accountBannedModal" class="modal hidden banned-modal" style="z-index:999999;background:rgba(4,8,16,0.97);">
@@ -1123,6 +1167,6 @@
     </div>
 </div>
 
-<script src="script.js?v=140.0"></script>
+<script src="script.js?v=145.0"></script>
 </body>
 </html>
