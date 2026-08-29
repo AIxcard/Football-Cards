@@ -951,6 +951,7 @@ function freshState() {
         freeKickClaimed: 0,
         worldClassPending: null,
         redeemedCodes: [],
+        blockedUsers: [],
         lastSave: Date.now()
     };
 }
@@ -1008,7 +1009,8 @@ function loadGame() {
             missionReset: { hourly: Date.now(), daily: Date.now(), weekly: Date.now(), monthly: Date.now() },
             grantedTitles: isAdminUser ? (saved.grantedTitles && saved.grantedTitles.includes("Admin") ? saved.grantedTitles : ["Admin", "Owner"]) : [],
             isGrantedAdmin: isAdminUser,
-            isGrantedStaff: !isReset && !!saved.isGrantedStaff
+            isGrantedStaff: !isReset && !!saved.isGrantedStaff,
+            blockedUsers: Array.isArray(saved.blockedUsers) ? saved.blockedUsers : []
         };
     } catch (e) {
         return freshState();
@@ -1657,41 +1659,35 @@ async function executeConfirmedKickDevice() {
     }
 
     try {
-        const file = await GlobalCloudRest.fetchFile("data/users.json");
-        const allUsers = file ? file.data : {};
-        const key = state.accountUser.toLowerCase();
         const myDevId = getDeviceId();
-
-        if (allUsers[key]) {
-            const userRec = allUsers[key];
-            if (!userRec.revokedSessions) userRec.revokedSessions = [];
+        if (cloudUser) {
+            if (!cloudUser.revokedSessions) cloudUser.revokedSessions = [];
 
             if (pendingKickDeviceId === "all_others") {
-                // Revoke all sessions except this device
-                const currentSessions = userRec.sessions || {};
+                const currentSessions = cloudUser.sessions || {};
                 for (const devId in currentSessions) {
                     if (devId !== myDevId) {
-                        if (!userRec.revokedSessions.includes(devId)) userRec.revokedSessions.push(devId);
+                        if (!cloudUser.revokedSessions.includes(devId)) cloudUser.revokedSessions.push(devId);
                         delete currentSessions[devId];
                     }
                 }
-                userRec.sessions = currentSessions;
+                cloudUser.sessions = currentSessions;
             } else {
-                if (!userRec.revokedSessions.includes(pendingKickDeviceId)) {
-                    userRec.revokedSessions.push(pendingKickDeviceId);
+                if (!cloudUser.revokedSessions.includes(pendingKickDeviceId)) {
+                    cloudUser.revokedSessions.push(pendingKickDeviceId);
                 }
-                if (userRec.sessions && userRec.sessions[pendingKickDeviceId]) {
-                    delete userRec.sessions[pendingKickDeviceId];
+                if (cloudUser.sessions && cloudUser.sessions[pendingKickDeviceId]) {
+                    delete cloudUser.sessions[pendingKickDeviceId];
                 }
             }
 
-            userRec.updatedAt = Date.now();
-            await GlobalCloudRest.saveFile("data/users.json", allUsers, `kick device ${pendingKickDeviceId} for ${state.accountUser}`);
+            cloudUser.updatedAt = Date.now();
+            await GlobalCloudRest.pushUser(state.accountUser, cloudUser);
         }
 
         const kickedName = pendingKickDeviceName;
         closeKickDeviceModal();
-        toast(`✓ "${kickedName}" successfully logged out!`);
+        toast(`🚪 "${kickedName}" successfully logged out!`);
         SoundFx.levelUp();
         renderActiveDevices();
     } catch(e) {
@@ -4587,19 +4583,29 @@ function initiateTradeWithSearchedUser() {
    PLAYER-TO-PLAYER TRADING ENGINE
    ========================================================= */
 
+/* =========================================================
+   ROBLOX-STYLE LIVE TRADING SUITE & INCOMING NOTIFICATIONS
+   ========================================================= */
+
+let activeLiveTradeSession = null;
+let currentIncomingTrade = null;
+let liveTradePollerInterval = null;
+let tradeCountdownTimer = null;
+let notifiedBlockedTrades = {};
+
 async function sendTradeOffer() {
     if (!state.accountUser) {
-        openAuthModal();
+        toast("Please log into a Cloud Account first.");
         return;
     }
 
-    const recInput = document.getElementById("tradeRecipientInput");
+    const recipientInput = document.getElementById("tradeRecipientInput");
     const cardSelect = document.getElementById("tradeOfferCardSelect");
     const noteInput = document.getElementById("tradeRequestNoteInput");
 
-    const recipient = (recInput ? recInput.value : "").trim();
+    const recipient = recipientInput ? recipientInput.value.trim() : "";
     const offeredCardId = cardSelect ? cardSelect.value : "";
-    const note = (noteInput ? noteInput.value : "").trim();
+    const note = noteInput ? noteInput.value.trim() : "";
 
     if (!recipient) {
         toast("Please specify a recipient username.");
@@ -4628,33 +4634,621 @@ async function sendTradeOffer() {
         return;
     }
 
-    let trades = await GlobalCloudRest.fetchTrades();
-    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
-
+    const tradeId = "trade_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
     const tradeObj = {
-        id: Date.now() + "_" + Math.random().toString(36).slice(2),
+        id: tradeId,
         sender: state.accountUser,
         receiver: targetUser.username || recipient,
+        senderTitle: state.equippedTitle || "Collector",
+        senderLevel: state.level || 1,
         offeredCard: { ...offeredCard },
-        requestedNote: note || "Open Trade",
+        requestedNote: note || "Live Trade Request",
         status: "pending",
         timestamp: Date.now()
     };
 
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
     trades.unshift(tradeObj);
     CloudSync.saveTrades(trades);
     await GlobalCloudRest.saveTrades(trades);
 
     if (noteInput) noteInput.value = "";
     SoundFx.coin();
-    toast(`✓ Trade request sent to ${tradeObj.receiver}!`);
+    toast(`🤝 Live trade request sent to ${tradeObj.receiver}! Waiting for their response...`);
     renderTradeHub();
+}
+
+// INCOMING TRADE POP-UP HANDLERS
+function openIncomingTradeModal(trade) {
+    currentIncomingTrade = trade;
+    const modal = document.getElementById("incomingTradeModal");
+    const info = document.getElementById("incomingTradeSenderInfo");
+    if (!modal || !info) return;
+
+    info.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div style="font-size:32px;">👤</div>
+            <div>
+                <h3 style="margin:0;font-size:16px;color:#fff;">${escapeHTML(trade.sender)}</h3>
+                <p style="font-size:12px;color:var(--cyan);margin:0;">${escapeHTML(trade.senderTitle || "Collector")} · Level ${trade.senderLevel || 1}</p>
+            </div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Offers upfront:</div>
+            <strong style="color:var(--gold);font-size:14px;">${escapeHTML(trade.offeredCard ? trade.offeredCard.player + ' (' + trade.offeredCard.rating + ' OVR · ' + trade.offeredCard.rarity + ')' : 'Live Trade')}</strong>
+            ${trade.requestedNote ? `<p style="font-size:12px;color:#e2e8f0;margin:6px 0 0;">Note: "${escapeHTML(trade.requestedNote)}"</p>` : ''}
+        </div>
+    `;
+
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+    SoundFx.cardReveal("Legendary");
+}
+
+function closeIncomingTradeModal() {
+    currentIncomingTrade = null;
+    const modal = document.getElementById("incomingTradeModal");
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+    }
+}
+
+async function acceptIncomingLiveTrade() {
+    if (!currentIncomingTrade) return;
+    const trade = currentIncomingTrade;
+    closeIncomingTradeModal();
+
+    trade.status = "session_active";
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
+    const idx = trades.findIndex(t => t.id === trade.id);
+    if (idx !== -1) trades[idx] = trade;
+    else trades.unshift(trade);
+    CloudSync.saveTrades(trades);
+    await GlobalCloudRest.saveTrades(trades);
+
+    // Launch Live Trading Room
+    openLiveTradeRoom(trade.id, trade.sender, false);
+}
+
+async function declineIncomingLiveTrade() {
+    if (!currentIncomingTrade) return;
+    const trade = currentIncomingTrade;
+    closeIncomingTradeModal();
+
+    trade.status = "declined";
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
+    const idx = trades.findIndex(t => t.id === trade.id);
+    if (idx !== -1) trades[idx] = trade;
+    CloudSync.saveTrades(trades);
+    await GlobalCloudRest.saveTrades(trades);
+
+    SoundFx.click();
+    toast(`Trade request from "${trade.sender}" declined.`);
+    renderTradeHub();
+}
+
+async function blockIncomingTradeSender() {
+    if (!currentIncomingTrade) return;
+    const trade = currentIncomingTrade;
+    const blockedName = trade.sender;
+    closeIncomingTradeModal();
+
+    if (!state.blockedUsers) state.blockedUsers = [];
+    if (!state.blockedUsers.includes(blockedName.toLowerCase())) {
+        state.blockedUsers.push(blockedName.toLowerCase());
+    }
+
+    trade.status = "blocked";
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
+    const idx = trades.findIndex(t => t.id === trade.id);
+    if (idx !== -1) trades[idx] = trade;
+    CloudSync.saveTrades(trades);
+    await GlobalCloudRest.saveTrades(trades);
+
+    saveGame();
+    SoundFx.click();
+    toast(`🚫 Blocked "${blockedName}"! They can no longer trade with you.`);
+    renderTradeHub();
+}
+
+// ROBLOX-STYLE LIVE TRADING ROOM CONTROLLER
+async function openLiveTradeRoom(tradeId, partnerName, isSender) {
+    activeLiveTradeSession = {
+        tradeId: tradeId,
+        partner: partnerName,
+        isSender: isSender,
+        myOffer: [],
+        theirOffer: [],
+        myReady: false,
+        theirReady: false,
+        chat: [
+            { sender: "System", text: `Connected with ${partnerName}. Use '+' to place cards or chat on the right.`, time: Date.now() }
+        ],
+        status: "active"
+    };
+
+    const modal = document.getElementById("liveTradingRoomModal");
+    const nameEl = document.getElementById("liveTradePartnerName");
+    const theirTitleEl = document.getElementById("theirOfferPartnerTitle");
+    if (nameEl) nameEl.textContent = partnerName;
+    if (theirTitleEl) theirTitleEl.textContent = `${partnerName}'s Offer`;
+
+    if (modal) {
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+    }
+
+    renderLiveTradeSlots();
+    renderLiveTradeChat();
+    SoundFx.packOpen();
+
+    // Push initial trade session to cloud
+    await pushLiveTradeSession();
+}
+
+async function pushLiveTradeSession() {
+    if (!activeLiveTradeSession) return;
+    try {
+        const payload = {
+            id: activeLiveTradeSession.tradeId,
+            partner1: activeLiveTradeSession.isSender ? state.accountUser : activeLiveTradeSession.partner,
+            partner2: activeLiveTradeSession.isSender ? activeLiveTradeSession.partner : state.accountUser,
+            offer1: activeLiveTradeSession.isSender ? activeLiveTradeSession.myOffer : activeLiveTradeSession.theirOffer,
+            offer2: activeLiveTradeSession.isSender ? activeLiveTradeSession.theirOffer : activeLiveTradeSession.myOffer,
+            ready1: activeLiveTradeSession.isSender ? activeLiveTradeSession.myReady : activeLiveTradeSession.theirReady,
+            ready2: activeLiveTradeSession.isSender ? activeLiveTradeSession.theirReady : activeLiveTradeSession.myReady,
+            chat: activeLiveTradeSession.chat,
+            status: activeLiveTradeSession.status,
+            updatedAt: Date.now()
+        };
+        await fetch(`https://kvdb.io/MmjyNhMePJggoofHrX9cjo/session_${activeLiveTradeSession.tradeId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+    } catch(e) {}
+}
+
+async function pullLiveTradeSession() {
+    if (!activeLiveTradeSession) return;
+    try {
+        const res = await fetch(`https://kvdb.io/MmjyNhMePJggoofHrX9cjo/session_${activeLiveTradeSession.tradeId}?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data) return;
+
+        if (data.status === "cancelled") {
+            toast(`Trade was cancelled by ${activeLiveTradeSession.partner}.`);
+            closeLiveTradeRoom();
+            return;
+        }
+
+        if (data.status === "completed") {
+            handleFinalTradeExecution(data);
+            return;
+        }
+
+        // Sync partner offer and ready state
+        const partnerOffer = activeLiveTradeSession.isSender ? data.offer2 : data.offer1;
+        const partnerReady = activeLiveTradeSession.isSender ? data.ready2 : data.ready1;
+
+        if (JSON.stringify(partnerOffer || []) !== JSON.stringify(activeLiveTradeSession.theirOffer)) {
+            activeLiveTradeSession.theirOffer = partnerOffer || [];
+            activeLiveTradeSession.myReady = false; // Safety unready if partner alters offer!
+            renderLiveTradeSlots();
+        }
+
+        if (partnerReady !== activeLiveTradeSession.theirReady) {
+            activeLiveTradeSession.theirReady = partnerReady;
+            renderLiveTradeSlots();
+        }
+
+        // Sync chat messages
+        if (Array.isArray(data.chat) && data.chat.length > activeLiveTradeSession.chat.length) {
+            activeLiveTradeSession.chat = data.chat;
+            renderLiveTradeChat();
+            SoundFx.click();
+        }
+    } catch(e) {}
+}
+
+function renderLiveTradeSlots() {
+    if (!activeLiveTradeSession) return;
+
+    // YOUR SLOTS
+    const yourGrid = document.getElementById("yourTradeSlots");
+    const yourCount = document.getElementById("yourOfferCount");
+    const yourReadyBadge = document.getElementById("yourReadyBadge");
+    const yourBox = document.getElementById("yourOfferBox");
+
+    if (yourCount) yourCount.textContent = activeLiveTradeSession.myOffer.length;
+    if (yourReadyBadge) {
+        yourReadyBadge.className = `trade-status-pill ${activeLiveTradeSession.myReady ? 'ready' : 'unready'}`;
+        yourReadyBadge.textContent = activeLiveTradeSession.myReady ? "✓ READY" : "NOT READY";
+    }
+    if (yourBox) yourBox.classList.toggle("ready-active", !!activeLiveTradeSession.myReady);
+
+    if (yourGrid) {
+        let html = "";
+        for (let i = 0; i < 6; i++) {
+            const card = activeLiveTradeSession.myOffer[i];
+            if (card) {
+                html += `
+                    <div class="trade-slot filled">
+                        <div class="trade-slot-card frame-${rarityClassName(card.rarity)}">
+                            <button class="trade-slot-remove-btn" onclick="removeCardFromMyTradeOffer('${card.id}')" title="Remove Card">✕</button>
+                            <div class="trade-slot-rating">${card.rating}</div>
+                            <div class="trade-slot-name">${escapeHTML(card.player)}</div>
+                            <div class="trade-slot-rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="trade-slot empty" onclick="openTradeCardPicker()" title="Click to add card">
+                        <span style="font-size:24px;color:var(--cyan);font-weight:900;">+</span>
+                        <span style="font-size:10px;color:var(--muted);font-weight:700;">Add Card</span>
+                    </div>
+                `;
+            }
+        }
+        yourGrid.innerHTML = html;
+    }
+
+    // PARTNER SLOTS
+    const theirGrid = document.getElementById("theirTradeSlots");
+    const theirCount = document.getElementById("theirOfferCount");
+    const theirReadyBadge = document.getElementById("theirReadyBadge");
+    const theirBox = document.getElementById("theirOfferBox");
+    const noteEl = document.getElementById("tradePartnerStatusNote");
+
+    if (theirCount) theirCount.textContent = activeLiveTradeSession.theirOffer.length;
+    if (theirReadyBadge) {
+        theirReadyBadge.className = `trade-status-pill ${activeLiveTradeSession.theirReady ? 'ready' : 'unready'}`;
+        theirReadyBadge.textContent = activeLiveTradeSession.theirReady ? "✓ READY" : "NOT READY";
+    }
+    if (theirBox) theirBox.classList.toggle("ready-active", !!activeLiveTradeSession.theirReady);
+
+    if (noteEl) {
+        if (!activeLiveTradeSession.theirOffer.length) {
+            noteEl.textContent = `Waiting for ${activeLiveTradeSession.partner} to add cards...`;
+        } else if (!activeLiveTradeSession.theirReady) {
+            noteEl.textContent = `${activeLiveTradeSession.partner} is adjusting offer...`;
+        } else {
+            noteEl.textContent = `🟢 ${activeLiveTradeSession.partner} is READY!`;
+        }
+    }
+
+    if (theirGrid) {
+        let html = "";
+        for (let i = 0; i < 6; i++) {
+            const card = activeLiveTradeSession.theirOffer[i];
+            if (card) {
+                html += `
+                    <div class="trade-slot filled">
+                        <div class="trade-slot-card frame-${rarityClassName(card.rarity)}">
+                            <div class="trade-slot-rating">${card.rating}</div>
+                            <div class="trade-slot-name">${escapeHTML(card.player)}</div>
+                            <div class="trade-slot-rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="trade-slot empty" style="opacity:0.4;cursor:default;">
+                        <span style="font-size:20px;color:var(--muted);">🎴</span>
+                    </div>
+                `;
+            }
+        }
+        theirGrid.innerHTML = html;
+    }
+
+    // READY & CONFIRM BUTTON STATE
+    const readyBtn = document.getElementById("tradeReadyBtn");
+    const confirmBtn = document.getElementById("tradeConfirmBtn");
+
+    if (readyBtn) {
+        readyBtn.textContent = activeLiveTradeSession.myReady ? "🔓 Cancel Ready" : "🔒 Ready to Trade";
+        readyBtn.style.background = activeLiveTradeSession.myReady ? "rgba(239, 68, 68, 0.2)" : "linear-gradient(135deg, #10b981, #059669)";
+        readyBtn.style.borderColor = activeLiveTradeSession.myReady ? "#ef4444" : "var(--green)";
+    }
+
+    const bothReady = activeLiveTradeSession.myReady && activeLiveTradeSession.theirReady;
+    if (confirmBtn) {
+        confirmBtn.classList.toggle("hidden", !bothReady);
+    }
+}
+
+function openTradeCardPicker() {
+    if (!activeLiveTradeSession) return;
+    const modal = document.getElementById("tradeCardPickerModal");
+    const grid = document.getElementById("tradeCardPickerGrid");
+    if (!modal || !grid) return;
+
+    const offeredIds = new Set(activeLiveTradeSession.myOffer.map(c => c.id));
+    const availableCards = state.cards.filter(c => !c.locked && !offeredIds.has(c.id));
+
+    if (!availableCards.length) {
+        grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:30px;">No available unlocked cards in your collection. Unlock cards from the Collection tab to trade.</p>`;
+    } else {
+        grid.innerHTML = availableCards.map(c => `
+            <article class="card frame-${rarityClassName(c.rarity)}" style="cursor:pointer;padding:12px;transform:scale(0.95);" onclick="addCardToMyTradeOffer('${c.id}')" title="Click to add to offer">
+                <span class="rarity ${rarityClassName(c.rarity)}">${escapeHTML(c.rarity)}</span>
+                <div class="card-image-wrap" style="height:90px;">
+                    <img class="card-photo" src="${c.image || ''}">
+                </div>
+                <div class="card-rating">${c.rating}</div>
+                <div class="card-position">${escapeHTML(c.pos)}</div>
+                <h4 style="margin:4px 0 2px;">${escapeHTML(c.player)}</h4>
+                <button class="primary-btn" style="padding:6px;font-size:11px;margin-top:6px;">+ Add to Offer</button>
+            </article>
+        `).join("");
+    }
+
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+}
+
+function closeTradeCardPicker() {
+    const modal = document.getElementById("tradeCardPickerModal");
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+    }
+}
+
+function addCardToMyTradeOffer(cardId) {
+    if (!activeLiveTradeSession) return;
+    if (activeLiveTradeSession.myOffer.length >= 6) {
+        toast("Trade offer slot limit reached (max 6 cards).");
+        return;
+    }
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) return;
+
+    activeLiveTradeSession.myOffer.push({ ...card });
+    activeLiveTradeSession.myReady = false; // Reset ready on modification
+    activeLiveTradeSession.theirReady = false;
+
+    closeTradeCardPicker();
+    renderLiveTradeSlots();
+    SoundFx.coin();
+    pushLiveTradeSession();
+}
+
+function removeCardFromMyTradeOffer(cardId) {
+    if (!activeLiveTradeSession) return;
+    activeLiveTradeSession.myOffer = activeLiveTradeSession.myOffer.filter(c => c.id !== cardId);
+    activeLiveTradeSession.myReady = false;
+    activeLiveTradeSession.theirReady = false;
+
+    renderLiveTradeSlots();
+    SoundFx.click();
+    pushLiveTradeSession();
+}
+
+function toggleTradeReady() {
+    if (!activeLiveTradeSession) return;
+    if (!activeLiveTradeSession.myOffer.length && !activeLiveTradeSession.theirOffer.length) {
+        toast("Place at least one item before marking ready.");
+        return;
+    }
+    activeLiveTradeSession.myReady = !activeLiveTradeSession.myReady;
+    renderLiveTradeSlots();
+    SoundFx.coin();
+    pushLiveTradeSession();
+}
+
+function sendQuickTradeChat(presetText) {
+    sendTradeChat(presetText);
+}
+
+function sendTradeChat(customText) {
+    if (!activeLiveTradeSession) return;
+    const input = document.getElementById("tradeChatInput");
+    const text = customText || (input ? input.value.trim() : "");
+    if (!text) return;
+
+    activeLiveTradeSession.chat.push({
+        sender: state.accountUser,
+        text: text,
+        time: Date.now()
+    });
+
+    if (input && !customText) input.value = "";
+    renderLiveTradeChat();
+    SoundFx.click();
+    pushLiveTradeSession();
+}
+
+function renderLiveTradeChat() {
+    const list = document.getElementById("tradeChatMessages");
+    if (!list || !activeLiveTradeSession) return;
+
+    list.innerHTML = activeLiveTradeSession.chat.map(m => {
+        if (m.sender === "System") {
+            return `<div class="trade-chat-system-msg">${escapeHTML(m.text)}</div>`;
+        }
+        const isMine = m.sender.toLowerCase() === state.accountUser.toLowerCase();
+        return `
+            <div class="trade-chat-msg ${isMine ? 'mine' : 'theirs'}">
+                <strong style="font-size:10px;opacity:0.8;display:block;">${escapeHTML(m.sender)}:</strong>
+                ${escapeHTML(m.text)}
+            </div>
+        `;
+    }).join("");
+
+    list.scrollTop = list.scrollHeight;
+}
+
+function confirmFinalSwap() {
+    if (!activeLiveTradeSession) return;
+    if (!activeLiveTradeSession.myReady || !activeLiveTradeSession.theirReady) {
+        toast("Both players must be Ready before confirming swap.");
+        return;
+    }
+
+    const countdownEl = document.getElementById("tradeCountdownText");
+    const confirmBtn = document.getElementById("tradeConfirmBtn");
+    if (confirmBtn) confirmBtn.disabled = true;
+
+    let sec = 3;
+    if (countdownEl) countdownEl.textContent = `🤝 Executing Trade Swap in ${sec}...`;
+    SoundFx.levelUp();
+
+    if (tradeCountdownTimer) clearInterval(tradeCountdownTimer);
+    tradeCountdownTimer = setInterval(async () => {
+        sec--;
+        if (sec > 0) {
+            if (countdownEl) countdownEl.textContent = `🤝 Executing Trade Swap in ${sec}...`;
+            SoundFx.click();
+        } else {
+            clearInterval(tradeCountdownTimer);
+            if (countdownEl) countdownEl.textContent = "✨ Processing atomic swap...";
+            executeTradeSwapAtomic();
+        }
+    }, 1000);
+}
+
+async function executeTradeSwapAtomic() {
+    if (!activeLiveTradeSession) return;
+
+    // 1. Remove my offered cards from my state
+    const offeredIds = new Set(activeLiveTradeSession.myOffer.map(c => c.id));
+    state.cards = state.cards.filter(c => !offeredIds.has(c.id));
+
+    // 2. Add their offered cards to my state
+    activeLiveTradeSession.theirOffer.forEach(c => {
+        const receivedCard = {
+            ...c,
+            id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+            obtained: Date.now()
+        };
+        state.cards.push(receivedCard);
+    });
+
+    // 3. Mark session completed in cloud
+    activeLiveTradeSession.status = "completed";
+    await pushLiveTradeSession();
+
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    SoundFx.levelUp();
+    toast(`🎉 Trade Completed! Received ${activeLiveTradeSession.theirOffer.length} cards from ${activeLiveTradeSession.partner}.`);
+
+    setTimeout(() => {
+        closeLiveTradeRoom();
+        renderTradeHub();
+    }, 1500);
+}
+
+function handleFinalTradeExecution(remoteData) {
+    if (!activeLiveTradeSession || activeLiveTradeSession.status === "completed") return;
+    activeLiveTradeSession.status = "completed";
+
+    // Transfer cards on client 2
+    const offeredIds = new Set(activeLiveTradeSession.myOffer.map(c => c.id));
+    state.cards = state.cards.filter(c => !offeredIds.has(c.id));
+
+    activeLiveTradeSession.theirOffer.forEach(c => {
+        const receivedCard = {
+            ...c,
+            id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+            obtained: Date.now()
+        };
+        state.cards.push(receivedCard);
+    });
+
+    AntiCheat.signState(state);
+    saveGame();
+    renderAll();
+    SoundFx.levelUp();
+    toast(`🎉 Trade Completed! Swapped cards with ${activeLiveTradeSession.partner}.`);
+
+    setTimeout(() => {
+        closeLiveTradeRoom();
+        renderTradeHub();
+    }, 1500);
+}
+
+async function cancelLiveTradeSession() {
+    if (!activeLiveTradeSession) return;
+    activeLiveTradeSession.status = "cancelled";
+    await pushLiveTradeSession();
+    closeLiveTradeRoom();
+    toast("Trade session cancelled.");
+}
+
+function closeLiveTradeRoom() {
+    activeLiveTradeSession = null;
+    if (tradeCountdownTimer) clearInterval(tradeCountdownTimer);
+    const modal = document.getElementById("liveTradingRoomModal");
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+    }
+}
+
+// REAL-TIME BACKGROUND TRADE POLLER
+async function pollLiveTradeRequests() {
+    if (!state.accountUser) return;
+    try {
+        // If in live trade room, poll active session
+        if (activeLiveTradeSession) {
+            await pullLiveTradeSession();
+            return;
+        }
+
+        const trades = await GlobalCloudRest.fetchTrades();
+        if (!Array.isArray(trades) || !trades.length) return;
+
+        const myName = state.accountUser.toLowerCase();
+
+        // 1. Check if we received a trade request
+        const incoming = trades.find(t => (t.receiver || "").toLowerCase() === myName && t.status === "pending");
+        if (incoming) {
+            const senderKey = (incoming.sender || "").toLowerCase();
+            // Check if sender is blocked
+            if (state.blockedUsers && state.blockedUsers.includes(senderKey)) {
+                incoming.status = "blocked";
+                await GlobalCloudRest.saveTrades(trades);
+                return;
+            }
+
+            const modal = document.getElementById("incomingTradeModal");
+            if (modal && modal.classList.contains("hidden")) {
+                openIncomingTradeModal(incoming);
+            }
+        }
+
+        // 2. Check if a trade we sent was accepted, declined, or blocked
+        const mySentTrade = trades.find(t => (t.sender || "").toLowerCase() === myName && (t.status === "session_active" || t.status === "blocked"));
+        if (mySentTrade) {
+            if (mySentTrade.status === "blocked") {
+                if (!notifiedBlockedTrades[mySentTrade.id]) {
+                    notifiedBlockedTrades[mySentTrade.id] = true;
+                    toast(`🚫 You were blocked by "${mySentTrade.receiver}" and cannot trade with them.`);
+                    SoundFx.click();
+                }
+            } else if (mySentTrade.status === "session_active" && !activeLiveTradeSession) {
+                // Partner accepted our trade request! Launch live trading room!
+                openLiveTradeRoom(mySentTrade.id, mySentTrade.receiver, true);
+            }
+        }
+    } catch(e) {}
 }
 
 async function renderTradeHub() {
     const cardSelect = document.getElementById("tradeOfferCardSelect");
     if (cardSelect) {
-        cardSelect.innerHTML = state.cards.map(c => `
+        cardSelect.innerHTML = state.cards.filter(c => !c.locked).map(c => `
             <option value="${c.id}">${c.player} (${c.rating} OVR · ${c.rarity})</option>
         `).join("");
     }
@@ -4680,13 +5274,12 @@ async function renderTradeHub() {
             inboxList.innerHTML = inboxTrades.map(t => `
                 <div class="trade-card-item">
                     <div class="trade-info-col">
-                        <h4>From: <b>${escapeHTML(t.sender)}</b></h4>
-                        <p>Offers: <strong style="color:var(--blue)">${escapeHTML(t.offeredCard.player)} (${t.offeredCard.rating} OVR · ${t.offeredCard.rarity})</strong></p>
-                        <p style="font-size:12px;color:var(--muted);margin-top:2px;">Requested: "${escapeHTML(t.requestedNote)}"</p>
+                        <h4>From: <b>${escapeHTML(t.sender)}</b> (${escapeHTML(t.senderTitle || "Collector")})</h4>
+                        <p>Offers: <strong style="color:var(--blue)">${escapeHTML(t.offeredCard ? t.offeredCard.player + ' (' + t.offeredCard.rating + ' OVR · ' + t.offeredCard.rarity + ')' : 'Card')}</strong></p>
+                        <p style="font-size:12px;color:var(--muted);margin-top:2px;">Requested: "${escapeHTML(t.requestedNote || 'Live Trade')}"</p>
                     </div>
-                    <div class="trade-actions">
-                        <button class="primary-btn" onclick="acceptTrade('${t.id}')">Accept Trade</button>
-                        <button class="danger-btn" onclick="declineTrade('${t.id}')">Decline</button>
+                    <div class="trade-actions" style="display:flex;gap:6px;">
+                        <button class="primary-btn" style="padding:6px 12px;font-size:12px;" onclick='openIncomingTradeModal(${JSON.stringify(t)})'>View Request</button>
                     </div>
                 </div>
             `).join("");
@@ -4702,12 +5295,12 @@ async function renderTradeHub() {
             historyList.innerHTML = userHistory.map(t => {
                 const isSender = (t.sender || "").toLowerCase() === user;
                 const otherParty = isSender ? t.receiver : t.sender;
-                const statusColor = t.status === "accepted" ? "var(--green)" : t.status === "declined" ? "var(--red)" : "var(--gold)";
+                const statusColor = t.status === "completed" || t.status === "accepted" ? "var(--green)" : (t.status === "declined" || t.status === "blocked") ? "var(--red)" : "var(--gold)";
                 return `
                 <div class="trade-card-item">
                     <div class="trade-info-col">
                         <h4>${isSender ? "Sent to" : "Received from"} <b>${escapeHTML(otherParty)}</b></h4>
-                        <p>${escapeHTML(t.offeredCard.player)} (${t.offeredCard.rating} OVR · ${t.offeredCard.rarity})</p>
+                        <p>${escapeHTML(t.offeredCard ? t.offeredCard.player + ' (' + t.offeredCard.rating + ' OVR)' : 'Live Trade')}</p>
                     </div>
                     <span style="font-weight:900;text-transform:uppercase;color:${statusColor}">${t.status}</span>
                 </div>
@@ -4715,78 +5308,6 @@ async function renderTradeHub() {
             }).join("");
         }
     }
-}
-
-async function acceptTrade(tradeId) {
-    let trades = await GlobalCloudRest.fetchTrades();
-    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
-    const trade = trades.find(t => t.id === tradeId);
-    if (!trade || trade.status !== "pending") return;
-
-    const senderKey = trade.sender.toLowerCase();
-    let senderUser = await GlobalCloudRest.fetchUser(trade.sender);
-    const accs = CloudSync.getAccounts();
-    if (!senderUser && accs[senderKey]) senderUser = accs[senderKey];
-
-    if (!senderUser) {
-        toast("Sender account no longer exists.");
-        trade.status = "declined";
-        CloudSync.saveTrades(trades);
-        await GlobalCloudRest.saveTrades(trades);
-        renderTradeHub();
-        return;
-    }
-
-    let sData = {};
-    try {
-        sData = typeof senderUser.saveData === "string" ? JSON.parse(senderUser.saveData) : (senderUser.saveData || {});
-    } catch (e) { return; }
-
-    sData.cards = sData.cards || [];
-    const sCardIndex = sData.cards.findIndex(c => c.id === trade.offeredCard.id || (c.player === trade.offeredCard.player && c.rarity === trade.offeredCard.rarity));
-    if (sCardIndex === -1) {
-        toast("Sender no longer owns this card.");
-        trade.status = "declined";
-        CloudSync.saveTrades(trades);
-        await GlobalCloudRest.saveTrades(trades);
-        renderTradeHub();
-        return;
-    }
-
-    const transferredCard = sData.cards.splice(sCardIndex, 1)[0];
-    if (Array.isArray(sData.showcase)) {
-        sData.showcase = sData.showcase.map(id => id === transferredCard.id ? null : id);
-    }
-
-    senderUser.saveData = JSON.stringify(sData);
-    accs[senderKey] = senderUser;
-    CloudSync.saveAccounts(accs);
-    await GlobalCloudRest.pushUser(trade.sender, senderUser);
-
-    state.cards.push(transferredCard);
-    trade.status = "accepted";
-
-    CloudSync.saveTrades(trades);
-    await GlobalCloudRest.saveTrades(trades);
-
-    AntiCheat.signState(state);
-    saveGame();
-    renderAll();
-    SoundFx.levelUp();
-    toast(`✓ Trade accepted! ${transferredCard.player} added to your collection.`);
-}
-
-async function declineTrade(tradeId) {
-    let trades = await GlobalCloudRest.fetchTrades();
-    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
-    const trade = trades.find(t => t.id === tradeId);
-    if (!trade) return;
-    trade.status = "declined";
-    CloudSync.saveTrades(trades);
-    await GlobalCloudRest.saveTrades(trades);
-    SoundFx.click();
-    toast("Trade declined.");
-    renderTradeHub();
 }
 
 /* =========================================================
@@ -6432,13 +6953,21 @@ if (state.initialized) {
 }
 
 let deviceRevokeCounter = 0;
+let tradePollerCounter = 0;
 setInterval(() => {
     updateTimers();
     checkBanStatus();
+    
     deviceRevokeCounter++;
     if (deviceRevokeCounter >= 5) {
         deviceRevokeCounter = 0;
         checkDeviceRevocation();
+    }
+
+    tradePollerCounter++;
+    if (tradePollerCounter >= 2) {
+        tradePollerCounter = 0;
+        pollLiveTradeRequests();
     }
 }, 1000);
 
@@ -6507,8 +7036,27 @@ document.addEventListener("contextmenu", function(e) {
         closeSearchModal,
         initiateTradeWithSearchedUser,
         sendTradeOffer,
-        acceptTrade,
-        declineTrade,
+        openIncomingTradeModal,
+        closeIncomingTradeModal,
+        acceptIncomingLiveTrade,
+        declineIncomingLiveTrade,
+        blockIncomingTradeSender,
+        openLiveTradeRoom,
+        pushLiveTradeSession,
+        pullLiveTradeSession,
+        renderLiveTradeSlots,
+        openTradeCardPicker,
+        closeTradeCardPicker,
+        addCardToMyTradeOffer,
+        removeCardFromMyTradeOffer,
+        toggleTradeReady,
+        sendQuickTradeChat,
+        sendTradeChat,
+        renderLiveTradeChat,
+        confirmFinalSwap,
+        cancelLiveTradeSession,
+        closeLiveTradeRoom,
+        pollLiveTradeRequests,
         equipTitle,
         setLeaderboardTab,
         closeCardRevealModal,
