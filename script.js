@@ -2216,16 +2216,20 @@ function getPackFrontSVG(cfg) {
                 <feGaussianBlur stdDeviation="5" result="blur"/>
                 <feComposite in="SourceGraphic" in2="blur" operator="over"/>
             </filter>
+
+            <clipPath id="bodyClip_${cfg.key}">
+                <rect x="0" y="44" width="320" height="446" rx="14"/>
+            </clipPath>
         </defs>
 
-        <!-- BODY CONTENT (FALLS / SHAKES DOWN ON TEAR) -->
-        <g class="pack-body-content">
+        <!-- MAIN LOWER PACK BODY (STARTS AT Y=44, LEAVING OPEN SEAM ON TEAR) -->
+        <g class="pack-body-content" clip-path="url(#bodyClip_${cfg.key})">
             <!-- 1. FULL-BLEED STADIUM BACKGROUND -->
-            <rect width="320" height="490" fill="url(#bgGrad_${cfg.key})"/>
+            <rect y="44" width="320" height="446" fill="url(#bgGrad_${cfg.key})"/>
 
             <!-- Stadium Spotlights -->
-            <polygon points="0,42 80,42 160,340 40,340" fill="url(#lightCone)" opacity="0.35"/>
-            <polygon points="320,42 240,42 160,340 280,340" fill="url(#lightCone)" opacity="0.35"/>
+            <polygon points="0,44 80,44 160,340 40,340" fill="url(#lightCone)" opacity="0.35"/>
+            <polygon points="320,44 240,44 160,340 280,340" fill="url(#lightCone)" opacity="0.35"/>
 
             <!-- High-Tech Stadium Pitch Grid -->
             <g stroke="rgba(255,255,255,0.18)" stroke-width="1.5" fill="none">
@@ -2238,7 +2242,7 @@ function getPackFrontSVG(cfg) {
                 <ellipse cx="160" cy="370" rx="70" ry="18" stroke="rgba(255,215,0,0.4)"/>
             </g>
 
-            <!-- 2. DYNAMIC POKÉMON ENERGY SLASHES -->
+            <!-- 2. DYNAMIC ENERGY SLASHES -->
             <path d="M 340 80 Q 210 190 30 225 Q 180 170 340 80 Z" fill="url(#slashCyan_${cfg.key})" opacity="0.85" filter="url(#glow_${cfg.key})"/>
             <path d="M 330 120 Q 220 225 10 275 Q 190 205 330 120 Z" fill="${c.slash1}" opacity="0.95"/>
             <path d="M 310 130 Q 220 225 30 270" stroke="#ffffff" stroke-width="3.5" fill="none" opacity="0.95"/>
@@ -2274,7 +2278,7 @@ function getPackFrontSVG(cfg) {
                 <ellipse cx="-16" cy="-16" rx="14" ry="7" transform="rotate(-30, -16, -16)" fill="#ffffff" opacity="0.8"/>
             </g>
 
-            <!-- 4. TOP LOGO: 3D POKÉMON-STYLE "FOOTBALL" HEADER -->
+            <!-- 4. TOP LOGO: 3D "FOOTBALL" HEADER -->
             <g transform="translate(160, 68)">
                 <text x="0" y="24" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="#002b66" stroke="#001838" stroke-width="10" stroke-linejoin="round">FOOTBALL</text>
                 <text x="0" y="22" font-family="'Impact', 'Arial Black', sans-serif" font-size="44" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="url(#pkYellow)" stroke="#003399" stroke-width="4.5" stroke-linejoin="round">FOOTBALL</text>
@@ -2287,7 +2291,7 @@ function getPackFrontSVG(cfg) {
                 <text x="0" y="4" font-family="'Montserrat', 'Arial', sans-serif" font-size="9" font-weight="900" text-anchor="middle" letter-spacing="2.5" fill="#ffffff">TRADING CARD GAME</text>
             </g>
 
-            <!-- 5. LOWER 3D MEGA-EVOLUTION STYLE SET TITLE BANNER -->
+            <!-- 5. LOWER SET TITLE BANNER -->
             <g transform="translate(160, 412)">
                 <polygon points="-140,-20 140,-20 128,20 -128,20" fill="#09121d" stroke="#000000" stroke-width="5" filter="drop-shadow(0 8px 16px rgba(0,0,0,0.9))"/>
                 <polygon points="-136,-17 136,-17 125,17 -125,17" fill="url(#bannerGrad_${cfg.key})" stroke="url(#goldStroke)" stroke-width="2.5"/>
@@ -2295,7 +2299,7 @@ function getPackFrontSVG(cfg) {
                 <text x="0" y="7" font-family="'Impact', 'Arial Black', sans-serif" font-size="22" font-weight="900" font-style="italic" text-anchor="middle" letter-spacing="2" fill="#ffffff" stroke="#000000" stroke-width="3.5" paint-order="stroke fill">${cfg.title}</text>
             </g>
 
-            <!-- 6. BOTTOM CORRUGATED CRIMP BAR & SERIAL / 6+ AGE BADGE -->
+            <!-- 6. BOTTOM CORRUGATED CRIMP BAR -->
             <g transform="translate(0, 456)">
                 <rect width="320" height="34" fill="linear-gradient(180deg, #dc2626 0%, #991b1b 100%)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
                 <rect width="320" height="12" y="12" fill="repeating-linear-gradient(90deg, #450a0a 0px, #ffffff 2px, #7f1d1d 4px, #450a0a 6px)" opacity="0.6"/>
@@ -2309,16 +2313,17 @@ function getPackFrontSVG(cfg) {
             </g>
         </g>
 
-        <!-- TOP CORRUGATED METALLIC STRIPED CRIMP CAP (PEELS & RIPS OFF ON TEAR) -->
-        <g id="topCrimpCap" class="pack-top-crimp-cap" transform="translate(0, 0)">
-            <rect width="320" height="42" fill="#090f19" stroke="#1e293b" stroke-width="1"/>
-            <rect width="320" height="42" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
-            <rect x="135" y="10" width="50" height="12" rx="6" fill="#030712" stroke="#ffffff" stroke-width="1.2" opacity="0.85"/>
-            <line x1="12" y1="36" x2="308" y2="36" stroke="#ffd700" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.9"/>
-            <text x="160" y="34" font-family="'Montserrat', sans-serif" font-size="7.5" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#ffd700">✂ SWIPE TO TEAR ➔</text>
+        <!-- TOP CORRUGATED METALLIC STRIPED CRIMP CAP (SEPARATES & FLIES AWAY ON TEAR) -->
+        <g id="topCrimpCap" class="pack-top-crimp-cap" style="transform-origin:0% 100%;">
+            <rect width="320" height="44" fill="#090f19" stroke="#1e293b" stroke-width="1"/>
+            <rect width="320" height="44" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+            <rect x="90" y="8" width="140" height="16" rx="8" fill="#030712" stroke="#ffd700" stroke-width="1.5" opacity="0.95"/>
+            <line x1="8" y1="36" x2="312" y2="36" stroke="#ffd700" stroke-width="2.5" stroke-dasharray="6,4" opacity="1"/>
+            <text x="160" y="20" font-family="'Montserrat', sans-serif" font-size="8" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#ffd700">✂ SWIPE TO TEAR ➔</text>
         </g>
 
-        <line x1="0" y1="42" x2="320" y2="42" stroke="#ffd700" stroke-width="2.5" opacity="0.85" class="pack-tear-line"/>
+        <!-- GLOWING GOLD LASER CUT SEAM -->
+        <line x1="0" y1="44" x2="320" y2="44" stroke="#ffd700" stroke-width="3.5" opacity="0.95" class="pack-tear-line"/>
     </svg>
     `;
 }
@@ -2356,16 +2361,19 @@ function getPackBackSVG(cfg) {
                 <stop offset="75%" stop-color="#39ff14"/>
                 <stop offset="100%" stop-color="#ffd700"/>
             </linearGradient>
+            <clipPath id="backBodyClip_${cfg.key}">
+                <rect x="0" y="44" width="320" height="446" rx="14"/>
+            </clipPath>
         </defs>
 
         <!-- BACK BODY CONTENT -->
-        <g class="pack-body-content">
+        <g class="pack-body-content" clip-path="url(#backBodyClip_${cfg.key})">
             <!-- Back Foil Body -->
-            <rect width="320" height="490" fill="url(#backBg_${cfg.key})"/>
+            <rect y="44" width="320" height="446" fill="url(#backBg_${cfg.key})"/>
 
             <!-- Vertical Heat-Seal Fin Seam Spine -->
-            <rect x="148" y="42" width="24" height="414" fill="url(#finSeam)"/>
-            <line x1="160" y1="42" x2="160" y2="456" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <rect x="148" y="44" width="24" height="412" fill="url(#finSeam)"/>
+            <line x1="160" y1="44" x2="160" y2="456" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4,3"/>
 
             <!-- Hologram Security Seal Badge -->
             <g transform="translate(32, 62)">
@@ -2470,8 +2478,8 @@ function getPackBackSVG(cfg) {
 
         <!-- Top Corrugated Crimp (Back Cap) -->
         <g id="topCrimpCapBack" class="pack-top-crimp-cap" transform="translate(0, 0)">
-            <rect width="320" height="42" fill="#090f19"/>
-            <rect width="320" height="42" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+            <rect width="320" height="44" fill="#090f19"/>
+            <rect width="320" height="44" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
             <rect x="135" y="10" width="50" height="12" rx="6" fill="#030712" stroke="#ffffff" stroke-width="1.2" opacity="0.85"/>
         </g>
     </svg>
@@ -2869,15 +2877,9 @@ function deliverSinglePackCard(item, packNum, totalPacks) {
         showCardResult(card, duplicate, isFirstDiscovery, packNum, totalPacks);
     }
 
-    if (card.rarity === "World Class") {
+    if (card.rarity === "World Class" || card.rarity === "Secret" || card.rarity === "Mythic") {
         cutscenePostCallback = proceedToCardReveal;
-        showWorldClass(card);
-    } else if (card.rarity === "Secret") {
-        cutscenePostCallback = proceedToCardReveal;
-        showSecretCutscene(card);
-    } else if (card.rarity === "Mythic") {
-        cutscenePostCallback = proceedToCardReveal;
-        showMythicCutscene(card);
+        SolsCutsceneEngine.start(card, proceedToCardReveal);
     } else {
         proceedToCardReveal();
     }
@@ -3446,11 +3448,8 @@ const SolsCutsceneEngine = {
                 activePackSequence = null;
                 if (allCards && allCards.length > 1) {
                     showMultiCardResult(allCards);
-                } else {
-                    unlockModalScroll();
-                    renderAll();
+                    return;
                 }
-                return;
             }
         }
 
@@ -3458,6 +3457,12 @@ const SolsCutsceneEngine = {
             const cb = this.onCompleteCallback;
             this.onCompleteCallback = null;
             cb();
+        } else if (cutscenePostCallback) {
+            const cb = cutscenePostCallback;
+            cutscenePostCallback = null;
+            cb();
+        } else if (this.activeCard) {
+            showCardResult(this.activeCard, false, false, 1, 1);
         } else {
             unlockModalScroll();
             renderAll();
@@ -3565,16 +3570,16 @@ function skipSolsCutscene() { SolsCutsceneEngine.skip(); }
 function claimSolsCard() { SolsCutsceneEngine.claim(); }
 function replaySolsCutscene() { SolsCutsceneEngine.replay(); }
 
-function showWorldClass(card) {
-    SolsCutsceneEngine.start(card);
+function showWorldClass(card, onComplete) {
+    SolsCutsceneEngine.start(card, onComplete || cutscenePostCallback);
 }
 
-function showSecretCutscene(card) {
-    SolsCutsceneEngine.start(card);
+function showSecretCutscene(card, onComplete) {
+    SolsCutsceneEngine.start(card, onComplete || cutscenePostCallback);
 }
 
-function showMythicCutscene(card) {
-    SolsCutsceneEngine.start(card);
+function showMythicCutscene(card, onComplete) {
+    SolsCutsceneEngine.start(card, onComplete || cutscenePostCallback);
 }
 
 function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPacks = 1) {
