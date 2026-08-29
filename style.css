@@ -3121,8 +3121,21 @@ select,input{
 }
 
 /* =========================================================
-   NEW OP TITLES (OWNER, ADMIN, STAFF)
+   SPECIAL STAFF, ADMIN & UNIQUE TITLE STYLES
    ========================================================= */
+
+.title-unique {
+    background: linear-gradient(90deg, #ffd700 0%, #ffe600 25%, #ff8c00 50%, #ffe600 75%, #ffd700 100%) !important;
+    background-size: 200% auto !important;
+    animation: textShimmer 2s linear infinite !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 900 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.75)) !important;
+}
 
 .title-owner {
     background: linear-gradient(90deg, #ff0844 0%, #ffd700 35%, #ffffff 65%, #ff0844 100%) !important;
@@ -4609,6 +4622,154 @@ body.modal-open, html.modal-open {
     background: linear-gradient(135deg, #ff453a, #e53935) !important;
     transform: scale(1.04) !important;
     box-shadow: 0 6px 20px rgba(255, 59, 48, 0.6) !important;
+}
+
+/* =========================================================
+   COMPREHENSIVE RESPONSIVE DEVICE OPTIMIZATIONS (PC, TABLET, PHONE)
+   ========================================================= */
+
+/* Safe area support for iOS / Android gestures & notches */
+body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-top: env(safe-area-inset-top, 0);
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* TABLETS & IPADS (768px to 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container {
+        padding: 20px 24px !important;
+        max-width: 100% !important;
+    }
+    .pack-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+        gap: 16px !important;
+    }
+    .cards-grid, .index-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+        gap: 14px !important;
+    }
+    .showcase-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 14px !important;
+    }
+    .sols-grand-card-box {
+        transform: scale(0.9) !important;
+    }
+    .admin-box {
+        width: 90vw !important;
+        max-height: 85vh !important;
+    }
+}
+
+/* PHONES & SMALL MOBILE (< 768px) */
+@media (max-width: 767px) {
+    .container {
+        padding: 12px 14px !important;
+    }
+    .top-bar {
+        padding: 10px 14px !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+    }
+    .stats-bar {
+        font-size: 13px !important;
+        gap: 8px !important;
+    }
+    .user-pill {
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+    }
+    .pack-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+        gap: 12px !important;
+    }
+    .pack-card {
+        padding: 14px 10px !important;
+    }
+    .pack-card h3 {
+        font-size: 15px !important;
+    }
+    .cards-grid, .index-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+        gap: 10px !important;
+    }
+    .showcase-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .mission-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 14px !important;
+    }
+    .mission-item > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+    }
+    .mission-claim-btn {
+        width: 100% !important;
+        text-align: center !important;
+    }
+    .admin-box {
+        width: 96vw !important;
+        padding: 16px !important;
+        max-height: 90vh !important;
+        border-radius: 16px !important;
+    }
+    .admin-tabs-row {
+        gap: 6px !important;
+    }
+    .admin-tab {
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+    }
+    .device-session-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 14px !important;
+    }
+    .device-logout-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    .sols-grand-card-box {
+        transform: scale(0.75) !important;
+    }
+    .sols-phase-text {
+        font-size: 18px !important;
+        letter-spacing: 2px !important;
+    }
+    .sols-phase-rarity {
+        font-size: 13px !important;
+    }
+    .sols-actions-row {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+    .sols-claim-btn, .sols-replay-btn {
+        width: 100% !important;
+        font-size: 14px !important;
+        padding: 12px !important;
+    }
+}
+
+/* EXTRA SMALL PHONES (< 380px) */
+@media (max-width: 380px) {
+    .cards-grid, .index-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+    .pack-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .sols-grand-card-box {
+        transform: scale(0.68) !important;
+    }
 }
 
 
