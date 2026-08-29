@@ -4028,12 +4028,11 @@ body.modal-open, html.modal-open {
 }
 
 .sols-flashbang-active {
-    animation: solsFlashbangExplosion 1.0s cubic-bezier(0.1, 0.9, 0.2, 1) forwards !important;
+    animation: solsFlashbangExplosion 0.7s cubic-bezier(0.1, 0.9, 0.2, 1) forwards !important;
 }
 
 @keyframes solsFlashbangExplosion {
-    0% { opacity: 1; filter: brightness(2); }
-    20% { opacity: 0.95; }
+    0% { opacity: 0.95; }
     100% { opacity: 0; }
 }
 
@@ -4045,32 +4044,38 @@ body.modal-open, html.modal-open {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    perspective: 1200px !important;
+    opacity: 1 !important;
 }
 
 .sols-grand-card-box.sols-card-revealed {
     display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .sols-card-slam-anim {
-    animation: solsCardDropSlam 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    animation: solsCardDropSlam 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 @keyframes solsCardDropSlam {
     0% {
         opacity: 0;
-        transform: perspective(1200px) translateZ(600px) translateY(-100px) rotateX(35deg) scale(2.2);
+        transform: scale(2.3) translateY(-60px);
+        filter: brightness(2.4);
     }
-    60% {
+    50% {
         opacity: 1;
-        transform: perspective(1200px) translateZ(-40px) translateY(12px) rotateX(-8deg) scale(0.96);
+        transform: scale(0.95) translateY(8px);
+        filter: brightness(1.2);
     }
-    80% {
-        transform: perspective(1200px) translateZ(20px) translateY(-4px) rotateX(4deg) scale(1.02);
+    75% {
+        transform: scale(1.02) translateY(-3px);
+        filter: brightness(1.05);
     }
     100% {
         opacity: 1;
-        transform: perspective(1200px) translateZ(0) translateY(0) rotateX(0) scale(1);
+        transform: scale(1) translateY(0);
+        filter: brightness(1);
     }
 }
 
