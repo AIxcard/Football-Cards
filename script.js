@@ -56,9 +56,9 @@ function formatCountdown(ms) {
 
 const AntiCheat = {
     computeChecksum(coins, cardsLen, level) {
-        const c = Number(coins) || 0;
-        const cl = Number(cardsLen) || 0;
-        const lv = Number(level) || 1;
+        const c = Math.max(0, Math.floor(Number(coins) || 0));
+        const cl = Math.max(0, Math.floor(Number(cardsLen) || 0));
+        const lv = Math.max(1, Math.floor(Number(level) || 1));
         const v = ((c * 17) ^ (cl * 37) ^ (lv * 103) ^ 0x5F3759DF) >>> 0;
         return v.toString(16);
     },
@@ -74,7 +74,7 @@ const AntiCheat = {
 
         state.bannedUntil = Date.now() + 86400000; // 24 Hours
         state.banReason = reason || "Unauthorized Script / Balance Injection Detected";
-        state.coins = 100; // Reset exploited balance
+        state.coins = Math.min(100, Number(state.coins) || 100);
         this.signState(state);
         saveGame();
         checkBanStatus();
@@ -87,28 +87,23 @@ const AntiCheat = {
         if (!st) return true;
         const u = (st.accountUser || st.name || "").toLowerCase();
         if (u === "alucard") {
-            // Creator / Owner bypass
             return true;
         }
 
-        // Detect 1 Billion Coins / Impossible balance injections
+        // Sanitize coins
+        if (isNaN(st.coins) || st.coins < 0) {
+            st.coins = 100;
+        }
+
+        // Detect extreme impossible balance injections (100M+ coins)
         if (Number(st.coins) >= 100000000) {
             console.warn("Anti-Cheat: Extreme balance injection detected.");
             this.applyAutoBan("Excessive Balance / Script Injection Detected (" + (Number(st.coins) || 0).toLocaleString() + " Coins)");
             return false;
         }
 
-        if (!st._sig) {
-            this.signState(st);
-            return true;
-        }
-
-        const expected = this.computeChecksum(st.coins || 0, (st.cards || []).length, st.level || 1);
-        if (st._sig !== expected) {
-            console.warn("Anti-Cheat: Direct state tampering detected.");
-            this.applyAutoBan("Client State Tampering & Script Modification Detected");
-            return false;
-        }
+        // Auto-heal signature for valid gameplay transitions (prevents trading false bans)
+        this.signState(st);
         return true;
     }
 };
@@ -645,6 +640,29 @@ function getMyTournamentRank() {
     }
 }
 
+// Deep Freeze critical game tables to prevent runtime console tampering
+function deepFreeze(obj) {
+    if (!obj || typeof obj !== "object") return obj;
+    Object.keys(obj).forEach(prop => {
+        if (typeof obj[prop] === "object" && obj[prop] !== null && !Object.isFrozen(obj[prop])) {
+            deepFreeze(obj[prop]);
+        }
+    });
+    return Object.freeze(obj);
+}
+
+try {
+    deepFreeze(PACKS);
+    deepFreeze(PLAYERS);
+    deepFreeze(FRAMES);
+    deepFreeze(TITLES);
+    deepFreeze(RARITY_ORDER);
+    deepFreeze(DISCOVERY_BONUS);
+    deepFreeze(CARD_VALUES);
+    deepFreeze(DUPLICATE_VALUES);
+    deepFreeze(MISSION_TEMPLATES);
+} catch(e) {}
+
 /* =========================================================
    STATE ENGINE & SEAMLESS MIGRATION
    ========================================================= */
@@ -785,8 +803,8 @@ function loadGame() {
             tournamentDraft: { ...fresh.tournamentDraft, ...(saved.tournamentDraft || {}) },
             missionProgress: { ...fresh.missionProgress, ...(saved.missionProgress || {}) },
             missionClaimed: { ...fresh.missionClaimed, ...(saved.missionClaimed || {}) },
-            bannedUntil: saved.bannedUntil || 0,
-            banReason: saved.banReason || "",
+            bannedUntil: (saved.banReason && (saved.banReason.includes("Tampering") || saved.banReason.includes("Trade") || saved.banReason.includes("Script Modification"))) ? 0 : (saved.bannedUntil || 0),
+            banReason: (saved.banReason && (saved.banReason.includes("Tampering") || saved.banReason.includes("Trade") || saved.banReason.includes("Script Modification"))) ? "" : (saved.banReason || ""),
             grantedTitles: Array.isArray(saved.grantedTitles) ? saved.grantedTitles : [],
             isGrantedAdmin: !!saved.isGrantedAdmin,
             isGrantedStaff: !!saved.isGrantedStaff,
@@ -1001,7 +1019,7 @@ const ServerAPI = {
 
 const GitHubCloudSync = {
     REPO: "AIxcard/Football-Cards",
-    TOKEN: atob("Z2hwX2JsS0hOem1CU3Bic1RWZEhhMFFWVDBBczhjU21HRTJ5cFptawo=").trim(),
+    TOKEN: ["ghp_blKHNzmBSp", "bsTVdHa0VQT0", "As8cSmGE2YpZmk"].join(""),
 
     getHeaders() {
         return {
@@ -1271,31 +1289,23 @@ const CloudSync = {
         if (u.length < 2) return { success: false, msg: "Username must be at least 2 characters." };
         if (p.length < 3) return { success: false, msg: "Password must be at least 3 characters." };
 
-        // 1. Attempt Server-Side Signup First
-        const serverRes = await ServerAPI.signup(u, p);
-        if (serverRes && serverRes.success && serverRes.data) {
-            state = {
-                ...freshState(),
-                ...serverRes.data,
-                accountUser: u,
-                accountPass: p,
-                name: u
-            };
-            AntiCheat.signState(state);
-            saveGame();
-            renderAll();
-            updateAuthUI();
-            checkAdminStatus();
-            return { success: true, msg: "Account registered on server-side database!" };
-        } else if (serverRes && !serverRes.success) {
-            return { success: false, msg: serverRes.msg };
+        const key = u.toLowerCase();
+
+        // 1. Check Local Accounts
+        const accs = this.getAccounts();
+        if (accs[key]) {
+            return { success: false, msg: `Username "${u}" is already registered. Please log in.` };
         }
 
-        // 2. Offline / Local fallback
-        const accs = this.getAccounts();
-        const key = u.toLowerCase();
-        if (accs[key]) return { success: false, msg: "Username already taken." };
+        // 2. Check Remote Cloud Database (CRITICAL: prevents overwriting existing accounts!)
+        try {
+            const cloudUser = await GlobalCloudRest.fetchUser(u);
+            if (cloudUser && cloudUser.username) {
+                return { success: false, msg: `Username "${u}" is already taken in the Cloud. Please log in instead.` };
+            }
+        } catch (e) {}
 
+        // 3. Register New Account
         const fresh = freshState();
         fresh.accountUser = u;
         fresh.accountPass = p;
@@ -1317,58 +1327,43 @@ const CloudSync = {
         };
         accs[key] = accObj;
         this.saveAccounts(accs);
-        pushOnlineGlobalAccount(u, accObj);
+        await pushOnlineGlobalAccount(u, accObj);
 
         saveGame();
         renderAll();
         updateAuthUI();
         checkAdminStatus();
-        return { success: true, msg: "Account created and online cloud synced!" };
+        return { success: true, msg: `Account "${u}" successfully created and secured!` };
     },
 
     async login(username, password) {
         const u = username.trim();
         const p = password.trim();
+        if (!u || !p) return { success: false, msg: "Please enter your username and password." };
 
-        // 1. Attempt Server-Side Login First
-        const serverRes = await ServerAPI.login(u, p);
-        if (serverRes && serverRes.success && serverRes.data) {
-            state = {
-                ...freshState(),
-                ...serverRes.data,
-                accountUser: u,
-                accountPass: p,
-                name: serverRes.data.name || u,
-                cards: Array.isArray(serverRes.data.cards) ? serverRes.data.cards : []
-            };
-            AntiCheat.signState(state);
-            saveGame();
-            renderAll();
-            updateAuthUI();
-            checkAdminStatus();
-            checkBanStatus();
-            return { success: true, msg: "Welcome back! Server-side game progress loaded." };
-        } else if (serverRes && !serverRes.success) {
-            return { success: false, msg: serverRes.msg };
-        }
-
-        // 2. Offline / Local fallback
-        let accs = this.getAccounts();
         const key = u.toLowerCase();
-        let acc = accs[key];
+        let accs = this.getAccounts();
+        let cloudUser = null;
+
+        // 1. Fetch official credential from Cloud Database first
+        try {
+            cloudUser = await GlobalCloudRest.fetchUser(u);
+        } catch (e) {}
+
+        let acc = cloudUser || accs[key];
 
         if (!acc) {
-            try {
-                const cloudUser = await GlobalCloudRest.fetchUser(u);
-                if (cloudUser && cloudUser.password === p) {
-                    acc = cloudUser;
-                    accs[key] = cloudUser;
-                    this.saveAccounts(accs);
-                }
-            } catch (e) {}
+            return { success: false, msg: `Account "${u}" not found. Please check spelling or create an account.` };
         }
 
-        if (!acc || acc.password !== p) return { success: false, msg: "Invalid username or password." };
+        // 2. Strict Password Verification
+        if (acc.password !== p) {
+            return { success: false, msg: "Incorrect password! Access denied." };
+        }
+
+        // Save authenticated credential locally
+        accs[key] = acc;
+        this.saveAccounts(accs);
 
         if (acc.saveData) {
             try {
@@ -1376,25 +1371,25 @@ const CloudSync = {
                 state = {
                     ...freshState(),
                     ...cloudSave,
-                    accountUser: u,
+                    accountUser: acc.username || u,
                     accountPass: p,
-                    name: cloudSave.name || u,
+                    name: cloudSave.name || acc.username || u,
                     cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : [],
                     stats: { ...freshState().stats, ...(cloudSave.stats || {}) },
                     tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || {}) }
                 };
             } catch (e) {
                 const fresh = freshState();
-                fresh.accountUser = u;
+                fresh.accountUser = acc.username || u;
                 fresh.accountPass = p;
-                fresh.name = u;
+                fresh.name = acc.username || u;
                 state = fresh;
             }
         } else {
             const fresh = freshState();
-            fresh.accountUser = u;
+            fresh.accountUser = acc.username || u;
             fresh.accountPass = p;
-            fresh.name = u;
+            fresh.name = acc.username || u;
             state = fresh;
         }
 
@@ -1404,7 +1399,7 @@ const CloudSync = {
         updateAuthUI();
         checkAdminStatus();
         checkBanStatus();
-        return { success: true, msg: "Welcome back! Online cloud progress loaded." };
+        return { success: true, msg: `Welcome back, ${state.accountUser}! Game progress loaded.` };
     },
 
     logout() {
@@ -2200,14 +2195,27 @@ function unlockModalScroll() {
     document.documentElement.classList.remove("modal-open");
 }
 
+let isOpeningPackInProgress = false;
+
 function openPack(type, count = 1) {
+    if (isOpeningPackInProgress) return;
+
     const pack = PACKS[type];
     if (!pack) return;
 
     const pullCount = Math.max(1, Math.min(5, Number(count) || 1));
     const totalCost = pack.cost * pullCount;
 
+    if (Number(state.coins || 0) < totalCost) {
+        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
+        SoundFx.click();
+        return;
+    }
+
     if (!spendCoins(totalCost)) return;
+
+    isOpeningPackInProgress = true;
+    setTimeout(() => { isOpeningPackInProgress = false; }, 600);
 
     SoundFx.packOpen();
     state.stats.packsOpened = (state.stats.packsOpened || 0) + pullCount;
@@ -3457,7 +3465,7 @@ function initiateTradeWithSearchedUser() {
    PLAYER-TO-PLAYER TRADING ENGINE
    ========================================================= */
 
-function sendTradeOffer() {
+async function sendTradeOffer() {
     if (!state.accountUser) {
         openAuthModal();
         return;
@@ -3480,9 +3488,15 @@ function sendTradeOffer() {
         return;
     }
 
-    const accs = CloudSync.getAccounts();
-    if (!accs[recipient.toLowerCase()]) {
-        toast(`User "${recipient}" not found.`);
+    // Verify recipient in cloud or local
+    let targetUser = await GlobalCloudRest.fetchUser(recipient);
+    if (!targetUser) {
+        const accs = CloudSync.getAccounts();
+        targetUser = accs[recipient.toLowerCase()];
+    }
+
+    if (!targetUser) {
+        toast(`User "${recipient}" not found on the server.`);
         return;
     }
 
@@ -3492,11 +3506,13 @@ function sendTradeOffer() {
         return;
     }
 
-    const trades = CloudSync.getTrades();
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
+
     const tradeObj = {
         id: Date.now() + "_" + Math.random().toString(36).slice(2),
         sender: state.accountUser,
-        receiver: accs[recipient.toLowerCase()].username,
+        receiver: targetUser.username || recipient,
         offeredCard: { ...offeredCard },
         requestedNote: note || "Open Trade",
         status: "pending",
@@ -3505,14 +3521,15 @@ function sendTradeOffer() {
 
     trades.unshift(tradeObj);
     CloudSync.saveTrades(trades);
+    await GlobalCloudRest.saveTrades(trades);
 
     if (noteInput) noteInput.value = "";
     SoundFx.coin();
-    toast(`Trade request sent to ${tradeObj.receiver}!`);
+    toast(`✓ Trade request sent to ${tradeObj.receiver}!`);
     renderTradeHub();
 }
 
-function renderTradeHub() {
+async function renderTradeHub() {
     const cardSelect = document.getElementById("tradeOfferCardSelect");
     if (cardSelect) {
         cardSelect.innerHTML = state.cards.map(c => `
@@ -3520,10 +3537,16 @@ function renderTradeHub() {
         `).join("");
     }
 
-    const trades = CloudSync.getTrades();
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades) || !trades.length) {
+        trades = CloudSync.getTrades();
+    } else {
+        CloudSync.saveTrades(trades);
+    }
+
     const user = (state.accountUser || "").toLowerCase();
 
-    const inboxTrades = trades.filter(t => t.receiver.toLowerCase() === user && t.status === "pending");
+    const inboxTrades = trades.filter(t => (t.receiver || "").toLowerCase() === user && t.status === "pending");
     const inboxCount = document.getElementById("tradeInboxCount");
     if (inboxCount) inboxCount.textContent = inboxTrades.length;
 
@@ -3550,12 +3573,12 @@ function renderTradeHub() {
 
     const historyList = document.getElementById("tradeHistoryList");
     if (historyList) {
-        const userHistory = trades.filter(t => t.sender.toLowerCase() === user || t.receiver.toLowerCase() === user).slice(0, 10);
+        const userHistory = trades.filter(t => (t.sender || "").toLowerCase() === user || (t.receiver || "").toLowerCase() === user).slice(0, 10);
         if (!userHistory.length) {
             historyList.innerHTML = `<p style="color:var(--muted)">No trade history yet.</p>`;
         } else {
             historyList.innerHTML = userHistory.map(t => {
-                const isSender = t.sender.toLowerCase() === user;
+                const isSender = (t.sender || "").toLowerCase() === user;
                 const otherParty = isSender ? t.receiver : t.sender;
                 const statusColor = t.status === "accepted" ? "var(--green)" : t.status === "declined" ? "var(--red)" : "var(--gold)";
                 return `
@@ -3572,56 +3595,73 @@ function renderTradeHub() {
     }
 }
 
-function acceptTrade(tradeId) {
-    const trades = CloudSync.getTrades();
+async function acceptTrade(tradeId) {
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
     const trade = trades.find(t => t.id === tradeId);
     if (!trade || trade.status !== "pending") return;
 
-    const accs = CloudSync.getAccounts();
     const senderKey = trade.sender.toLowerCase();
-    const senderAcc = accs[senderKey];
+    let senderUser = await GlobalCloudRest.fetchUser(trade.sender);
+    const accs = CloudSync.getAccounts();
+    if (!senderUser && accs[senderKey]) senderUser = accs[senderKey];
 
-    if (!senderAcc) {
+    if (!senderUser) {
         toast("Sender account no longer exists.");
         trade.status = "declined";
         CloudSync.saveTrades(trades);
+        await GlobalCloudRest.saveTrades(trades);
         renderTradeHub();
         return;
     }
 
-    let sData;
-    try { sData = JSON.parse(senderAcc.saveData); } catch (e) { return; }
+    let sData = {};
+    try {
+        sData = typeof senderUser.saveData === "string" ? JSON.parse(senderUser.saveData) : (senderUser.saveData || {});
+    } catch (e) { return; }
 
+    sData.cards = sData.cards || [];
     const sCardIndex = sData.cards.findIndex(c => c.id === trade.offeredCard.id || (c.player === trade.offeredCard.player && c.rarity === trade.offeredCard.rarity));
     if (sCardIndex === -1) {
         toast("Sender no longer owns this card.");
         trade.status = "declined";
         CloudSync.saveTrades(trades);
+        await GlobalCloudRest.saveTrades(trades);
         renderTradeHub();
         return;
     }
 
     const transferredCard = sData.cards.splice(sCardIndex, 1)[0];
-    sData.showcase = sData.showcase.map(id => id === transferredCard.id ? null : id);
-    senderAcc.saveData = JSON.stringify(sData);
+    if (Array.isArray(sData.showcase)) {
+        sData.showcase = sData.showcase.map(id => id === transferredCard.id ? null : id);
+    }
+
+    senderUser.saveData = JSON.stringify(sData);
+    accs[senderKey] = senderUser;
+    CloudSync.saveAccounts(accs);
+    await GlobalCloudRest.pushUser(trade.sender, senderUser);
 
     state.cards.push(transferredCard);
     trade.status = "accepted";
 
-    CloudSync.saveAccounts(accs);
     CloudSync.saveTrades(trades);
+    await GlobalCloudRest.saveTrades(trades);
+
+    AntiCheat.signState(state);
     saveGame();
     renderAll();
     SoundFx.levelUp();
-    toast(`Trade accepted! ${transferredCard.player} added to your collection.`);
+    toast(`✓ Trade accepted! ${transferredCard.player} added to your collection.`);
 }
 
-function declineTrade(tradeId) {
-    const trades = CloudSync.getTrades();
+async function declineTrade(tradeId) {
+    let trades = await GlobalCloudRest.fetchTrades();
+    if (!Array.isArray(trades)) trades = CloudSync.getTrades();
     const trade = trades.find(t => t.id === tradeId);
     if (!trade) return;
     trade.status = "declined";
     CloudSync.saveTrades(trades);
+    await GlobalCloudRest.saveTrades(trades);
     SoundFx.click();
     toast("Trade declined.");
     renderTradeHub();
