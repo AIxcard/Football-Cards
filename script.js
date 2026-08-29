@@ -1873,17 +1873,29 @@ async function renderActiveDevices() {
 
 let onlineAccountsCache = {};
 
-async function fetchOnlineGlobalAccounts() {
+async function autoSyncCloud() {
     try {
+        const localAccs = CloudSync.getAccounts();
+        for (const k in localAccs) {
+            const acc = localAccs[k];
+            if (acc && acc.username) {
+                await GlobalCloudRest.pushUser(acc.username, acc);
+            }
+        }
         const cloudUsers = await GlobalCloudRest.fetchAllUsers();
         if (cloudUsers && typeof cloudUsers === "object") {
-            const localAccs = CloudSync.getAccounts();
             const merged = { ...localAccs, ...cloudUsers };
             CloudSync.saveAccounts(merged);
             onlineAccountsCache = merged;
-            return merged;
+        }
+        if (state.accountUser) {
+            await GlobalCloudRest.pushLeaderboard(state.accountUser, state);
         }
     } catch (e) {}
+}
+
+async function fetchOnlineGlobalAccounts() {
+    await autoSyncCloud();
     return CloudSync.getAccounts();
 }
 
@@ -1964,6 +1976,7 @@ const CloudSync = {
         renderAll();
         updateAuthUI();
         checkAdminStatus();
+        autoSyncCloud();
         return { success: true, msg: `Account "${u}" successfully created and secured!` };
     },
 
@@ -1987,14 +2000,18 @@ const CloudSync = {
             return { success: false, msg: `Account "${u}" not found. Please check spelling or create an account.` };
         }
 
-        // 2. Strict Password Verification
-        if (acc.password !== p) {
+        // 2. Strict Password Verification (or set password if first cloud login)
+        if (acc.password && acc.password !== p) {
             return { success: false, msg: "Incorrect password! Access denied." };
         }
+        if (!acc.password) {
+            acc.password = p;
+        }
 
-        // Save authenticated credential locally
+        // Save authenticated credential locally & push to cloud
         accs[key] = acc;
         this.saveAccounts(accs);
+        try { await GlobalCloudRest.pushUser(u, acc); } catch(e) {}
 
         if (acc.saveData) {
             try {
@@ -2030,6 +2047,7 @@ const CloudSync = {
         updateAuthUI();
         checkAdminStatus();
         checkBanStatus();
+        autoSyncCloud();
         return { success: true, msg: `Welcome back, ${state.accountUser}! Game progress loaded.` };
     },
 
@@ -6395,6 +6413,7 @@ function escapeHTML(value) {
 if (state.initialized) {
     renderAll();
     checkDeviceRevocation();
+    autoSyncCloud();
 
     // Restore last visited page if present
     try {
