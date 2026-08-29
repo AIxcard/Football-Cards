@@ -66,9 +66,19 @@ button{
     border-bottom:1px solid var(--border);
 }
 
+.topbar-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
 .logo{
     font-weight:900;
     font-size:20px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
 }
 
 .coins{
@@ -76,25 +86,59 @@ button{
     border:1px solid var(--border);
     padding:10px 15px;
     border-radius:12px;
+    white-space:nowrap;
 }
 
 .menu-btn{
     display:none;
-    background:none;
-    border:0;
+    background:rgba(255,255,255,0.06);
+    border:1px solid var(--border);
     color:white;
-    font-size:25px;
+    font-size:22px;
+    width:42px;
+    height:42px;
+    border-radius:10px;
+    cursor:pointer;
+    align-items:center;
+    justify-content:center;
+    transition:all 0.2s ease;
+}
+.menu-btn:hover, .menu-btn:active{
+    background:rgba(255,255,255,0.15);
+    border-color:rgba(255,255,255,0.3);
 }
 
 #sidebar{
     position:fixed;
-    z-index:40;
+    z-index:200;
     top:70px;
     bottom:0;
+    left:0;
     width:230px;
     padding:20px 12px;
-    background:rgba(5,14,21,.96);
+    background:rgba(5,14,21,.98);
     border-right:1px solid var(--border);
+    overflow-y:auto;
+    transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Sidebar overlay backdrop (mobile/tablet only) */
+#sidebarOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    top:70px;
+    z-index:190;
+    background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(4px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.28s ease;
+}
+#sidebarOverlay.visible{
+    display:block !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
 }
 
 .nav{
@@ -118,6 +162,34 @@ main{
     margin-left:230px;
     padding:100px 35px 50px;
     max-width:1500px;
+}
+
+/* Tablet & iPad — sidebar becomes drawer */
+@media (max-width: 1024px) {
+    .menu-btn{ display:flex !important; }
+    #sidebar{
+        transform: translateX(-100%);
+        box-shadow: none;
+        width: 260px;
+    }
+    #sidebar.open{
+        transform: translateX(0);
+        box-shadow: 6px 0 32px rgba(0,0,0,0.6);
+    }
+    main{
+        margin-left:0;
+        padding:90px 20px 60px;
+    }
+}
+
+/* Phone — narrower drawer */
+@media (max-width: 500px) {
+    #sidebar{
+        width: min(260px, 80vw);
+    }
+    main{
+        padding:88px 14px 60px;
+    }
 }
 
 .page{
@@ -633,6 +705,15 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
     animation: bgGradientShift 3.5s ease infinite;
     border-color: #ffd700;
     box-shadow: 0 0 35px rgba(255, 215, 0, 0.5);
+}
+
+/* Monkey King Developer Card: Animated Golden Solar Magma & Dragon Gold Gradient */
+.card.theme-developer {
+    background: linear-gradient(135deg, #3d1400 0%, #d97706 25%, #ffd700 50%, #ff3b30 75%, #3d1400 100%);
+    background-size: 250% 250%;
+    animation: bgGradientShift 3s ease infinite;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 140, 0, 0.5) !important;
 }
 
 @keyframes bgGradientShift {
@@ -1170,26 +1251,46 @@ select,input{
 }
 
 .lb-podium-avatar-wrap {
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
+    width: 68px !important;
+    height: 68px !important;
+    min-width: 68px !important;
+    min-height: 68px !important;
+    max-width: 68px !important;
+    max-height: 68px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
     position: relative;
     margin-bottom: 10px;
-    display: grid;
-    place-items: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .lb-podium-card.rank-1 .lb-podium-avatar-wrap {
-    width: 82px;
-    height: 82px;
+    width: 82px !important;
+    height: 82px !important;
+    min-width: 82px !important;
+    min-height: 82px !important;
+    max-width: 82px !important;
+    max-height: 82px !important;
 }
 
 .lb-podium-avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
     background: #0d1b2a;
+    display: block !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
 }
 
 .lb-podium-rank-badge {
@@ -1312,12 +1413,20 @@ select,input{
 }
 
 .lb-row-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
     background: #101e28;
     border: 2px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0 !important;
+    display: block !important;
+    box-sizing: border-box !important;
 }
 
 .lb-row-info {
@@ -2031,23 +2140,34 @@ select,input{
 }
 
 .profile-avatar-wrapper {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
+    width: 100px !important;
+    height: 100px !important;
+    min-width: 100px !important;
+    min-height: 100px !important;
+    max-width: 100px !important;
+    max-height: 100px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
     padding: 4px;
     border: 3px solid var(--border);
-    display: grid;
-    place-items: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     position: relative;
     background: #09141f;
     overflow: hidden;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .profile-avatar-photo {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    display: block !important;
+    flex-shrink: 0 !important;
 }
 
 .avatar-fallback {
@@ -2301,6 +2421,25 @@ select,input{
     -webkit-text-fill-color: transparent;
     font-weight: 900;
     filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
+}
+
+/* =========================================================
+   DEVELOPER RARITY (GOLDEN SOLAR CELESTIAL GRADIENT)
+   ========================================================= */
+
+.rarity.developer {
+    background: linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #ff0044 100%);
+    background-size: 200% auto;
+    animation: textShimmer 2.5s linear infinite;
+    color: #120400;
+    border-color: #ffd700;
+    font-weight: 900;
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.9);
+}
+
+.glow-developer {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.9), 0 0 80px rgba(255, 140, 0, 0.6) !important;
+    border-color: #ffd700 !important;
 }
 
 /* =========================================================
@@ -2983,24 +3122,34 @@ select,input{
    ========================================================= */
 
 .profile-avatar-wrapper {
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
+    width: 96px !important;
+    height: 96px !important;
+    min-width: 96px !important;
+    min-height: 96px !important;
+    max-width: 96px !important;
+    max-height: 96px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
     position: relative;
-    display: grid;
-    place-items: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     padding: 3px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
     background: #091723;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .profile-avatar-photo {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    display: block !important;
+    flex-shrink: 0 !important;
 }
 
 .shop-preview {
@@ -4300,6 +4449,7 @@ body.modal-open, html.modal-open {
     margin: 6px 0 2px !important;
 }
 
+.sols-banner-developer, .sols-theme-developer .sols-rarity-banner { color: #ffd700 !important; text-shadow: 0 0 20px #ffd700, 0 0 40px #ff8c00 !important; }
 .sols-banner-worldclass, .sols-theme-worldclass .sols-rarity-banner { color: #ffd700 !important; text-shadow: 0 0 15px #ffd700 !important; }
 .sols-banner-secret, .sols-theme-secret .sols-rarity-banner { color: #00f5d4 !important; text-shadow: 0 0 15px #00f5d4 !important; }
 .sols-banner-mythic, .sols-theme-mythic .sols-rarity-banner { color: #ff4d4d !important; text-shadow: 0 0 15px #ff4d4d !important; }
@@ -4770,21 +4920,59 @@ body {
 }
 
 /* =========================================================
-   CONFIRM DEVICE LOGOUT MODAL CENTERING FIX
+   UNIVERSAL MODAL VIEWPORT CENTERING FIX (PC / IPAD / MOBILE)
    ========================================================= */
-#kickDeviceModal {
+.modal,
+#incomingTradeModal,
+#tradeCardPickerModal,
+#liveTradingRoomModal,
+#kickDeviceModal,
+#authModal,
+#showcaseModal,
+#searchModal,
+#cardRevealModal,
+#multiRevealModal,
+#tournamentEnterModal,
+#card3DModal {
     position: fixed !important;
     inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
     z-index: 10000 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     background: rgba(0, 0, 0, 0.85) !important;
-    backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(12px) !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
 }
 
-#kickDeviceModal.hidden {
+.modal.hidden,
+#incomingTradeModal.hidden,
+#tradeCardPickerModal.hidden,
+#liveTradingRoomModal.hidden,
+#kickDeviceModal.hidden,
+#authModal.hidden,
+#showcaseModal.hidden,
+#searchModal.hidden,
+#cardRevealModal.hidden,
+#multiRevealModal.hidden,
+#tournamentEnterModal.hidden,
+#card3DModal.hidden {
     display: none !important;
+}
+
+.modal > .modal-box,
+.modal > .trade-room-box,
+.modal > div {
+    margin: auto !important;
+    position: relative !important;
 }
 
 #kickDeviceModal .modal-box {
@@ -4799,15 +4987,17 @@ body {
    ROBLOX-STYLE LIVE TRADING ROOM & IN-TRADE CHAT STYLES
    ========================================================= */
 .trade-room-box {
-    width: min(940px, 95vw) !important;
+    width: min(980px, 95vw) !important;
     max-height: 90vh !important;
     display: flex !important;
     flex-direction: column !important;
     padding: 24px !important;
     background: linear-gradient(145deg, #09131d, #04090f) !important;
     border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    border-radius: 24px !important;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(56, 189, 248, 0.15) !important;
     overflow: hidden !important;
+    margin: auto !important;
 }
 
 .trade-room-header {
@@ -4817,6 +5007,8 @@ body {
     padding-bottom: 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .trade-live-badge {
@@ -4836,7 +5028,7 @@ body {
 
 .trade-room-main-grid {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: 1.35fr 1fr;
     gap: 16px;
     flex: 1;
     overflow-y: auto;
@@ -4875,6 +5067,49 @@ body {
     justify-content: space-between;
     align-items: center;
     font-size: 14px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.trade-rap-badge {
+    font-size: 11px;
+    font-weight: 900;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    padding: 3px 8px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.trade-fairness-meter {
+    font-size: 12px;
+    font-weight: 900;
+    padding: 4px 12px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.trade-fairness-meter.win {
+    background: rgba(0, 255, 135, 0.18);
+    color: var(--green);
+    border: 1px solid var(--green);
+}
+
+.trade-fairness-meter.lose {
+    background: rgba(239, 68, 68, 0.18);
+    color: var(--red);
+    border: 1px solid var(--red);
+}
+
+.trade-fairness-meter.even {
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
 }
 
 .trade-status-pill {
@@ -4967,7 +5202,7 @@ body {
     color: #fff;
     text-align: center;
     line-height: 1.1;
-    margin-top: 4px;
+    margin-top: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4978,6 +5213,13 @@ body {
     font-size: 13px;
     font-weight: 900;
     color: var(--gold);
+}
+
+.trade-slot-rap {
+    font-size: 9px;
+    font-weight: 800;
+    color: #38bdf8;
+    margin-top: 1px;
 }
 
 .trade-slot-rarity {
@@ -5086,20 +5328,42 @@ body {
     color: #fff;
 }
 
+/* CHAT INPUT ROW PIXEL-PERFECT ALIGNMENT */
 .trade-chat-input-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 6px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
+    height: 42px !important;
 }
 
 .trade-chat-input-row input {
-    flex: 1;
-    background: #09131d;
-    border: 1px solid var(--border);
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
+    flex: 1 !important;
+    background: #09131d !important;
+    border: 1px solid var(--border) !important;
+    color: #fff !important;
+    padding: 0 14px !important;
+    height: 42px !important;
+    line-height: 42px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.trade-chat-input-row button {
+    height: 42px !important;
+    line-height: 42px !important;
+    padding: 0 20px !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
 }
 
 .trade-action-footer {
@@ -5139,7 +5403,17 @@ body {
     animation: pulse 1s infinite;
 }
 
-
-
-
-
+/* HUGE TRADE CARD PICKER MODAL */
+.trade-picker-huge-box {
+    width: min(1050px, 96vw) !important;
+    max-height: 88vh !important;
+    background: #09131d !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(56,189,248,0.15) !important;
+    border-radius: 22px !important;
+    padding: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    text-align: left !important;
+    margin: auto !important;
+}
