@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=180.0">
+<link rel="stylesheet" href="style.css?v=185.0">
 </head>
 
 <body>
@@ -196,6 +196,10 @@
         <!-- DYNAMIC HORIZONTAL PACKS STAGE (LEFT TO RIGHT FOR 1x, 3x, or 5x) -->
         <div class="packs-display-stage" id="packsDisplayStage" style="display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;width:100%!important;margin:0 auto!important;position:relative!important;z-index:20!important;">
             <!-- Dynamically populated with authentic Pokemon-style vector booster packs -->
+        </div>
+
+        <div id="tearSwipePrompt" class="tear-swipe-prompt" onclick="if(typeof executePackTear==='function')executePackTear();" style="cursor:pointer;z-index:50;margin-top:18px;">
+            👉 SWIPE OR TAP TO TEAR PACK ➔
         </div>
     </div>
 </div>
@@ -1172,6 +1176,6 @@
     </div>
 </div>
 
-<script src="script.js?v=180.0"></script>
+<script src="script.js?v=185.0"></script>
 </body>
 </html>
