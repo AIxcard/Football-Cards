@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=155.0">
+<link rel="stylesheet" href="style.css?v=160.0">
 </head>
 
 <body>
@@ -219,62 +219,65 @@
     </div>
 </div>
 
-<!-- MYTHIC RARITY DRAMATIC BURST CUTSCENE -->
-<div id="mythicOverlay" class="modal hidden sols-rng-overlay mythic-cutscene-overlay">
-    <div class="sols-blackout"></div>
-    <div class="mythic-magma-rift"></div>
-    <div class="mythic-fire-auras"></div>
-    <div class="world-card sols-card mythic-sols-card">
-        <div class="mythic-fire-crest">🔥 MYTHIC STAR PHENOMENON 🔥</div>
-        <div class="mythic-card-photo-wrap" style="position:relative;margin:12px auto 6px;width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid #ff4d4d;box-shadow:0 0 35px rgba(255,77,77,0.85);">
-            <img id="mythicPlayerPhoto" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" style="width:100%;height:100%;object-fit:cover;" alt="Mythic Player" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
-        </div>
-        <div class="world-glow sols-icon" id="mythicIcon" style="font-size:32px;margin-top:-20px;position:relative;z-index:5;">🔥</div>
-        <p id="mythicRarityTag" class="rarity mythic sols-rarity-tag">★ 1 IN 50 MYTHIC CLASS ★</p>
-        <h1 id="mythicPlayerName" class="sols-player-name">PLAYER</h1>
-        <p id="mythicPlayerQuote" class="sols-player-quote">"World-Class Dominance · Elite Superstar"</p>
-        <p id="mythicPlayerMeta" class="sols-player-meta"></p>
-        <button id="mythicContinue" class="primary-btn sols-btn mythic-btn" onclick="closeMythicCutscene()">CLAIM MYTHIC CARD</button>
-    </div>
-</div>
+<!-- =========================================================
+     SOL'S RNG ULTRA-CINEMATIC CUTSCENE ENGINE
+     BLACKOUT + ANIMATED 60FPS PARTICLE VORTEX + FLASHBANG + CARD SLAM
+     ========================================================= -->
+<div id="solsCinematicOverlay" class="modal hidden sols-cinematic-stage" style="z-index:999999;background:#000000;">
+    <!-- 1. Interactive 60fps Cosmic Particle & Light Ray Canvas -->
+    <canvas id="solsCanvas" class="sols-fx-canvas"></canvas>
 
-<!-- SECRET RARITY SOL'S RNG CINEMATIC CUTSCENE -->
-<div id="secretOverlay" class="modal hidden sols-rng-overlay secret-cutscene-overlay">
-    <div class="sols-blackout"></div>
-    <div class="secret-celestial-rift"></div>
-    <div class="secret-lightning-flash"></div>
-    <div class="secret-starfield"></div>
-    <div class="world-card sols-card secret-sols-card">
-        <div class="secret-glitch-badge">✦ SECRET PHENOMENON ✦</div>
-        <div class="secret-card-photo-wrap" style="position:relative;margin:12px auto 6px;width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid #38bdf8;box-shadow:0 0 35px rgba(56,189,248,0.85);">
-            <img id="secretPlayerPhoto" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" style="width:100%;height:100%;object-fit:cover;" alt="Secret Player" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
-        </div>
-        <div class="world-glow sols-icon" id="secretIcon" style="font-size:32px;margin-top:-20px;position:relative;z-index:5;">💎</div>
-        <p id="secretRarityTag" class="rarity secret sols-rarity-tag">★ 1 IN 500 SECRET PHENOMENON ★</p>
-        <h1 id="secretPlayerName" class="sols-player-name">PLAYER</h1>
-        <p id="secretPlayerQuote" class="sols-player-quote">"Unstoppable Force · Elite Mastermind"</p>
-        <p id="secretPlayerMeta" class="sols-player-meta"></p>
-        <button id="secretContinue" class="primary-btn sols-btn secret-btn" onclick="closeSecretCutscene()">CLAIM SECRET CARD</button>
-    </div>
-</div>
+    <!-- 2. Skip Button -->
+    <button id="solsSkipBtn" class="sols-skip-btn" onclick="skipSolsCutscene()">⚡ SKIP CUTSCENE [➔]</button>
 
-<!-- WORLD CLASS SOL'S RNG CINEMATIC CUTSCENE (MESSI & RONALDO GOATS) -->
-<div id="worldClassOverlay" class="modal hidden sols-rng-overlay">
-    <div class="sols-blackout"></div>
-    <div class="sols-rift"></div>
-    <div class="sols-auras"></div>
-    <div class="world-card sols-card">
-        <div class="sols-cosmic-rays"></div>
-        <div id="wcGoatBadge" class="goat-crest-badge">🐐 ALL-TIME GOAT 🐐</div>
-        <div class="wc-photo-wrap" style="position:relative;margin:10px auto 6px;width:130px;height:130px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);box-shadow:0 0 35px rgba(255,215,0,0.85);">
-            <img id="wcPlayerPhoto" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80" style="width:100%;height:100%;object-fit:cover;" alt="GOAT" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+    <!-- 3. Screen Shake & Lighting Wrapper -->
+    <div id="solsShakeWrap" class="sols-shake-container">
+        
+        <!-- Blackout Vignette & Dimensional Rift -->
+        <div id="solsAtmosphereRift" class="sols-atmosphere-rift"></div>
+
+        <!-- Dramatic Phase Text Build-Up (Sol's RNG Style) -->
+        <div id="solsTextSequence" class="sols-text-sequence">
+            <div id="solsPhasePreText" class="sols-glitch-pretext">[ DIMENSIONAL ANOMALY DETECTED ]</div>
+            <div id="solsPhaseRarityTag" class="sols-rarity-flash">★ 1 IN 10,000 WORLD CLASS ★</div>
+            <div id="solsRuneRing" class="sols-rune-ring"></div>
         </div>
-        <div class="world-glow sols-icon" id="wcIcon" style="font-size:32px;margin-top:-22px;position:relative;z-index:5;">🌎</div>
-        <p id="wcRarityTag" class="rarity worldclass sols-rarity-tag">★ 1 IN 10,000 WORLD CLASS ★</p>
-        <h1 id="wcPlayerName" class="sols-player-name">PLAYER</h1>
-        <p id="wcPlayerQuote" class="sols-player-quote">"The Argentine Magician · 8x Ballon d'Or Winner"</p>
-        <p id="wcPlayerMeta" class="sols-player-meta"></p>
-        <button id="wcContinue" class="primary-btn sols-btn">CLAIM GOAT CARD</button>
+
+        <!-- Blinding Supernova Flashbang -->
+        <div id="solsFlashbang" class="sols-flashbang-layer"></div>
+
+        <!-- 4. Final Revealed 3D Sol's Card Box -->
+        <div id="solsCardBox" class="sols-grand-card-box">
+            <!-- God Rays / Cosmic Aura Behind Card -->
+            <div id="solsAuraBeams" class="sols-aura-beams"></div>
+            
+            <div id="solsCardInner" class="sols-card-content">
+                <div id="solsTopCrest" class="sols-card-crest">🐐 8x BALLON D'OR GOAT 🐐</div>
+                
+                <div class="sols-portrait-ring">
+                    <img id="solsCardImg" src="player_temp.png" alt="Player Photo">
+                    <div id="solsPortraitGlow" class="sols-portrait-glow"></div>
+                </div>
+
+                <div id="solsEmblemIcon" class="sols-emblem-icon">🌎</div>
+                <div id="solsRarityBanner" class="sols-rarity-banner">WORLD CLASS</div>
+                <h1 id="solsCardPlayerName" class="sols-player-title">LIONEL MESSI</h1>
+                
+                <div class="sols-stats-row">
+                    <span id="solsCardOvr" class="sols-ovr-pill">97 OVR</span>
+                    <span id="solsCardPos" class="sols-pos-pill">RW</span>
+                    <span id="solsSerialBadge" class="sols-serial-pill" style="display:none;">★ SERIALIZED ★</span>
+                </div>
+
+                <p id="solsCardQuote" class="sols-quote-text">"The Argentine Magician · World Champion · The Greatest of All Time"</p>
+
+                <div class="sols-action-buttons">
+                    <button id="solsReplayBtn" class="ghost-btn" style="padding:12px 18px;font-size:13px;" onclick="replaySolsCutscene()">🔄 Replay</button>
+                    <button id="solsClaimBtn" class="primary-btn sols-claim-btn" onclick="claimSolsCard()">✨ CLAIM CARD</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -1169,6 +1172,6 @@
     </div>
 </div>
 
-<script src="script.js?v=155.0"></script>
+<script src="script.js?v=160.0"></script>
 </body>
 </html>
