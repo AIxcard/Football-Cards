@@ -4276,9 +4276,9 @@ body.modal-open, html.modal-open {
     margin: 6px 0 2px !important;
 }
 
-.sols-theme-worldclass .sols-rarity-banner { color: #ffd700 !important; text-shadow: 0 0 15px #ffd700; }
-.sols-theme-secret .sols-rarity-banner { color: #38bdf8 !important; text-shadow: 0 0 15px #38bdf8; }
-.sols-theme-mythic .sols-rarity-banner { color: #ff4d4d !important; text-shadow: 0 0 15px #ff4d4d; }
+.sols-banner-worldclass, .sols-theme-worldclass .sols-rarity-banner { color: #ffd700 !important; text-shadow: 0 0 15px #ffd700 !important; }
+.sols-banner-secret, .sols-theme-secret .sols-rarity-banner { color: #00f5d4 !important; text-shadow: 0 0 15px #00f5d4 !important; }
+.sols-banner-mythic, .sols-theme-mythic .sols-rarity-banner { color: #ff4d4d !important; text-shadow: 0 0 15px #ff4d4d !important; }
 
 .sols-player-title {
     font-family: 'Impact', 'Arial Black', sans-serif !important;
