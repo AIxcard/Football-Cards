@@ -606,6 +606,15 @@ const SoundFx = {
     }
 };
 
+function getCardImage(card) {
+    if (!card) return "player_temp.png";
+    const nameLower = (card.player || card.name || "").toLowerCase();
+    if (nameLower.includes("monkey") || nameLower.includes("wukong")) {
+        return "monkey_king.png";
+    }
+    return card.image || "player_temp.png";
+}
+
 /* =========================================================
    PLAYERS (REAL PHOTOS + STATS)
    ========================================================= */
@@ -2429,7 +2438,13 @@ function confirmName() {
 
 function renderAll() {
     if (state.cards && state.cards.length) {
-        state.cards.forEach(c => { c.image = "player_temp.png"; });
+        state.cards.forEach(c => {
+            c.image = getCardImage(c);
+            if (c.player === "Monkey King") {
+                c.rarity = "Developer";
+                c.devCard = true;
+            }
+        });
     }
     try { updateCoinDisplay(); } catch(e) { console.error("CoinDisplay error", e); }
     try { renderHero(); } catch(e) { console.error("Hero error", e); }
@@ -3738,7 +3753,10 @@ const SolsCutsceneEngine = {
         const isHaaland = normName.includes("haaland");
         const isSerial = !!c.serialNumber;
 
-        if (img) img.src = c.image || "player_temp.png";
+        if (img) {
+            img.src = getCardImage(c);
+            img.setAttribute("draggable", "false");
+        }
         if (name) name.textContent = (c.player || "PLAYER").toUpperCase();
         if (ovr) ovr.textContent = `${c.rating || 90} OVR`;
         if (pos) pos.textContent = c.pos || "ST";
@@ -4049,7 +4067,8 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
         }
 
         if (revealPhoto) {
-            revealPhoto.src = card.image || "player_temp.png";
+            revealPhoto.src = getCardImage(card);
+            revealPhoto.setAttribute("draggable", "false");
         }
 
         if (revealRating) revealRating.textContent = card.rating;
@@ -4203,7 +4222,10 @@ function open3DCard(identifier) {
         rBadge.className = `rarity ${rClass}`;
     }
 
-    if (photo) photo.src = player.image || "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80";
+    if (photo) {
+        photo.src = getCardImage(player);
+        photo.setAttribute("draggable", "false");
+    }
 
     setText("card3DRating", player.rating);
     setText("card3DPos", player.pos);
@@ -4468,16 +4490,16 @@ function renderCards() {
 
     let cards = [...state.cards];
 
-    // Search filter
+    // Search filter - strictly search Player Name, Position, Rating, and Serial Number (NOT rarity strings!)
     const query = (searchInput ? searchInput.value : "").trim().toLowerCase();
     if (query) {
-        cards = cards.filter(c => 
-            (c.player || "").toLowerCase().includes(query) ||
-            (c.pos || "").toLowerCase().includes(query) ||
-            (c.rarity || "").toLowerCase().includes(query) ||
-            String(c.rating || "").includes(query) ||
-            (c.serialNumber && String(c.serialNumber).includes(query))
-        );
+        cards = cards.filter(c => {
+            const pName = (c.player || "").toLowerCase();
+            const pPos = (c.pos || "").toLowerCase();
+            const pRating = String(c.rating || "");
+            const pSerial = c.serialNumber ? String(c.serialNumber) : "";
+            return pName.includes(query) || pPos === query || pRating === query || pSerial === query;
+        });
     }
 
     if (filter && filter.value !== "all") {
@@ -4521,6 +4543,7 @@ function renderCards() {
         const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
         const value = DUPLICATE_VALUES[card.rarity] || 5;
         const rap = calculateCardRAP(card);
+        const cardImg = getCardImage(card);
 
         let themeClass = `theme-${rarityClassName(card.rarity)}`;
         if (card.rarity === "World Class") {
@@ -4543,17 +4566,19 @@ function renderCards() {
                 </button>
             </div>
 
-            ${card.serialNumber ? `<span class="serial-badge" style="display:inline-block;margin-bottom:6px;">★ SERIAL #${card.serialNumber}/10 ★</span>` : ""}
+            <div class="card-serial-slot">
+                ${card.serialNumber ? `<span class="serial-badge">★ SERIAL #${card.serialNumber}/10 ★</span>` : `<span class="serial-placeholder"></span>`}
+            </div>
 
             <div class="card-image-wrap">
-                <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+                <img class="card-photo" draggable="false" src="${cardImg}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='player_temp.png';">
             </div>
             <div class="card-rating">${card.rating}</div>
             <div class="card-position">${escapeHTML(card.pos)}</div>
             <h3>${escapeHTML(card.player)}</h3>
-            <div style="display:flex;justify-content:center;gap:6px;align-items:center;margin-top:2px;">
-                <small>${escapeHTML(card.rarity)}</small>
-                <span style="font-size:10px;font-weight:900;color:#38bdf8;background:rgba(56,189,248,0.12);padding:1px 6px;border-radius:6px;">💎 ${formatRAP(rap)}</span>
+            <div class="card-meta-row">
+                <span class="card-rarity-badge rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
+                <span class="card-rap-badge">💎 ${formatRAP(rap)}</span>
             </div>
 
             <div class="card-actions">
@@ -4630,13 +4655,14 @@ function renderShowcase() {
         }
 
         const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
+        const cardImg = getCardImage(card);
         return `
         <div class="showcase-slot">
             <button class="showcase-slot-action" onclick="event.stopPropagation(); openShowcasePicker(${index})">Change</button>
             <article class="card showcase-card ${frame.css}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="open3DCard('${card.id}')">
                 ${card.serialNumber ? `<span class="serial-badge" style="background:${card.serialGradient}">★ #${card.serialNumber}/10 ★</span>` : ""}
                 <div class="card-image-wrap">
-                    <img class="card-photo" src="${card.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}" alt="${escapeHTML(card.player)}">
+                    <img class="card-photo" draggable="false" src="${cardImg}" alt="${escapeHTML(card.player)}">
                 </div>
                 <div class="card-rating">${card.rating}</div>
                 <div class="card-position">${escapeHTML(card.pos)}</div>
@@ -4664,7 +4690,7 @@ function openShowcasePicker(slotIndex) {
                 ${card.serialNumber ? `<span class="serial-badge" style="background:${card.serialGradient}">★ #${card.serialNumber}/10 ★</span>` : ""}
                 <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <div class="card-image-wrap" style="height:110px;margin:6px 0;">
-                    <img class="card-photo" src="${card.image}">
+                    <img class="card-photo" draggable="false" src="${getCardImage(card)}">
                 </div>
                 <div style="font-weight:900;font-size:14px;color:#fff;">${escapeHTML(card.player)}</div>
                 <small style="color:var(--muted);">${card.rating} OVR · ${card.pos}</small>
@@ -5407,15 +5433,15 @@ function filterTradeCardPicker() {
     const offeredIds = new Set(activeLiveTradeSession.myOffer.map(c => c.id));
     let availableCards = state.cards.filter(c => !c.locked && !offeredIds.has(c.id));
 
-    // Filter by search query
+    // Filter by search query (Player Name, Pos, Rating, Serial)
     if (query) {
-        availableCards = availableCards.filter(c => 
-            (c.player || "").toLowerCase().includes(query) ||
-            (c.pos || "").toLowerCase().includes(query) ||
-            (c.rarity || "").toLowerCase().includes(query) ||
-            String(c.rating || "").includes(query) ||
-            (c.serialNumber && String(c.serialNumber).includes(query))
-        );
+        availableCards = availableCards.filter(c => {
+            const pName = (c.player || "").toLowerCase();
+            const pPos = (c.pos || "").toLowerCase();
+            const pRating = String(c.rating || "");
+            const pSerial = c.serialNumber ? String(c.serialNumber) : "";
+            return pName.includes(query) || pPos === query || pRating === query || pSerial === query;
+        });
     }
 
     // Filter by rarity
@@ -5443,12 +5469,13 @@ function filterTradeCardPicker() {
 
     grid.innerHTML = availableCards.map(c => {
         const cardRap = calculateCardRAP(c);
+        const cardImg = getCardImage(c);
         return `
         <article class="card frame-${rarityClassName(c.rarity)}" style="cursor:pointer;padding:12px;transform:scale(0.98);" onclick="addCardToMyTradeOffer('${c.id}')" title="Click to add to offer">
             <span class="rarity ${rarityClassName(c.rarity)}">${escapeHTML(c.rarity)}</span>
             ${c.serialNumber ? `<span class="serial-badge" style="display:inline-block;margin:4px 0 2px;">★ #${c.serialNumber} ★</span>` : ""}
             <div class="card-image-wrap" style="height:90px;">
-                <img class="card-photo" src="${c.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80'}">
+                <img class="card-photo" draggable="false" src="${cardImg}" onerror="this.onerror=null;this.src='player_temp.png';">
             </div>
             <div class="card-rating">${c.rating}</div>
             <div class="card-position">${escapeHTML(c.pos)}</div>
@@ -7609,6 +7636,14 @@ document.addEventListener("contextmenu", function(e) {
     }
 });
 
+// Prevent dragging of any card images, avatars, or modals
+document.addEventListener("dragstart", function(e) {
+    if (e.target && (e.target.tagName === "IMG" || e.target.closest(".card") || e.target.closest(".card-3d-wrapper") || e.target.closest(".modal"))) {
+        e.preventDefault();
+        return false;
+    }
+});
+
     // =========================================================
     // GLOBAL ACTION ATTACHMENT & WINDOW BRIDGE
     // =========================================================
@@ -7722,6 +7757,9 @@ document.addEventListener("contextmenu", function(e) {
         confirmMultiSell,
         quickSellDuplicates,
         quickSellRarity,
+        sellCard,
+        handleCardClick,
+        getCardImage,
         open3DCard,
         close3DCardModal,
         toggle3DCardFlip,
