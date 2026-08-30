@@ -193,11 +193,11 @@ const RARITY_ORDER = {
     Rare: 3,
     Epic: 4,
     Legendary: 5,
-    Mythic: 6,
-    Secret: 7,
-    Exclusive: 8,
-    "World Class": 9,
-    Tournament: 10,
+    Exclusive: 6,
+    Mythic: 7,
+    Secret: 8,
+    Tournament: 9,
+    "World Class": 10,
     Developer: 99
 };
 
@@ -282,11 +282,11 @@ const DUPLICATE_VALUES = {
     Rare: 25,
     Epic: 50,
     Legendary: 100,
-    Mythic: 200,
-    Secret: 500,
-    Exclusive: 750,
-    "World Class": 1000,
-    Tournament: 2000,
+    Exclusive: 180,
+    Mythic: 350,
+    Secret: 700,
+    Tournament: 1500,
+    "World Class": 3000,
     Developer: 10000
 };
 
@@ -296,11 +296,11 @@ const CARD_VALUES = {
     Rare: 40,
     Epic: 100,
     Legendary: 300,
-    Exclusive: 750,
-    Mythic: 1000,
-    Secret: 2500,
-    "World Class": 5000,
-    Tournament: 15000,
+    Exclusive: 600,
+    Mythic: 1200,
+    Secret: 3000,
+    Tournament: 8000,
+    "World Class": 15000,
     Developer: 50000
 };
 
@@ -4177,9 +4177,13 @@ function toggle3DCardFlip() {
     SoundFx.click();
 }
 
-function open3DCard(identifier) {
+function open3DCard(identifier, isFromIndex = false) {
     let pObj = PLAYERS.find(p => p.name === identifier);
-    let cardObj = state.cards.find(c => c.id === identifier || c.player === identifier);
+    let cardObj = isFromIndex ? null : state.cards.find(c => c.id === identifier);
+
+    if (!cardObj && !isFromIndex && !pObj) {
+        cardObj = state.cards.find(c => c.player === identifier);
+    }
 
     const player = cardObj || pObj;
     if (!player) return;
@@ -4200,7 +4204,7 @@ function open3DCard(identifier) {
     const badgeWrap = document.getElementById("card3DBadgeWrap");
 
     if (badgeWrap) {
-        if (cardObj && cardObj.serialNumber) {
+        if (!isFromIndex && cardObj && cardObj.serialNumber) {
             badgeWrap.innerHTML = `<span class="serial-badge" style="background:${cardObj.serialGradient}">★ SERIAL #${cardObj.serialNumber}/10 ★</span>`;
         } else {
             badgeWrap.innerHTML = "";
@@ -4210,7 +4214,7 @@ function open3DCard(identifier) {
     const rClass = rarityClassName(player.rarity);
     if (cardEl) {
         cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass}`;
-        if (cardObj && cardObj.serialGradient) {
+        if (!isFromIndex && cardObj && cardObj.serialGradient) {
             cardEl.style.background = cardObj.serialGradient;
         } else {
             cardEl.style.background = "#0d1a26";
@@ -4276,7 +4280,7 @@ function renderIndex() {
             return `
             <article class="card index-card locked">
                 <div class="card-image-wrap">
-                    <img class="card-photo" src="${player.image}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
+                    <img class="card-photo" draggable="false" src="${player.image}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
                 </div>
                 <div class="card-rating">??</div>
                 <div class="card-position">${escapeHTML(player.pos)}</div>
@@ -4287,7 +4291,7 @@ function renderIndex() {
         }
 
         return `
-        <article class="card index-card glow-${rClass}" onclick="open3DCard('${escapeHTML(player.name)}')">
+        <article class="card index-card glow-${rClass}" onclick="open3DCard('${escapeHTML(player.name)}', true)">
             <div class="card-image-wrap">
                 <img class="card-photo" src="${player.image}" alt="${escapeHTML(player.name)}">
             </div>
@@ -4578,7 +4582,7 @@ function renderCards() {
             <h3>${escapeHTML(card.player)}</h3>
             <div class="card-meta-row">
                 <span class="card-rarity-badge rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
-                <span class="card-rap-badge">💎 ${formatRAP(rap)}</span>
+                <span class="card-rap-badge">💎 ${formatRAP(rap, card)}</span>
             </div>
 
             <div class="card-actions">
@@ -4829,18 +4833,24 @@ function initiateTradeWithSearchedUser() {
 
 function calculateCardRAP(card) {
     if (!card) return 0;
+    
+    // Serialized cards are priceless (N/A value, ranked highest for sorting)
+    if (card.serialNumber) {
+        return 999000000 - Number(card.serialNumber);
+    }
+
     const baseTable = {
         "Common": 100,
         "Uncommon": 350,
         "Rare": 1200,
         "Epic": 6000,
         "Legendary": 30000,
-        "World Class": 120000,
-        "Exclusive": 300000,
-        "Mythic": 750000,
-        "Secret": 3000000,
-        "Tournament": 150000,
-        "Developer": 10000000
+        "Exclusive": 100000,
+        "Mythic": 500000,
+        "Secret": 1500000,
+        "Tournament": 4000000,
+        "World Class": 10000000,
+        "Developer": 50000000
     };
     const ratingMultiplier = {
         "Common": 2,
@@ -4848,36 +4858,26 @@ function calculateCardRAP(card) {
         "Rare": 15,
         "Epic": 60,
         "Legendary": 250,
-        "World Class": 1200,
-        "Exclusive": 2500,
-        "Mythic": 6000,
-        "Secret": 25000,
-        "Tournament": 1500,
-        "Developer": 100000
+        "Exclusive": 1000,
+        "Mythic": 3500,
+        "Secret": 10000,
+        "Tournament": 25000,
+        "World Class": 65000,
+        "Developer": 250000
     };
 
     const rarity = card.rarity || "Common";
     let rap = (baseTable[rarity] || 100) + (Number(card.rating) || 75) * (ratingMultiplier[rarity] || 2);
-
-    // Serialized Card Multiplier
-    if (card.serialNumber) {
-        const s = Number(card.serialNumber);
-        if (s === 1) rap *= 10;
-        else if (s <= 5) rap *= 5;
-        else if (s <= 10) rap *= 3;
-        else if (s <= 25) rap *= 2;
-        else if (s <= 100) rap *= 1.5;
-        else rap *= 1.25;
-    }
-
     return Math.round(rap);
 }
 
-function formatRAP(val) {
+function formatRAP(val, card) {
+    if (card && card.serialNumber) return "N/A";
+    if (val === "N/A" || val === null || val === undefined) return "N/A";
     const num = Number(val) || 0;
-    if (num >= 1000000) return (num / 1000000).toFixed(2) + "M 💎";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K 💎";
-    return num.toLocaleString() + " 💎";
+    if (num >= 1000000) return (num / 1000000).toFixed(2) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    return num.toLocaleString();
 }
 
 /* =========================================================
