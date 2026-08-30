@@ -2901,7 +2901,10 @@ function initPackSwipeGesture(onTear) {
 
     if (!overlay || !packs.length) return;
 
+    const gestureReadyAt = Date.now() + 350; // Guard against initial button click release!
+
     function executeTear() {
+        if (Date.now() < gestureReadyAt) return;
         if (packTornExecuted) return;
         packTornExecuted = true;
         
@@ -4212,12 +4215,29 @@ function open3DCard(identifier, isFromIndex = false) {
     }
 
     const rClass = rarityClassName(player.rarity);
+    let themeClass = "";
+    const pName = player.player || player.name;
+    if (pName === "Lionel Messi") {
+        themeClass = "theme-messi";
+    } else if (pName === "Cristiano Ronaldo") {
+        themeClass = "theme-ronaldo";
+    } else if (pName === "Monkey King" || player.devCard) {
+        themeClass = "theme-developer";
+    } else if (player.rarity === "Tournament") {
+        themeClass = "theme-tournament";
+    }
+
     if (cardEl) {
-        cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass}`;
         if (!isFromIndex && cardObj && cardObj.serialGradient) {
+            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} is-serialized`;
             cardEl.style.background = cardObj.serialGradient;
+            cardEl.style.backgroundSize = "200% 200%";
+            cardEl.style.animation = "serializedHoloShift 4s ease-in-out infinite alternate";
         } else {
-            cardEl.style.background = "#0d1a26";
+            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass}`;
+            cardEl.style.background = "";
+            cardEl.style.backgroundSize = "";
+            cardEl.style.animation = "";
         }
     }
 
@@ -4555,13 +4575,15 @@ function renderCards() {
             else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
         } else if (card.rarity === "Tournament") {
             themeClass = "theme-tournament";
+        } else if (card.rarity === "Developer" || card.player === "Monkey King") {
+            themeClass = "theme-developer";
         }
 
         const isLocked = !!card.locked;
         const isSelected = selectedCardIds.has(card.id);
 
         return `
-        <article class="card ${frame.css} ${themeClass} ${isSelected ? 'selected-for-bulk' : ''}" ${card.serialGradient ? `style="background:${card.serialGradient}"` : ""} onclick="handleCardClick('${card.id}', event)">
+        <article class="card ${frame.css} ${themeClass} ${card.serialNumber ? 'is-serialized' : ''} ${isSelected ? 'selected-for-bulk' : ''}" ${card.serialGradient ? `style="background:${card.serialGradient}; background-size:200% 200%; animation:serializedHoloShift 4s ease-in-out infinite alternate;"` : ""} onclick="handleCardClick('${card.id}', event)">
             ${multiSellMode ? `<input type="checkbox" class="card-select-checkbox" ${isSelected ? 'checked' : ''} onclick="toggleCardSelection('${card.id}', event)">` : ""}
 
             <div class="card-top-row">
@@ -4581,7 +4603,7 @@ function renderCards() {
             <div class="card-position">${escapeHTML(card.pos)}</div>
             <h3>${escapeHTML(card.player)}</h3>
             <div class="card-meta-row">
-                <span class="card-rarity-text rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
+                <span class="card-rarity-badge rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <span class="card-rap-badge">💎 ${formatRAP(rap, card)}</span>
             </div>
 
