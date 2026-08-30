@@ -950,102 +950,115 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
         radial-gradient(circle,#21465d,transparent 65%);
 }
 
-.rarity{
-    display:inline-block;
-    font-size:11px;
-    font-weight:900;
-    letter-spacing:1px;
-    text-transform:uppercase;
-    background-color:transparent !important;
-    border:none !important;
-    box-shadow:none !important;
+.rarity {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 4px 0 !important;
+    -webkit-text-fill-color: initial !important;
 }
 
 .common {
-    background: linear-gradient(135deg, #cbd5e1 0%, #ffffff 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #cbd5e1 !important;
+    text-shadow: 0 0 6px rgba(203, 213, 225, 0.6) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
     font-weight: 900;
 }
 .uncommon {
-    background: linear-gradient(135deg, #00e676 0%, #b9f6ca 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #4ade80 !important;
+    text-shadow: 0 0 8px rgba(74, 222, 128, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #4ade80 !important;
     font-weight: 900;
 }
 .rare {
-    background: linear-gradient(135deg, #00b0ff 0%, #80d8ff 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #38bdf8 !important;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #38bdf8 !important;
     font-weight: 900;
 }
 .epic {
-    background: linear-gradient(135deg, #d500f9 0%, #ff80ab 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #c084fc !important;
+    text-shadow: 0 0 8px rgba(192, 132, 252, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #c084fc !important;
     font-weight: 900;
 }
 .legendary {
-    background: linear-gradient(135deg, #ffd700 0%, #ffe57f 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #facc15 !important;
+    text-shadow: 0 0 8px rgba(250, 204, 21, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #facc15 !important;
     font-weight: 900;
 }
 .exclusive {
-    background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 40%, #a855f7 70%, #7e22ce 100%);
-    background-size: 200% auto;
-    animation: textShimmer 3s linear infinite;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #d896ff !important;
+    text-shadow: 0 0 10px rgba(216, 150, 255, 0.9) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #d896ff !important;
     font-weight: 900;
 }
 .mythic {
-    background: linear-gradient(135deg, #ff1744 0%, #ff8a80 50%, #d50000 100%);
-    background-size: 200% auto;
-    animation: textShimmer 2.5s linear infinite;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ff4d4d !important;
+    text-shadow: 0 0 10px rgba(255, 77, 77, 0.9) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #ff4d4d !important;
     font-weight: 900;
 }
 .secret {
-    background: linear-gradient(135deg, #ffffff 0%, #9e9e9e 40%, #ffffff 70%, #616161 100%);
-    background-size: 200% auto;
-    animation: textShimmer 3s linear infinite;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #00f5d4 !important;
+    text-shadow: 0 0 10px rgba(0, 245, 212, 0.9) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #00f5d4 !important;
     font-weight: 900;
 }
 .worldclass {
-    background: linear-gradient(90deg, #ffffff 0%, #69c7ff 40%, #b66cff 70%, #ffffff 100%);
-    background-size: 200% auto;
-    animation: textShimmer 2.5s linear infinite;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.9) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #ffd700 !important;
     font-weight: 900;
 }
 .limited {
-    background: linear-gradient(135deg, #b66cff, #ffffff);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #d896ff !important;
+    text-shadow: 0 0 8px rgba(216, 150, 255, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #d896ff !important;
     font-weight: 900;
 }
 .tournament {
-    background: linear-gradient(90deg, #f5ce62, #ff8c00, #ff0077, #00f2fe, #f5ce62);
-    background-size: 200% auto;
-    animation: textShimmer 3s linear infinite;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #ffd700 !important;
+    font-weight: 900;
+}
+.developer {
+    color: #ffd700 !important;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.95) !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-text-fill-color: #ffd700 !important;
     font-weight: 900;
 }
 
@@ -2554,13 +2567,12 @@ select,input{
    ========================================================= */
 
 .rarity.developer {
-    background: linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #ff0044 100%);
-    background-size: 200% auto;
-    animation: textShimmer 2.5s linear infinite;
-    color: #120400;
-    border-color: #ffd700;
+    background: transparent !important;
+    color: #ffd700 !important;
+    border: none !important;
     font-weight: 900;
-    text-shadow: 0 0 4px rgba(255, 215, 0, 0.9);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.95) !important;
+    -webkit-text-fill-color: #ffd700 !important;
 }
 
 .glow-developer {
@@ -2573,13 +2585,12 @@ select,input{
    ========================================================= */
 
 .rarity.exclusive {
-    background: linear-gradient(135deg, #b66cff 0%, #ffffff 50%, #9d4edd 100%);
-    background-size: 200% auto;
-    animation: textShimmer 3s linear infinite;
-    color: #1a062c;
-    border-color: #b66cff;
+    background: transparent !important;
+    color: #d896ff !important;
+    border: none !important;
     font-weight: 900;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+    text-shadow: 0 0 10px rgba(216, 150, 255, 0.9) !important;
+    -webkit-text-fill-color: #d896ff !important;
 }
 
 .glow-exclusive {
@@ -3658,7 +3669,7 @@ body.modal-open, html.modal-open {
     text-align: center !important;
     width: 100% !important;
     max-width: 600px !important;
-    height: auto !important;
+    height: 520px !important;
     margin: 0 auto !important;
     padding: 0 !important;
     perspective: 1600px !important;
@@ -3680,9 +3691,7 @@ body.modal-open, html.modal-open {
     position: relative !important;
     perspective: 1600px !important;
     width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    padding: 20px 0 !important;
+    height: 100% !important;
     margin: 0 auto !important;
     overflow: visible !important;
     z-index: 20 !important;
@@ -3700,6 +3709,12 @@ body.modal-open, html.modal-open {
 .luxury-booster-pack {
     position: relative !important;
     display: block !important;
+    width: 320px !important;
+    height: 490px !important;
+    min-width: 280px !important;
+    min-height: 440px !important;
+    max-width: 90vw !important;
+    max-height: 80vh !important;
     perspective: 1500px !important;
     transform-style: preserve-3d !important;
     user-select: none !important;
@@ -3708,6 +3723,7 @@ body.modal-open, html.modal-open {
     z-index: 30 !important;
     pointer-events: auto !important;
     overflow: visible !important;
+    margin: 0 auto !important;
 }
 
 .luxury-booster-pack:active {
