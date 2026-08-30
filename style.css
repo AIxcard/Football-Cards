@@ -680,38 +680,24 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
 }
 
-/* Messi World Class: Animated Blue & White Albiceleste Gradient */
-.card.theme-messi {
-    background: linear-gradient(135deg, #003b7a 0%, #0099ff 35%, #ffffff 60%, #0099ff 80%, #003b7a 100%);
-    background-size: 250% 250%;
-    animation: bgGradientShift 4s ease infinite;
-    border-color: #69c7ff;
-    box-shadow: 0 0 35px rgba(0, 153, 255, 0.5);
-}
-
+/* Messi World Class: Signature Golden Solar / Albiceleste Cyan Animated Gradient */
+.card.theme-messi,
 .card-3d-wrapper.theme-messi {
-    background: linear-gradient(135deg, #003b7a 0%, #0099ff 35%, #ffffff 60%, #0099ff 80%, #003b7a 100%) !important;
-    background-size: 250% 250% !important;
-    animation: bgGradientShift 4s ease infinite !important;
-    border-color: #69c7ff !important;
-    box-shadow: 0 0 35px rgba(0, 153, 255, 0.5) !important;
+    background: linear-gradient(135deg, #451a03 0%, #f97316 35%, #fde047 70%, #38bdf8 100%) !important;
+    background-size: 200% 200% !important;
+    animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.6) !important;
 }
 
-/* Ronaldo World Class: Animated Red & White CR7 Gradient */
-.card.theme-ronaldo {
-    background: linear-gradient(135deg, #8b0014 0%, #ff1744 35%, #ffffff 60%, #ff1744 80%, #8b0014 100%);
-    background-size: 250% 250%;
-    animation: bgGradientShift 4s ease infinite;
-    border-color: #ff5252;
-    box-shadow: 0 0 35px rgba(255, 23, 68, 0.5);
-}
-
+/* Ronaldo World Class: Signature Royal Purple & Indigo Crimson Animated Gradient */
+.card.theme-ronaldo,
 .card-3d-wrapper.theme-ronaldo {
-    background: linear-gradient(135deg, #8b0014 0%, #ff1744 35%, #ffffff 60%, #ff1744 80%, #8b0014 100%) !important;
-    background-size: 250% 250% !important;
-    animation: bgGradientShift 4s ease infinite !important;
-    border-color: #ff5252 !important;
-    box-shadow: 0 0 35px rgba(255, 23, 68, 0.5) !important;
+    background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #c084fc 70%, #ffffff 100%) !important;
+    background-size: 200% 200% !important;
+    animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
+    border-color: #c084fc !important;
+    box-shadow: 0 0 35px rgba(192, 132, 252, 0.6) !important;
 }
 
 /* Emanuel Tournament Card: Animated Cosmic Gold & Cyan Gradient */
