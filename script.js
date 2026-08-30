@@ -1399,6 +1399,35 @@ const GlobalCloudRest = {
         }
     },
 
+    async getGlobalSerialCounts() {
+        try {
+            const doc = await this.fetchFile("global_serial_counts");
+            if (doc && doc.data && typeof doc.data === "object") {
+                return doc.data;
+            }
+        } catch (e) {}
+        return null;
+    },
+
+    async allocateGlobalSerial(playerName) {
+        try {
+            const p = (playerName === "Lionel Messi") ? "Lionel Messi" : ((playerName === "Cristiano Ronaldo") ? "Cristiano Ronaldo" : null);
+            if (!p) return null;
+
+            let counts = await this.getGlobalSerialCounts() || {};
+            counts["Lionel Messi"] = Number(counts["Lionel Messi"]) || 0;
+            counts["Cristiano Ronaldo"] = Number(counts["Cristiano Ronaldo"]) || 0;
+
+            if (counts[p] < 10) {
+                counts[p]++;
+                const allocated = counts[p];
+                await this.saveFile("global_serial_counts", counts);
+                return allocated;
+            }
+        } catch (e) {}
+        return null;
+    },
+
     async fetchUser(username) {
         if (!username) return null;
         try {
@@ -3053,7 +3082,7 @@ function unlockModalScroll() {
 
 let isOpeningPackInProgress = false;
 
-function openPack(type, count = 1) {
+async function openPack(type, count = 1) {
     if (isOpeningPackInProgress) return;
 
     const pack = PACKS[type];
@@ -3111,16 +3140,29 @@ function openPack(type, count = 1) {
             addCoins(bonus);
         }
 
-        // Check serialization ONLY for World Class (Messi & Ronaldo)
+        // Worldwide Global Serial Allocation ONLY for World Class (Messi & Ronaldo)
         let serialNum = null;
         let serialGrad = null;
 
         if (rarity === "World Class" && (player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo")) {
             if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
-            if (state.serializedCounts[player.name] < 10) {
-                state.serializedCounts[player.name]++;
-                serialNum = state.serializedCounts[player.name];
-                serialGrad = generateRandomSerializedGradient(serialNum, player.name);
+            try {
+                const globalNum = await GlobalCloudRest.allocateGlobalSerial(player.name);
+                if (globalNum !== null && globalNum <= 10) {
+                    serialNum = globalNum;
+                    state.serializedCounts[player.name] = Math.max(state.serializedCounts[player.name] || 0, globalNum);
+                    serialGrad = generateRandomSerializedGradient(serialNum, player.name);
+                } else if (globalNum === null && state.serializedCounts[player.name] < 10) {
+                    state.serializedCounts[player.name]++;
+                    serialNum = state.serializedCounts[player.name];
+                    serialGrad = generateRandomSerializedGradient(serialNum, player.name);
+                }
+            } catch(e) {
+                if (state.serializedCounts[player.name] < 10) {
+                    state.serializedCounts[player.name]++;
+                    serialNum = state.serializedCounts[player.name];
+                    serialGrad = generateRandomSerializedGradient(serialNum, player.name);
+                }
             }
         }
 
@@ -4569,14 +4611,16 @@ function renderCards() {
         const rap = calculateCardRAP(card);
         const cardImg = getCardImage(card);
 
-        let themeClass = `theme-${rarityClassName(card.rarity)}`;
-        if (card.rarity === "World Class") {
-            if (card.player === "Lionel Messi") themeClass = "theme-messi";
-            else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
-        } else if (card.rarity === "Tournament") {
-            themeClass = "theme-tournament";
-        } else if (card.rarity === "Developer" || card.player === "Monkey King") {
-            themeClass = "theme-developer";
+        let themeClass = card.serialNumber ? "" : `theme-${rarityClassName(card.rarity)}`;
+        if (!card.serialNumber) {
+            if (card.rarity === "World Class") {
+                if (card.player === "Lionel Messi") themeClass = "theme-messi";
+                else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
+            } else if (card.rarity === "Tournament") {
+                themeClass = "theme-tournament";
+            } else if (card.rarity === "Developer" || card.player === "Monkey King") {
+                themeClass = "theme-developer";
+            }
         }
 
         const isLocked = !!card.locked;
