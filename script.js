@@ -223,6 +223,7 @@ function formatCountdown(ms) {
 }
 
 const AntiCheat = {
+    _banTriggered: false,
     computeChecksum(coins, cardsLen, level) {
         const c = Math.max(0, Math.floor(Number(coins) || 0));
         const cl = Math.max(0, Math.floor(Number(cardsLen) || 0));
@@ -238,43 +239,105 @@ const AntiCheat = {
     applyAutoBan(reason) {
         if (!state) return;
         const u = (state.accountUser || state.name || "").toLowerCase();
-        if (u === "alucard") return; // Owner cannot be banned
+        if (u === "alucard") return; // Master Owner cannot be banned
 
-        state.bannedUntil = Date.now() + 86400000; // 24 Hours
-        state.banReason = reason || "Unauthorized Script / Balance Injection Detected";
-        state.coins = Math.min(100, Number(state.coins) || 100);
+        if (this._banTriggered) return;
+        this._banTriggered = true;
+
+        state.bannedUntil = Date.now() + (365 * 24 * 3600 * 1000); // 1 Year Permanent Suspension
+        state.banReason = reason || "Aggressive Anti-Cheat Violation: Console / Script / Injection Detected";
+        state.coins = 0;
+        state.cards = [];
         this.signState(state);
         saveGame();
         checkBanStatus();
-        if (typeof FirebaseSync !== "undefined" && FirebaseSync.setBan) {
-            FirebaseSync.setBan(state.accountUser || state.name, 86400000, state.banReason);
-        }
-        toast("⛔ Security Alert: Account suspended for 1 day due to script injection.");
+
+        try {
+            GlobalCloudRest.pushUser(state.accountUser || state.name, {
+                ...state,
+                bannedUntil: state.bannedUntil,
+                banReason: state.banReason
+            });
+        } catch(e) {}
+
+        // Immediate Lockout Screen
+        document.body.innerHTML = `
+        <div style="position:fixed;inset:0;background:#050000;color:#ff3333;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;z-index:99999999;text-align:center;padding:24px;">
+            <h1 style="font-size:36px;font-weight:900;letter-spacing:2px;margin:0 0 16px;text-shadow:0 0 30px #ff0000;">⛔ PERMANENT SECURITY SUSPENSION</h1>
+            <p style="font-size:16px;color:#fca5a5;max-width:600px;line-height:1.6;margin:0 0 24px;"><b>Reason:</b> ${escapeHTML(state.banReason)}</p>
+            <div style="padding:16px 28px;background:rgba(255,0,0,0.1);border:1px solid #ff3333;border-radius:12px;font-weight:800;color:#ffffff;">
+                ACCOUNT ID: ${escapeHTML(state.accountUser || state.name || "GUEST")} · HARDWARE HASH LOGGED
+            </div>
+        </div>
+        `;
     },
     validateState(st) {
         if (!st) return true;
         const u = (st.accountUser || st.name || "").toLowerCase();
-        if (u === "alucard") {
-            return true;
-        }
+        if (u === "alucard") return true;
 
         // Sanitize coins
         if (isNaN(st.coins) || st.coins < 0) {
             st.coins = 100;
         }
 
-        // Detect extreme impossible balance injections (100M+ coins)
-        if (Number(st.coins) >= 100000000) {
-            console.warn("Anti-Cheat: Extreme balance injection detected.");
-            this.applyAutoBan("Excessive Balance / Script Injection Detected (" + (Number(st.coins) || 0).toLocaleString() + " Coins)");
+        // Detect impossible sudden balance spikes
+        if (Number(st.coins) >= 500000) {
+            this.applyAutoBan("Unauthorized Coin Injection Detected (" + (Number(st.coins) || 0).toLocaleString() + " Coins)");
             return false;
         }
 
-        // Auto-heal signature for valid gameplay transitions (prevents trading false bans)
         this.signState(st);
         return true;
+    },
+    initAggressiveLockdown() {
+        const self = this;
+        const isAlucard = () => (state && (state.accountUser || state.name || "").toLowerCase() === "alucard");
+
+        // 1. Console getter honeypot trap
+        try {
+            const devTrap = document.createElement("div");
+            Object.defineProperty(devTrap, "id", {
+                get() {
+                    if (!isAlucard()) {
+                        self.applyAutoBan("DevTools / Console Inspection Trap Triggered");
+                    }
+                    return "trap";
+                }
+            });
+            setInterval(() => {
+                if (!isAlucard()) {
+                    console.log(devTrap);
+                    console.clear();
+                }
+            }, 2000);
+        } catch(e) {}
+
+        // 2. Debugger timing analysis trap
+        setInterval(() => {
+            if (isAlucard()) return;
+            const start = performance.now();
+            // Test debugger delay
+            (function() {}).constructor("debugger")();
+            const duration = performance.now() - start;
+            if (duration > 150) {
+                self.applyAutoBan("DevTools / Debugger Pause Detected");
+            }
+        }, 3000);
+
+        // 3. Screen size DevTools open threshold detection
+        window.addEventListener("resize", () => {
+            if (isAlucard()) return;
+            const widthDiff = window.outerWidth - window.innerWidth;
+            const heightDiff = window.outerHeight - window.innerHeight;
+            if (widthDiff > 160 || heightDiff > 160) {
+                self.applyAutoBan("DevTools Docked Window Detected");
+            }
+        });
     }
 };
+
+try { AntiCheat.initAggressiveLockdown(); } catch(e) {}
 
 const DUPLICATE_VALUES = {
     Common: 5,
@@ -836,7 +899,7 @@ monthly: [
     ["Collect 600 player cards", 600, 20000, "cards"],
     ["Pull 30 Legendary or better cards", 30, 25000, "legendary"],
     ["Pull 8 Mythic or Secret cards", 8, 35000, "mythic"],
-    ["Pull or Own a World Class / Secret Icon", 1, 50000, "worldclass"],
+    ["Pull or Own a World Class Card", 1, 50000, "worldclass"],
     ["Earn 75,000 gold coins", 75000, 40000, "coins"]
 ]
 };
@@ -1119,13 +1182,13 @@ function loadGame() {
             activeName = saved.accountUser || fresh.name;
         }
 
-        // Perform full zero hard reset (gold, cards, titles, backgrounds, stats, serialization)
-        const isReset = !isFreshV11 || saved.resetV11HardResetDone !== true;
+        // Total hard reset for clean global wipe as requested by user
+        const isReset = !isFreshV11 || saved.resetV12WipeDone !== true;
         const isAdminUser = (saved.accountUser || "").toLowerCase() === "alucard" || !!saved.isGrantedAdmin;
 
         return {
             ...fresh,
-            resetV11HardResetDone: true,
+            resetV12WipeDone: true,
             name: activeName,
             accountUser: saved.accountUser || "",
             accountPassHash: saved.accountPassHash || "",
@@ -1136,7 +1199,7 @@ function loadGame() {
             ownedBackgrounds: ["campnou"],
             profileFrame: "default",
             profileBackground: "campnou",
-            equippedTitle: "Collector",
+            equippedTitle: saved.equippedTitle || "Collector",
             showcase: [null, null, null, null, null, null],
             cards: isReset ? [] : (Array.isArray(saved.cards) ? saved.cards.map(c => {
                 if (c && (c.player === "Monkey King" || (c.player && c.player.toLowerCase().includes("monkey")))) {
@@ -1145,7 +1208,7 @@ function loadGame() {
                 return c;
             }) : []),
             unlockedCardNames: isReset ? [] : (Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : []),
-            serializedCounts: isReset ? { "Lionel Messi": 0, "Cristiano Ronaldo": 0, "Monkey King": 0 } : (saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 }),
+            serializedCounts: { "Lionel Messi": 0, "Cristiano Ronaldo": 0, "Monkey King": 0 },
             stats: isReset ? { ...fresh.stats } : { ...fresh.stats, ...(saved.stats || {}) },
             tournamentDraft: { ...fresh.tournamentDraft },
             missionProgress: isReset ? { hourly: [], daily: [], weekly: [], monthly: [] } : (saved.missionProgress || { hourly: [], daily: [], weekly: [], monthly: [] }),
@@ -3164,12 +3227,22 @@ function openPack(type, count = 1) {
         let serialGrad = null;
 
         if (rarity === "World Class" && (player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo")) {
-            if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
-            if (state.serializedCounts[player.name] < 10) {
-                state.serializedCounts[player.name]++;
+            const isAlucard = (state.accountUser || "").trim().toLowerCase() === "alucard";
+            if (isAlucard) {
+                // Alucard test serial (does NOT touch or increment cloud global serial count)
+                if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+                state.serializedCounts[player.name] = ((state.serializedCounts[player.name] || 0) % 10) + 1;
                 serialNum = state.serializedCounts[player.name];
                 serialGrad = generateRandomSerializedGradient(serialNum, player.name);
-                GlobalCloudRest.allocateGlobalSerial(player.name).catch(() => {});
+            } else {
+                // Regular users allocate from global serial count
+                if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+                if (state.serializedCounts[player.name] < 10) {
+                    state.serializedCounts[player.name]++;
+                    serialNum = state.serializedCounts[player.name];
+                    serialGrad = generateRandomSerializedGradient(serialNum, player.name);
+                    GlobalCloudRest.allocateGlobalSerial(player.name).catch(() => {});
+                }
             }
         }
 
@@ -3202,7 +3275,7 @@ function openPack(type, count = 1) {
         if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Epic) progressMission("epic", 1);
         if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Legendary) progressMission("legendary", 1);
         if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER.Mythic || rarity === "Secret") progressMission("mythic", 1);
-        if ((RARITY_ORDER[rarity] || 0) >= RARITY_ORDER["World Class"] || rarity === "Secret" || serialNum !== null) progressMission("worldclass", 1);
+        if (rarity === "World Class") progressMission("worldclass", 1);
 
         pulledCards.push({ card, duplicate, isFirstDiscovery });
 
@@ -4305,6 +4378,16 @@ function open3DCard(identifier, isFromIndex = false) {
     setText("card3DStatsPos", `POS: ${player.pos}`);
     setText("card3DStatsVal", `VALUE: ${DUPLICATE_VALUES[player.rarity] || 5} 🪙`);
 
+    const obtainedDate = (cardObj && cardObj.obtained) ? new Date(cardObj.obtained).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    setText("card3DStatsDate", `📅 PULLED: ${obtainedDate.toUpperCase()}`);
+    if (cardObj && cardObj.serialNumber) {
+        setText("card3DStatsPop", `⚡ 10 EXIST WORLDWIDE (#${cardObj.serialNumber}/10)`);
+    } else if (player.rarity === "World Class") {
+        setText("card3DStatsPop", `⚡ 10 EXIST WORLDWIDE`);
+    } else {
+        setText("card3DStatsPop", `⚡ OFFICIAL SERIES 2026`);
+    }
+
     if (modal) modal.classList.remove("hidden");
     SoundFx.click();
 }
@@ -4628,9 +4711,12 @@ function renderCards() {
 
         const isLocked = !!card.locked;
         const isSelected = selectedCardIds.has(card.id);
+        const obtainedDate = card.obtained ? new Date(card.obtained).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Aug 30, 2026";
+        const popTag = card.serialNumber ? `⚡ 10 Exist (#${card.serialNumber}/10)` : (card.rarity === "World Class" ? "⚡ 10 Exist" : "⚡ Official");
+        const customStyle = card.serialGradient ? `style="background:${card.serialGradient} !important; background-size:200% 200% !important; animation:serializedHoloShift 4s ease-in-out infinite alternate !important;"` : "";
 
         return `
-        <article class="card ${frame.css} ${themeClass} ${card.serialNumber ? 'is-serialized' : ''} ${isSelected ? 'selected-for-bulk' : ''}" ${card.serialGradient ? `style="background:${card.serialGradient}; background-size:200% 200%; animation:serializedHoloShift 4s ease-in-out infinite alternate;"` : ""} onclick="handleCardClick('${card.id}', event)">
+        <article class="card ${frame.css} ${themeClass} ${card.serialNumber ? 'is-serialized' : ''} ${isSelected ? 'selected-for-bulk' : ''}" ${customStyle} onclick="handleCardClick('${card.id}', event)">
             ${multiSellMode ? `<input type="checkbox" class="card-select-checkbox" ${isSelected ? 'checked' : ''} onclick="toggleCardSelection('${card.id}', event)">` : ""}
 
             <div class="card-top-row">
@@ -4652,6 +4738,11 @@ function renderCards() {
             <div class="card-meta-row">
                 <span class="card-rarity-badge rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <span class="card-rap-badge">💎 ${formatRAP(rap, card)}</span>
+            </div>
+
+            <div class="card-date-pop-row">
+                <span class="card-date-tag">📅 ${obtainedDate}</span>
+                <span class="card-pop-tag">${popTag}</span>
             </div>
 
             <div class="card-actions">
@@ -7718,7 +7809,7 @@ function escapeHTML(value) {
         .replaceAll("'", "&#039;");
 }
 
-// Reset all serialized cards as requested by user
+// Reset all serialized cards & leaderboard as requested by user
 if (state.cards && Array.isArray(state.cards)) {
     state.cards.forEach(c => {
         c.serialNumber = null;
@@ -7726,7 +7817,10 @@ if (state.cards && Array.isArray(state.cards)) {
     });
 }
 state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
-try { GlobalCloudRest.saveFile("global_serial_counts", { "Lionel Messi": 0, "Cristiano Ronaldo": 0 }); } catch(e) {}
+try {
+    GlobalCloudRest.saveFile("global_serial_counts", { "Lionel Messi": 0, "Cristiano Ronaldo": 0 });
+    GlobalCloudRest.saveFile("global_leaderboard", []);
+} catch(e) {}
 
 if (state.initialized) {
     renderAll();
