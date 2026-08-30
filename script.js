@@ -2692,8 +2692,8 @@ function getPackFrontSVG(cfg) {
 
             <!-- 6. BOTTOM CORRUGATED CRIMP BAR -->
             <g transform="translate(0, 456)">
-                <rect width="320" height="34" fill="linear-gradient(180deg, #dc2626 0%, #991b1b 100%)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
-                <rect width="320" height="12" y="12" fill="repeating-linear-gradient(90deg, #450a0a 0px, #ffffff 2px, #7f1d1d 4px, #450a0a 6px)" opacity="0.6"/>
+                <rect width="320" height="34" fill="#090f19" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                <rect width="320" height="12" y="12" fill="#1e293b" opacity="0.75"/>
                 <text x="160" y="23" font-family="'Montserrat', sans-serif" font-size="9" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#ffffff">★ OFFICIAL 2026 EDITION ★</text>
             </g>
 
@@ -2707,7 +2707,7 @@ function getPackFrontSVG(cfg) {
         <!-- TOP CORRUGATED METALLIC STRIPED CRIMP CAP (SEPARATES & FLIES AWAY ON TEAR) -->
         <g id="topCrimpCap" class="pack-top-crimp-cap" style="transform-origin:0% 100%;">
             <rect width="320" height="44" fill="#090f19" stroke="#1e293b" stroke-width="1"/>
-            <rect width="320" height="44" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+            <rect width="320" height="44" fill="#1e293b" opacity="0.5"/>
             <rect x="90" y="8" width="140" height="16" rx="8" fill="#030712" stroke="#ffd700" stroke-width="1.5" opacity="0.95"/>
             <line x1="8" y1="36" x2="312" y2="36" stroke="#ffd700" stroke-width="2.5" stroke-dasharray="6,4" opacity="1"/>
             <text x="160" y="20" font-family="'Montserrat', sans-serif" font-size="8" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#ffd700">✂ SWIPE TO TEAR ➔</text>
@@ -2862,7 +2862,7 @@ function getPackBackSVG(cfg) {
             <!-- Bottom Corrugated Crimp (Back) -->
             <g transform="translate(0, 456)">
                 <rect width="320" height="34" fill="#090f19"/>
-                <rect width="320" height="12" y="12" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+                <rect width="320" height="12" y="12" fill="#1e293b" opacity="0.95"/>
                 <text x="160" y="23" font-size="9" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#94a3b8">★ OFFICIAL 2026 EDITION ★</text>
             </g>
         </g>
@@ -2870,7 +2870,7 @@ function getPackBackSVG(cfg) {
         <!-- Top Corrugated Crimp (Back Cap) -->
         <g id="topCrimpCapBack" class="pack-top-crimp-cap" transform="translate(0, 0)">
             <rect width="320" height="44" fill="#090f19"/>
-            <rect width="320" height="44" fill="repeating-linear-gradient(90deg, #020617 0px, #334155 2px, #94a3b8 3px, #f8fafc 4px, #334155 5px, #020617 7px)" opacity="0.95"/>
+            <rect width="320" height="44" fill="#1e293b" opacity="0.95"/>
             <rect x="135" y="10" width="50" height="12" rx="6" fill="#030712" stroke="#ffffff" stroke-width="1.2" opacity="0.85"/>
         </g>
     </svg>
@@ -2896,10 +2896,10 @@ function renderBoosterPacksInStage(cfg, pullCount) {
                         <div class="pack-revealed-card-logo">⚽ FOOTBALL TCG</div>
                     </div>
                 </div>
-                <div class="pack-face pack-face-front" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(0deg); z-index:2; background:#0d1a2d;">
+                <div class="pack-face pack-face-front" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; overflow:hidden; z-index:5; background:#0d1a2d; pointer-events:none;">
                     ${getPackFrontSVG(cfg)}
                 </div>
-                <div class="pack-face pack-face-back" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateY(180deg); z-index:1; background:#08101a;">
+                <div class="pack-face pack-face-back" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:16px; overflow:hidden; transform:rotateY(180deg); z-index:1; background:#08101a; pointer-events:none;">
                     ${getPackBackSVG(cfg)}
                 </div>
             </div>
@@ -4653,7 +4653,7 @@ function renderCards() {
 
             <div class="card-actions">
                 <button onclick="event.stopPropagation(); open3DCard('${card.id}')">3D View</button>
-                <button class="sell" ${isLocked ? 'style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="event.stopPropagation(); sellCard('${card.id}')">${isLocked ? '🔒 Locked' : `Sell ${value} 🪙`}</button>
+                <button class="sell" ${isLocked || card.serialNumber ? 'style="opacity:0.5;cursor:not-allowed;"' : ''} onclick="event.stopPropagation(); sellCard('${card.id}')">${card.serialNumber ? '💎 Priceless' : (isLocked ? '🔒 Locked' : `Sell ${value} 🪙`)}</button>
             </div>
         </article>
         `;
@@ -4683,6 +4683,10 @@ function sellCard(id) {
     if (index === -1) return;
 
     const card = state.cards[index];
+    if (card.serialNumber) {
+        toast("💎 Serialized 1-of-10 cards are priceless and cannot be sold!");
+        return;
+    }
     if (card.locked) {
         toast("🔒 Card is locked! Unlock it first to sell.");
         return;
