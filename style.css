@@ -3748,18 +3748,21 @@ body.modal-open, html.modal-open {
 }
 
 .pack-opening-container {
-    position: relative !important;
-    z-index: 10 !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1000 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    width: 340px !important;
-    height: 560px !important;
+    width: 320px !important;
+    height: 490px !important;
     max-width: 90vw !important;
     max-height: 85vh !important;
-    margin: auto !important;
+    margin: 0 !important;
     padding: 0 !important;
     perspective: 1600px !important;
     overflow: visible !important;
@@ -3787,6 +3790,47 @@ body.modal-open, html.modal-open {
     overflow: visible !important;
     z-index: 20 !important;
     pointer-events: auto !important;
+}
+
+/* 3D INSPECTOR BALANCED INFO GRID */
+.inspector-info-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    margin: 10px auto 0 !important;
+    box-sizing: border-box !important;
+}
+
+.inspector-info-card {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
+    padding: 8px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    backdrop-filter: blur(8px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.inspector-info-card .info-label {
+    font-size: 8.5px !important;
+    font-weight: 800 !important;
+    color: #94a3b8 !important;
+    letter-spacing: 0.8px !important;
+    margin-bottom: 3px !important;
+    text-transform: uppercase !important;
+}
+
+.inspector-info-card .info-val {
+    font-size: 11.5px !important;
+    font-weight: 900 !important;
+    color: #ffffff !important;
+    letter-spacing: 0.3px !important;
 }
 
 .starter-foil { --foil-glow: rgba(16, 185, 129, 0.95); }
