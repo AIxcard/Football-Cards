@@ -4374,18 +4374,20 @@ function open3DCard(identifier, isFromIndex = false) {
     setText("card3DName", player.player || player.name);
     setText("card3DRaritySub", player.rarity);
 
-    setText("card3DStatsOvr", `OVR: ${player.rating}`);
-    setText("card3DStatsPos", `POS: ${player.pos}`);
-    setText("card3DStatsVal", `VALUE: ${DUPLICATE_VALUES[player.rarity] || 5} 🪙`);
+    setText("card3DStatsOvrPos", `${player.rating} OVR · ${player.pos}`);
+    setText("card3DStatsVal", `${DUPLICATE_VALUES[player.rarity] || 5} Coins`);
 
-    const obtainedDate = (cardObj && cardObj.obtained) ? new Date(cardObj.obtained).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    setText("card3DStatsDate", `📅 PULLED: ${obtainedDate.toUpperCase()}`);
+    const dateObj = (cardObj && cardObj.obtained) ? new Date(cardObj.obtained) : new Date();
+    const dateFormatted = dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const timeFormatted = dateObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    setText("card3DStatsDateTime", `${dateFormatted} · ${timeFormatted}`);
+
     if (cardObj && cardObj.serialNumber) {
-        setText("card3DStatsPop", `⚡ 10 EXIST WORLDWIDE (#${cardObj.serialNumber}/10)`);
+        setText("card3DStatsPop", `⚡ 10 Exist Worldwide (#${cardObj.serialNumber}/10)`);
     } else if (player.rarity === "World Class") {
-        setText("card3DStatsPop", `⚡ 10 EXIST WORLDWIDE`);
+        setText("card3DStatsPop", `⚡ 10 Exist Worldwide`);
     } else {
-        setText("card3DStatsPop", `⚡ OFFICIAL SERIES 2026`);
+        setText("card3DStatsPop", `⚡ Official Series 2026`);
     }
 
     if (modal) modal.classList.remove("hidden");
@@ -6631,14 +6633,15 @@ async function renderLeaderboard() {
             const u = fbUsers[k];
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+            const isWiped = pData.resetV12WipeDone === true;
             if (!playersMap[k.toLowerCase()]) {
                 playersMap[k.toLowerCase()] = {
                     name: pData.name || u.username,
                     username: u.username,
-                    gold: Number(pData.coins || 0),
-                    value: calculateCollectionValue(pData.cards || []),
-                    cards: (pData.cards || []).length,
-                    level: pData.level || 1,
+                    gold: isWiped ? Number(pData.coins || 100) : 100,
+                    value: isWiped ? calculateCollectionValue(pData.cards || []) : 0,
+                    cards: isWiped ? (pData.cards || []).length : 0,
+                    level: isWiped ? (pData.level || 1) : 1,
                     equippedTitle: pData.equippedTitle || "Collector",
                     profileFrame: pData.profileFrame || "default",
                     avatar: pData.avatar || "player_temp.png",
@@ -6653,14 +6656,15 @@ async function renderLeaderboard() {
         const u = localAccs[k];
         let pData = {};
         try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+        const isWiped = pData.resetV12WipeDone === true;
         if (!playersMap[k.toLowerCase()]) {
             playersMap[k.toLowerCase()] = {
                 name: pData.name || u.username,
                 username: u.username,
-                gold: Number(pData.coins || 0),
-                value: calculateCollectionValue(pData.cards || []),
-                cards: (pData.cards || []).length,
-                level: pData.level || 1,
+                gold: isWiped ? Number(pData.coins || 100) : 100,
+                value: isWiped ? calculateCollectionValue(pData.cards || []) : 0,
+                cards: isWiped ? (pData.cards || []).length : 0,
+                level: isWiped ? (pData.level || 1) : 1,
                 equippedTitle: pData.equippedTitle || "Collector",
                 profileFrame: pData.profileFrame || "default",
                 avatar: pData.avatar || "player_temp.png",
@@ -7509,14 +7513,6 @@ function redeemCode() {
         input.value = "";
         saveGame();
         toast("🎉 Code RELEASE redeemed! +150 🪙");
-    } else if (code === "EMANUEL") {
-        state.redeemedCodes.push(code);
-        addCoins(10000);
-        addXP(100);
-        SoundFx.levelUp();
-        input.value = "";
-        saveGame();
-        toast("👑 Secret Code Emanuel redeemed! +10,000 🪙");
     } else {
         toast("Invalid code.");
     }
