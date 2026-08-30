@@ -3718,20 +3718,18 @@ body.modal-open, html.modal-open {
 }
 
 .pack-opening-container {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    position: relative !important;
     z-index: 10 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    width: 100% !important;
-    max-width: 600px !important;
-    height: 520px !important;
-    margin: 0 auto !important;
+    width: 340px !important;
+    height: 560px !important;
+    max-width: 90vw !important;
+    max-height: 85vh !important;
+    margin: auto !important;
     padding: 0 !important;
     perspective: 1600px !important;
     overflow: visible !important;
@@ -3751,8 +3749,10 @@ body.modal-open, html.modal-open {
     text-align: center !important;
     position: relative !important;
     perspective: 1600px !important;
-    width: 100% !important;
-    height: 100% !important;
+    width: 320px !important;
+    height: 490px !important;
+    max-width: 90vw !important;
+    max-height: 75vh !important;
     margin: 0 auto !important;
     overflow: visible !important;
     z-index: 20 !important;
