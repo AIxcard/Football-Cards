@@ -2734,7 +2734,7 @@ function getPackFrontSVG(cfg) {
             <!-- Giant 3D Blazing Football blasting towards camera -->
             <g transform="translate(160, 240)">
                 <circle r="52" fill="none" stroke="${c.accent}" stroke-width="4" opacity="0.85" stroke-dasharray="10,6" filter="url(#glow_${cfg.key})"/>
-                <circle r="46" fill="radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 50%, #1e293b 100%)" stroke="url(#goldStroke)" stroke-width="3.5"/>
+                <circle r="46" fill="#f8fafc" stroke="url(#goldStroke)" stroke-width="3.5"/>
                 <polygon points="0,-18 17,-6 11,15 -11,15 -17,-6" fill="#0f172a"/>
                 <polygon points="0,-36 10,-44 26,-36 22,-24 7,-24" fill="#0f172a"/>
                 <polygon points="34,-12 44,-4 40,12 28,14 22,0" fill="#0f172a"/>
