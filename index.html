@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=310.0">
+<link rel="stylesheet" href="style.css?v=315.0">
 </head>
 
 <body>
@@ -116,12 +116,23 @@
             <button id="card3DFlipBtn" class="primary-btn" style="width:auto;padding:8px 20px;font-size:13px;" onclick="toggle3DCardFlip()">🔄 Flip Front / Back</button>
         </div>
 
-        <div class="inspector-stats-row">
-            <div class="stat-pill"><span id="card3DStatsOvr">OVR: 90</span></div>
-            <div class="stat-pill"><span id="card3DStatsPos">POS: ST</span></div>
-            <div class="stat-pill"><span id="card3DStatsVal">VALUE: 50 🪙</span></div>
-            <div class="stat-pill"><span id="card3DStatsDate">📅 PULLED: AUG 30, 2026</span></div>
-            <div class="stat-pill"><span id="card3DStatsPop">⚡ 10 EXIST WORLDWIDE</span></div>
+        <div class="inspector-info-grid">
+            <div class="inspector-info-card">
+                <span class="info-label">⭐ RATING &amp; POS</span>
+                <span class="info-val" id="card3DStatsOvrPos">90 OVR · ST</span>
+            </div>
+            <div class="inspector-info-card">
+                <span class="info-label">🪙 VALUE</span>
+                <span class="info-val" id="card3DStatsVal">50 Coins</span>
+            </div>
+            <div class="inspector-info-card">
+                <span class="info-label">📅 DATE &amp; TIME OBTAINED</span>
+                <span class="info-val" id="card3DStatsDateTime">Aug 30, 2026 · 3:05 PM</span>
+            </div>
+            <div class="inspector-info-card">
+                <span class="info-label">⚡ CIRCULATION &amp; POPULATION</span>
+                <span class="info-val" id="card3DStatsPop">⚡ 10 Exist Worldwide</span>
+            </div>
         </div>
     </div>
 </div>
@@ -1419,6 +1430,6 @@
     </div>
 </div>
 
-<script src="script.js?v=310.0"></script>
+<script src="script.js?v=315.0"></script>
 </body>
 </html>
