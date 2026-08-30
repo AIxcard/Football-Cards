@@ -2489,8 +2489,20 @@ function renderAll() {
     try { renderMissions(); } catch(e) { console.error("Missions error", e); }
     try { renderSettings(); } catch(e) { console.error("Settings error", e); }
     try { updateAuthUI(); } catch(e) { console.error("AuthUI error", e); }
+    try { updateAdminPackVisibility(); } catch(e) { console.error("AdminPackVisibility error", e); }
     try { checkAdminStatus(); } catch(e) { console.error("AdminStatus error", e); }
     try { checkBanStatus(); } catch(e) { console.error("BanStatus error", e); }
+}
+
+function updateAdminPackVisibility() {
+    const isAlucard = (state.accountUser || "").trim().toLowerCase() === "alucard";
+    const mythicPack = document.getElementById("packCardMythic");
+    const secretPack = document.getElementById("packCardSecret");
+    const wcPack = document.getElementById("packCardWorldClass");
+
+    if (mythicPack) mythicPack.style.display = isAlucard ? "flex" : "none";
+    if (secretPack) secretPack.style.display = isAlucard ? "flex" : "none";
+    if (wcPack) wcPack.style.display = isAlucard ? "flex" : "none";
 }
 
 function renderSettings() {
@@ -3082,8 +3094,15 @@ function unlockModalScroll() {
 
 let isOpeningPackInProgress = false;
 
-async function openPack(type, count = 1) {
+function openPack(type, count = 1) {
     if (isOpeningPackInProgress) return;
+
+    const isAlucard = (state.accountUser || "").trim().toLowerCase() === "alucard";
+    if ((type === "mythic" || type === "secret" || type === "worldclass") && !isAlucard) {
+        toast("⛔ Mythic, Secret, and World Class packs are exclusive to Alucard!");
+        SoundFx.click();
+        return;
+    }
 
     const pack = PACKS[type];
     if (!pack) return;
@@ -3146,23 +3165,11 @@ async function openPack(type, count = 1) {
 
         if (rarity === "World Class" && (player.name === "Lionel Messi" || player.name === "Cristiano Ronaldo")) {
             if (!state.serializedCounts) state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
-            try {
-                const globalNum = await GlobalCloudRest.allocateGlobalSerial(player.name);
-                if (globalNum !== null && globalNum <= 10) {
-                    serialNum = globalNum;
-                    state.serializedCounts[player.name] = Math.max(state.serializedCounts[player.name] || 0, globalNum);
-                    serialGrad = generateRandomSerializedGradient(serialNum, player.name);
-                } else if (globalNum === null && state.serializedCounts[player.name] < 10) {
-                    state.serializedCounts[player.name]++;
-                    serialNum = state.serializedCounts[player.name];
-                    serialGrad = generateRandomSerializedGradient(serialNum, player.name);
-                }
-            } catch(e) {
-                if (state.serializedCounts[player.name] < 10) {
-                    state.serializedCounts[player.name]++;
-                    serialNum = state.serializedCounts[player.name];
-                    serialGrad = generateRandomSerializedGradient(serialNum, player.name);
-                }
+            if (state.serializedCounts[player.name] < 10) {
+                state.serializedCounts[player.name]++;
+                serialNum = state.serializedCounts[player.name];
+                serialGrad = generateRandomSerializedGradient(serialNum, player.name);
+                GlobalCloudRest.allocateGlobalSerial(player.name).catch(() => {});
             }
         }
 
@@ -3205,10 +3212,6 @@ async function openPack(type, count = 1) {
     }
 
     saveGame();
-
-    // Configure 3D Realistic Booster Pack Artwork
-    const animOverlay = document.getElementById("packOpeningOverlay");
-    const swipePrompt = document.getElementById("tearSwipePrompt");
 
     const foilClasses = {
         starter: { key: "starter", css: "starter-foil", emblem: "📦", title: "STARTER PACK" },
@@ -7714,6 +7717,16 @@ function escapeHTML(value) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+
+// Reset all serialized cards as requested by user
+if (state.cards && Array.isArray(state.cards)) {
+    state.cards.forEach(c => {
+        c.serialNumber = null;
+        c.serialGradient = null;
+    });
+}
+state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+try { GlobalCloudRest.saveFile("global_serial_counts", { "Lionel Messi": 0, "Cristiano Ronaldo": 0 }); } catch(e) {}
 
 if (state.initialized) {
     renderAll();
