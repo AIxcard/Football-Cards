@@ -4581,7 +4581,7 @@ function renderCards() {
             <div class="card-position">${escapeHTML(card.pos)}</div>
             <h3>${escapeHTML(card.player)}</h3>
             <div class="card-meta-row">
-                <span class="card-rarity-badge rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
+                <span class="card-rarity-text rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
                 <span class="card-rap-badge">💎 ${formatRAP(rap, card)}</span>
             </div>
 
@@ -6868,6 +6868,9 @@ async function adminSpawnMonkeyCard() {
         toast("🔒 Access Denied: Creator / Admin authorization required.");
         return;
     }
+    const targetInput = document.getElementById("adminCardTarget");
+    const target = targetInput ? targetInput.value.trim() : "";
+
     const monkeyPlayer = PLAYERS.find(p => p.name === "Monkey King") || {
         name: "Monkey King",
         rating: 99,
@@ -6883,8 +6886,8 @@ async function adminSpawnMonkeyCard() {
         player: monkeyPlayer.name,
         rating: monkeyPlayer.rating,
         pos: monkeyPlayer.pos,
-        rarity: monkeyPlayer.rarity || "Developer",
-        image: monkeyPlayer.image || "monkey_king.png",
+        rarity: "Developer",
+        image: "monkey_king.png",
         obtained: Date.now(),
         frame: "default",
         serialNumber: null,
@@ -6893,17 +6896,64 @@ async function adminSpawnMonkeyCard() {
         devCard: true
     };
 
-    state.cards.unshift(newCard);
-    state.stats.cardsPulled = (state.stats.cardsPulled || 0) + 1;
-    AntiCheat.signState(state);
-    saveGame();
-    renderAll();
-    closeAdminPanel();
+    if (!target || target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        state.cards.unshift(newCard);
+        state.stats.cardsPulled = (state.stats.cardsPulled || 0) + 1;
+        AntiCheat.signState(state);
+        saveGame();
+        renderAll();
+        closeAdminPanel();
 
-    // Trigger full 3D Sols Cutscene for Monkey King!
-    SolsCutsceneEngine.start(newCard, () => {
-        showCardResult(newCard, false, true, 1, 1);
-    });
+        // Trigger full 3D Sols Cutscene for Monkey King!
+        SolsCutsceneEngine.start(newCard, () => {
+            showCardResult(newCard, false, true, 1, 1);
+        });
+        toast("🐵 Spawned 99 OVR Monkey King Developer Card to your inventory!");
+    } else {
+        // Send directly to the target player's cloud account!
+        try {
+            let cloudUser = await GlobalCloudRest.fetchUser(target);
+            let targetSave = null;
+            if (cloudUser && cloudUser.saveData) {
+                targetSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
+            }
+            if (!targetSave) {
+                const accs = CloudSync.getAccounts();
+                const key = target.toLowerCase();
+                if (accs[key]) {
+                    targetSave = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+                }
+            }
+            if (!targetSave) {
+                targetSave = { ...freshState(), name: target, accountUser: target };
+            }
+
+            targetSave.cards = targetSave.cards || [];
+            targetSave.cards.unshift(newCard);
+            targetSave.stats = targetSave.stats || {};
+            targetSave.stats.cardsPulled = (targetSave.stats.cardsPulled || 0) + 1;
+
+            const updatedDoc = {
+                username: target,
+                saveData: JSON.stringify(targetSave),
+                lastUpdated: Date.now()
+            };
+
+            await GlobalCloudRest.pushAccount(target, updatedDoc);
+            if (typeof FirebaseSync !== "undefined" && FirebaseSync.pushUser) {
+                FirebaseSync.pushUser(target, updatedDoc);
+            }
+            const accs = CloudSync.getAccounts();
+            accs[target.toLowerCase()] = { username: target, saveData: JSON.stringify(targetSave) };
+            CloudSync.saveAccounts(accs);
+
+            toast(`👑 Admin: Sent 99 OVR Monkey King Developer Card to player "${target}"!`);
+            SoundFx.levelUp();
+            if (targetInput) targetInput.value = "";
+        } catch(e) {
+            toast(`👑 Admin: Sent 99 OVR Monkey King into "${target}"'s cloud storage!`);
+        }
+    }
 }
 
 function adminPreviewCardCutscene() {
@@ -6976,22 +7026,48 @@ async function adminExecuteSpawnCard() {
         SoundFx.levelUp();
         toast(`✨ Admin: Spawned ${p.name} ${isSerialized ? `(★ SERIAL #${sNum}/10)` : ""} to collection!`);
     } else {
-        const accs = CloudSync.getAccounts();
-        const key = target.toLowerCase();
-        if (accs[key]) {
-            try {
-                const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
-                s.cards = s.cards || [];
-                s.cards.unshift(newCard);
-                s.stats = s.stats || {};
-                s.stats.cardsPulled = (s.stats.cardsPulled || 0) + 1;
-                accs[key].saveData = JSON.stringify(s);
-                CloudSync.saveAccounts(accs);
-                FirebaseSync.pushUser(accs[key].username, accs[key]);
-                toast(`✨ Admin: Sent ${p.name} to player "${accs[key].username}"!`);
-            } catch(e) {}
-        } else {
-            toast(`Player "${target}" not found.`);
+        try {
+            let cloudUser = await GlobalCloudRest.fetchUser(target);
+            let targetSave = null;
+            if (cloudUser && cloudUser.saveData) {
+                targetSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
+            }
+            if (!targetSave) {
+                const accs = CloudSync.getAccounts();
+                const key = target.toLowerCase();
+                if (accs[key]) {
+                    targetSave = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+                }
+            }
+            if (!targetSave) {
+                targetSave = { ...freshState(), name: target, accountUser: target };
+            }
+
+            targetSave.cards = targetSave.cards || [];
+            targetSave.cards.unshift(newCard);
+            targetSave.stats = targetSave.stats || {};
+            targetSave.stats.cardsPulled = (targetSave.stats.cardsPulled || 0) + 1;
+
+            const updatedDoc = {
+                username: target,
+                saveData: JSON.stringify(targetSave),
+                lastUpdated: Date.now()
+            };
+
+            await GlobalCloudRest.pushAccount(target, updatedDoc);
+            if (typeof FirebaseSync !== "undefined" && FirebaseSync.pushUser) {
+                FirebaseSync.pushUser(target, updatedDoc);
+            }
+            const accs = CloudSync.getAccounts();
+            accs[target.toLowerCase()] = { username: target, saveData: JSON.stringify(targetSave) };
+            CloudSync.saveAccounts(accs);
+
+            toast(`✨ Admin: Sent ${p.name} ${isSerialized ? `(★ SERIAL #${sNum}/10)` : ""} to player "${target}"!`);
+            SoundFx.levelUp();
+            const targetInput = document.getElementById("adminCardTarget");
+            if (targetInput) targetInput.value = "";
+        } catch(e) {
+            toast(`Player "${target}" not found or cloud sync error.`);
         }
     }
 }
