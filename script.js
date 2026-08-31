@@ -4680,6 +4680,7 @@ function renderCards() {
 
         const isLocked = !!card.locked;
         const isSelected = selectedCardIds.has(card.id);
+        const obtainedDate = card.obtained ? new Date(card.obtained).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Aug 31, 2026";
         const existCount = getCardExistCount(card);
         const popTag = card.serialNumber ? `⚡ ${existCount} Exist (#${card.serialNumber}/10)` : `⚡ ${existCount} Exist`;
         const customStyle = card.serialGradient ? `style="background:${card.serialGradient} !important; background-size:200% 200% !important; animation:serializedHoloShift 4s ease-in-out infinite alternate !important;"` : "";
@@ -5930,12 +5931,13 @@ async function renderTradeHub() {
             seenUsers.add(lowerName);
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+            const isWiped = pData.resetV14WipeDone === true;
             const isUserFlagged = !!(u.isTradeBanned || pData.isTradeBanned || (pData.bannedUntil && pData.bannedUntil > Date.now()));
             otherPlayers.push({
                 username: rawUsername,
                 name: pData.name || rawUsername,
-                level: pData.level || 1,
-                cards: (pData.cards || []).length,
+                level: isWiped ? (pData.level || 1) : 1,
+                cards: isWiped ? (pData.cards || []).length : 0,
                 title: pData.equippedTitle || "Collector",
                 isTradeBanned: isUserFlagged
             });
