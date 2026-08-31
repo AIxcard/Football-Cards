@@ -71,8 +71,11 @@
         } catch(e) {}
     })();
 
-    const CURRENT_SAVE_KEY = "footballCardsSave_v11_hard_reset";
+    const CURRENT_SAVE_KEY = "footballCardsSave_v14_hard_reset";
     const PREVIOUS_SAVE_KEYS = [
+        "footballCardsSave_v13_reset",
+        "footballCardsSave_v12_reset",
+        "footballCardsSave_v11_hard_reset",
         "footballCardsSave_v10_reset",
         "footballCardsSave_v9",
         "footballCardsSave_v8",
@@ -549,10 +552,10 @@ const SoundFx = {
 function getCardImage(card) {
     if (!card) return "player_temp.png";
     const nameLower = (card.player || card.name || "").toLowerCase();
-    if (nameLower.includes("monkey") || nameLower.includes("wukong")) {
+    if (nameLower.includes("monkey") || nameLower.includes("wukong") || card.devCard || card.rarity === "Developer") {
         return "monkey_king.png";
     }
-    return card.image || "player_temp.png";
+    return "player_temp.png";
 }
 
 /* =========================================================
@@ -1039,10 +1042,10 @@ function freshState() {
 
 function loadGame() {
     try {
-        let isFreshV11 = true;
+        let isFreshV14 = true;
         let raw = localStorage.getItem(CURRENT_SAVE_KEY);
         if (!raw) {
-            isFreshV11 = false;
+            isFreshV14 = false;
             for (const prevKey of PREVIOUS_SAVE_KEYS) {
                 const prevData = localStorage.getItem(prevKey);
                 if (prevData) {
@@ -1062,12 +1065,12 @@ function loadGame() {
         }
 
         // Total hard reset for clean global wipe as requested by user
-        const isReset = !isFreshV11 || saved.resetV12WipeDone !== true;
+        const isReset = !isFreshV14 || saved.resetV14WipeDone !== true;
         const isAdminUser = (saved.accountUser || "").toLowerCase() === "alucard" || !!saved.isGrantedAdmin;
 
         return {
             ...fresh,
-            resetV12WipeDone: true,
+            resetV14WipeDone: true,
             name: activeName,
             accountUser: saved.accountUser || "",
             accountPassHash: saved.accountPassHash || "",
@@ -1316,10 +1319,11 @@ const ServerAPI = {
 
 const GlobalCloudRest = {
     BUCKET_URL: "https://kvdb.io/MmjyNhMePJggoofHrX9cjo",
+    PREFIX: "v14_",
 
     async fetchFile(key) {
         try {
-            const cleanKey = key.replace(/[/.]/g, "_");
+            const cleanKey = this.PREFIX + key.replace(/[/.]/g, "_");
             const res = await fetch(`${this.BUCKET_URL}/${cleanKey}?t=${Date.now()}`);
             if (!res.ok) return null;
             const data = await res.json();
@@ -1331,7 +1335,7 @@ const GlobalCloudRest = {
 
     async saveFile(key, dataObj) {
         try {
-            const cleanKey = key.replace(/[/.]/g, "_");
+            const cleanKey = this.PREFIX + key.replace(/[/.]/g, "_");
             const res = await fetch(`${this.BUCKET_URL}/${cleanKey}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -1375,7 +1379,7 @@ const GlobalCloudRest = {
     async fetchUser(username) {
         if (!username) return null;
         try {
-            const uKey = "user_" + username.trim().toLowerCase();
+            const uKey = this.PREFIX + "user_" + username.trim().toLowerCase();
             const res = await fetch(`${this.BUCKET_URL}/${uKey}?t=${Date.now()}`);
             if (!res.ok) return null;
             const user = await res.json();
@@ -1388,7 +1392,7 @@ const GlobalCloudRest = {
     async pushUser(username, accountPayload) {
         if (!username || !accountPayload) return false;
         try {
-            const uKey = "user_" + username.trim().toLowerCase();
+            const uKey = this.PREFIX + "user_" + username.trim().toLowerCase();
             let existing = await this.fetchUser(username) || {};
 
             let devInfo = {};
@@ -1404,6 +1408,8 @@ const GlobalCloudRest = {
             const userDoc = {
                 username: username,
                 passwordHash: passHash,
+                isTradeBanned: !!accountPayload.isTradeBanned,
+                tradeBanReason: accountPayload.tradeBanReason || "",
                 saveData: typeof accountPayload.saveData === "string" ? accountPayload.saveData : JSON.stringify(accountPayload.saveData || {}),
                 sessions: sessions,
                 revokedSessions: existing.revokedSessions || [],
@@ -1419,6 +1425,7 @@ const GlobalCloudRest = {
             // Update leaderboard entry in cloud database
             let pData = {};
             try { pData = JSON.parse(userDoc.saveData); } catch(e) {}
+            if (userDoc.isTradeBanned) pData.isTradeBanned = true;
             this.pushLeaderboard(username, pData);
             return true;
         } catch (e) {
@@ -1428,7 +1435,7 @@ const GlobalCloudRest = {
 
     async fetchAllUsers() {
         try {
-            const res = await fetch(`${this.BUCKET_URL}/?prefix=user_&t=${Date.now()}`);
+            const res = await fetch(`${this.BUCKET_URL}/?prefix=${this.PREFIX}user_&t=${Date.now()}`);
             if (!res.ok) return {};
             const text = await res.text();
             const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
@@ -1452,7 +1459,7 @@ const GlobalCloudRest = {
 
     async fetchLeaderboard() {
         try {
-            const res = await fetch(`${this.BUCKET_URL}/?prefix=lb_&t=${Date.now()}`);
+            const res = await fetch(`${this.BUCKET_URL}/?prefix=${this.PREFIX}lb_&t=${Date.now()}`);
             if (!res.ok) return {};
             const text = await res.text();
             const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
@@ -1479,7 +1486,7 @@ const GlobalCloudRest = {
     async pushLeaderboard(username, pData) {
         if (!username || !pData) return;
         try {
-            const lbKey = "lb_" + username.trim().toLowerCase();
+            const lbKey = this.PREFIX + "lb_" + username.trim().toLowerCase();
             const lbDoc = {
                 name: pData.name || username,
                 username: username,
@@ -1490,6 +1497,8 @@ const GlobalCloudRest = {
                 equippedTitle: pData.equippedTitle || "Collector",
                 profileFrame: pData.profileFrame || (state && state.profileFrame) || "default",
                 avatar: pData.avatar || (state && state.avatar) || "player_temp.png",
+                isTradeBanned: !!(pData.isTradeBanned || (state && state.accountUser === username && state.isTradeBanned)),
+                tradeBanReason: pData.tradeBanReason || (state && state.accountUser === username ? state.tradeBanReason : "") || "",
                 bannedUntil: Number(pData.bannedUntil || 0),
                 updatedAt: Date.now()
             };
@@ -1503,7 +1512,7 @@ const GlobalCloudRest = {
 
     async fetchTrades() {
         try {
-            const res = await fetch(`${this.BUCKET_URL}/?prefix=trade_&t=${Date.now()}`);
+            const res = await fetch(`${this.BUCKET_URL}/?prefix=${this.PREFIX}trade_&t=${Date.now()}`);
             if (!res.ok) return [];
             const text = await res.text();
             const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
@@ -1526,7 +1535,7 @@ const GlobalCloudRest = {
         try {
             for (const t of trades) {
                 if (t && t.id) {
-                    await fetch(`${this.BUCKET_URL}/trade_${t.id}`, {
+                    await fetch(`${this.BUCKET_URL}/${this.PREFIX}trade_${t.id}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(t)
@@ -1540,10 +1549,12 @@ const GlobalCloudRest = {
         const u = (username || "").trim().toLowerCase();
         if (!u || u === "alucard") return;
         try {
-            const lbKey = "lb_" + u;
+            const lbKey = this.PREFIX + "lb_" + u;
             let current = {};
             const res = await fetch(`${this.BUCKET_URL}/${lbKey}?t=${Date.now()}`);
             if (res.ok) current = await res.json();
+            current.isTradeBanned = true;
+            current.tradeBanReason = reason;
             current.bannedUntil = Date.now() + durationMs;
             current.banReason = reason;
             await fetch(`${this.BUCKET_URL}/${lbKey}`, {
@@ -1558,10 +1569,12 @@ const GlobalCloudRest = {
         const u = (username || "").trim().toLowerCase();
         if (!u) return;
         try {
-            const lbKey = "lb_" + u;
+            const lbKey = this.PREFIX + "lb_" + u;
             let current = {};
             const res = await fetch(`${this.BUCKET_URL}/${lbKey}?t=${Date.now()}`);
             if (res.ok) current = await res.json();
+            current.isTradeBanned = false;
+            current.tradeBanReason = "";
             current.bannedUntil = 0;
             current.banReason = "";
             await fetch(`${this.BUCKET_URL}/${lbKey}`, {
@@ -5107,6 +5120,16 @@ async function sendTradeOffer(targetUsername) {
         return;
     }
 
+    let targetSave = {};
+    try {
+        targetSave = typeof targetUser.saveData === "string" ? JSON.parse(targetUser.saveData) : (targetUser.saveData || {});
+    } catch(e) {}
+
+    if (targetUser.isTradeBanned || targetSave.isTradeBanned) {
+        toast(`⚠️ Cannot trade with "${recipient}": This user account is flagged / trade banned.`);
+        return;
+    }
+
     const tradeId = "tr_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
     const tradeReqDoc = {
         id: tradeId,
@@ -5824,12 +5847,14 @@ async function renderTradeHub() {
             seenUsers.add(lowerName);
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+            const isUserFlagged = !!(u.isTradeBanned || pData.isTradeBanned || (pData.bannedUntil && pData.bannedUntil > Date.now()));
             otherPlayers.push({
                 username: rawUsername,
                 name: pData.name || rawUsername,
                 level: pData.level || 1,
                 cards: (pData.cards || []).length,
-                title: pData.equippedTitle || "Collector"
+                title: pData.equippedTitle || "Collector",
+                isTradeBanned: isUserFlagged
             });
         }
     }
@@ -5843,15 +5868,21 @@ async function renderTradeHub() {
         list.innerHTML = `${flagBanner}<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">No other online players found yet. Invite a friend to play!</p>`;
     } else {
         list.innerHTML = flagBanner + otherPlayers.map(p => `
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid ${p.isTradeBanned ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'};border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
                 <div style="display:flex;align-items:center;gap:10px;">
                     <div style="font-size:26px;">👤</div>
                     <div>
-                        <strong style="color:#fff;font-size:14px;">${escapeHTML(p.username)}</strong>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <strong style="color:#fff;font-size:14px;">${escapeHTML(p.username)}</strong>
+                            ${p.isTradeBanned ? `<span class="flagged-badge" style="background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef4444;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:800;cursor:help;" title="Flagged Account: Suspected of cheating or confirmed client modification">⚠️ Flagged</span>` : ''}
+                        </div>
                         <p style="margin:2px 0 0;font-size:11px;color:var(--cyan);">${escapeHTML(p.title)} · Level ${p.level}</p>
                     </div>
                 </div>
-                <button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;${state.isTradeBanned ? 'opacity:0.5;cursor:not-allowed;' : ''}" onclick="sendTradeOffer('${escapeHTML(p.username)}')">🤝 Trade</button>
+                ${p.isTradeBanned || state.isTradeBanned 
+                    ? `<button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:#334155;color:#94a3b8;font-weight:900;cursor:not-allowed;" title="Flagged accounts cannot participate in trades" disabled>🚫 Flagged</button>`
+                    : `<button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;" onclick="sendTradeOffer('${escapeHTML(p.username)}')">🤝 Trade</button>`
+                }
             </div>
         `).join("");
     }
@@ -6512,6 +6543,8 @@ async function renderLeaderboard() {
                     equippedTitle: entry.equippedTitle || "Collector",
                     profileFrame: entry.profileFrame || "default",
                     avatar: entry.avatar || "player_temp.png",
+                    isTradeBanned: !!(entry.isTradeBanned || (entry.bannedUntil && entry.bannedUntil > Date.now())),
+                    tradeBanReason: entry.tradeBanReason || "",
                     bannedUntil: entry.bannedUntil || 0
                 };
             }
@@ -6524,7 +6557,7 @@ async function renderLeaderboard() {
             const u = fbUsers[k];
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-            const isWiped = pData.resetV12WipeDone === true;
+            const isWiped = pData.resetV14WipeDone === true;
             if (!playersMap[k.toLowerCase()]) {
                 playersMap[k.toLowerCase()] = {
                     name: pData.name || u.username,
@@ -6536,6 +6569,8 @@ async function renderLeaderboard() {
                     equippedTitle: pData.equippedTitle || "Collector",
                     profileFrame: pData.profileFrame || "default",
                     avatar: pData.avatar || "player_temp.png",
+                    isTradeBanned: !!(u.isTradeBanned || pData.isTradeBanned || (pData.bannedUntil && pData.bannedUntil > Date.now())),
+                    tradeBanReason: u.tradeBanReason || pData.tradeBanReason || "",
                     bannedUntil: pData.bannedUntil || 0
                 };
             }
@@ -6547,7 +6582,7 @@ async function renderLeaderboard() {
         const u = localAccs[k];
         let pData = {};
         try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-        const isWiped = pData.resetV12WipeDone === true;
+        const isWiped = pData.resetV14WipeDone === true;
         if (!playersMap[k.toLowerCase()]) {
             playersMap[k.toLowerCase()] = {
                 name: pData.name || u.username,
@@ -6559,6 +6594,8 @@ async function renderLeaderboard() {
                 equippedTitle: pData.equippedTitle || "Collector",
                 profileFrame: pData.profileFrame || "default",
                 avatar: pData.avatar || "player_temp.png",
+                isTradeBanned: !!(u.isTradeBanned || pData.isTradeBanned || (pData.bannedUntil && pData.bannedUntil > Date.now())),
+                tradeBanReason: u.tradeBanReason || pData.tradeBanReason || "",
                 bannedUntil: pData.bannedUntil || 0
             };
         }
@@ -6577,6 +6614,8 @@ async function renderLeaderboard() {
         equippedTitle: state.equippedTitle || "Collector",
         profileFrame: state.profileFrame || "default",
         avatar: state.avatar || "player_temp.png",
+        isTradeBanned: !!state.isTradeBanned,
+        tradeBanReason: state.tradeBanReason || "",
         bannedUntil: state.bannedUntil || 0,
         isSelf: true
     };
@@ -6588,7 +6627,7 @@ async function renderLeaderboard() {
         if (u.includes("_1787") || u.includes("ipadtest_") || u.includes("testuser") || u === "ipadtester" || u === "playertwo") {
             return false;
         }
-        return p.isSelf || !p.bannedUntil || p.bannedUntil <= Date.now();
+        return true;
     });
 
     if (currentLeaderboardTab === "value") {
@@ -6622,8 +6661,12 @@ async function renderLeaderboard() {
         const crown = rankNum === 1 ? `<div class="lb-podium-crown">👑</div>` : "";
         const rankLabel = rankNum === 1 ? "1" : rankNum === 2 ? "2" : "3";
 
+        const badgeHtml = p.isTradeBanned
+            ? `<span class="flagged-badge" title="Flagged Account: Suspected of cheating or confirmed client modification" style="display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;cursor:help;margin-top:2px;">⚠️ FLAGGED</span>`
+            : (p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;margin-top:2px;">${escapeHTML(p.equippedTitle)}</span>` : '');
+
         return `
-        <div class="lb-podium-card rank-${rankNum} ${isMe ? 'self' : ''}">
+        <div class="lb-podium-card rank-${rankNum} ${isMe ? 'self' : ''} ${p.isTradeBanned ? 'is-flagged-card' : ''}">
             ${crown}
             <div class="lb-podium-avatar-wrap">
                 <img class="lb-podium-avatar frame-${p.profileFrame || 'default'}" src="${escapeHTML(p.avatar || 'player_temp.png')}" alt="${escapeHTML(p.name)}" onerror="this.src='player_temp.png'">
@@ -6633,7 +6676,7 @@ async function renderLeaderboard() {
                 <span>${escapeHTML(p.name)}</span>
                 ${isMe ? '<span style="color:var(--green);font-size:11px;">(You)</span>' : ''}
             </div>
-            ${p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;margin-top:2px;">${escapeHTML(p.equippedTitle)}</span>` : ''}
+            ${badgeHtml}
             <div class="lb-podium-meta">Level ${p.level || 1} · ${p.cards || 0} Cards</div>
             <div class="lb-podium-score">${scoreDisplay}</div>
         </div>
@@ -6662,8 +6705,12 @@ async function renderLeaderboard() {
                 ? `⭐ Level ${p.level || 1}`
                 : `${p.gold.toLocaleString()} 🪙`;
 
+            const badgeHtml = p.isTradeBanned
+                ? `<span class="flagged-badge" title="Flagged Account: Suspected of cheating or confirmed client modification" style="display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:900;cursor:help;">⚠️ FLAGGED</span>`
+                : (p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;">${escapeHTML(p.equippedTitle)}</span>` : '');
+
             html += `
-            <div class="lb-table-row ${isMe ? 'self' : ''}">
+            <div class="lb-table-row ${isMe ? 'self' : ''} ${p.isTradeBanned ? 'is-flagged-row' : ''}">
                 <div class="lb-row-rank">#${rank}</div>
                 <div class="lb-row-user">
                     <img class="lb-row-avatar frame-${p.profileFrame || 'default'}" src="${escapeHTML(p.avatar || 'player_temp.png')}" alt="${escapeHTML(p.name)}" onerror="this.src='player_temp.png'">
@@ -6671,7 +6718,7 @@ async function renderLeaderboard() {
                         <div class="lb-row-name-wrap">
                             <strong class="lb-row-name">${escapeHTML(p.name)}</strong>
                             ${isMe ? '<span style="color:var(--green);font-size:11px;font-weight:800;">(You)</span>' : ''}
-                            ${p.equippedTitle ? `<span class="equipped-title-badge ${titleObj.cssClass}" style="font-size:10px;padding:2px 8px;">${escapeHTML(p.equippedTitle)}</span>` : ''}
+                            ${badgeHtml}
                         </div>
                         <span class="lb-row-meta">Level ${p.level || 1} · ${p.cards || 0} Cards</span>
                     </div>
