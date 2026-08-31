@@ -5698,3 +5698,35 @@ body {
     text-align: left !important;
     margin: auto !important;
 }
+
+/* FLAGGED ACCOUNT BADGES & TOOLTIPS */
+.flagged-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    background: rgba(239, 68, 68, 0.25) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.7) !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.5px !important;
+    cursor: help !important;
+    transition: all 0.2s ease !important;
+}
+
+.flagged-badge:hover {
+    background: rgba(239, 68, 68, 0.4) !important;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.6) !important;
+}
+
+.is-flagged-card {
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.3) !important;
+}
+
+.is-flagged-row {
+    border-left: 3px solid #ef4444 !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+}
