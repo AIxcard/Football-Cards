@@ -7389,63 +7389,98 @@ function adminExecuteGrantTitle() {
     }
 }
 
-async function adminExecuteBan(days = 1) {
+async function adminExecuteTradeBan() {
     if (!isUserAdmin()) return;
     const target = (document.getElementById("adminModTarget").value || "").trim();
-    const reason = (document.getElementById("adminModReason").value || "Unauthorized Script / Balance Injection").trim();
+    const reason = (document.getElementById("adminModReason").value || "Unauthorized Script / Client Modification").trim();
+
     if (!target) {
-        toast("Please enter a target username to ban.");
+        toast("Please enter a target username to trade ban.");
         return;
     }
     if (target.toLowerCase() === "alucard") {
-        toast("Cannot ban the owner account.");
+        toast("Cannot trade ban the owner account.");
         return;
     }
 
-    const duration = days * 86400000;
-    const banUntil = Date.now() + duration;
+    // 1. If targeting self
+    if (target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        state.isTradeBanned = true;
+        state.tradeBanReason = reason;
+        saveGame();
+    }
 
+    // 2. Local account storage
     const accs = CloudSync.getAccounts();
     const key = target.toLowerCase();
     if (accs[key]) {
         try {
             const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
-            s.bannedUntil = banUntil;
-            s.banReason = reason;
-            s.coins = 100; // Reset exploited coins
+            s.isTradeBanned = true;
+            s.tradeBanReason = reason;
             accs[key].saveData = JSON.stringify(s);
             CloudSync.saveAccounts(accs);
         } catch(e) {}
     }
 
-    await FirebaseSync.setBan(target, duration, reason);
+    // 3. Cloud REST account
+    try {
+        let cloudUser = await GlobalCloudRest.fetchUser(target);
+        if (cloudUser) {
+            let sData = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : (cloudUser.saveData || {});
+            sData.isTradeBanned = true;
+            sData.tradeBanReason = reason;
+            cloudUser.saveData = sData;
+            await GlobalCloudRest.pushUser(target, cloudUser);
+        }
+    } catch(e) {}
+
     SoundFx.sell();
-    toast(`⛔ Account "${target}" banned for ${days} Day(s).`);
+    toast(`⚠️ Account "${target}" has been trade banned (flagged).`);
 }
 
-async function adminExecuteUnban() {
+async function adminExecuteRemoveTradeBan() {
     if (!isUserAdmin()) return;
     const target = (document.getElementById("adminModTarget").value || "").trim();
     if (!target) {
-        toast("Please enter a target username to unban.");
+        toast("Please enter a target username to remove trade ban.");
         return;
     }
 
+    // 1. If targeting self
+    if (target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        state.isTradeBanned = false;
+        state.tradeBanReason = "";
+        saveGame();
+    }
+
+    // 2. Local account storage
     const accs = CloudSync.getAccounts();
     const key = target.toLowerCase();
     if (accs[key]) {
         try {
             const s = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
-            s.bannedUntil = 0;
-            s.banReason = "";
+            s.isTradeBanned = false;
+            s.tradeBanReason = "";
             accs[key].saveData = JSON.stringify(s);
             CloudSync.saveAccounts(accs);
         } catch(e) {}
     }
 
-    await FirebaseSync.removeBan(target);
+    // 3. Cloud REST account
+    try {
+        let cloudUser = await GlobalCloudRest.fetchUser(target);
+        if (cloudUser) {
+            let sData = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : (cloudUser.saveData || {});
+            sData.isTradeBanned = false;
+            sData.tradeBanReason = "";
+            cloudUser.saveData = sData;
+            await GlobalCloudRest.pushUser(target, cloudUser);
+        }
+    } catch(e) {}
+
     SoundFx.levelUp();
-    toast(`✓ Account "${target}" has been unbanned.`);
+    toast(`✓ Trade ban removed for "${target}". Account unflagged!`);
 }
 
 function checkBanStatus() {
@@ -7937,9 +7972,9 @@ document.addEventListener("dragstart", function(e) {
         adminExecuteGiveGold,
         adminExecuteSpawnCard,
         adminExecuteSetLevel,
-        adminExecuteBan,
+        adminExecuteTradeBan,
         adminExecuteGrantTitle,
-        adminExecuteUnban,
+        adminExecuteRemoveTradeBan,
         adminSpawnMonkeyCard,
         adminPreviewCardCutscene,
         adminUnlockAllFrames,
