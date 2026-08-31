@@ -4352,11 +4352,7 @@ function open3DCard(identifier, isFromIndex = false) {
     setText("card3DStatsDateTime", `${dateFormatted} · ${timeFormatted}`);
 
     const existCount = getCardExistCount(cardObj || player);
-    if (cardObj && cardObj.serialNumber) {
-        setText("card3DStatsPop", `⚡ ${existCount} Exist Worldwide (#${cardObj.serialNumber}/10)`);
-    } else {
-        setText("card3DStatsPop", `⚡ ${existCount} Exist Worldwide`);
-    }
+    setText("card3DStatsPop", `⚡ ${existCount} Exist Worldwide`);
 
     if (modal) modal.classList.remove("hidden");
     SoundFx.click();
@@ -4683,7 +4679,7 @@ function renderCards() {
         const isSelected = selectedCardIds.has(card.id);
         const obtainedDate = card.obtained ? new Date(card.obtained).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Aug 31, 2026";
         const existCount = getCardExistCount(card);
-        const popTag = card.serialNumber ? `⚡ ${existCount} Exist (#${card.serialNumber}/10)` : `⚡ ${existCount} Exist`;
+        const popTag = `⚡ ${existCount} Exist`;
         const customStyle = card.serialGradient ? `style="background:${card.serialGradient} !important; background-size:200% 200% !important; animation:serializedHoloShift 4s ease-in-out infinite alternate !important;"` : "";
 
         return `
@@ -7847,18 +7843,7 @@ function escapeHTML(value) {
         .replaceAll("'", "&#039;");
 }
 
-// Reset all serialized cards & leaderboard as requested by user
-if (state.cards && Array.isArray(state.cards)) {
-    state.cards.forEach(c => {
-        c.serialNumber = null;
-        c.serialGradient = null;
-    });
-}
-state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
-try {
-    GlobalCloudRest.saveFile("global_serial_counts", { "Lionel Messi": 0, "Cristiano Ronaldo": 0 });
-    GlobalCloudRest.saveFile("global_leaderboard", []);
-} catch(e) {}
+
 
 if (state.initialized) {
     renderAll();
