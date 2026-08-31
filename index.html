@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=325.0">
+<link rel="stylesheet" href="style.css?v=330.0">
 </head>
 
 <body>
@@ -1193,18 +1193,18 @@
 
         <!-- 6. MODERATION / BAN TAB -->
         <div id="adminTabModeration" class="admin-tab-content" style="display:none;">
-            <h3>🛡️ Player Moderation &amp; Suspension Controller</h3>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Ban or unban accounts that use unauthorized scripts or exploit currency.</p>
+            <h3>🛡️ Player Moderation &amp; Trade Ban Controller</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Flag, Trade Ban, or Remove Trade Bans from accounts that exploit or use unauthorized scripts.</p>
             
             <label>Target Username</label>
-            <input id="adminModTarget" placeholder="Username to Ban / Unban" style="width:100%;margin-bottom:10px;">
+            <input id="adminModTarget" placeholder="Username to Trade Ban / Lift Ban" style="width:100%;margin-bottom:10px;">
             
-            <label>Reason for Suspension</label>
-            <input id="adminModReason" placeholder="e.g. Unauthorized Script / Balance Injection" value="Unauthorized Script / Currency Injection Detected" style="width:100%;margin-bottom:14px;">
+            <label>Reason for Flag / Trade Ban</label>
+            <input id="adminModReason" placeholder="e.g. Unauthorized Script / Balance Injection" value="Unauthorized Script / Client Modification" style="width:100%;margin-bottom:14px;">
             
             <div style="display:flex;gap:10px;">
-                <button class="danger-btn" style="flex:1;" onclick="adminExecuteBan(1)">⛔ Ban Account (1 Day)</button>
-                <button class="ghost-btn" style="flex:1;border-color:var(--green);color:var(--green);font-weight:900;" onclick="adminExecuteUnban()">✓ Unban Account</button>
+                <button class="danger-btn" style="flex:1;" onclick="adminExecuteTradeBan()">⚠️ Apply Trade Ban (Flag)</button>
+                <button class="ghost-btn" style="flex:1;border-color:var(--green);color:var(--green);font-weight:900;" onclick="adminExecuteRemoveTradeBan()">✓ Remove Trade Ban (Unflag)</button>
             </div>
         </div>
 
@@ -1414,6 +1414,6 @@
     </div>
 </div>
 
-<script src="script.js?v=325.0"></script>
+<script src="script.js?v=330.0"></script>
 </body>
 </html>
