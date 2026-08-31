@@ -4240,7 +4240,7 @@ async function updateGlobalCardPopulations() {
             const u = merged[k];
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-            if (Array.isArray(pData.cards)) {
+            if (pData.resetV14WipeDone === true && Array.isArray(pData.cards)) {
                 pData.cards.forEach(c => {
                     if (c && c.player) {
                         const pk = c.player.trim().toLowerCase();
@@ -4258,7 +4258,7 @@ function getCardExistCount(card) {
     const name = (card.player || card.name || "").trim().toLowerCase();
     if (!name) return 1;
     const pop = globalCardPopulations[name];
-    if (pop && pop > 0) return pop;
+    if (typeof pop === "number" && pop > 0) return pop;
     if (state && Array.isArray(state.cards)) {
         const localCount = state.cards.filter(c => c && (c.player || "").toLowerCase() === name).length;
         if (localCount > 0) return localCount;
@@ -4343,7 +4343,8 @@ function open3DCard(identifier, isFromIndex = false) {
     setText("card3DRaritySub", player.rarity);
 
     setText("card3DStatsOvrPos", `${player.rating} OVR · ${player.pos}`);
-    setText("card3DStatsVal", `${DUPLICATE_VALUES[player.rarity] || 5} Coins`);
+    const rap = calculateCardRAP(cardObj || player);
+    setText("card3DStatsVal", `💎 ${formatRAP(rap, cardObj || player)}`);
 
     const dateObj = (cardObj && cardObj.obtained) ? new Date(cardObj.obtained) : new Date();
     const dateFormatted = dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
