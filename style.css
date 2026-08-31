@@ -682,7 +682,9 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 
 /* Messi World Class: Signature Golden Solar / Albiceleste Cyan Animated Gradient */
 .card.theme-messi,
-.card-3d-wrapper.theme-messi {
+.card-3d-wrapper.theme-messi,
+.card-3d-front.theme-messi,
+.card-3d-item.theme-messi {
     background: linear-gradient(135deg, #451a03 0%, #f97316 35%, #fde047 70%, #38bdf8 100%) !important;
     background-size: 200% 200% !important;
     animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
@@ -692,7 +694,9 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 
 /* Ronaldo World Class: Signature Royal Purple & Indigo Crimson Animated Gradient */
 .card.theme-ronaldo,
-.card-3d-wrapper.theme-ronaldo {
+.card-3d-wrapper.theme-ronaldo,
+.card-3d-front.theme-ronaldo,
+.card-3d-item.theme-ronaldo {
     background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #c084fc 70%, #ffffff 100%) !important;
     background-size: 200% 200% !important;
     animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
@@ -701,15 +705,10 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 }
 
 /* Emanuel Tournament Card: Animated Cosmic Gold & Cyan Gradient */
-.card.theme-tournament {
-    background: linear-gradient(135deg, #785206 0%, #ffd700 30%, #00f2fe 60%, #7928ca 85%, #785206 100%);
-    background-size: 250% 250%;
-    animation: bgGradientShift 3.5s ease infinite;
-    border-color: #ffd700;
-    box-shadow: 0 0 35px rgba(255, 215, 0, 0.5);
-}
-
-.card-3d-wrapper.theme-tournament {
+.card.theme-tournament,
+.card-3d-wrapper.theme-tournament,
+.card-3d-front.theme-tournament,
+.card-3d-item.theme-tournament {
     background: linear-gradient(135deg, #785206 0%, #ffd700 30%, #00f2fe 60%, #7928ca 85%, #785206 100%) !important;
     background-size: 250% 250% !important;
     animation: bgGradientShift 3.5s ease infinite !important;
@@ -718,15 +717,10 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 }
 
 /* Monkey King Developer Card: Animated Golden Solar Magma & Dragon Gold Gradient */
-.card.theme-developer {
-    background: linear-gradient(135deg, #3d1400 0%, #d97706 25%, #ffd700 50%, #ff3b30 75%, #3d1400 100%);
-    background-size: 250% 250%;
-    animation: bgGradientShift 3s ease infinite;
-    border-color: #ffd700 !important;
-    box-shadow: 0 0 35px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 140, 0, 0.5) !important;
-}
-
-.card-3d-wrapper.theme-developer {
+.card.theme-developer,
+.card-3d-wrapper.theme-developer,
+.card-3d-front.theme-developer,
+.card-3d-item.theme-developer {
     background: linear-gradient(135deg, #3d1400 0%, #d97706 25%, #ffd700 50%, #ff3b30 75%, #3d1400 100%) !important;
     background-size: 250% 250% !important;
     animation: bgGradientShift 3s ease infinite !important;
