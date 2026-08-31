@@ -3718,6 +3718,10 @@ body.modal-open, html.modal-open {
     touch-action: none !important;
 }
 
+.pack-opening-modal:not(.hidden) {
+    display: flex !important;
+}
+
 .pack-burst-rays {
     position: absolute;
     top: 50% !important;
@@ -3748,10 +3752,7 @@ body.modal-open, html.modal-open {
 }
 
 .pack-opening-container {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    position: relative !important;
     z-index: 1000 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -3762,7 +3763,7 @@ body.modal-open, html.modal-open {
     height: 490px !important;
     max-width: 90vw !important;
     max-height: 85vh !important;
-    margin: 0 !important;
+    margin: auto !important;
     padding: 0 !important;
     perspective: 1600px !important;
     overflow: visible !important;
