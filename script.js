@@ -223,7 +223,6 @@ function formatCountdown(ms) {
 }
 
 const AntiCheat = {
-    _banTriggered: false,
     computeChecksum(coins, cardsLen, level) {
         const c = Math.max(0, Math.floor(Number(coins) || 0));
         const cl = Math.max(0, Math.floor(Number(cardsLen) || 0));
@@ -236,40 +235,25 @@ const AntiCheat = {
         st._sig = this.computeChecksum(st.coins || 0, (st.cards || []).length, st.level || 1);
         st._lastValidCoins = Number(st.coins) || 0;
     },
-    applyAutoBan(reason) {
+    applyTradeBan(reason) {
         if (!state) return;
         const u = (state.accountUser || state.name || "").toLowerCase();
-        if (u === "alucard") return; // Master Owner cannot be banned
+        if (u === "alucard") return; // Master Owner is immune
 
-        if (this._banTriggered) return;
-        this._banTriggered = true;
-
-        state.bannedUntil = Date.now() + (365 * 24 * 3600 * 1000); // 1 Year Permanent Suspension
-        state.banReason = reason || "Aggressive Anti-Cheat Violation: Console / Script / Injection Detected";
-        state.coins = 0;
-        state.cards = [];
-        this.signState(state);
-        saveGame();
-        checkBanStatus();
-
-        try {
-            GlobalCloudRest.pushUser(state.accountUser || state.name, {
-                ...state,
-                bannedUntil: state.bannedUntil,
-                banReason: state.banReason
-            });
-        } catch(e) {}
-
-        // Immediate Lockout Screen
-        document.body.innerHTML = `
-        <div style="position:fixed;inset:0;background:#050000;color:#ff3333;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;z-index:99999999;text-align:center;padding:24px;">
-            <h1 style="font-size:36px;font-weight:900;letter-spacing:2px;margin:0 0 16px;text-shadow:0 0 30px #ff0000;">⛔ PERMANENT SECURITY SUSPENSION</h1>
-            <p style="font-size:16px;color:#fca5a5;max-width:600px;line-height:1.6;margin:0 0 24px;"><b>Reason:</b> ${escapeHTML(state.banReason)}</p>
-            <div style="padding:16px 28px;background:rgba(255,0,0,0.1);border:1px solid #ff3333;border-radius:12px;font-weight:800;color:#ffffff;">
-                ACCOUNT ID: ${escapeHTML(state.accountUser || state.name || "GUEST")} · HARDWARE HASH LOGGED
-            </div>
-        </div>
-        `;
+        if (!state.isTradeBanned) {
+            state.isTradeBanned = true;
+            state.tradeBanReason = reason || "Flagged Account: Script / Client Modification Detected";
+            this.signState(state);
+            saveGame();
+            try {
+                GlobalCloudRest.pushUser(state.accountUser || state.name, {
+                    ...state,
+                    isTradeBanned: true,
+                    tradeBanReason: state.tradeBanReason
+                });
+            } catch(e) {}
+            toast("⚠️ Account Flagged: Trading privileges permanently disabled.");
+        }
     },
     validateState(st) {
         if (!st) return true;
@@ -281,63 +265,53 @@ const AntiCheat = {
             st.coins = 100;
         }
 
-        // Detect impossible sudden balance spikes
-        if (Number(st.coins) >= 500000) {
-            this.applyAutoBan("Unauthorized Coin Injection Detected (" + (Number(st.coins) || 0).toLocaleString() + " Coins)");
-            return false;
+        // Flag impossible sudden balance spikes for trade ban
+        if (Number(st.coins) >= 50000000) {
+            this.applyTradeBan("Excessive Balance Injection Detected");
         }
 
         this.signState(st);
         return true;
     },
-    initAggressiveLockdown() {
-        const self = this;
+    initConsoleProtection() {
+        if (typeof window === "undefined") return;
         const isAlucard = () => (state && (state.accountUser || state.name || "").toLowerCase() === "alucard");
 
-        // 1. Console getter honeypot trap
-        try {
-            const devTrap = document.createElement("div");
-            Object.defineProperty(devTrap, "id", {
-                get() {
-                    if (!isAlucard()) {
-                        self.applyAutoBan("DevTools / Console Inspection Trap Triggered");
-                    }
-                    return "trap";
+        // Gracefully suppress console logging for regular players to prevent inspecting/tinkering
+        const methods = ["log", "warn", "info", "dir", "table", "trace", "debug"];
+        methods.forEach(m => {
+            const orig = console[m];
+            console[m] = function(...args) {
+                if (isAlucard()) {
+                    if (orig) orig.apply(console, args);
                 }
-            });
-            setInterval(() => {
-                if (!isAlucard()) {
-                    console.log(devTrap);
-                    console.clear();
-                }
-            }, 2000);
-        } catch(e) {}
-
-        // 2. Debugger timing analysis trap
-        setInterval(() => {
-            if (isAlucard()) return;
-            const start = performance.now();
-            // Test debugger delay
-            (function() {}).constructor("debugger")();
-            const duration = performance.now() - start;
-            if (duration > 150) {
-                self.applyAutoBan("DevTools / Debugger Pause Detected");
-            }
-        }, 3000);
-
-        // 3. Screen size DevTools open threshold detection
-        window.addEventListener("resize", () => {
-            if (isAlucard()) return;
-            const widthDiff = window.outerWidth - window.innerWidth;
-            const heightDiff = window.outerHeight - window.innerHeight;
-            if (widthDiff > 160 || heightDiff > 160) {
-                self.applyAutoBan("DevTools Docked Window Detected");
-            }
+            };
         });
+
+        // Disable right-click inspect and common DevTools shortcuts
+        document.addEventListener("contextmenu", (e) => {
+            if (!isAlucard()) {
+                const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+                if (tag !== "input" && tag !== "textarea") {
+                    e.preventDefault();
+                }
+            }
+        }, false);
+
+        document.addEventListener("keydown", (e) => {
+            if (isAlucard()) return;
+            if (e.key === "F12" || 
+                (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) || 
+                (e.ctrlKey && (e.key === "U" || e.key === "u"))) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, false);
     }
 };
 
-try { AntiCheat.initAggressiveLockdown(); } catch(e) {}
+try { AntiCheat.initConsoleProtection(); } catch(e) {}
 
 const DUPLICATE_VALUES = {
     Common: 5,
@@ -1145,6 +1119,8 @@ function freshState() {
 
         bannedUntil: 0,
         banReason: "",
+        isTradeBanned: false,
+        tradeBanReason: "",
         grantedTitles: [],
         isGrantedAdmin: false,
         isGrantedStaff: false,
@@ -1214,6 +1190,8 @@ function loadGame() {
             missionProgress: isReset ? { hourly: [], daily: [], weekly: [], monthly: [] } : (saved.missionProgress || { hourly: [], daily: [], weekly: [], monthly: [] }),
             missionClaimed: isReset ? { hourly: [], daily: [], weekly: [], monthly: [] } : (saved.missionClaimed || { hourly: [], daily: [], weekly: [], monthly: [] }),
             missionReset: { hourly: Date.now(), daily: Date.now(), weekly: Date.now(), monthly: Date.now() },
+            isTradeBanned: !!saved.isTradeBanned,
+            tradeBanReason: saved.tradeBanReason || "",
             grantedTitles: isAdminUser ? (saved.grantedTitles && saved.grantedTitles.includes("Admin") ? saved.grantedTitles : ["Admin", "Owner"]) : [],
             isGrantedAdmin: isAdminUser,
             isGrantedStaff: !isReset && !!saved.isGrantedStaff,
@@ -5203,6 +5181,11 @@ async function sendTradeOffer(targetUsername) {
         return;
     }
 
+    if (state.isTradeBanned) {
+        toast("⚠️ Your account is flagged: Trading privileges are permanently disabled.");
+        return;
+    }
+
     const input = document.getElementById("tradeRecipientInput");
     const recipient = (targetUsername || (input ? input.value : "")).trim();
 
@@ -5313,6 +5296,11 @@ async function acceptIncomingLiveTrade() {
     if (!currentIncomingTrade) return;
     const trade = currentIncomingTrade;
     closeIncomingTradeModal();
+
+    if (state.isTradeBanned) {
+        toast("⚠️ Your account is flagged: Trading privileges are permanently disabled.");
+        return;
+    }
 
     const myKey = state.accountUser.toLowerCase();
     const partnerKey = (trade.sender || "").toLowerCase();
@@ -5948,10 +5936,15 @@ async function renderTradeHub() {
         }
     }
 
+    let flagBanner = "";
+    if (state.isTradeBanned) {
+        flagBanner = `<div style="grid-column:1/-1;background:rgba(239,68,68,0.15);border:1px solid #ef4444;border-radius:12px;padding:14px;text-align:center;color:#fca5a5;font-weight:700;margin-bottom:14px;">⚠️ ACCOUNT FLAGGED: Trading privileges are disabled on this account. You may still open packs, manage cards, and play normally.</div>`;
+    }
+
     if (!otherPlayers.length) {
-        list.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">No other online players found yet. Invite a friend to play!</p>`;
+        list.innerHTML = `${flagBanner}<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">No other online players found yet. Invite a friend to play!</p>`;
     } else {
-        list.innerHTML = otherPlayers.map(p => `
+        list.innerHTML = flagBanner + otherPlayers.map(p => `
             <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
                 <div style="display:flex;align-items:center;gap:10px;">
                     <div style="font-size:26px;">👤</div>
@@ -5960,7 +5953,7 @@ async function renderTradeHub() {
                         <p style="margin:2px 0 0;font-size:11px;color:var(--cyan);">${escapeHTML(p.title)} · Level ${p.level}</p>
                     </div>
                 </div>
-                <button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;" onclick="sendTradeOffer('${escapeHTML(p.username)}')">🤝 Trade</button>
+                <button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;${state.isTradeBanned ? 'opacity:0.5;cursor:not-allowed;' : ''}" onclick="sendTradeOffer('${escapeHTML(p.username)}')">🤝 Trade</button>
             </div>
         `).join("");
     }
@@ -7457,32 +7450,8 @@ async function adminExecuteUnban() {
 
 function checkBanStatus() {
     const modal = document.getElementById("accountBannedModal");
-    if (!modal) return false;
-
-    const isOwner = (state.accountUser || state.name || "").toLowerCase() === "alucard";
-    if (isOwner) {
-        modal.classList.add("hidden");
-        state.bannedUntil = 0;
-        return false;
-    }
-
-    const now = Date.now();
-    if (state.bannedUntil && state.bannedUntil > now) {
-        modal.classList.remove("hidden");
-        setText("banUserText", state.accountUser || state.name || "Player");
-        setText("banReasonText", state.banReason || "Unauthorized Script / Balance Injection");
-        const remainingMs = state.bannedUntil - now;
-        setText("banCountdownText", formatCountdown(remainingMs));
-        return true;
-    } else {
-        modal.classList.add("hidden");
-        if (state.bannedUntil) {
-            state.bannedUntil = 0;
-            state.banReason = "";
-            saveGame();
-        }
-        return false;
-    }
+    if (modal) modal.classList.add("hidden");
+    return false;
 }
 
 /* =========================================================
