@@ -6,104 +6,7 @@
 (function initFootballTCGSecurityCore() {
     "use strict";
 
-    // =========================================================
-    // ANTI-CHEAT & DEVTOOLS ABSOLUTE DEFENSE SUITE
-    // =========================================================
-
-    // 1. Console Neutralization & Continuous Auto-Purge
-    (function lockDownConsole() {
-        try {
-            const noop = function() {};
-            const consoleProps = ["log", "warn", "error", "info", "debug", "table", "dir", "trace", "dirxml", "group", "groupCollapsed", "groupEnd", "time", "timeEnd", "timeLog", "profile", "profileEnd", "count", "countReset", "assert"];
-            consoleProps.forEach(fn => {
-                if (window.console && typeof window.console[fn] === "function") {
-                    try { window.console[fn] = noop; } catch(e) {}
-                }
-            });
-            // Continuous console wipe
-            setInterval(() => {
-                try { if (window.console && window.console.clear) window.console.clear(); } catch(e) {}
-            }, 300);
-        } catch(e) {}
-    })();
-
-    // 2. Active DevTools Detection & Shield Enforcement
-    let isDevToolsOpen = false;
-    function checkDevToolsStatus() {
-        try {
-            const threshold = 160;
-            const widthDiff = window.outerWidth - window.innerWidth > threshold;
-            const heightDiff = window.outerHeight - window.innerHeight > threshold;
-            const modal = document.getElementById("devToolsShieldModal");
-            
-            if (widthDiff || heightDiff) {
-                if (!isDevToolsOpen) {
-                    isDevToolsOpen = true;
-                    if (modal) {
-                        modal.classList.remove("hidden");
-                        modal.style.display = "flex";
-                    }
-                }
-            } else {
-                if (isDevToolsOpen) {
-                    isDevToolsOpen = false;
-                    if (modal) {
-                        modal.classList.add("hidden");
-                        modal.style.display = "none";
-                    }
-                }
-            }
-        } catch(e) {}
-    }
-    window.addEventListener("resize", checkDevToolsStatus);
-    setInterval(checkDevToolsStatus, 500);
-
-    // 3. Anti-Debugging Timing Loop
-    setInterval(() => {
-        try {
-            const before = performance.now();
-            (function(){}).constructor("debugger")();
-            const after = performance.now();
-            if (after - before > 100) {
-                const modal = document.getElementById("devToolsShieldModal");
-                if (modal) {
-                    modal.classList.remove("hidden");
-                    modal.style.display = "flex";
-                }
-            }
-        } catch(e) {}
-    }, 1000);
-
-    // 4. Keyboard Shortcut & View Source Lockdown (F12, Ctrl+Shift+I/J/C/K, Ctrl+U, Ctrl+S)
-    window.addEventListener('keydown', function(e) {
-        if (e.keyCode === 123 || e.key === "F12") {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c', 'K', 'k'].includes(e.key)) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        if ((e.ctrlKey || e.metaKey) && ['U', 'u', 'S', 's'].includes(e.key)) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }, true);
-
-    // 5. Disable Right Click Context Menu
-    window.addEventListener('contextmenu', function(e) {
-        const tag = (e.target && e.target.tagName) || "";
-        if (tag !== "INPUT" && tag !== "TEXTAREA") {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }, true);
-
-    // 6. Cryptographic SHA-256 Password Hash Engine
+    // Cryptographic SHA-256 Password Hash Engine
     async function hashPassword(plainText) {
         if (!plainText) return "";
         const salt = "football_tcg_secure_salt_2026_@!";
@@ -2462,16 +2365,6 @@ function bindEvents() {
             if (card) showCardResult(card, false, false);
             state.worldClassPending = null;
             saveGame();
-        });
-    }
-
-    const revealBtn = document.getElementById("revealCollectBtn");
-    if (revealBtn) {
-        revealBtn.addEventListener("click", () => {
-            SoundFx.click();
-            const overlay = document.getElementById("cardRevealOverlay");
-            if (overlay) overlay.classList.add("hidden");
-            unlockModalScroll();
         });
     }
 
@@ -5920,15 +5813,20 @@ async function renderTradeHub() {
 
     const myName = (state.accountUser || "").toLowerCase();
     const otherPlayers = [];
+    const seenUsers = new Set();
 
     for (const key in merged) {
-        if (key.toLowerCase() !== myName && !key.includes("_1787") && !key.includes("ipadtest")) {
-            const u = merged[key];
+        const u = merged[key];
+        const rawUsername = u.username || key;
+        const lowerName = rawUsername.toLowerCase();
+
+        if (lowerName !== myName && !lowerName.includes("_1787") && !lowerName.includes("ipadtest") && !seenUsers.has(lowerName)) {
+            seenUsers.add(lowerName);
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
             otherPlayers.push({
-                username: u.username || key,
-                name: pData.name || u.username || key,
+                username: rawUsername,
+                name: pData.name || rawUsername,
                 level: pData.level || 1,
                 cards: (pData.cards || []).length,
                 title: pData.equippedTitle || "Collector"
