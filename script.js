@@ -2053,11 +2053,33 @@ async function pushOnlineGlobalAccount(username, accountPayload) {
 const CloudSync = {
     getAccounts() {
         try {
-            return JSON.parse(localStorage.getItem(CLOUD_STORAGE_KEY) || "{}");
+            const raw = JSON.parse(localStorage.getItem(CLOUD_STORAGE_KEY) || "{}");
+            const allowed = ["alucard", "hexkeys", "timekung2835"];
+            const cleaned = {};
+            for (const k in raw) {
+                if (allowed.includes(k.toLowerCase())) {
+                    cleaned[k.toLowerCase()] = raw[k];
+                }
+            }
+            // Ensure Alucard password is set to Unidentified67
+            if (cleaned["alucard"]) {
+                cleaned["alucard"].passwordHash = "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb";
+                cleaned["alucard"].username = "Alucard";
+            }
+            return cleaned;
         } catch (e) { return {}; }
     },
     saveAccounts(accs) {
-        try { localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(accs)); } catch (e) {}
+        try {
+            const allowed = ["alucard", "hexkeys", "timekung2835"];
+            const cleaned = {};
+            for (const k in accs) {
+                if (allowed.includes(k.toLowerCase())) {
+                    cleaned[k.toLowerCase()] = accs[k];
+                }
+            }
+            localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(cleaned));
+        } catch (e) {}
     },
     getTrades() {
         try {
@@ -2076,17 +2098,21 @@ const CloudSync = {
 
         const key = u.toLowerCase();
 
-        // 1. Check Local Accounts
+        // 1. Check Local Accounts (case-insensitive)
         const accs = this.getAccounts();
         if (accs[key]) {
-            return { success: false, msg: `Username "${u}" is already registered. Please log in.` };
+            return { success: false, msg: `Username "${u}" is already registered (usernames are unique regardless of casing). Please log in.` };
         }
 
-        // 2. Check Remote Cloud Database (CRITICAL: prevents overwriting existing accounts!)
+        // 2. Check Remote Cloud Database (case-insensitive: prevents duplicate accounts)
         try {
             const cloudUser = await GlobalCloudRest.fetchUser(u);
             if (cloudUser && cloudUser.username) {
-                return { success: false, msg: `Username "${u}" is already taken in the Cloud. Please log in instead.` };
+                return { success: false, msg: `Username "${u}" is already taken (usernames are unique regardless of casing). Please log in instead.` };
+            }
+            const allUsers = await GlobalCloudRest.fetchAllUsers();
+            if (allUsers && allUsers[key]) {
+                return { success: false, msg: `Username "${u}" is already taken (usernames are unique regardless of casing). Please choose another name.` };
             }
         } catch (e) {}
 
@@ -2354,9 +2380,11 @@ document.addEventListener("DOMContentLoaded", () => {
     checkName();
     renderAll();
     updateTimers();
+    updateGlobalCardPopulations();
 
     setInterval(updateTimers, 1000);
     setInterval(checkMissionResets, 1000);
+    setInterval(updateGlobalCardPopulations, 60000);
 });
 
 function bindEvents() {
@@ -3047,6 +3075,12 @@ function openPack(type, count = 1) {
     const isAlucard = (state.accountUser || "").trim().toLowerCase() === "alucard";
     if ((type === "mythic" || type === "secret" || type === "worldclass") && !isAlucard) {
         toast("⛔ Mythic, Secret, and World Class packs are exclusive to Alucard!");
+        SoundFx.click();
+        return;
+    }
+
+    if (type === "exclusive" && Date.now() >= EXCLUSIVE_PACK_EXPIRY) {
+        toast("The Exclusive Legends Pack has ended and is no longer available in the shop!");
         SoundFx.click();
         return;
     }
@@ -4182,6 +4216,56 @@ function toggle3DCardFlip() {
     SoundFx.click();
 }
 
+let globalCardPopulations = {};
+
+async function updateGlobalCardPopulations() {
+    try {
+        const counts = {};
+        if (state && Array.isArray(state.cards)) {
+            state.cards.forEach(c => {
+                if (c && c.player) {
+                    const k = c.player.trim().toLowerCase();
+                    counts[k] = (counts[k] || 0) + 1;
+                }
+            });
+        }
+
+        const allCloud = await GlobalCloudRest.fetchAllUsers();
+        const localAccs = CloudSync.getAccounts();
+        const merged = { ...localAccs, ...allCloud };
+
+        const currentU = (state && state.accountUser ? state.accountUser.toLowerCase() : "");
+        for (const k in merged) {
+            if (k.toLowerCase() === currentU) continue;
+            const u = merged[k];
+            let pData = {};
+            try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+            if (Array.isArray(pData.cards)) {
+                pData.cards.forEach(c => {
+                    if (c && c.player) {
+                        const pk = c.player.trim().toLowerCase();
+                        counts[pk] = (counts[pk] || 0) + 1;
+                    }
+                });
+            }
+        }
+        globalCardPopulations = counts;
+    } catch (e) {}
+}
+
+function getCardExistCount(card) {
+    if (!card) return 1;
+    const name = (card.player || card.name || "").trim().toLowerCase();
+    if (!name) return 1;
+    const pop = globalCardPopulations[name];
+    if (pop && pop > 0) return pop;
+    if (state && Array.isArray(state.cards)) {
+        const localCount = state.cards.filter(c => c && (c.player || "").toLowerCase() === name).length;
+        if (localCount > 0) return localCount;
+    }
+    return 1;
+}
+
 function open3DCard(identifier, isFromIndex = false) {
     let pObj = PLAYERS.find(p => p.name === identifier);
     let cardObj = isFromIndex ? null : state.cards.find(c => c.id === identifier);
@@ -4266,12 +4350,11 @@ function open3DCard(identifier, isFromIndex = false) {
     const timeFormatted = dateObj.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
     setText("card3DStatsDateTime", `${dateFormatted} · ${timeFormatted}`);
 
+    const existCount = getCardExistCount(cardObj || player);
     if (cardObj && cardObj.serialNumber) {
-        setText("card3DStatsPop", `⚡ 10 Exist Worldwide (#${cardObj.serialNumber}/10)`);
-    } else if (player.rarity === "World Class") {
-        setText("card3DStatsPop", `⚡ 10 Exist Worldwide`);
+        setText("card3DStatsPop", `⚡ ${existCount} Exist Worldwide (#${cardObj.serialNumber}/10)`);
     } else {
-        setText("card3DStatsPop", `⚡ Official Series 2026`);
+        setText("card3DStatsPop", `⚡ ${existCount} Exist Worldwide`);
     }
 
     if (modal) modal.classList.remove("hidden");
@@ -4597,8 +4680,8 @@ function renderCards() {
 
         const isLocked = !!card.locked;
         const isSelected = selectedCardIds.has(card.id);
-        const obtainedDate = card.obtained ? new Date(card.obtained).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Aug 30, 2026";
-        const popTag = card.serialNumber ? `⚡ 10 Exist (#${card.serialNumber}/10)` : (card.rarity === "World Class" ? "⚡ 10 Exist" : "⚡ Official");
+        const existCount = getCardExistCount(card);
+        const popTag = card.serialNumber ? `⚡ ${existCount} Exist (#${card.serialNumber}/10)` : `⚡ ${existCount} Exist`;
         const customStyle = card.serialGradient ? `style="background:${card.serialGradient} !important; background-size:200% 200% !important; animation:serializedHoloShift 4s ease-in-out infinite alternate !important;"` : "";
 
         return `
@@ -6449,18 +6532,25 @@ function updateMissionCountdownTimers() {
     }
 }
 
+const EXCLUSIVE_PACK_EXPIRY = new Date("2026-09-07T07:00:00+07:00").getTime();
+
 function updateLimitedTimer() {
     const timer = document.getElementById("limitedCountdown");
-    if (!timer) return;
-    const th = getThailandTime();
-    const day = th.getDay();
-    const daysUntilMon = (8 - (day === 0 ? 7 : day)) % 7 || 7;
-    const target = new Date(th);
-    target.setDate(th.getDate() + daysUntilMon);
-    target.setHours(7, 0, 0, 0);
+    const banner = document.getElementById("limitedEventSection");
+    const packCard = document.getElementById("packCardExclusive");
 
-    const diff = target.getTime() - th.getTime();
-    timer.textContent = "Weekly Reset in " + formatCountdown(diff);
+    const now = Date.now();
+    const diff = EXCLUSIVE_PACK_EXPIRY - now;
+
+    if (diff <= 0) {
+        if (timer) timer.textContent = "Event Ended · Pack Wiped From Shop";
+        if (banner) banner.style.display = "none";
+        if (packCard) packCard.style.display = "none";
+    } else {
+        if (timer) timer.textContent = "Leaves Shop In " + formatCountdown(diff) + " (Mon 7:00 AM ICT)";
+        if (banner) banner.style.display = "block";
+        if (packCard) packCard.style.display = "flex";
+    }
 }
 
 function updateTournamentTimer() {
