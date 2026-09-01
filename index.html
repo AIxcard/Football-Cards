@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=370.0">
+<link rel="stylesheet" href="style.css?v=380.0">
 </head>
 
 <body>
@@ -298,7 +298,6 @@
 <div id="cardRevealOverlay" class="modal hidden reveal-modal">
     <div id="revealCardContainer" class="reveal-card-box">
         <div class="reveal-badge" id="revealBadge">NEW PULL</div>
-        <div id="revealBonusBadge" class="reveal-bonus-tag" style="display:none;">+50 🪙 FIRST DISCOVERY BONUS!</div>
         <div id="revealCard" class="card reveal-card-body">
             <span id="revealRarity" class="rarity">RARITY</span>
             <div id="revealImageContainer" class="card-image-wrap">
@@ -327,7 +326,7 @@
             <span class="cloud-dot">●</span> <span id="cloudStatusText">Local</span>
         </div>
         <div class="coins">🪙 <b id="coinDisplay">100</b></div>
-        <button id="topAuthBtn" class="auth-btn-pill" onclick="openAuthModal()">👤 <span id="topAuthName">Account</span></button>
+        <button id="topAuthBtn" class="auth-btn-pill" onclick="openAuthModal()"><span id="topAuthName">👤 Account</span></button>
     </div>
 </header>
 
@@ -1028,17 +1027,83 @@
         </div>
     </div>
 
-    <!-- ⚡ AUTO-SELL DUPLICATES SETTING -->
+    <!-- ⚡ GRANULAR AUTO-SELL SETTINGS -->
     <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-            <div>
-                <h2>⚡ Auto-Sell Duplicate Cards</h2>
-                <p style="color:var(--muted);font-size:13px;margin:4px 0 0;">Automatically sells duplicate cards upon pack opening for gold coins (never sells locked, serialized, World Class, or Secret cards).</p>
+        <h2>⚡ Granular Auto-Sell Settings</h2>
+        <p style="color:var(--muted);font-size:13px;margin:4px 0 16px;">Configure auto-sell rules per card rarity when opening packs. Locked, serialized, World Class, and Secret cards are always safely protected.</p>
+        
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;">
+            <div class="auto-sell-rarity-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="rarity common" style="font-size:11px;">COMMON</span>
+                    <span style="font-size:11px;color:var(--muted);">+5 🪙</span>
+                </div>
+                <select id="autoSellCommonSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;font-size:12px;" onchange="updateRarityAutoSell('Common', this.value)">
+                    <option value="none">🛡️ Keep All</option>
+                    <option value="dupes">⚡ Sell Duplicates Only</option>
+                    <option value="all">💥 Sell All (New &amp; Dupe)</option>
+                </select>
             </div>
-            <label style="display:inline-flex;align-items:center;cursor:pointer;gap:8px;font-weight:700;">
-                <input id="autoSellDuplicatesToggle" type="checkbox" style="width:20px;height:20px;cursor:pointer;" onchange="toggleAutoSellDuplicatesSetting(this.checked)">
-                <span id="autoSellDuplicatesStatus" style="color:var(--cyan);font-size:14px;">Disabled</span>
-            </label>
+
+            <div class="auto-sell-rarity-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="rarity uncommon" style="font-size:11px;">UNCOMMON</span>
+                    <span style="font-size:11px;color:var(--muted);">+12 🪙</span>
+                </div>
+                <select id="autoSellUncommonSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;font-size:12px;" onchange="updateRarityAutoSell('Uncommon', this.value)">
+                    <option value="none">🛡️ Keep All</option>
+                    <option value="dupes">⚡ Sell Duplicates Only</option>
+                    <option value="all">💥 Sell All (New &amp; Dupe)</option>
+                </select>
+            </div>
+
+            <div class="auto-sell-rarity-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="rarity rare" style="font-size:11px;">RARE</span>
+                    <span style="font-size:11px;color:var(--muted);">+25 🪙</span>
+                </div>
+                <select id="autoSellRareSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;font-size:12px;" onchange="updateRarityAutoSell('Rare', this.value)">
+                    <option value="none">🛡️ Keep All</option>
+                    <option value="dupes">⚡ Sell Duplicates Only</option>
+                    <option value="all">💥 Sell All (New &amp; Dupe)</option>
+                </select>
+            </div>
+
+            <div class="auto-sell-rarity-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="rarity epic" style="font-size:11px;">EPIC</span>
+                    <span style="font-size:11px;color:var(--muted);">+50 🪙</span>
+                </div>
+                <select id="autoSellEpicSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;font-size:12px;" onchange="updateRarityAutoSell('Epic', this.value)">
+                    <option value="none">🛡️ Keep All</option>
+                    <option value="dupes">⚡ Sell Duplicates Only</option>
+                    <option value="all">💥 Sell All (New &amp; Dupe)</option>
+                </select>
+            </div>
+
+            <div class="auto-sell-rarity-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="rarity legendary" style="font-size:11px;">LEGENDARY</span>
+                    <span style="font-size:11px;color:var(--muted);">+100 🪙</span>
+                </div>
+                <select id="autoSellLegendarySelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;font-size:12px;" onchange="updateRarityAutoSell('Legendary', this.value)">
+                    <option value="none">🛡️ Keep All</option>
+                    <option value="dupes">⚡ Sell Duplicates Only</option>
+                    <option value="all">💥 Sell All (New &amp; Dupe)</option>
+                </select>
+            </div>
+
+            <div class="auto-sell-rarity-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span class="rarity exclusive" style="font-size:11px;">EXCLUSIVE</span>
+                    <span style="font-size:11px;color:var(--muted);">+180 🪙</span>
+                </div>
+                <select id="autoSellExclusiveSelect" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;font-size:12px;" onchange="updateRarityAutoSell('Exclusive', this.value)">
+                    <option value="none">🛡️ Keep All</option>
+                    <option value="dupes">⚡ Sell Duplicates Only</option>
+                    <option value="all">💥 Sell All (New &amp; Dupe)</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -1448,6 +1513,6 @@
     </div>
 </div>
 
-<script src="script.js?v=370.0"></script>
+<script src="script.js?v=380.0"></script>
 </body>
 </html>
