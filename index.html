@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=510.0">
+<link rel="stylesheet" href="style.css?v=520.0">
 </head>
 
 <body>
@@ -337,6 +337,9 @@
     <button class="nav" data-page="cards" onclick="showPage('cards')">🎴 Collection</button>
     <button class="nav" data-page="alchemy" onclick="showPage('alchemy')">⚗️ Alchemy</button>
     <button class="nav" data-page="skilltree" onclick="showPage('skilltree')">🌳 Skill Tree</button>
+    <button class="nav" data-page="milestones" onclick="showPage('milestones')">
+        🎖️ Milestones <span id="milestonesAlertBadge" class="nav-alert-dot hidden">!</span>
+    </button>
     <button class="nav" data-page="index" onclick="showPage('index')">
         📖 Index <span id="indexAlertBadge" class="nav-alert-dot hidden">!</span>
     </button>
@@ -525,7 +528,7 @@
             <div class="pack-rate">Rare → World Class (0.5% Secret)</div>
             <div class="pack-multibuttons">
                 <button onclick="openPack('champion', 1)">1x · 45 🪙</button>
-                <button onclick="openPack('champion', 3)">3x · 135 🪙</button>
+                <button id="championPack3xBtn" onclick="openPack('champion', 3)">3x · 135 🪙</button>
                 <button onclick="openPack('champion', 5)">5x · 225 🪙</button>
             </div>
         </article>
@@ -890,7 +893,7 @@
             <p>Invest Skill Points into specialized mastery branches for permanent passive gameplay benefits.</p>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
-            <button class="ghost-btn" style="padding:10px 16px;font-size:12.5px;" onclick="respecSkillTree()">🔄 Reset / Respec</button>
+            <button class="ghost-btn" style="padding:10px 16px;font-size:12.5px;" onclick="respecSkillTree()">🔄 Refund</button>
         </div>
     </div>
 
@@ -910,9 +913,9 @@
 
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
                 <button id="buySkillPointBtn" class="primary-btn" style="width:auto;padding:12px 24px;font-size:14px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;box-shadow:0 0 18px rgba(14,165,233,0.4);" onclick="buySkillPoint()">
-                    ⚡ Buy 1 SP for <span id="nextSkillPointCost">5,000</span> 🪙
+                    ⚡ Buy 1 SP for&nbsp;<span id="nextSkillPointCost" style="margin: 0 4px;">5,000</span>&nbsp;🪙
                 </button>
-                <span style="font-size:11px;color:var(--muted);">Cost scales with each point purchased (5K ➔ 7.5K ➔ 10K ➔ 15K ➔ 20K ➔ 30K...)</span>
+                <span style="font-size:11px;color:var(--muted);">Cost scales with each point purchased</span>
             </div>
         </div>
     </div>
@@ -920,6 +923,49 @@
     <!-- 4 SKILL BRANCHES GRID -->
     <div class="skill-branches-container" id="skillBranchesContainer" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
         <!-- Dynamically rendered 4 branches with nodes & prerequisites -->
+    </div>
+
+</section>
+
+
+<!-- ==================== LEVEL MILESTONES ==================== -->
+<section id="milestones" class="page">
+
+    <div class="section-head">
+        <div>
+            <p class="eyebrow">CAREER PROGRESSION REWARDS</p>
+            <h1>🎖️ Level Milestones</h1>
+            <p>Reach collector level milestones every 5 levels to claim massive gold caches and 3 Free Champion Packs!</p>
+        </div>
+    </div>
+
+    <!-- CURRENT LEVEL & NEXT MILESTONE PROGRESS DASHBOARD -->
+    <div class="panel milestones-hero-panel" style="margin-bottom:28px;border-color:rgba(234, 179, 8, 0.4);background:radial-gradient(circle at 80% 20%, rgba(234, 179, 8, 0.15), transparent 45%), linear-gradient(135deg, #181c24, #0f131a);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <div class="milestone-badge-box" style="width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,#f59e0b,#d97706);border:1px solid #fbbf24;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 0 25px rgba(245,158,11,0.5);">
+                    🏆
+                </div>
+                <div>
+                    <div style="font-size:12px;color:var(--muted);font-weight:800;letter-spacing:1px;text-transform:uppercase;">CURRENT COLLECTOR LEVEL</div>
+                    <div style="font-size:28px;font-weight:900;color:var(--gold);">Level <span id="milestoneCurrentLevel">1</span></div>
+                    <span style="font-size:12px;color:#94a3b8;" id="milestoneNextSummary">Next Milestone: Level 5 (4 levels remaining)</span>
+                </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 20px;">
+                <span style="font-size:26px;">📦</span>
+                <div>
+                    <div style="font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;">STORED FREE PACK CHARGES</div>
+                    <div style="font-size:18px;font-weight:900;color:#10b981;"><span id="freeChampPacksCount">0</span>x <span style="font-size:13px;color:#fff;">3x Champion Packs</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MILESTONES GRID -->
+    <div id="milestonesGrid" class="milestones-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:18px;">
+        <!-- Dynamically populated every 5 levels -->
     </div>
 
 </section>
@@ -1757,6 +1803,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=510.0"></script>
+<script src="script.js?v=520.0"></script>
 </body>
 </html>
