@@ -3758,7 +3758,29 @@ body.modal-open, html.modal-open {
     pointer-events: none !important;
 }
 
-.pack-stage-backdrop {
+#packOpeningOverlay {
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    background: radial-gradient(circle at 50% 50%, #08162b 0%, #020610 90%) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    z-index: 999999 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    touch-action: none !important;
+}
+
+#packOpeningOverlay > .pack-stage-backdrop {
     position: absolute !important;
     inset: 0 !important;
     top: 0 !important;
@@ -3766,11 +3788,12 @@ body.modal-open, html.modal-open {
     width: 100% !important;
     height: 100% !important;
     background: radial-gradient(circle at 50% 50%, rgba(30, 58, 138, 0.45) 0%, rgba(2, 6, 23, 0.98) 85%) !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
+    margin: 0 !important;
     z-index: 1 !important;
 }
 
-.pack-burst-rays {
+#packOpeningOverlay > .pack-burst-rays {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
@@ -3782,6 +3805,7 @@ body.modal-open, html.modal-open {
     filter: blur(80px) !important;
     animation: spinRays 6s linear infinite !important;
     pointer-events: none !important;
+    margin: 0 !important;
     z-index: 2 !important;
 }
 
@@ -3791,9 +3815,12 @@ body.modal-open, html.modal-open {
     to { transform: translate(-50%, -50%) rotate(360deg) scale(0.9); }
 }
 
-.pack-opening-container {
-    position: relative !important;
-    z-index: 1000 !important;
+#packOpeningOverlay > .pack-opening-container {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 10 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -3801,38 +3828,11 @@ body.modal-open, html.modal-open {
     text-align: center !important;
     width: 320px !important;
     max-width: 90vw !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
     padding: 0 !important;
     perspective: 1600px !important;
     overflow: visible !important;
     pointer-events: auto !important;
-}
-
-.tear-action-btn {
-    margin-top: 18px !important;
-    background: linear-gradient(135deg, #ffd700, #ff8c00) !important;
-    color: #000000 !important;
-    font-weight: 900 !important;
-    font-size: 15px !important;
-    padding: 13px 28px !important;
-    border-radius: 30px !important;
-    border: 2px solid #ffffff !important;
-    cursor: pointer !important;
-    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.7), 0 0 15px rgba(255, 255, 255, 0.5) !important;
-    letter-spacing: 0.5px !important;
-    pointer-events: auto !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-    animation: tearPromptPulse 1.6s ease-in-out infinite alternate !important;
-}
-
-.tear-action-btn:hover {
-    transform: scale(1.05) !important;
-    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.9) !important;
-}
-
-@keyframes tearPromptPulse {
-    0% { transform: scale(0.98); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5); }
-    100% { transform: scale(1.04); box-shadow: 0 8px 30px rgba(255, 215, 0, 0.9), 0 0 20px rgba(255, 255, 255, 0.8); }
 }
 
 /* =========================================================
@@ -5320,9 +5320,9 @@ body {
     display: none !important;
 }
 
-.modal > .modal-box,
-.modal > .trade-room-box,
-.modal > div {
+.modal:not(#packOpeningOverlay) > .modal-box,
+.modal:not(#packOpeningOverlay) > .trade-room-box,
+.modal:not(#packOpeningOverlay) > div {
     margin: auto !important;
     position: relative !important;
 }
