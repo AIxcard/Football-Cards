@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=430.0">
+<link rel="stylesheet" href="style.css?v=440.0">
 </head>
 
 <body>
@@ -781,14 +781,29 @@
 
     <div class="section-head">
         <div>
-            <p class="eyebrow">CUSTOMIZATION</p>
-            <h1>Stadium Atmospheres Shop</h1>
-            <p>Unlock iconic stadium environments & matchday backdrops.</p>
+            <p class="eyebrow">CUSTOMIZATION & COSMETICS</p>
+            <h1>Cosmetics & Stadium Shop</h1>
+            <p>Unlock prestige avatar border frames, iconic stadiums & matchday atmospheres.</p>
         </div>
     </div>
 
-    <h2>🏟️ Stadium Atmospheres</h2>
-    <div id="backgroundShop" class="shop-grid"></div>
+    <div class="panel" style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:24px;">👑</span>
+            <h2 style="margin:0;font-size:20px;">Prestige Avatar Border Frames</h2>
+        </div>
+        <p style="color:var(--muted);margin:0 0 16px;font-size:13px;">Equip ornate tournament, football, and luxury themed frames to stand out on the Leaderboard and Trading Hub.</p>
+        <div id="framesShop" class="shop-grid" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:16px;"></div>
+    </div>
+
+    <div class="panel">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:24px;">🏟️</span>
+            <h2 style="margin:0;font-size:20px;">Stadium Atmospheres</h2>
+        </div>
+        <p style="color:var(--muted);margin:0 0 16px;font-size:13px;">Unlock legendary world football stadiums as your profile and game backdrop.</p>
+        <div id="backgroundShop" class="shop-grid" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:16px;"></div>
+    </div>
 
 </section>
 
@@ -801,7 +816,7 @@
         <h2>🔍 Search Player Profile</h2>
         <p>Look up any collector's account to inspect their stats & 6-slot card showcase.</p>
         <div style="display:flex;gap:10px;margin-top:12px;">
-            <input id="playerSearchInput" placeholder="Enter username (e.g. Alucard, Timekung2835)" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;">
+            <input id="playerSearchInput" placeholder="Enter username (e.g. Alucard, chita, Dih)" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;">
             <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="searchPlayerProfile()">Search</button>
         </div>
         <!-- INLINE SEARCHED PROFILE SECTION -->
@@ -869,7 +884,10 @@
             <button class="ghost-btn" style="width:auto;padding:12px 18px;" onclick="resetDefaultAvatar()">Reset Default</button>
         </div>
 
-        <label>Equip Stadium Background</label>
+        <label style="margin-top:14px;display:block;">Equip Avatar Border Frame</label>
+        <select id="profileFrameSelect" onchange="setProfileFrame(this.value)"></select>
+
+        <label style="margin-top:14px;display:block;">Equip Stadium Background</label>
         <select id="profileBackgroundSelect" onchange="setProfileBackground(this.value)"></select>
 
         <div style="margin-top:20px;">
@@ -1513,6 +1531,6 @@
     </div>
 </div>
 
-<script src="script.js?v=430.0"></script>
+<script src="script.js?v=440.0"></script>
 </body>
 </html>
