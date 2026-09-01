@@ -30,8 +30,30 @@
     // Expose globally so functions outside this IIFE can call hashPassword(...)
     window.hashPassword = hashPassword;
 
-    // 7. Auto-Sanitize Existing LocalStorage Passwords on Startup
-    (async function sanitizeStoredPasswords() {
+    // Blacklist of Deleted Test Accounts (Purged completely across all devices)
+    const DELETED_ACCOUNTS_BLACKLIST = [
+        "adminaccount",
+        "test",
+        "test2",
+        "testing",
+        "ipadtester",
+        "playertwo",
+        "ipadtest",
+        "testuser",
+        "tester1",
+        "tester2",
+        "sampleuser"
+    ];
+
+    function isAccountDeleted(username) {
+        if (!username) return true;
+        const u = String(username).trim().toLowerCase();
+        if (u.includes("_1787") || u.includes("ipadtest") || u.includes("testuser")) return true;
+        return DELETED_ACCOUNTS_BLACKLIST.includes(u);
+    }
+
+    // 7. Auto-Sanitize Existing LocalStorage Passwords & Purge Deleted Accounts on Startup
+    (async function sanitizeStoredAccounts() {
         try {
             // Sanitize Cloud Accounts in LocalStorage
             const raw = localStorage.getItem("football_cards_cloud_accounts");
@@ -40,6 +62,11 @@
                 let modified = false;
                 for (const k in accs) {
                     const acc = accs[k];
+                    if (isAccountDeleted(k) || (acc && isAccountDeleted(acc.username))) {
+                        delete accs[k];
+                        modified = true;
+                        continue;
+                    }
                     if (acc && acc.password) {
                         acc.passwordHash = await hashPassword(acc.password);
                         delete acc.password;
@@ -49,6 +76,18 @@
                 if (modified) {
                     localStorage.setItem("football_cards_cloud_accounts", JSON.stringify(accs));
                 }
+            }
+
+            // Sanitize Trades in LocalStorage
+            const rawTrades = localStorage.getItem("football_cards_cloud_trades");
+            if (rawTrades) {
+                try {
+                    const trades = JSON.parse(rawTrades);
+                    const cleanTrades = trades.filter(t => t && !isAccountDeleted(t.sender) && !isAccountDeleted(t.recipient));
+                    if (cleanTrades.length !== trades.length) {
+                        localStorage.setItem("football_cards_cloud_trades", JSON.stringify(cleanTrades));
+                    }
+                } catch(e) {}
             }
 
             // Sanitize Save States in LocalStorage
@@ -2101,7 +2140,7 @@ const CloudSync = {
             const raw = JSON.parse(localStorage.getItem(CLOUD_STORAGE_KEY) || "{}");
             const cleaned = {};
             for (const k in raw) {
-                if (k && raw[k] && !k.includes("_1787") && !k.includes("ipadtest")) {
+                if (k && raw[k] && !isAccountDeleted(k) && !isAccountDeleted(raw[k].username)) {
                     cleaned[k.toLowerCase()] = raw[k];
                 }
             }
@@ -2117,7 +2156,7 @@ const CloudSync = {
         try {
             const cleaned = {};
             for (const k in accs) {
-                if (k && accs[k] && !k.includes("_1787") && !k.includes("ipadtest")) {
+                if (k && accs[k] && !isAccountDeleted(k) && !isAccountDeleted(accs[k].username)) {
                     cleaned[k.toLowerCase()] = accs[k];
                 }
             }
@@ -5026,6 +5065,12 @@ async function searchPlayerProfile() {
     }
     const query = input.value.trim().toLowerCase();
     
+    if (isAccountDeleted(query)) {
+        toast(`No player found with username "${input.value.trim()}".`);
+        if (container) container.style.display = "none";
+        return;
+    }
+    
     let targetUser = null;
     try {
         targetUser = await GlobalCloudRest.fetchUser(query);
@@ -5034,14 +5079,14 @@ async function searchPlayerProfile() {
     if (!targetUser) {
         const accs = CloudSync.getAccounts();
         for (const key in accs) {
-            if (key === query || accs[key].username.toLowerCase() === query) {
+            if (!isAccountDeleted(key) && (key === query || (accs[key] && accs[key].username.toLowerCase() === query))) {
                 targetUser = accs[key];
                 break;
             }
         }
     }
 
-    if (!targetUser) {
+    if (!targetUser || isAccountDeleted(targetUser.username)) {
         toast(`No player found with username "${input.value.trim()}".`);
         if (container) container.style.display = "none";
         return;
@@ -6103,7 +6148,7 @@ async function renderTradeHub() {
         const rawUsername = u.username || key;
         const lowerName = rawUsername.toLowerCase();
 
-        if (lowerName !== myName && !lowerName.includes("_1787") && !lowerName.includes("ipadtest") && !seenUsers.has(lowerName)) {
+        if (lowerName !== myName && !isAccountDeleted(lowerName) && !seenUsers.has(lowerName)) {
             seenUsers.add(lowerName);
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
@@ -6889,14 +6934,7 @@ async function renderLeaderboard() {
     };
 
     let playersList = Object.values(playersMap);
-    playersList = playersList.filter(p => {
-        if (!p || !p.username) return false;
-        const u = p.username.toLowerCase();
-        if (u.includes("_1787") || u.includes("ipadtest_") || u.includes("testuser") || u === "ipadtester" || u === "playertwo") {
-            return false;
-        }
-        return true;
-    });
+    playersList = playersList.filter(p => p && p.username && !isAccountDeleted(p.username));
 
     if (currentLeaderboardTab === "value") {
         playersList.sort((a, b) => (b.value - a.value) || (b.gold - a.gold));
@@ -7074,7 +7112,7 @@ async function renderAdminAccountsList() {
             const u = merged[k];
             const rawName = u.username || k;
             const lower = rawName.toLowerCase();
-            if (seen.has(lower) || lower.includes("_1787") || lower.includes("ipadtest")) continue;
+            if (seen.has(lower) || isAccountDeleted(lower)) continue;
             seen.add(lower);
 
             let pData = {};
@@ -7198,6 +7236,9 @@ async function adminModifyTargetUser(targetUsername, updateCallback, successMess
 async function wipeAccountEverywhere(username) {
     if (!username) return false;
     const u = username.trim().toLowerCase();
+    if (!DELETED_ACCOUNTS_BLACKLIST.includes(u)) {
+        DELETED_ACCOUNTS_BLACKLIST.push(u);
+    }
     try {
         // 1. Wipe from cloud user record (KVDB)
         const BUCKET = GlobalCloudRest.BUCKET_URL;
@@ -8143,6 +8184,8 @@ document.addEventListener("dragstart", function(e) {
         renderAdminAccountsList,
         selectAdminTargetUser,
         adminModifyTargetUser,
+        isAccountDeleted,
+        DELETED_ACCOUNTS_BLACKLIST,
         updateRarityAutoSell,
         toggleAutoSellDuplicatesSetting,
         claimIndexReward,
