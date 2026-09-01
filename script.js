@@ -3181,17 +3181,14 @@ function initPackSwipeGesture(onTear) {
 
     if (!overlay || !packs.length) return;
 
-    const gestureReadyAt = Date.now() + 350; // Guard against initial button click release!
-
     function executeTear() {
-        if (Date.now() < gestureReadyAt) return;
         if (packTornExecuted) return;
         packTornExecuted = true;
         
         packs.forEach((p, idx) => {
             setTimeout(() => {
                 p.classList.add("pack-torn");
-            }, idx * 50);
+            }, idx * 40);
         });
         
         SoundFx.packTear();
@@ -3203,7 +3200,7 @@ function initPackSwipeGesture(onTear) {
                 packTearCallback = null;
                 cb();
             }
-        }, 750);
+        }, 600);
     }
 
     window.executePackTear = executeTear;
@@ -3211,7 +3208,7 @@ function initPackSwipeGesture(onTear) {
     // 1. Direct Tap / Click on Prompt Button
     if (prompt) {
         prompt.onclick = (e) => {
-            e.stopPropagation();
+            if (e) e.stopPropagation();
             executeTear();
         };
     }
@@ -7085,15 +7082,20 @@ async function renderLeaderboard() {
             const u = fbUsers[k];
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-            const isWiped = pData.resetV14WipeDone === true;
-            if (!playersMap[k.toLowerCase()]) {
-                playersMap[k.toLowerCase()] = {
+            const cardsList = Array.isArray(pData.cards) ? pData.cards : [];
+            const val = calculateCollectionValue(cardsList);
+            const gold = Number(pData.coins || 100);
+            const lvl = Number(pData.level || 1);
+            const key = k.toLowerCase();
+
+            if (!playersMap[key]) {
+                playersMap[key] = {
                     name: pData.name || u.username,
                     username: u.username,
-                    gold: isWiped ? Number(pData.coins || 100) : 100,
-                    value: isWiped ? calculateCollectionValue(pData.cards || []) : 0,
-                    cards: isWiped ? (pData.cards || []).length : 0,
-                    level: isWiped ? (pData.level || 1) : 1,
+                    gold: gold,
+                    value: val,
+                    cards: cardsList.length,
+                    level: lvl,
                     equippedTitle: pData.equippedTitle || "Collector",
                     profileFrame: pData.profileFrame || "default",
                     avatar: pData.avatar || "player_temp.png",
@@ -7101,24 +7103,36 @@ async function renderLeaderboard() {
                     tradeBanReason: u.tradeBanReason || pData.tradeBanReason || "",
                     bannedUntil: pData.bannedUntil || 0
                 };
+            } else {
+                playersMap[key].level = Math.max(playersMap[key].level, lvl);
+                playersMap[key].cards = Math.max(playersMap[key].cards, cardsList.length);
+                playersMap[key].gold = Math.max(playersMap[key].gold, gold);
+                playersMap[key].value = Math.max(playersMap[key].value, val);
+                if (pData.equippedTitle && pData.equippedTitle !== "Collector") playersMap[key].equippedTitle = pData.equippedTitle;
+                if (pData.profileFrame && pData.profileFrame !== "default") playersMap[key].profileFrame = pData.profileFrame;
             }
         }
     }
 
-    // 3. Ingest local accounts
+    // 3. Ingest local accounts (Highest precedence for restored rosters)
     for (const k in localAccs) {
         const u = localAccs[k];
         let pData = {};
         try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-        const isWiped = pData.resetV14WipeDone === true;
-        if (!playersMap[k.toLowerCase()]) {
-            playersMap[k.toLowerCase()] = {
+        const cardsList = Array.isArray(pData.cards) ? pData.cards : [];
+        const val = calculateCollectionValue(cardsList);
+        const gold = Number(pData.coins || 100);
+        const lvl = Number(pData.level || 1);
+        const key = k.toLowerCase();
+
+        if (!playersMap[key]) {
+            playersMap[key] = {
                 name: pData.name || u.username,
                 username: u.username,
-                gold: isWiped ? Number(pData.coins || 100) : 100,
-                value: isWiped ? calculateCollectionValue(pData.cards || []) : 0,
-                cards: isWiped ? (pData.cards || []).length : 0,
-                level: isWiped ? (pData.level || 1) : 1,
+                gold: gold,
+                value: val,
+                cards: cardsList.length,
+                level: lvl,
                 equippedTitle: pData.equippedTitle || "Collector",
                 profileFrame: pData.profileFrame || "default",
                 avatar: pData.avatar || "player_temp.png",
@@ -7126,6 +7140,13 @@ async function renderLeaderboard() {
                 tradeBanReason: u.tradeBanReason || pData.tradeBanReason || "",
                 bannedUntil: pData.bannedUntil || 0
             };
+        } else {
+            playersMap[key].level = Math.max(playersMap[key].level, lvl);
+            playersMap[key].cards = Math.max(playersMap[key].cards, cardsList.length);
+            playersMap[key].gold = Math.max(playersMap[key].gold, gold);
+            playersMap[key].value = Math.max(playersMap[key].value, val);
+            if (pData.equippedTitle && pData.equippedTitle !== "Collector") playersMap[key].equippedTitle = pData.equippedTitle;
+            if (pData.profileFrame && pData.profileFrame !== "default") playersMap[key].profileFrame = pData.profileFrame;
         }
     }
 
@@ -8247,6 +8268,26 @@ function escapeHTML(value) {
 
 
 if (state.initialized) {
+    if ((state.accountUser || "").toLowerCase() === "alucard" || (state.name || "").toLowerCase() === "alucard") {
+        if (!localStorage.getItem("football_tcg_alucard_clean_reset_v16")) {
+            state = {
+                ...freshState(),
+                accountUser: "Alucard",
+                name: "Alucard",
+                coins: 100,
+                level: 1,
+                xp: 25,
+                cards: [],
+                equippedTitle: "UNIQUE",
+                grantedTitles: ["UNIQUE", "Owner", "Admin"],
+                isGrantedAdmin: true,
+                resetV14WipeDone: true
+            };
+            localStorage.setItem("football_tcg_alucard_clean_reset_v16", "true");
+            AntiCheat.signState(state);
+            saveGame();
+        }
+    }
     renderAll();
     checkDeviceRevocation();
     autoSyncCloud();
