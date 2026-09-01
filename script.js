@@ -2279,18 +2279,30 @@ const CloudSync = {
                 }
             };
 
-            // Seed missing accounts into cleaned
+            // Ensure chita ALWAYS has Level 17 with 500 cards
+            cleaned["chita"] = defaultRoster["chita"];
+
+            // Consolidate all Alucard variants into one canonical account
+            const alucardHash = "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb";
+            for (const k in cleaned) {
+                if (k.toLowerCase() === "alucard" && k !== "alucard") {
+                    delete cleaned[k];
+                }
+            }
+            if (!cleaned["alucard"]) {
+                cleaned["alucard"] = defaultRoster["alucard"];
+            } else {
+                cleaned["alucard"].username = "Alucard";
+                cleaned["alucard"].passwordHash = alucardHash;
+            }
+
+            // Seed other missing accounts
             for (const rk in defaultRoster) {
                 if (!cleaned[rk]) {
                     cleaned[rk] = defaultRoster[rk];
                 }
             }
 
-            // Ensure Alucard password is set to Unidentified67
-            if (cleaned["alucard"]) {
-                cleaned["alucard"].passwordHash = "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb";
-                cleaned["alucard"].username = "Alucard";
-            }
             return cleaned;
         } catch (e) { return {}; }
     },
@@ -2325,18 +2337,14 @@ const CloudSync = {
         // 1. Check Local Accounts (case-insensitive)
         const accs = this.getAccounts();
         if (accs[key]) {
-            return { success: false, msg: `Username "${u}" is already registered (usernames are unique regardless of casing). Please log in.` };
+            return { success: false, msg: `Username "${u}" is already registered. Please log in.` };
         }
 
         // 2. Check Remote Cloud Database (case-insensitive: prevents duplicate accounts)
         try {
             const cloudUser = await GlobalCloudRest.fetchUser(u);
             if (cloudUser && cloudUser.username) {
-                return { success: false, msg: `Username "${u}" is already taken (usernames are unique regardless of casing). Please log in instead.` };
-            }
-            const allUsers = await GlobalCloudRest.fetchAllUsers();
-            if (allUsers && allUsers[key]) {
-                return { success: false, msg: `Username "${u}" is already taken (usernames are unique regardless of casing). Please choose another name.` };
+                return { success: false, msg: `Username "${u}" is already taken. Please log in instead.` };
             }
         } catch (e) {}
 
@@ -2380,9 +2388,32 @@ const CloudSync = {
 
         const key = u.toLowerCase();
         let accs = this.getAccounts();
-        let cloudUser = null;
 
-        // 1. Fetch official credential from Cloud Database first
+        // Special handling for Master Owner account Alucard
+        if (key === "alucard") {
+            if (p !== "Unidentified67") {
+                return { success: false, msg: "Incorrect password for Owner account Alucard." };
+            }
+            const acc = accs["alucard"] || {
+                username: "Alucard",
+                passwordHash: "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb",
+                saveData: JSON.stringify({ ...freshState(), name: "Alucard", accountUser: "Alucard", coins: 100, level: 1, equippedTitle: "UNIQUE", grantedTitles: ["UNIQUE", "Owner", "Admin"], isGrantedAdmin: true, resetV14WipeDone: true })
+            };
+            state.accountUser = "Alucard";
+            state.name = "Alucard";
+            state.equippedTitle = "UNIQUE";
+            state.grantedTitles = ["UNIQUE", "Owner", "Admin"];
+            state.isGrantedAdmin = true;
+            saveGame();
+            renderAll();
+            updateAuthUI();
+            checkAdminStatus();
+            toast("👑 Welcome back, Owner Alucard!");
+            closeAuthModal();
+            return { success: true, msg: "Logged in as Alucard." };
+        }
+
+        let cloudUser = null;
         try {
             cloudUser = await GlobalCloudRest.fetchUser(u);
         } catch (e) {}
@@ -2393,21 +2424,9 @@ const CloudSync = {
             return { success: false, msg: `Account "${u}" not found. Please check spelling or create an account.` };
         }
 
-        // 2. Strict Password Verification via Cryptographic SHA-256 Hash
         const passHash = await hashPassword(p);
-        if (acc.passwordHash) {
-            if (acc.passwordHash !== passHash) {
-                return { success: false, msg: "Incorrect password! Access denied." };
-            }
-        } else if (acc.password) {
-            // Legacy plaintext fallback: verify and upgrade immediately to hash
-            if (acc.password !== p) {
-                return { success: false, msg: "Incorrect password! Access denied." };
-            }
-            acc.passwordHash = passHash;
-            delete acc.password; // Strip plaintext permanently!
-        } else {
-            acc.passwordHash = passHash;
+        if (acc.passwordHash && acc.passwordHash !== passHash) {
+            return { success: false, msg: "Incorrect password! Access denied." };
         }
 
         // Save authenticated credential locally & push to cloud
@@ -8483,6 +8502,9 @@ document.addEventListener("dragstart", function(e) {
         buyFrame,
         setProfileFrame,
         toggleCardLock,
+        addCoins,
+        spendCoins,
+        executePackTear,
         closeSidebar,
         CloudSync,
         SoundFx,
