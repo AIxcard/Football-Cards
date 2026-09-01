@@ -37,6 +37,7 @@
         "test2",
         "testing",
         "jeff",
+        "timekung2835",
         "ipadtester",
         "playertwo",
         "ipadtest",
@@ -49,7 +50,7 @@
     function isAccountDeleted(username) {
         if (!username) return true;
         const u = String(username).trim().toLowerCase();
-        if (u.includes("_1787") || u.includes("ipadtest") || u.includes("testuser")) return true;
+        if (u.includes("_1787") || u.startsWith("ipadtest") || u.startsWith("testuser")) return true;
         return DELETED_ACCOUNTS_BLACKLIST.includes(u);
     }
 
@@ -288,7 +289,15 @@ const CARD_VALUES = {
 };
 
 const FRAMES = [
-    { id: "default", name: "Classic Silver", css: "frame-default", cost: 0 }
+    { id: "default", name: "Classic Silver", css: "frame-default", cost: 0, desc: "Sleek standard silver stadium border", previewBg: "linear-gradient(135deg, #a0aec0, #cbd5e0)" },
+    { id: "royal_champion", name: "👑 Royal Champion", css: "frame-royal-champion", cost: 25000, desc: "Ornate gilded wings, purple jewel crest and royal gold filigree", previewBg: "radial-gradient(circle, #ffd700 0%, #b45309 60%, #78350f 100%)" },
+    { id: "golden_ball", name: "⚽ Ballon d'Or", css: "frame-golden-ball", cost: 15000, desc: "Radiant 24K gold football pentagon shader", previewBg: "linear-gradient(135deg, #ffd700, #ff8c00)" },
+    { id: "inferno_striker", name: "🔥 Inferno Striker", css: "frame-inferno-striker", cost: 10000, desc: "Blazing crimson flames and pulsing embers", previewBg: "linear-gradient(135deg, #ff1744, #ff8c00)" },
+    { id: "diamond_legend", name: "💎 Diamond Legend", css: "frame-diamond-legend", cost: 12000, desc: "Prismatic cyan crystal facets and sparkles", previewBg: "linear-gradient(135deg, #00f2fe, #4facfe)" },
+    { id: "neon_cyber", name: "⚡ Cyberpunk Neon", css: "frame-neon-cyber", cost: 8000, desc: "Electric cyan and neon magenta lasers", previewBg: "linear-gradient(135deg, #00f2fe, #ff007f)" },
+    { id: "cosmic_galaxy", name: "🌌 Cosmic Galaxy", css: "frame-cosmic-galaxy", cost: 14000, desc: "Deep space nebula violet and celestial stars", previewBg: "linear-gradient(135deg, #7928ca, #ff0080)" },
+    { id: "ucl_star", name: "⭐ Champions League", css: "frame-ucl-star", cost: 20000, desc: "Iconic UCL navy and starburst European crest", previewBg: "linear-gradient(135deg, #001f54, #3b82f6)" },
+    { id: "dragon_warlord", name: "🐉 Dragon Warlord", css: "frame-dragon-warlord", cost: 30000, desc: "Mythic golden dragon scales and jade aura", previewBg: "linear-gradient(135deg, #059669, #ffd700)" }
 ];
 
 function getCardValue(card) {
@@ -1150,49 +1159,6 @@ function loadGame() {
             }
             return c;
         }).filter(Boolean) : [];
-
-        // Restore Alucard Master Save from iPad/Mobile
-        if ((saved.accountUser || "").toLowerCase() === "alucard" || (activeName || "").toLowerCase() === "alucard") {
-            finalCoins = Math.max(finalCoins, 2000021533);
-            finalLevel = Math.max(finalLevel, 7);
-            finalTitle = "UNIQUE";
-
-            const monkeyCount = loadedCards.filter(c => c.player === "Monkey King").length;
-            if (monkeyCount < 2) {
-                for (let i = monkeyCount; i < 2; i++) {
-                    loadedCards.unshift({
-                        id: "mk_dev_" + (i + 1),
-                        player: "Monkey King",
-                        rating: 99,
-                        position: "ST",
-                        rarity: "Developer",
-                        nationality: "Mythical",
-                        club: "Antigravity",
-                        image: "monkey_king.png",
-                        locked: true,
-                        devCard: true
-                    });
-                }
-            }
-            const hasMessiSer = loadedCards.some(c => c.player === "Lionel Messi" && c.isSerialized);
-            if (!hasMessiSer) {
-                loadedCards.push({
-                    id: "messi_wc_ser_1",
-                    player: "Lionel Messi",
-                    rating: 97,
-                    position: "RW",
-                    rarity: "World Class",
-                    nationality: "Argentina",
-                    club: "Inter Miami",
-                    image: "player_temp.png",
-                    locked: true,
-                    isSerialized: true,
-                    serialNumber: 1,
-                    maxSerial: 10,
-                    customGradient: "linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%)"
-                });
-            }
-        }
 
         return {
             ...fresh,
@@ -2246,8 +2212,8 @@ const CloudSync = {
                         ...freshState(),
                         name: "Alucard",
                         accountUser: "Alucard",
-                        coins: 2000021533,
-                        level: 7,
+                        coins: 100,
+                        level: 1,
                         equippedTitle: "UNIQUE",
                         grantedTitles: ["UNIQUE", "Owner", "Admin"],
                         resetV14WipeDone: true
@@ -2281,7 +2247,22 @@ const CloudSync = {
                 chita: {
                     username: "chita",
                     passwordHash: "sec_chita_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "chita", accountUser: "chita", level: 2, coins: 1200, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({
+                        ...freshState(),
+                        name: "chita",
+                        accountUser: "chita",
+                        level: 17,
+                        coins: 85000,
+                        cards: new Array(500).fill(null).map((_, i) => ({
+                            id: "chita_c_" + i,
+                            player: i % 2 === 0 ? "Lionel Messi" : (i % 3 === 0 ? "Cristiano Ronaldo" : "Erling Haaland"),
+                            rating: 90 + (i % 8),
+                            rarity: i % 10 === 0 ? "World Class" : (i % 5 === 0 ? "Legendary" : "Epic"),
+                            position: "ST"
+                        })),
+                        equippedTitle: "Legend Collector",
+                        resetV14WipeDone: true
+                    }),
                     updatedAt: Date.now()
                 },
                 hexkeys: {
@@ -2290,10 +2271,10 @@ const CloudSync = {
                     saveData: JSON.stringify({ ...freshState(), name: "hexkeys", accountUser: "hexkeys", level: 1, coins: 100, resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
-                timekung2835: {
-                    username: "Timekung2835",
+                timekung: {
+                    username: "Timekung",
                     passwordHash: "sec_timekung_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Timekung2835", accountUser: "Timekung2835", level: 1, coins: 100, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Timekung", accountUser: "Timekung", level: 1, coins: 100, resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 }
             };
@@ -6438,6 +6419,23 @@ function renderProfileCustomization() {
             return `<option value="${bg.id}" ${bg.id === state.profileBackground ? "selected" : ""}>${bg.name}</option>`;
         }).join("");
     }
+
+    const frameSelect = document.getElementById("profileFrameSelect");
+    if (frameSelect) {
+        const ownedF = Array.isArray(state.ownedFrames) && state.ownedFrames.length ? state.ownedFrames : ["default"];
+        frameSelect.innerHTML = ownedF.map(id => {
+            const f = FRAMES.find(frame => frame.id === id) || FRAMES[0];
+            return `<option value="${f.id}" ${f.id === state.profileFrame ? "selected" : ""}>${f.name}</option>`;
+        }).join("");
+    }
+
+    const avatarImg = document.getElementById("profileAvatarImg");
+    if (avatarImg) {
+        const currentFrame = FRAMES.find(f => f.id === state.profileFrame) || FRAMES[0];
+        // Remove existing frame classes
+        FRAMES.forEach(f => avatarImg.classList.remove(f.css));
+        avatarImg.classList.add(currentFrame.css);
+    }
 }
 
 function setProfileBackground(id) {
@@ -6504,10 +6502,11 @@ function resetDefaultAvatar() {
 }
 
 /* =========================================================
-   SHOP
+   SHOP (STADIUMS & AVATAR FRAMES)
    ========================================================= */
 
 function renderShop() {
+    // 1. Stadium Backgrounds
     const backgrounds = document.getElementById("backgroundShop");
     if (backgrounds) {
         backgrounds.innerHTML = BACKGROUNDS.map(bg => {
@@ -6516,10 +6515,34 @@ function renderShop() {
             <div class="shop-item">
                 <div class="shop-preview" style="background:${bg.css}"></div>
                 <h3>${escapeHTML(bg.name)}</h3>
-                <p>${bg.cost === 0 ? "Free" : bg.cost + " coins"}</p>
+                <p style="color:var(--gold);font-weight:700;">${bg.cost === 0 ? "Free" : bg.cost.toLocaleString() + " 🪙"}</p>
                 <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyBackground('${bg.id}')">
-                    ${owned ? "Owned" : "Buy Atmosphere"}
+                    ${owned ? "✓ Owned" : "Buy Atmosphere"}
                 </button>
+            </div>
+            `;
+        }).join("");
+    }
+
+    // 2. Prestige Avatar Frames
+    const framesContainer = document.getElementById("framesShop");
+    if (framesContainer) {
+        framesContainer.innerHTML = FRAMES.map(f => {
+            const owned = (state.ownedFrames || []).includes(f.id);
+            const isEquipped = state.profileFrame === f.id;
+            return `
+            <div class="shop-item frame-shop-item" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 14px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:16px;">
+                <div class="frame-shop-avatar-wrap" style="position:relative;width:90px;height:90px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;">
+                    <img src="${escapeHTML(state.avatar || 'player_temp.png')}" class="profile-avatar-photo ${f.css}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;" onerror="this.src='player_temp.png'">
+                </div>
+                <h3 style="margin:0 0 4px;font-size:15px;color:#ffffff;">${escapeHTML(f.name)}</h3>
+                <p style="margin:0 0 8px;font-size:11px;color:var(--muted);min-height:28px;">${escapeHTML(f.desc || '')}</p>
+                <p style="color:var(--gold);font-weight:800;font-size:14px;margin-bottom:12px;">${f.cost === 0 ? "Free" : f.cost.toLocaleString() + " 🪙"}</p>
+                
+                ${owned 
+                    ? `<button class="${isEquipped ? "primary-btn" : "ghost-btn"}" style="width:100%;font-size:12px;padding:8px;" onclick="setProfileFrame('${f.id}')">${isEquipped ? "★ Equipped" : "Equip Frame"}</button>`
+                    : `<button class="primary-btn" style="width:100%;font-size:12px;padding:8px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-weight:900;" onclick="buyFrame('${f.id}')">🛒 Unlock Frame</button>`
+                }
             </div>
             `;
         }).join("");
@@ -6528,15 +6551,46 @@ function renderShop() {
 
 function buyBackground(id) {
     const bg = BACKGROUNDS.find(b => b.id === id);
-    if (!bg || state.ownedBackgrounds.includes(id)) return;
+    if (!bg || (state.ownedBackgrounds || []).includes(id)) return;
     if (!spendCoins(bg.cost)) return;
 
+    if (!Array.isArray(state.ownedBackgrounds)) state.ownedBackgrounds = ["campnou"];
     state.ownedBackgrounds.push(id);
     saveGame();
     renderShop();
     renderProfile();
     SoundFx.coin();
     toast(`Unlocked Stadium: ${bg.name}`);
+}
+
+function buyFrame(id) {
+    const f = FRAMES.find(frame => frame.id === id);
+    if (!f || (state.ownedFrames || []).includes(id)) return;
+    if (!spendCoins(f.cost)) return;
+
+    if (!Array.isArray(state.ownedFrames)) state.ownedFrames = ["default"];
+    state.ownedFrames.push(id);
+    state.profileFrame = id;
+    saveGame();
+    renderShop();
+    renderProfile();
+    renderLeaderboard();
+    SoundFx.levelUp();
+    toast(`🎉 Unlocked & Equipped Frame: ${f.name}!`);
+}
+
+function setProfileFrame(id) {
+    if (!state.ownedFrames || (!state.ownedFrames.includes(id) && id !== "default")) {
+        toast("You have not unlocked this frame yet.");
+        return;
+    }
+    state.profileFrame = id;
+    saveGame();
+    renderShop();
+    renderProfile();
+    renderLeaderboard();
+    SoundFx.click();
+    toast(`✓ Equipped Frame: ${FRAMES.find(f => f.id === id)?.name || id}`);
 }
 
 /* =========================================================
@@ -8193,12 +8247,6 @@ function escapeHTML(value) {
 
 
 if (state.initialized) {
-    if ((state.accountUser || "").toLowerCase() === "alucard" || (state.name || "").toLowerCase() === "alucard") {
-        state.coins = Math.max(Number(state.coins) || 0, 2000021533);
-        state.level = Math.max(Number(state.level) || 1, 7);
-        state.equippedTitle = "UNIQUE";
-        saveGame();
-    }
     renderAll();
     checkDeviceRevocation();
     autoSyncCloud();
@@ -8391,6 +8439,8 @@ document.addEventListener("dragstart", function(e) {
         resetDefaultAvatar,
         claimMission,
         buyBackground,
+        buyFrame,
+        setProfileFrame,
         toggleCardLock,
         closeSidebar,
         CloudSync,
