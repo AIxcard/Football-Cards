@@ -1138,6 +1138,9 @@ function freshState() {
         skillPointsPurchased: 0,
         unlockedSkills: [],
 
+        claimedLevelMilestones: [],
+        freeChampionPacks3x: 0,
+
         dailyRewardClaimed: 0,
         freeKickClaimed: 0,
         worldClassPending: null,
@@ -2712,6 +2715,8 @@ function renderAll() {
     try { renderTradeHub(); } catch(e) { console.error("TradeHub error", e); }
     try { renderAlchemy(); } catch(e) { console.error("Alchemy error", e); }
     try { renderSkillTree(); } catch(e) { console.error("SkillTree error", e); }
+    try { renderLevelMilestones(); } catch(e) { console.error("LevelMilestones error", e); }
+    try { renderPacks(); } catch(e) { console.error("Packs error", e); }
     try { renderShop(); } catch(e) { console.error("Shop error", e); }
     try { renderProfile(); } catch(e) { console.error("Profile error", e); }
     try { renderShowcase(); } catch(e) { console.error("Showcase error", e); }
@@ -3368,13 +3373,21 @@ function openPack(type, count = 1) {
     if (hasSkill("packs_3")) packCostEach = Math.round(packCostEach * 0.95); // -5% discount from Bulk Buyer skill
     const totalCost = packCostEach * pullCount;
 
-    if (Number(state.coins || 0) < totalCost) {
-        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
-        SoundFx.click();
-        return;
-    }
+    const isFreeMilestoneChampionPull = (type === "champion" && pullCount === 3 && (state.freeChampionPacks3x || 0) > 0);
 
-    if (!spendCoins(totalCost)) return;
+    if (!isFreeMilestoneChampionPull) {
+        if (Number(state.coins || 0) < totalCost) {
+            toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
+            SoundFx.click();
+            return;
+        }
+
+        if (!spendCoins(totalCost)) return;
+    } else {
+        state.freeChampionPacks3x = Math.max(0, (state.freeChampionPacks3x || 0) - 1);
+        toast("🎁 3x Free Champion Pack Opened!");
+        renderPacks();
+    }
 
     // Swift Unpacker Skill (5% chance of full coin refund)
     if (hasSkill("packs_1") && Math.random() < 0.05) {
@@ -7008,11 +7021,11 @@ function updateNotificationBadges() {
     if (missionsBadge) {
         let hasClaimable = false;
         for (const type of ["hourly", "daily", "weekly", "monthly"]) {
-            const list = MISSIONS[type] || [];
+            const list = MISSION_TEMPLATES[type] || [];
             list.forEach((m, idx) => {
                 const prog = (state.missionProgress && state.missionProgress[type]) ? state.missionProgress[type][idx] : 0;
                 const claimed = (state.missionClaimed && state.missionClaimed[type]) ? state.missionClaimed[type][idx] : false;
-                if (prog >= m.target && !claimed) hasClaimable = true;
+                if (prog >= m[1] && !claimed) hasClaimable = true;
             });
         }
         missionsBadge.classList.toggle("hidden", !hasClaimable);
@@ -7021,13 +7034,10 @@ function updateNotificationBadges() {
     // 2. Index badge
     const indexBadge = document.getElementById("indexAlertBadge");
     if (indexBadge) {
-        let hasIndexClaimable = false;
-        const totalUnlocked = (state.unlockedCardNames || []).length;
-        INDEX_REWARDS.forEach(r => {
-            const claimed = (state.claimedIndexRewards || []).includes(r.id);
-            if (totalUnlocked >= r.count && !claimed) hasIndexClaimable = true;
-        });
-        indexBadge.classList.toggle("hidden", !hasIndexClaimable);
+        const basePlayers = PLAYERS.filter(p => !p.hiddenFromIndex);
+        const discovered = basePlayers.filter(p => (state.unlockedCardNames || []).includes(p.name) || (state.cards || []).some(c => c.player === p.name));
+        const hasUnclaimed = discovered.some(p => !(state.claimedIndexRewards || []).includes(p.name));
+        indexBadge.classList.toggle("hidden", !hasUnclaimed);
     }
 
     // 3. Trade badge
@@ -7037,6 +7047,15 @@ function updateNotificationBadges() {
         const myName = (state.accountUser || "").toLowerCase();
         const hasPending = trades.some(t => t.toUser.toLowerCase() === myName && t.status === "pending");
         tradeBadge.classList.toggle("hidden", !hasPending);
+    }
+
+    // 4. Milestones badge
+    const milestonesBadge = document.getElementById("milestonesAlertBadge");
+    if (milestonesBadge) {
+        const currentLevel = Number(state.level || 1);
+        const claimed = Array.isArray(state.claimedLevelMilestones) ? state.claimedLevelMilestones : [];
+        const hasMilestoneClaimable = LEVEL_MILESTONES.some(m => currentLevel >= m.level && !claimed.includes(m.level));
+        milestonesBadge.classList.toggle("hidden", !hasMilestoneClaimable);
     }
 }
 
@@ -7498,6 +7517,158 @@ function renderSkillTree() {
                     </div>
                     `;
                 }).join("")}
+            </div>
+        </div>
+        `;
+    }).join("");
+}
+
+/* =========================================================
+   LEVEL MILESTONES ENGINE (EVERY 5 LEVELS REWARD SYSTEM)
+   ========================================================= */
+
+const LEVEL_MILESTONES = [
+    { level: 5, coins: 2500, freePacks: 1, title: "Rising Talent" },
+    { level: 10, coins: 5000, freePacks: 1, title: "Academy Graduate" },
+    { level: 15, coins: 10000, freePacks: 1, title: "First Team Prospect" },
+    { level: 20, coins: 15000, freePacks: 1, title: "Starting XI Stalwart" },
+    { level: 25, coins: 25000, freePacks: 1, title: "Squad Captain" },
+    { level: 30, coins: 35000, freePacks: 1, title: "Division Champion" },
+    { level: 35, coins: 50000, freePacks: 1, title: "Continental Contender" },
+    { level: 40, coins: 75000, freePacks: 1, title: "World Class Veteran" },
+    { level: 45, coins: 100000, freePacks: 1, title: "International Legend" },
+    { level: 50, coins: 150000, freePacks: 1, title: "Grand Master Collector" },
+    { level: 60, coins: 200000, freePacks: 1, title: "Hall of Fame Inductee" },
+    { level: 70, coins: 250000, freePacks: 1, title: "All-Time Icon" },
+    { level: 80, coins: 300000, freePacks: 1, title: "Immortal Maestro" },
+    { level: 90, coins: 400000, freePacks: 1, title: "Mythical Sovereign" },
+    { level: 100, coins: 500000, freePacks: 1, title: "Supreme World Legend" }
+];
+
+function claimLevelMilestone(targetLevel) {
+    const milestone = LEVEL_MILESTONES.find(m => m.level === targetLevel);
+    if (!milestone) return;
+
+    const currentLevel = Number(state.level || 1);
+    if (currentLevel < targetLevel) {
+        toast(`🔒 You must reach Level ${targetLevel} to claim this milestone!`);
+        SoundFx.click();
+        return;
+    }
+
+    if (!Array.isArray(state.claimedLevelMilestones)) state.claimedLevelMilestones = [];
+    if (state.claimedLevelMilestones.includes(targetLevel)) {
+        toast("You have already claimed this milestone reward.");
+        return;
+    }
+
+    state.claimedLevelMilestones.push(targetLevel);
+    addCoins(milestone.coins);
+    state.freeChampionPacks3x = (state.freeChampionPacks3x || 0) + milestone.freePacks;
+
+    saveGame();
+    renderLevelMilestones();
+    renderPacks();
+    updateNotificationBadges();
+    SoundFx.levelUp();
+    toast(`🎖️ Milestone Claimed! +${milestone.coins.toLocaleString()} 🪙 & 3 Free Champion Packs added!`);
+}
+
+function renderPacks() {
+    const champBtn = document.getElementById("championPack3xBtn");
+    if (!champBtn) return;
+
+    const freePacks = state.freeChampionPacks3x || 0;
+    if (freePacks > 0) {
+        champBtn.innerHTML = `🎁 3x FREE (${freePacks})`;
+        champBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+        champBtn.style.color = "#ffffff";
+        champBtn.style.fontWeight = "900";
+        champBtn.style.boxShadow = "0 0 16px rgba(16, 185, 129, 0.7)";
+        champBtn.classList.add("free-pack-glow-btn");
+    } else {
+        champBtn.innerHTML = "3x · 135 🪙";
+        champBtn.style.background = "";
+        champBtn.style.color = "";
+        champBtn.style.fontWeight = "";
+        champBtn.style.boxShadow = "";
+        champBtn.classList.remove("free-pack-glow-btn");
+    }
+}
+
+function renderLevelMilestones() {
+    const currentLvlEl = document.getElementById("milestoneCurrentLevel");
+    const nextSummaryEl = document.getElementById("milestoneNextSummary");
+    const freeCountEl = document.getElementById("freeChampPacksCount");
+    const grid = document.getElementById("milestonesGrid");
+
+    const currentLevel = Number(state.level || 1);
+    if (currentLvlEl) currentLvlEl.textContent = currentLevel;
+    if (freeCountEl) freeCountEl.textContent = state.freeChampionPacks3x || 0;
+
+    const nextMilestone = LEVEL_MILESTONES.find(m => m.level > currentLevel) || LEVEL_MILESTONES[LEVEL_MILESTONES.length - 1];
+    if (nextSummaryEl) {
+        if (currentLevel >= 100) {
+            nextSummaryEl.textContent = "Max Level Milestone Achieved! You are a Supreme World Legend.";
+        } else {
+            const diff = nextMilestone.level - currentLevel;
+            nextSummaryEl.textContent = `Next Milestone: Level ${nextMilestone.level} (${diff} level${diff === 1 ? '' : 's'} remaining)`;
+        }
+    }
+
+    if (!grid) return;
+
+    if (!Array.isArray(state.claimedLevelMilestones)) state.claimedLevelMilestones = [];
+
+    grid.innerHTML = LEVEL_MILESTONES.map(m => {
+        const isClaimed = state.claimedLevelMilestones.includes(m.level);
+        const isEligible = currentLevel >= m.level && !isClaimed;
+        const isLocked = currentLevel < m.level;
+
+        let statusClass = isClaimed ? "claimed" : (isEligible ? "claimable" : "locked");
+
+        return `
+        <div class="milestone-card ${statusClass}">
+            <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:26px;">${isClaimed ? '✅' : (isEligible ? '🎁' : '🔒')}</span>
+                        <div>
+                            <h3 style="margin:0;font-size:17px;color:#fff;">Level ${m.level}</h3>
+                            <span style="font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;">${m.title}</span>
+                        </div>
+                    </div>
+                    ${isClaimed 
+                        ? `<span style="font-size:11px;font-weight:900;color:#22c55e;background:rgba(34,197,94,0.15);padding:3px 8px;border-radius:8px;border:1px solid #22c55e;">CLAIMED</span>`
+                        : (isEligible 
+                            ? `<span style="font-size:11px;font-weight:900;color:var(--gold);background:rgba(234,179,8,0.2);padding:3px 8px;border-radius:8px;border:1px solid var(--gold);">UNLOCKED</span>` 
+                            : `<span style="font-size:11px;color:var(--muted);">LOCKED</span>`
+                          )
+                    }
+                </div>
+                
+                <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:12px;margin:10px 0;display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;">
+                        <span style="color:var(--muted);">Gold Reward:</span>
+                        <b style="color:var(--gold);font-weight:900;">+${m.coins.toLocaleString()} 🪙</b>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;">
+                        <span style="color:var(--muted);">Free Packs:</span>
+                        <b style="color:#38bdf8;font-weight:900;">3x Champion Packs (Free)</b>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                ${isClaimed 
+                    ? `<button class="ghost-btn" disabled style="width:100%;font-size:13px;padding:10px;">✓ Reward Claimed</button>`
+                    : (isEligible 
+                        ? `<button class="primary-btn" style="width:100%;font-size:13px;padding:10px;background:linear-gradient(135deg,#f59e0b,#eab308);color:#000;font-weight:900;box-shadow:0 0 15px rgba(234,179,8,0.5);" onclick="claimLevelMilestone(${m.level})">
+                            🎁 Claim Level ${m.level} Reward
+                           </button>`
+                        : `<button class="ghost-btn" disabled style="width:100%;font-size:13px;padding:10px;">🔒 Reach Level ${m.level}</button>`
+                      )
+                }
             </div>
         </div>
         `;
@@ -9593,6 +9764,10 @@ document.addEventListener("dragstart", function(e) {
         renderSkillTree,
         hasSkill,
         SKILL_TREE_DEF,
+        claimLevelMilestone,
+        renderLevelMilestones,
+        renderPacks,
+        LEVEL_MILESTONES,
         toggleCardLock,
         addCoins,
         spendCoins,
