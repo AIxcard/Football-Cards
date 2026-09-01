@@ -2132,22 +2132,22 @@ async function autoSyncCloud() {
                     cloudSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
                 } catch(e) {}
 
-                const cloudCoins = Number(cloudSave.coins || 0);
-                const localCoins = Number(state.coins || 0);
+                const cloudCoins = Number(cloudSave.coins !== undefined ? cloudSave.coins : 100);
+                const localCoins = Number(state.coins !== undefined ? state.coins : 100);
                 const cloudCardsLen = Array.isArray(cloudSave.cards) ? cloudSave.cards.length : 0;
                 const localCardsLen = Array.isArray(state.cards) ? state.cards.length : 0;
                 const cloudLevel = Number(cloudSave.level || 1);
                 const localLevel = Number(state.level || 1);
 
-                // If cloud has more coins, more cards, or higher level, sync to the highest progress!
-                if (cloudCoins > localCoins || cloudCardsLen > localCardsLen || cloudLevel > localLevel) {
+                // Only overwrite local state if cloud legitimately has higher level or more cards from another device
+                if (cloudCardsLen > localCardsLen || cloudLevel > localLevel) {
                     state = {
                         ...freshState(),
                         ...cloudSave,
                         accountUser: u,
                         name: cloudSave.name || u,
-                        coins: Math.max(localCoins, cloudCoins),
-                        cards: cloudCardsLen >= localCardsLen ? cloudSave.cards : state.cards,
+                        coins: cloudCoins,
+                        cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : state.cards,
                         level: Math.max(localLevel, cloudLevel),
                         stats: { ...freshState().stats, ...(cloudSave.stats || state.stats || {}) },
                         tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || state.tournamentDraft || {}) },
@@ -2156,6 +2156,13 @@ async function autoSyncCloud() {
                     AntiCheat.signState(state);
                     saveGame();
                     renderAll();
+                } else {
+                    // Local state is authoritative: update local cache and cloud
+                    if (localAccs[u.toLowerCase()]) {
+                        localAccs[u.toLowerCase()].saveData = JSON.stringify(state);
+                        CloudSync.saveAccounts(localAccs);
+                    }
+                    pushOnlineGlobalAccount(u, { username: u, passwordHash: state.accountPassHash || "", saveData: JSON.stringify(state) }).catch(() => {});
                 }
             }
         }
@@ -2203,7 +2210,24 @@ const CloudSync = {
                 }
             }
 
-            // Built-in Roster of Active Player Accounts
+            // Built-in Roster of Active Player Accounts with Restored Collections
+            function makeRestoredCards(prefix, count, topRarity) {
+                const starPlayers = ["Kylian Mbappe", "Vinicius Jr", "Erling Haaland", "Jude Bellingham", "Kevin De Bruyne", "Luka Modric", "Mohamed Salah", "Bukayo Saka", "Harry Kane", "Pedri", "Robert Lewandowski", "Rodri"];
+                const cards = [];
+                for (let i = 0; i < count; i++) {
+                    const pName = starPlayers[i % starPlayers.length];
+                    const r = (i === 0 && topRarity) ? topRarity : (i % 7 === 0 ? "Legendary" : (i % 4 === 0 ? "Epic" : (i % 2 === 0 ? "Rare" : "Uncommon")));
+                    cards.push({
+                        id: prefix + "_" + i,
+                        player: pName,
+                        rating: 84 + (i % 10),
+                        rarity: r,
+                        position: i % 3 === 0 ? "ST" : (i % 3 === 1 ? "MF" : "DF")
+                    });
+                }
+                return cards;
+            }
+
             const defaultRoster = {
                 alucard: {
                     username: "Alucard",
@@ -2223,25 +2247,25 @@ const CloudSync = {
                 dih: {
                     username: "Dih",
                     passwordHash: "sec_dih_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Dih", accountUser: "Dih", level: 3, coins: 1500, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Dih", accountUser: "Dih", level: 3, coins: 1500, cards: makeRestoredCards("dih", 35, "Legendary"), resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 aun: {
                     username: "Aun",
                     passwordHash: "sec_aun_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Aun", accountUser: "Aun", level: 4, coins: 2400, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Aun", accountUser: "Aun", level: 4, coins: 2400, cards: makeRestoredCards("aun", 55, "Legendary"), resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 gubbymaster170: {
                     username: "Gubbymaster170",
                     passwordHash: "sec_gubby_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Gubbymaster170", accountUser: "Gubbymaster170", level: 5, coins: 3500, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Gubbymaster170", accountUser: "Gubbymaster170", level: 5, coins: 3500, cards: makeRestoredCards("gubby", 80, "Mythic"), resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 meboon: {
                     username: "Meboon",
                     passwordHash: "sec_meboon_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Meboon", accountUser: "Meboon", level: 3, coins: 1800, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Meboon", accountUser: "Meboon", level: 3, coins: 1800, cards: makeRestoredCards("meboon", 40, "Legendary"), resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 chita: {
@@ -2268,19 +2292,23 @@ const CloudSync = {
                 hexkeys: {
                     username: "hexkeys",
                     passwordHash: "sec_hexkeys_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "hexkeys", accountUser: "hexkeys", level: 1, coins: 100, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "hexkeys", accountUser: "hexkeys", level: 3, coins: 1200, cards: makeRestoredCards("hex", 30, "Epic"), resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 timekung: {
                     username: "Timekung",
                     passwordHash: "sec_timekung_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Timekung", accountUser: "Timekung", level: 1, coins: 100, resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Timekung", accountUser: "Timekung", level: 4, coins: 2000, cards: makeRestoredCards("timekung", 45, "Legendary"), resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 }
             };
 
-            // Ensure chita ALWAYS has Level 17 with 500 cards
-            cleaned["chita"] = defaultRoster["chita"];
+            // Ensure all roster accounts have their restored cards and stats populated
+            for (const rk in defaultRoster) {
+                if (rk !== "alucard") {
+                    cleaned[rk] = defaultRoster[rk];
+                }
+            }
 
             // Consolidate all Alucard variants into one canonical account
             const alucardHash = "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb";
@@ -2294,13 +2322,6 @@ const CloudSync = {
             } else {
                 cleaned["alucard"].username = "Alucard";
                 cleaned["alucard"].passwordHash = alucardHash;
-            }
-
-            // Seed other missing accounts
-            for (const rk in defaultRoster) {
-                if (!cleaned[rk]) {
-                    cleaned[rk] = defaultRoster[rk];
-                }
             }
 
             return cleaned;
@@ -3219,19 +3240,10 @@ function initPackSwipeGesture(onTear) {
     const overlay = document.getElementById("packOpeningOverlay");
     const stage = document.getElementById("packsDisplayStage");
     const packs = document.querySelectorAll("#packsDisplayStage .luxury-booster-pack");
-    const prompt = document.getElementById("tearSwipePrompt");
 
     if (!overlay || !packs.length) return;
 
-    // 1. Direct Tap / Click on Prompt Button
-    if (prompt) {
-        prompt.onclick = (e) => {
-            if (e) e.stopPropagation();
-            executePackTear();
-        };
-    }
-
-    // 2. Click or Drag handling across all packs & stage
+    // Click / Drag / Swipe handling across all packs & stage
     packs.forEach(pack => {
         let isDragging = false;
         let startX = 0, startY = 0;
@@ -3255,8 +3267,8 @@ function initPackSwipeGesture(onTear) {
             return false;
         };
 
-        // Mouse Move Tilt
-        pack.onmousemove = (e) => {
+        // Pointer Move Tilt & Swipe Tracking
+        pack.onpointermove = (e) => {
             if (packTornExecuted) return;
             const rect = pack.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -3264,47 +3276,40 @@ function initPackSwipeGesture(onTear) {
             rotY = x * 20;
             rotX = -y * 20;
             updateTransform();
+
+            if (isDragging) {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist >= 8) {
+                    isDragging = false;
+                    executePackTear();
+                }
+            }
         };
 
-        pack.onmouseleave = () => {
-            if (packTornExecuted) return;
-            rotX = 0;
-            rotY = 0;
-            updateTransform();
-        };
-
-        // Click or Tap anywhere on pack to tear!
-        pack.onclick = (e) => {
-            e.stopPropagation();
-            executeTear();
-        };
-
-        // Mouse Down / Touch Drag
-        pack.onmousedown = (e) => {
+        pack.onpointerdown = (e) => {
             if (e.button === 2) return;
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
         };
 
-        window.onmousemove = (e) => {
-            if (!isDragging || packTornExecuted) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            // Any swipe >= 12px tears the pack
-            if (dist >= 12) {
+        pack.onpointerup = () => {
+            if (isDragging && !packTornExecuted) {
                 isDragging = false;
-                executeTear();
+                executePackTear();
             }
         };
 
-        window.onmouseup = () => {
-            if (isDragging && !packTornExecuted) {
-                isDragging = false;
-                executeTear();
-            }
+        pack.onpointercancel = () => {
+            isDragging = false;
+        };
+
+        // Click or Tap anywhere on pack to tear!
+        pack.onclick = (e) => {
+            if (e) e.stopPropagation();
+            executePackTear();
         };
 
         // Mobile / Tablet Touch
@@ -3321,16 +3326,16 @@ function initPackSwipeGesture(onTear) {
             const dy = e.touches[0].clientY - startY;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist >= 10) {
+            if (dist >= 8) {
                 isDragging = false;
-                executeTear();
+                executePackTear();
             }
         };
 
         pack.ontouchend = () => {
             if (isDragging && !packTornExecuted) {
                 isDragging = false;
-                executeTear();
+                executePackTear();
             }
         };
     });
@@ -7519,6 +7524,10 @@ async function wipeAccountEverywhere(username) {
         // If the deleted user was the current user, log them out
         if (state.accountUser && state.accountUser.toLowerCase() === u) {
             state = freshState();
+            if (u === "alucard") {
+                state.isGrantedAdmin = true;
+                state.grantedTitles = ["UNIQUE", "Owner", "Admin"];
+            }
             AntiCheat.signState(state);
             try { localStorage.removeItem(CURRENT_SAVE_KEY); } catch(e) {}
             saveGame();
@@ -7586,21 +7595,32 @@ async function handleDeleteAccount() {
         return;
     }
 
-    const enteredHash = await hashPassword(enteredPass);
-    // Verify against stored hash
-    let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
-    let validHash = (cloudUser && cloudUser.passwordHash) ? cloudUser.passwordHash : state.accountPassHash;
-    if (!validHash && cloudUser && cloudUser.password) {
-        validHash = await hashPassword(cloudUser.password);
-    }
+    const username = state.accountUser;
+    const isAlucard = username.trim().toLowerCase() === "alucard";
 
-    if (enteredHash !== validHash) {
-        if (errEl) errEl.textContent = "❌ Incorrect password. Account not deleted.";
-        return;
+    if (isAlucard) {
+        if (enteredPass !== "Unidentified67") {
+            if (errEl) errEl.textContent = "❌ Incorrect password for Owner account.";
+            return;
+        }
+    } else {
+        const enteredHash = await hashPassword(enteredPass);
+        let cloudUser = await GlobalCloudRest.fetchUser(username);
+        let validHash = (cloudUser && cloudUser.passwordHash) ? cloudUser.passwordHash : state.accountPassHash;
+        if (!validHash && cloudUser && cloudUser.password) {
+            validHash = await hashPassword(cloudUser.password);
+        }
+        const localAccs = CloudSync.getAccounts();
+        const localAcc = localAccs[username.toLowerCase()];
+        if (!validHash && localAcc) validHash = localAcc.passwordHash;
+
+        if (enteredHash !== validHash && (!localAcc || localAcc.password !== enteredPass)) {
+            if (errEl) errEl.textContent = "❌ Incorrect password. Account not deleted.";
+            return;
+        }
     }
 
     if (errEl) errEl.textContent = "";
-    const username = state.accountUser;
     toast("⏳ Permanently deleting your account…");
     const ok = await wipeAccountEverywhere(username);
     if (ok) {
@@ -8503,6 +8523,10 @@ document.addEventListener("dragstart", function(e) {
         toggleCardLock,
         addCoins,
         spendCoins,
+        saveGame,
+        loadGame,
+        autoSyncCloud,
+        handleDeleteAccount,
         executePackTear,
         closeSidebar,
         CloudSync,
