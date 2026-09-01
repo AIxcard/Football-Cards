@@ -5801,3 +5801,147 @@ body {
     border-left: 3px solid #ef4444 !important;
     background: rgba(239, 68, 68, 0.05) !important;
 }
+
+/* =========================================================
+   NOTIFICATION ALERT BADGES ("!" PULSE DOTS)
+   ========================================================= */
+.nav-alert-dot {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    margin-left: 6px !important;
+    box-shadow: 0 0 10px #ef4444 !important;
+    animation: alertDotPulse 1.2s infinite alternate !important;
+    vertical-align: middle !important;
+}
+
+.nav-alert-dot.hidden {
+    display: none !important;
+}
+
+@keyframes alertDotPulse {
+    0% { transform: scale(0.9); box-shadow: 0 0 4px #ef4444; }
+    100% { transform: scale(1.15); box-shadow: 0 0 14px #ef4444, 0 0 20px #f59e0b; }
+}
+
+/* =========================================================
+   TRAVELING MERCHANT & SHOP POTIONS
+   ========================================================= */
+.merchant-slot-card {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(234, 179, 8, 0.3) !important;
+    border-radius: 16px !important;
+    padding: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    text-align: center !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.merchant-slot-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(234, 179, 8, 0.3) !important;
+}
+
+.merchant-slot-tag {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    background: rgba(234, 179, 8, 0.2) !important;
+    color: var(--gold) !important;
+    border: 1px solid var(--gold) !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+}
+
+/* =========================================================
+   POTION BOTTLE STYLING (GLASS VIAL VECTOR RENDER)
+   ========================================================= */
+.potion-vial-art {
+    width: 80px !important;
+    height: 110px !important;
+    margin: 8px auto !important;
+    position: relative !important;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.6)) !important;
+}
+
+.potion-card {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    text-align: center !important;
+    position: relative !important;
+}
+
+/* =========================================================
+   ACTIVE POTIONS LIVE HUD (BOTTOM RIGHT CORNER)
+   ========================================================= */
+.active-potions-hud {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+}
+
+.hud-potion-badge {
+    background: rgba(13, 25, 35, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 30px !important;
+    padding: 6px 14px 6px 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 15px var(--hud-glow, rgba(34, 197, 94, 0.4)) !important;
+    backdrop-filter: blur(10px) !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease !important;
+}
+
+.hud-potion-badge:hover {
+    transform: scale(1.06) !important;
+}
+
+.hud-potion-icon {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+}
+
+.hud-potion-timer {
+    font-size: 12.5px !important;
+    font-weight: 900 !important;
+    color: #ffffff !important;
+    letter-spacing: 0.5px !important;
+}
+
+.hud-potion-label {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: var(--gold) !important;
+}
