@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=520.0">
+<link rel="stylesheet" href="style.css?v=530.0">
 </head>
 
 <body>
@@ -394,7 +394,7 @@
             <div class="featured-info">
                 <h2>Premium Pack</h2>
                 <p>First-team scouting — Proven top-flight starters & secret icons. Common cards completely removed!</p>
-                <div class="pack-rate" style="margin-bottom:12px;">Uncommon (58%) · Rare (28%) · Epic (9%) · Legendary (4%) · Secret (0.2%)</div>
+                <div class="pack-rate" style="margin-bottom:12px;">Uncommon (62%) · Rare (27%) · Epic (8%) · Legendary (2.5%) · Mythic (0.45%) · Secret (0.05%)</div>
             </div>
             <div class="featured-action">
                 <div class="featured-btn-group">
@@ -510,7 +510,7 @@
             <p class="rarity uncommon">PREMIUM</p>
             <h2>Premium Pack</h2>
             <p>First-team scouting — Proven starters &amp; secret icons. Common cards removed!</p>
-            <div class="pack-rate">Uncommon → Secret (0.2%)</div>
+            <div class="pack-rate">Uncommon (62%) → Secret (0.05%)</div>
             <div class="pack-multibuttons">
                 <button onclick="openPack('premium', 1)">1x · 25 🪙</button>
                 <button onclick="openPack('premium', 3)">3x · 75 🪙</button>
@@ -524,8 +524,8 @@
             <div class="pack-ball">🏆</div>
             <p class="rarity epic">CHAMPION</p>
             <h2>Champion Pack</h2>
-            <p>Ballon d'Or shortlist — Elite superstars &amp; generational talents (0.5% Secret chance!).</p>
-            <div class="pack-rate">Rare → World Class (0.5% Secret)</div>
+            <p>Ballon d'Or shortlist — Elite superstars &amp; generational talents (0.19% Secret &amp; 0.01% World Class).</p>
+            <div class="pack-rate">Rare (75%) → World Class (0.01%)</div>
             <div class="pack-multibuttons">
                 <button onclick="openPack('champion', 1)">1x · 45 🪙</button>
                 <button id="championPack3xBtn" onclick="openPack('champion', 3)">3x · 135 🪙</button>
@@ -720,11 +720,14 @@
 <!-- ==================== TRADE ==================== -->
 <section id="trade" class="page">
 
-    <div class="section-head">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
         <div>
             <p class="eyebrow">MARKETPLACE</p>
             <h1>Player Trading Hub</h1>
-            <p>Send trade offers to online players & manage your trade inbox.</p>
+            <p>Send trade offers to online players &amp; manage your trade inbox.</p>
+        </div>
+        <div>
+            <button class="ghost-btn" style="padding:10px 16px;font-size:12.5px;" onclick="refreshTradingHub(true)">🔄 Refresh Traders</button>
         </div>
     </div>
 
@@ -1803,6 +1806,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=520.0"></script>
+<script src="script.js?v=530.0"></script>
 </body>
 </html>
