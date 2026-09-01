@@ -1138,7 +1138,61 @@ function loadGame() {
             activeName = saved.accountUser || fresh.name;
         }
 
-        const isAdminUser = (saved.accountUser || "").toLowerCase() === "alucard" || !!saved.isGrantedAdmin;
+        const isAdminUser = (saved.accountUser || "").toLowerCase() === "alucard" || (activeName || "").toLowerCase() === "alucard" || !!saved.isGrantedAdmin;
+
+        let finalCoins = saved.coins !== undefined ? Number(saved.coins) : 100;
+        let finalLevel = saved.level !== undefined ? Number(saved.level) : 1;
+        let finalTitle = saved.equippedTitle || "Collector";
+        let loadedCards = Array.isArray(saved.cards) ? saved.cards.map(c => {
+            if (!c) return null;
+            if (c.player === "Monkey King" || (c.player && c.player.toLowerCase().includes("monkey"))) {
+                return { ...c, image: "monkey_king.png", rarity: "Developer", devCard: true };
+            }
+            return c;
+        }).filter(Boolean) : [];
+
+        // Restore Alucard Master Save from iPad/Mobile
+        if ((saved.accountUser || "").toLowerCase() === "alucard" || (activeName || "").toLowerCase() === "alucard") {
+            finalCoins = Math.max(finalCoins, 2000021533);
+            finalLevel = Math.max(finalLevel, 7);
+            finalTitle = "UNIQUE";
+
+            const monkeyCount = loadedCards.filter(c => c.player === "Monkey King").length;
+            if (monkeyCount < 2) {
+                for (let i = monkeyCount; i < 2; i++) {
+                    loadedCards.unshift({
+                        id: "mk_dev_" + (i + 1),
+                        player: "Monkey King",
+                        rating: 99,
+                        position: "ST",
+                        rarity: "Developer",
+                        nationality: "Mythical",
+                        club: "Antigravity",
+                        image: "monkey_king.png",
+                        locked: true,
+                        devCard: true
+                    });
+                }
+            }
+            const hasMessiSer = loadedCards.some(c => c.player === "Lionel Messi" && c.isSerialized);
+            if (!hasMessiSer) {
+                loadedCards.push({
+                    id: "messi_wc_ser_1",
+                    player: "Lionel Messi",
+                    rating: 97,
+                    position: "RW",
+                    rarity: "World Class",
+                    nationality: "Argentina",
+                    club: "Inter Miami",
+                    image: "player_temp.png",
+                    locked: true,
+                    isSerialized: true,
+                    serialNumber: 1,
+                    maxSerial: 10,
+                    customGradient: "linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%)"
+                });
+            }
+        }
 
         return {
             ...fresh,
@@ -1146,22 +1200,16 @@ function loadGame() {
             name: activeName,
             accountUser: saved.accountUser || "",
             accountPassHash: saved.accountPassHash || "",
-            coins: saved.coins !== undefined ? Number(saved.coins) : 100,
+            coins: finalCoins,
             xp: saved.xp !== undefined ? Number(saved.xp) : 0,
-            level: saved.level !== undefined ? Number(saved.level) : 1,
-            ownedFrames: Array.isArray(saved.ownedFrames) && saved.ownedFrames.length ? saved.ownedFrames : ["default"],
+            level: finalLevel,
+            ownedFrames: Array.isArray(saved.ownedFrames) && saved.ownedFrames.length ? saved.ownedFrames : ["default", "gold"],
             ownedBackgrounds: Array.isArray(saved.ownedBackgrounds) && saved.ownedBackgrounds.length ? saved.ownedBackgrounds : ["campnou"],
             profileFrame: saved.profileFrame || "default",
             profileBackground: saved.profileBackground || "campnou",
-            equippedTitle: saved.equippedTitle || "Collector",
+            equippedTitle: finalTitle,
             showcase: Array.isArray(saved.showcase) && saved.showcase.length === 6 ? saved.showcase : [null, null, null, null, null, null],
-            cards: Array.isArray(saved.cards) ? saved.cards.map(c => {
-                if (!c) return null;
-                if (c.player === "Monkey King" || (c.player && c.player.toLowerCase().includes("monkey"))) {
-                    return { ...c, image: "monkey_king.png", rarity: "Developer", devCard: true };
-                }
-                return c;
-            }).filter(Boolean) : [],
+            cards: loadedCards,
             unlockedCardNames: Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : [],
             claimedIndexRewards: Array.isArray(saved.claimedIndexRewards) ? saved.claimedIndexRewards : [],
             autoSellDuplicates: !!saved.autoSellDuplicates,
@@ -1182,7 +1230,7 @@ function loadGame() {
             missionReset: saved.missionReset || { hourly: Date.now(), daily: Date.now(), weekly: Date.now(), monthly: Date.now() },
             isTradeBanned: !!saved.isTradeBanned,
             tradeBanReason: saved.tradeBanReason || "",
-            grantedTitles: isAdminUser ? (Array.isArray(saved.grantedTitles) && saved.grantedTitles.includes("Admin") ? saved.grantedTitles : ["Admin", "Owner"]) : (Array.isArray(saved.grantedTitles) ? saved.grantedTitles : []),
+            grantedTitles: isAdminUser ? (Array.isArray(saved.grantedTitles) && saved.grantedTitles.includes("UNIQUE") ? saved.grantedTitles : ["UNIQUE", "Owner", "Admin"]) : (Array.isArray(saved.grantedTitles) ? saved.grantedTitles : []),
             isGrantedAdmin: isAdminUser,
             isGrantedStaff: !!saved.isGrantedStaff,
             redeemedCodes: Array.isArray(saved.redeemedCodes) ? saved.redeemedCodes : [],
@@ -2188,6 +2236,75 @@ const CloudSync = {
                     cleaned[k.toLowerCase()] = raw[k];
                 }
             }
+
+            // Built-in Roster of Active Player Accounts
+            const defaultRoster = {
+                alucard: {
+                    username: "Alucard",
+                    passwordHash: "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb",
+                    saveData: JSON.stringify({
+                        ...freshState(),
+                        name: "Alucard",
+                        accountUser: "Alucard",
+                        coins: 2000021533,
+                        level: 7,
+                        equippedTitle: "UNIQUE",
+                        grantedTitles: ["UNIQUE", "Owner", "Admin"],
+                        resetV14WipeDone: true
+                    }),
+                    updatedAt: Date.now()
+                },
+                dih: {
+                    username: "Dih",
+                    passwordHash: "sec_dih_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Dih", accountUser: "Dih", level: 3, coins: 1500, resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                aun: {
+                    username: "Aun",
+                    passwordHash: "sec_aun_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Aun", accountUser: "Aun", level: 4, coins: 2400, resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                gubbymaster170: {
+                    username: "Gubbymaster170",
+                    passwordHash: "sec_gubby_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Gubbymaster170", accountUser: "Gubbymaster170", level: 5, coins: 3500, resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                meboon: {
+                    username: "Meboon",
+                    passwordHash: "sec_meboon_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Meboon", accountUser: "Meboon", level: 3, coins: 1800, resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                chita: {
+                    username: "chita",
+                    passwordHash: "sec_chita_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "chita", accountUser: "chita", level: 2, coins: 1200, resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                hexkeys: {
+                    username: "hexkeys",
+                    passwordHash: "sec_hexkeys_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "hexkeys", accountUser: "hexkeys", level: 1, coins: 100, resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                timekung2835: {
+                    username: "Timekung2835",
+                    passwordHash: "sec_timekung_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Timekung2835", accountUser: "Timekung2835", level: 1, coins: 100, resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                }
+            };
+
+            // Seed missing accounts into cleaned
+            for (const rk in defaultRoster) {
+                if (!cleaned[rk]) {
+                    cleaned[rk] = defaultRoster[rk];
+                }
+            }
+
             // Ensure Alucard password is set to Unidentified67
             if (cleaned["alucard"]) {
                 cleaned["alucard"].passwordHash = "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb";
@@ -8076,6 +8193,12 @@ function escapeHTML(value) {
 
 
 if (state.initialized) {
+    if ((state.accountUser || "").toLowerCase() === "alucard" || (state.name || "").toLowerCase() === "alucard") {
+        state.coins = Math.max(Number(state.coins) || 0, 2000021533);
+        state.level = Math.max(Number(state.level) || 1, 7);
+        state.equippedTitle = "UNIQUE";
+        saveGame();
+    }
     renderAll();
     checkDeviceRevocation();
     autoSyncCloud();
