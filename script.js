@@ -746,12 +746,12 @@ starter: {
 premium: {
     name: "Premium Pack",
     cost: 25,
-    rates: { Uncommon: 58, Rare: 28, Epic: 9, Legendary: 4, Mythic: 0.8, Secret: 0.2 }
+    rates: { Uncommon: 62, Rare: 27, Epic: 8, Legendary: 2.5, Mythic: 0.45, Secret: 0.05 }
 },
 champion: {
     name: "Champion Pack",
     cost: 45,
-    rates: { Rare: 70, Epic: 21, Legendary: 7, Mythic: 1.49, Secret: 0.5, "World Class": 0.01 }
+    rates: { Rare: 75, Epic: 18, Legendary: 6, Mythic: 0.8, Secret: 0.19, "World Class": 0.01 }
 },
 exclusive: {
     name: "Exclusive Legends",
@@ -6345,8 +6345,6 @@ async function renderTradeHub() {
     const list = document.getElementById("tradeOnlinePlayersList");
     if (!list) return;
 
-    list.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">Fetching active online players...</p>`;
-
     let allUsers = await GlobalCloudRest.fetchAllUsers();
     let localAccs = CloudSync.getAccounts();
     let merged = { ...localAccs, ...allUsers };
@@ -6364,18 +6362,20 @@ async function renderTradeHub() {
             seenUsers.add(lowerName);
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-            const isWiped = pData.resetV14WipeDone === true;
             const isUserFlagged = !!(u.isTradeBanned || pData.isTradeBanned || (pData.bannedUntil && pData.bannedUntil > Date.now()));
             otherPlayers.push({
                 username: rawUsername,
                 name: pData.name || rawUsername,
-                level: isWiped ? (pData.level || 1) : 1,
-                cards: isWiped ? (pData.cards || []).length : 0,
+                level: Number(pData.level || 1),
+                cards: Array.isArray(pData.cards) ? pData.cards.length : 0,
                 title: pData.equippedTitle || "Collector",
                 isTradeBanned: isUserFlagged
             });
         }
     }
+
+    // Sort by level descending
+    otherPlayers.sort((a, b) => b.level - a.level);
 
     let flagBanner = "";
     if (state.isTradeBanned) {
@@ -6404,6 +6404,12 @@ async function renderTradeHub() {
             </div>
         `).join("");
     }
+}
+
+async function refreshTradingHub(showToast = false) {
+    if (showToast) SoundFx.click();
+    await renderTradeHub();
+    if (showToast) toast("🔄 Trading Hub directory refreshed with live active traders!");
 }
 
 /* =========================================================
@@ -9768,6 +9774,8 @@ document.addEventListener("dragstart", function(e) {
         renderLevelMilestones,
         renderPacks,
         LEVEL_MILESTONES,
+        refreshTradingHub,
+        PACKS,
         toggleCardLock,
         addCoins,
         spendCoins,
