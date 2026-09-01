@@ -112,8 +112,11 @@
         } catch(e) {}
     })();
 
-    const CURRENT_SAVE_KEY = "footballCardsSave_v14_hard_reset";
+    const CURRENT_SAVE_KEY = "footballCardsSave_v17_universal_sync";
     const PREVIOUS_SAVE_KEYS = [
+        "footballCardsSave_v16",
+        "footballCardsSave_v15_clean_sync",
+        "footballCardsSave_v14_hard_reset",
         "footballCardsSave_v13_reset",
         "footballCardsSave_v12_reset",
         "footballCardsSave_v11_hard_reset",
@@ -2393,9 +2396,11 @@ const CloudSync = {
         accs[key] = accObj;
         this.saveAccounts(accs);
         await pushOnlineGlobalAccount(u, accObj);
+        try { await GlobalCloudRest.pushLeaderboard(u, state); } catch(e) {}
 
         saveGame();
         renderAll();
+        renderLeaderboard(false);
         updateAuthUI();
         checkAdminStatus();
         autoSyncCloud();
@@ -7064,9 +7069,15 @@ function setLeaderboardTab(tab) {
     renderLeaderboard();
 }
 
-async function renderLeaderboard() {
+async function renderLeaderboard(isManual = false) {
     const list = document.getElementById("globalLeaderboard") || document.getElementById("leaderboardList");
     if (!list) return;
+
+    const refreshBtn = document.getElementById("refreshLeaderboardBtn");
+    if (isManual && refreshBtn) {
+        refreshBtn.innerHTML = "⏳ Refreshing...";
+        refreshBtn.disabled = true;
+    }
 
     list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);"><span class="pack-spinner" style="display:inline-block;width:28px;height:28px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;"></span><p style="margin-top:12px;font-size:14px;font-weight:700;">Connecting to Global Online Leaderboard...</p></div>`;
 
@@ -7297,6 +7308,15 @@ async function renderLeaderboard() {
 
     html += `</div>`;
     list.innerHTML = html;
+
+    if (refreshBtn) {
+        refreshBtn.innerHTML = "🔄 Refresh Leaderboard";
+        refreshBtn.disabled = false;
+    }
+    if (isManual) {
+        toast("🔄 Leaderboard updated!");
+        SoundFx.click();
+    }
 }
 
 /* =========================================================
