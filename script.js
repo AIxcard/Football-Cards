@@ -8031,36 +8031,7 @@ setInterval(() => {
    MOBILE & IPAD RESPONSIVE TOUCH & COPY PROTECTIONS
    ========================================================= */
 
-let lastTouchEnd = 0;
-document.addEventListener("touchend", function(event) {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-        // Prevent double tap zooming while allowing input taps
-        const targetTag = (event.target && event.target.tagName) || "";
-        if (targetTag !== "INPUT" && targetTag !== "TEXTAREA" && targetTag !== "SELECT") {
-            event.preventDefault();
-        }
-    }
-    lastTouchEnd = now;
-}, { passive: false });
-
-document.addEventListener("copy", function(e) {
-    const targetTag = (e.target && e.target.tagName) || "";
-    if (targetTag !== "INPUT" && targetTag !== "TEXTAREA") {
-        e.preventDefault();
-    }
-});
-
-document.addEventListener("contextmenu", function(e) {
-    const targetTag = (e.target && e.target.tagName) || "";
-    if (targetTag !== "INPUT" && targetTag !== "TEXTAREA") {
-        if (e.target && e.target.closest && (e.target.closest(".card") || e.target.closest(".pack-card"))) {
-            e.preventDefault();
-        }
-    }
-});
-
-// Prevent dragging of any card images, avatars, or modals
+// Prevent image drag ghosting while ensuring 100% click/tap responsiveness
 document.addEventListener("dragstart", function(e) {
     if (e.target && (e.target.tagName === "IMG" || e.target.closest(".card") || e.target.closest(".card-3d-wrapper") || e.target.closest(".modal"))) {
         e.preventDefault();
