@@ -36,6 +36,7 @@
         "test",
         "test2",
         "testing",
+        "jeff",
         "ipadtester",
         "playertwo",
         "ipadtest",
@@ -2102,9 +2103,52 @@ let onlineAccountsCache = {};
 async function autoSyncCloud() {
     try {
         const localAccs = CloudSync.getAccounts();
+        const u = state.accountUser;
+
+        // If currently logged into an account, check for newer / higher progress from cloud
+        if (u) {
+            let cloudUser = null;
+            try { cloudUser = await GlobalCloudRest.fetchUser(u); } catch(e) {}
+            if (!cloudUser && localAccs[u.toLowerCase()]) {
+                cloudUser = localAccs[u.toLowerCase()];
+            }
+            if (cloudUser && cloudUser.saveData) {
+                let cloudSave = {};
+                try {
+                    cloudSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
+                } catch(e) {}
+
+                const cloudCoins = Number(cloudSave.coins || 0);
+                const localCoins = Number(state.coins || 0);
+                const cloudCardsLen = Array.isArray(cloudSave.cards) ? cloudSave.cards.length : 0;
+                const localCardsLen = Array.isArray(state.cards) ? state.cards.length : 0;
+                const cloudLevel = Number(cloudSave.level || 1);
+                const localLevel = Number(state.level || 1);
+
+                // If cloud has more coins, more cards, or higher level, sync to the highest progress!
+                if (cloudCoins > localCoins || cloudCardsLen > localCardsLen || cloudLevel > localLevel) {
+                    state = {
+                        ...freshState(),
+                        ...cloudSave,
+                        accountUser: u,
+                        name: cloudSave.name || u,
+                        coins: Math.max(localCoins, cloudCoins),
+                        cards: cloudCardsLen >= localCardsLen ? cloudSave.cards : state.cards,
+                        level: Math.max(localLevel, cloudLevel),
+                        stats: { ...freshState().stats, ...(cloudSave.stats || state.stats || {}) },
+                        tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || state.tournamentDraft || {}) },
+                        autoSellSettings: { ...freshState().autoSellSettings, ...(cloudSave.autoSellSettings || state.autoSellSettings || {}) }
+                    };
+                    AntiCheat.signState(state);
+                    saveGame();
+                    renderAll();
+                }
+            }
+        }
+
         for (const k in localAccs) {
             const acc = localAccs[k];
-            if (acc && acc.username) {
+            if (acc && acc.username && !isAccountDeleted(acc.username)) {
                 await GlobalCloudRest.pushUser(acc.username, acc);
             }
         }
@@ -2114,7 +2158,7 @@ async function autoSyncCloud() {
             CloudSync.saveAccounts(merged);
             onlineAccountsCache = merged;
         }
-        if (state.accountUser) {
+        if (state.accountUser && !isAccountDeleted(state.accountUser)) {
             await GlobalCloudRest.pushLeaderboard(state.accountUser, state);
         }
     } catch (e) {}
