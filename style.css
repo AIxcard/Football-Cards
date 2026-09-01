@@ -3792,10 +3792,7 @@ body.modal-open, html.modal-open {
 }
 
 .pack-opening-container {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    position: relative !important;
     z-index: 1000 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -3803,14 +3800,39 @@ body.modal-open, html.modal-open {
     justify-content: center !important;
     text-align: center !important;
     width: 320px !important;
-    height: 490px !important;
     max-width: 90vw !important;
-    max-height: 85vh !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     perspective: 1600px !important;
     overflow: visible !important;
     pointer-events: auto !important;
+}
+
+.tear-action-btn {
+    margin-top: 18px !important;
+    background: linear-gradient(135deg, #ffd700, #ff8c00) !important;
+    color: #000000 !important;
+    font-weight: 900 !important;
+    font-size: 15px !important;
+    padding: 13px 28px !important;
+    border-radius: 30px !important;
+    border: 2px solid #ffffff !important;
+    cursor: pointer !important;
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.7), 0 0 15px rgba(255, 255, 255, 0.5) !important;
+    letter-spacing: 0.5px !important;
+    pointer-events: auto !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    animation: tearPromptPulse 1.6s ease-in-out infinite alternate !important;
+}
+
+.tear-action-btn:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.9) !important;
+}
+
+@keyframes tearPromptPulse {
+    0% { transform: scale(0.98); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5); }
+    100% { transform: scale(1.04); box-shadow: 0 8px 30px rgba(255, 215, 0, 0.9), 0 0 20px rgba(255, 255, 255, 0.8); }
 }
 
 /* =========================================================
@@ -3829,7 +3851,7 @@ body.modal-open, html.modal-open {
     width: 320px !important;
     height: 490px !important;
     max-width: 90vw !important;
-    max-height: 75vh !important;
+    max-height: 72vh !important;
     margin: 0 auto !important;
     overflow: visible !important;
     z-index: 20 !important;
