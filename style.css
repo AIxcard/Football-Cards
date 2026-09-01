@@ -5945,3 +5945,79 @@ body {
     font-weight: 800 !important;
     color: var(--gold) !important;
 }
+
+/* =========================================================
+   SKILL TREE & MASTERY BRANCHES
+   ========================================================= */
+.skill-branch-column {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid var(--branch-border, rgba(255, 255, 255, 0.12)) !important;
+    border-radius: 20px !important;
+    padding: 20px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--branch-glow, transparent) !important;
+}
+
+.skill-branch-head {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 4px !important;
+}
+
+.skill-node-card {
+    background: rgba(9, 17, 26, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    transition: all 0.25s ease !important;
+    position: relative !important;
+}
+
+.skill-node-card.unlocked {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(15, 23, 42, 0.95)) !important;
+    border: 1px solid #22c55e !important;
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.25) !important;
+}
+
+.skill-node-card.available {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(15, 23, 42, 0.95)) !important;
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.25) !important;
+    animation: availableNodeGlow 2s infinite alternate !important;
+}
+
+.skill-node-card.locked {
+    opacity: 0.55 !important;
+    filter: grayscale(0.6) !important;
+}
+
+.skill-node-card.master-node {
+    border-width: 2px !important;
+    background: radial-gradient(circle at top right, rgba(244, 196, 78, 0.15), rgba(9, 17, 26, 0.95)) !important;
+}
+
+.skill-node-card.master-node.unlocked {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.4) !important;
+}
+
+.skill-connection-arrow {
+    text-align: center !important;
+    color: var(--muted) !important;
+    font-size: 14px !important;
+    margin: -6px 0 !important;
+    opacity: 0.6 !important;
+}
+
+@keyframes availableNodeGlow {
+    0% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.2); }
+    100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); }
+}
