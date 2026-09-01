@@ -3724,7 +3724,7 @@ body.modal-open, html.modal-open {
     width: 100vw !important;
     height: 100vh !important;
     height: 100dvh !important;
-    display: none;
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
@@ -3738,8 +3738,10 @@ body.modal-open, html.modal-open {
     touch-action: none !important;
 }
 
-.pack-opening-modal:not(.hidden) {
-    display: flex !important;
+.pack-opening-modal.hidden,
+#packOpeningOverlay.hidden {
+    display: none !important;
+    pointer-events: none !important;
 }
 
 .pack-stage-backdrop {
