@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=500.0">
+<link rel="stylesheet" href="style.css?v=510.0">
 </head>
 
 <body>
@@ -335,6 +335,8 @@
     <button class="nav active" data-page="home" onclick="showPage('home')">🏠 Home</button>
     <button class="nav" data-page="packs" onclick="showPage('packs')">📦 Packs</button>
     <button class="nav" data-page="cards" onclick="showPage('cards')">🎴 Collection</button>
+    <button class="nav" data-page="alchemy" onclick="showPage('alchemy')">⚗️ Alchemy</button>
+    <button class="nav" data-page="skilltree" onclick="showPage('skilltree')">🌳 Skill Tree</button>
     <button class="nav" data-page="index" onclick="showPage('index')">
         📖 Index <span id="indexAlertBadge" class="nav-alert-dot hidden">!</span>
     </button>
@@ -785,42 +787,23 @@
 
 
 <!-- ==================== SHOP ==================== -->
-<section id="shop" class="page">
+<!-- ==================== ALCHEMY ==================== -->
+<section id="alchemy" class="page">
 
     <div class="section-head">
         <div>
-            <p class="eyebrow">BAZAAR, ALCHEMY & COSMETICS</p>
-            <h1>Merchant, Alchemy & Shop</h1>
-            <p>Trade with the Traveling Merchant, brew mythical luck potions & customize your aesthetic.</p>
+            <p class="eyebrow">MYSTICAL LABORATORY &amp; TRANSMUTATION</p>
+            <h1>⚗️ Grand Alchemy Lab</h1>
+            <p>Sacrifice duplicate high-tier cards to brew powerful luck potions and manage your brewed elixir inventory.</p>
         </div>
     </div>
 
-    <!-- 1. TRAVELING MERCHANT (15-MINUTE RESTOCK CYCLE) -->
-    <div class="panel merchant-caravan-panel" style="margin-bottom:28px;border-color:rgba(234, 179, 8, 0.4);background:radial-gradient(circle at 90% 10%, rgba(234, 179, 8, 0.15), transparent 50%), linear-gradient(135deg, #111e2e, #0c1622);">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <span style="font-size:32px;">🧙‍♂️</span>
-                <div>
-                    <h2 style="margin:0;font-size:20px;color:var(--gold);">Mysterious Traveling Merchant</h2>
-                    <p style="color:var(--muted);margin:2px 0 0;font-size:13px;">Arrives with rare luck potions & exotic scouted cards every 15 minutes.</p>
-                </div>
-            </div>
-            <div class="merchant-timer-badge" id="merchantTimerBadge" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(234, 179, 8, 0.15);border:1px solid var(--gold);border-radius:20px;color:var(--gold);font-weight:900;font-size:13px;">
-                ⏳ Next Restock: <span id="merchantCountdown">15:00</span>
-            </div>
-        </div>
-
-        <div id="merchantSlotsGrid" class="merchant-slots-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;">
-            <!-- Dynamically populated 3 merchant slots -->
-        </div>
-    </div>
-
-    <!-- 2. ALCHEMY & CARD TRANSMUTATION CRAFTING TABLE -->
+    <!-- 1. ALCHEMY & CARD TRANSMUTATION CRAFTING TABLE -->
     <div class="panel alchemy-crafting-panel" style="margin-bottom:28px;border-color:rgba(168, 85, 247, 0.4);background:radial-gradient(circle at 10% 90%, rgba(168, 85, 247, 0.15), transparent 50%), linear-gradient(135deg, #16122a, #0d121d);">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
             <span style="font-size:32px;">⚗️</span>
             <div>
-                <h2 style="margin:0;font-size:20px;color:#c084fc;">Alchemy & Potion Transmutation</h2>
+                <h2 style="margin:0;font-size:20px;color:#c084fc;">Card Transmutation &amp; Brewing</h2>
                 <p style="color:var(--muted);margin:2px 0 0;font-size:13px;">Sacrifice duplicate high-tier cards to brew celestial and extreme luck elixirs.</p>
             </div>
         </div>
@@ -849,7 +832,7 @@
                     </div>
                 </div>
                 <button class="primary-btn" style="background:linear-gradient(135deg,#7c3aed,#ec4899);border:none;" onclick="openCraftingModal('astral')">
-                    ⚗️ Select 5 Mythical Cards & Brew
+                    ⚗️ Select 5 Mythical Cards &amp; Brew
                 </button>
             </div>
 
@@ -875,14 +858,14 @@
                     </div>
                 </div>
                 <button class="primary-btn" style="background:linear-gradient(135deg,#dc2626,#f59e0b);border:none;" onclick="openCraftingModal('elixir')">
-                    ⚗️ Select 5 Secret Cards & Brew
+                    ⚗️ Select 5 Secret Cards &amp; Brew
                 </button>
             </div>
 
         </div>
     </div>
 
-    <!-- 3. POTIONS POUCH (STORED BREWS) -->
+    <!-- 2. POTIONS POUCH (STORED BREWS) -->
     <div class="panel potions-pouch-panel" style="margin-bottom:28px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
             <span style="font-size:24px;">🧪</span>
@@ -894,6 +877,86 @@
         </div>
     </div>
 
+</section>
+
+
+<!-- ==================== SKILL TREE ==================== -->
+<section id="skilltree" class="page">
+
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
+        <div>
+            <p class="eyebrow">PERMANENT COLLECTOR MASTERY</p>
+            <h1>🌳 Collector Skill Tree</h1>
+            <p>Invest Skill Points into specialized mastery branches for permanent passive gameplay benefits.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button class="ghost-btn" style="padding:10px 16px;font-size:12.5px;" onclick="respecSkillTree()">🔄 Reset / Respec</button>
+        </div>
+    </div>
+
+    <!-- SKILL POINTS CURRENCY DASHBOARD -->
+    <div class="panel skilltree-points-panel" style="margin-bottom:28px;border-color:rgba(56,189,248,0.4);background:radial-gradient(circle at 80% 20%, rgba(56,189,248,0.15), transparent 45%), linear-gradient(135deg, #0f1c2d, #09121a);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <div class="sp-icon-box" style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#0284c7,#0369a1);border:1px solid #38bdf8;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 20px rgba(56,189,248,0.5);">
+                    ⚡
+                </div>
+                <div>
+                    <div style="font-size:12px;color:var(--muted);font-weight:800;letter-spacing:1px;text-transform:uppercase;">AVAILABLE TALENT CURRENCY</div>
+                    <div style="font-size:26px;font-weight:900;color:#38bdf8;"><span id="skillPointsAvailableCount">0</span> <span style="font-size:16px;color:#fff;">Skill Points (SP)</span></div>
+                    <span style="font-size:12px;color:#94a3b8;">1 SP = 1 Skill Node Unlock · <span id="unlockedSkillsSummary">0/16 Nodes Mastered</span></span>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                <button id="buySkillPointBtn" class="primary-btn" style="width:auto;padding:12px 24px;font-size:14px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;box-shadow:0 0 18px rgba(14,165,233,0.4);" onclick="buySkillPoint()">
+                    ⚡ Buy 1 SP for <span id="nextSkillPointCost">5,000</span> 🪙
+                </button>
+                <span style="font-size:11px;color:var(--muted);">Cost scales with each point purchased (5K ➔ 7.5K ➔ 10K ➔ 15K ➔ 20K ➔ 30K...)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 SKILL BRANCHES GRID -->
+    <div class="skill-branches-container" id="skillBranchesContainer" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
+        <!-- Dynamically rendered 4 branches with nodes & prerequisites -->
+    </div>
+
+</section>
+
+
+<!-- ==================== SHOP ==================== -->
+<section id="shop" class="page">
+
+    <div class="section-head">
+        <div>
+            <p class="eyebrow">BAZAAR &amp; COSMETICS</p>
+            <h1>Merchant &amp; Stadium Shop</h1>
+            <p>Trade with the Traveling Merchant, equip prestige avatar frames &amp; stadium atmospheres.</p>
+        </div>
+    </div>
+
+    <!-- 1. TRAVELING MERCHANT (15-MINUTE RESTOCK CYCLE) -->
+    <div class="panel merchant-caravan-panel" style="margin-bottom:28px;border-color:rgba(234, 179, 8, 0.4);background:radial-gradient(circle at 90% 10%, rgba(234, 179, 8, 0.15), transparent 50%), linear-gradient(135deg, #111e2e, #0c1622);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:32px;">🧙‍♂️</span>
+                <div>
+                    <h2 style="margin:0;font-size:20px;color:var(--gold);">Mysterious Traveling Merchant</h2>
+                    <p style="color:var(--muted);margin:2px 0 0;font-size:13px;">Arrives with rare luck potions &amp; exotic scouted cards every 15 minutes.</p>
+                </div>
+            </div>
+            <div class="merchant-timer-badge" id="merchantTimerBadge" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(234, 179, 8, 0.15);border:1px solid var(--gold);border-radius:20px;color:var(--gold);font-weight:900;font-size:13px;">
+                ⏳ Next Restock: <span id="merchantCountdown">15:00</span>
+            </div>
+        </div>
+
+        <div id="merchantSlotsGrid" class="merchant-slots-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;">
+            <!-- Dynamically populated 3 merchant slots -->
+        </div>
+    </div>
+
+    <!-- 2. PRESTIGE AVATAR FRAMES -->
     <div class="panel" style="margin-bottom:28px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
             <span style="font-size:24px;">👑</span>
@@ -903,6 +966,7 @@
         <div id="framesShop" class="shop-grid" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:16px;"></div>
     </div>
 
+    <!-- 3. STADIUM ATMOSPHERES -->
     <div class="panel">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
             <span style="font-size:24px;">🏟️</span>
@@ -1693,6 +1757,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=500.0"></script>
+<script src="script.js?v=510.0"></script>
 </body>
 </html>
