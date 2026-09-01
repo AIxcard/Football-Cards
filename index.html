@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=490.0">
+<link rel="stylesheet" href="style.css?v=500.0">
 </head>
 
 <body>
@@ -335,14 +335,22 @@
     <button class="nav active" data-page="home" onclick="showPage('home')">🏠 Home</button>
     <button class="nav" data-page="packs" onclick="showPage('packs')">📦 Packs</button>
     <button class="nav" data-page="cards" onclick="showPage('cards')">🎴 Collection</button>
-    <button class="nav" data-page="index" onclick="showPage('index')">📖 Index</button>
-    <button class="nav" data-page="trade" onclick="showPage('trade')">🤝 Trade</button>
-    <button class="nav" data-page="shop" onclick="showPage('shop')">🛒 Shop</button>
+    <button class="nav" data-page="index" onclick="showPage('index')">
+        📖 Index <span id="indexAlertBadge" class="nav-alert-dot hidden">!</span>
+    </button>
+    <button class="nav" data-page="trade" onclick="showPage('trade')">
+        🤝 Trade <span id="tradeAlertBadge" class="nav-alert-dot hidden">!</span>
+    </button>
+    <button class="nav" data-page="shop" onclick="showPage('shop')">
+        🛒 Shop <span id="shopAlertBadge" class="nav-alert-dot hidden">!</span>
+    </button>
     <button class="nav" data-page="profile" onclick="showPage('profile')">👤 Profile</button>
     <button class="nav" data-page="statistics" onclick="showPage('statistics')">📊 Statistics</button>
     <button class="nav" data-page="leaderboard" onclick="showPage('leaderboard')">🏆 Leaderboard</button>
     <button class="nav" data-page="tournament" onclick="showPage('tournament')">⚔️ Tournament</button>
-    <button class="nav" data-page="missions" onclick="showPage('missions')">🎯 Missions</button>
+    <button class="nav" data-page="missions" onclick="showPage('missions')">
+        🎯 Missions <span id="missionsAlertBadge" class="nav-alert-dot hidden">!</span>
+    </button>
     <button class="nav" data-page="settings" onclick="showPage('settings')">⚙️ Settings</button>
 </aside>
 
@@ -781,9 +789,108 @@
 
     <div class="section-head">
         <div>
-            <p class="eyebrow">CUSTOMIZATION & COSMETICS</p>
-            <h1>Cosmetics & Stadium Shop</h1>
-            <p>Unlock prestige avatar border frames, iconic stadiums & matchday atmospheres.</p>
+            <p class="eyebrow">BAZAAR, ALCHEMY & COSMETICS</p>
+            <h1>Merchant, Alchemy & Shop</h1>
+            <p>Trade with the Traveling Merchant, brew mythical luck potions & customize your aesthetic.</p>
+        </div>
+    </div>
+
+    <!-- 1. TRAVELING MERCHANT (15-MINUTE RESTOCK CYCLE) -->
+    <div class="panel merchant-caravan-panel" style="margin-bottom:28px;border-color:rgba(234, 179, 8, 0.4);background:radial-gradient(circle at 90% 10%, rgba(234, 179, 8, 0.15), transparent 50%), linear-gradient(135deg, #111e2e, #0c1622);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:32px;">🧙‍♂️</span>
+                <div>
+                    <h2 style="margin:0;font-size:20px;color:var(--gold);">Mysterious Traveling Merchant</h2>
+                    <p style="color:var(--muted);margin:2px 0 0;font-size:13px;">Arrives with rare luck potions & exotic scouted cards every 15 minutes.</p>
+                </div>
+            </div>
+            <div class="merchant-timer-badge" id="merchantTimerBadge" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(234, 179, 8, 0.15);border:1px solid var(--gold);border-radius:20px;color:var(--gold);font-weight:900;font-size:13px;">
+                ⏳ Next Restock: <span id="merchantCountdown">15:00</span>
+            </div>
+        </div>
+
+        <div id="merchantSlotsGrid" class="merchant-slots-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;">
+            <!-- Dynamically populated 3 merchant slots -->
+        </div>
+    </div>
+
+    <!-- 2. ALCHEMY & CARD TRANSMUTATION CRAFTING TABLE -->
+    <div class="panel alchemy-crafting-panel" style="margin-bottom:28px;border-color:rgba(168, 85, 247, 0.4);background:radial-gradient(circle at 10% 90%, rgba(168, 85, 247, 0.15), transparent 50%), linear-gradient(135deg, #16122a, #0d121d);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <span style="font-size:32px;">⚗️</span>
+            <div>
+                <h2 style="margin:0;font-size:20px;color:#c084fc;">Alchemy & Potion Transmutation</h2>
+                <p style="color:var(--muted);margin:2px 0 0;font-size:13px;">Sacrifice duplicate high-tier cards to brew celestial and extreme luck elixirs.</p>
+            </div>
+        </div>
+
+        <div class="crafting-recipes-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:18px;margin-top:16px;">
+            
+            <!-- RECIPE 1: ASTRAL POTION -->
+            <div class="recipe-card" style="background:rgba(15,23,42,0.85);border:1px solid rgba(168,85,247,0.35);border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
+                <div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <div class="potion-icon-box" style="width:48px;height:48px;border-radius:12px;background:radial-gradient(circle, #7c3aed, #1e1b4b);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(168,85,247,0.5);">
+                            <span style="font-size:26px;">🌌</span>
+                        </div>
+                        <div>
+                            <h3 style="margin:0;color:#c084fc;font-size:17px;">Astral Potion</h3>
+                            <span style="font-size:11.5px;color:#a855f7;font-weight:800;">+200% LUCK (5 MINUTES)</span>
+                        </div>
+                    </div>
+                    <p style="font-size:12.5px;color:#cbd5e1;line-height:1.4;margin:6px 0 10px;">Infused with cosmic star energy. Triples your odds for rare pulls.</p>
+                    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:6px 10px;font-size:11px;color:#fca5a5;margin-bottom:10px;">
+                        ⚠️ <b>Stacking Rule:</b> Cannot stack with Tier 1-3 Luck Potions. Stacks with Elixir of Luck.
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#94a3b8;">
+                        <span>Required Materials:</span>
+                        <b style="color:#f43f5e;">5 Mythical Cards</b>
+                    </div>
+                </div>
+                <button class="primary-btn" style="background:linear-gradient(135deg,#7c3aed,#ec4899);border:none;" onclick="openCraftingModal('astral')">
+                    ⚗️ Select 5 Mythical Cards & Brew
+                </button>
+            </div>
+
+            <!-- RECIPE 2: ELIXIR OF LUCK -->
+            <div class="recipe-card" style="background:rgba(15,23,42,0.85);border:1px solid rgba(239,68,68,0.35);border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
+                <div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <div class="potion-icon-box" style="width:48px;height:48px;border-radius:12px;background:radial-gradient(circle, #dc2626, #450a0a);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(239,68,68,0.6);">
+                            <span style="font-size:26px;">🔥</span>
+                        </div>
+                        <div>
+                            <h3 style="margin:0;color:#f87171;font-size:17px;">Elixir Of Luck Potion</h3>
+                            <span style="font-size:11.5px;color:#ef4444;font-weight:800;">+1000% LUCK (NEXT 1 PACK PULL)</span>
+                        </div>
+                    </div>
+                    <p style="font-size:12.5px;color:#cbd5e1;line-height:1.4;margin:6px 0 10px;">Supreme crimson distillation. Delivers a staggering 10x luck multiplier for your next pack.</p>
+                    <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 10px;font-size:11px;color:#86efac;margin-bottom:10px;">
+                        ✅ <b>Stacking Rule:</b> Fully stackable with Astral Potion OR Tier 1-3 Luck Potions!
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#94a3b8;">
+                        <span>Required Materials:</span>
+                        <b style="color:#06b6d4;">5 Secret Cards</b>
+                    </div>
+                </div>
+                <button class="primary-btn" style="background:linear-gradient(135deg,#dc2626,#f59e0b);border:none;" onclick="openCraftingModal('elixir')">
+                    ⚗️ Select 5 Secret Cards & Brew
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 3. POTIONS POUCH (STORED BREWS) -->
+    <div class="panel potions-pouch-panel" style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:24px;">🧪</span>
+            <h2 style="margin:0;font-size:20px;">Your Potion Inventory</h2>
+        </div>
+        <p style="color:var(--muted);margin:0 0 16px;font-size:13px;">Drink potions to boost pack odds. Tier 1-3 stack together; Astral Potion provides maximum sustained luck.</p>
+        <div id="potionsInventoryGrid" class="potions-inv-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;">
+            <!-- Dynamically populated potions pouch -->
         </div>
     </div>
 
@@ -1534,6 +1641,58 @@
     </div>
 </div>
 
-<script src="script.js?v=490.0"></script>
+<!-- =========================================================
+     ALCHEMY CRAFTING MODAL (SELECT 5 MYTHICAL / 5 SECRET CARDS)
+     ========================================================= -->
+<div id="craftingModal" class="modal hidden">
+    <div class="modal-box crafting-modal-box" style="width:min(680px, 95vw);max-height:85vh;display:flex;flex-direction:column;">
+        <div class="crafting-modal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div>
+                <h2 id="craftingModalTitle" style="margin:0;font-size:19px;color:var(--gold);">⚗️ Brew Astral Potion</h2>
+                <p id="craftingModalSub" style="color:var(--muted);margin:3px 0 0;font-size:13px;">Select 5 Mythical cards to sacrifice into 1 Astral Potion.</p>
+            </div>
+            <button class="modal-close-x" onclick="closeCraftingModal()">✕</button>
+        </div>
+
+        <div class="crafting-selected-slots" style="display:flex;gap:10px;justify-content:center;margin:12px 0 16px;flex-wrap:wrap;" id="craftingSelectedSlots">
+            <!-- 5 Selection Slots -->
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-weight:800;font-size:13px;color:#fff;">Eligible Cards in Collection:</span>
+            <button class="ghost-btn" style="padding:4px 10px;font-size:11.5px;" onclick="craftingAutoSelect5()">⚡ Auto-Select 5</button>
+        </div>
+
+        <div id="craftingPickerGrid" class="cards-grid" style="overflow-y:auto;flex:1;max-height:40vh;padding:6px;gap:10px;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));">
+            <!-- Filtered eligible cards -->
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;">
+            <button id="executeCraftBtn" class="primary-btn" style="flex:1;background:linear-gradient(135deg,#7c3aed,#ec4899);border:none;" onclick="confirmExecuteCraft()">⚗️ Transmute &amp; Brew Potion</button>
+            <button class="ghost-btn" onclick="closeCraftingModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     ACCOUNT DELETED NOTIFICATION MODAL (MULTI-DEVICE LOGOUT)
+     ========================================================= -->
+<div id="deletedAccountAlertModal" class="modal hidden" style="z-index:9999999;">
+    <div class="modal-box" style="text-align:center;border-color:var(--red);">
+        <div style="font-size:54px;margin-bottom:10px;">⚠️</div>
+        <h2 style="color:var(--red);margin:0 0 8px;">Account Deleted</h2>
+        <p style="color:var(--muted);font-size:14px;line-height:1.5;">This account was deleted on another device or removed by an administrator. You have been logged out and returned to guest mode.</p>
+        <button class="primary-btn" style="margin-top:18px;width:100%;" onclick="dismissDeletedAccountModal()">Understood</button>
+    </div>
+</div>
+
+<!-- =========================================================
+     ACTIVE POTIONS LIVE HUD (BOTTOM RIGHT CORNER)
+     ========================================================= -->
+<div id="activePotionsHUD" class="active-potions-hud">
+    <!-- Dynamically populated live active potion badges & timers -->
+</div>
+
+<script src="script.js?v=500.0"></script>
 </body>
 </html>
