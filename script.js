@@ -2577,6 +2577,18 @@ function updateRarityAutoSell(rarity, mode) {
     toast(`⚡ Auto-Sell [${rarity}]: ${modeLabel}`);
 }
 
+function toggleAutoSellDuplicatesSetting(enabled) {
+    const mode = enabled ? "dupes" : "none";
+    ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Exclusive"].forEach(r => {
+        if (!state.autoSellSettings) state.autoSellSettings = {};
+        state.autoSellSettings[r] = mode;
+    });
+    AntiCheat.signState(state);
+    saveGame();
+    SoundFx.click();
+    toast(enabled ? "⚡ Auto-Sell Duplicates: ENABLED" : "⚡ Auto-Sell Duplicates: DISABLED");
+}
+
 function updateCoinDisplay() {
     AntiCheat.validateState(state);
     setText("coinDisplay", (Number(state.coins) || 0).toLocaleString());
@@ -8179,5 +8191,7 @@ document.addEventListener("dragstart", function(e) {
     Object.keys(EXPORTED_ACTIONS).forEach(key => {
         window[key] = EXPORTED_ACTIONS[key];
     });
+    window.state = state;
+    window.getState = () => state;
 
 })();
