@@ -3189,6 +3189,29 @@ function renderBoosterPacksInStage(cfg, pullCount) {
     }
 }
 
+function executePackTear() {
+    if (packTornExecuted) return;
+    packTornExecuted = true;
+    
+    const packs = document.querySelectorAll("#packsDisplayStage .luxury-booster-pack");
+    packs.forEach((p, idx) => {
+        setTimeout(() => {
+            p.classList.add("pack-torn");
+        }, idx * 40);
+    });
+    
+    SoundFx.packTear();
+    if (typeof createConfetti === "function") createConfetti();
+
+    setTimeout(() => {
+        if (packTearCallback) {
+            const cb = packTearCallback;
+            packTearCallback = null;
+            cb();
+        }
+    }, 600);
+}
+
 function initPackSwipeGesture(onTear) {
     packTearCallback = onTear;
     packTornExecuted = false;
@@ -3200,35 +3223,11 @@ function initPackSwipeGesture(onTear) {
 
     if (!overlay || !packs.length) return;
 
-    function executeTear() {
-        if (packTornExecuted) return;
-        packTornExecuted = true;
-        
-        packs.forEach((p, idx) => {
-            setTimeout(() => {
-                p.classList.add("pack-torn");
-            }, idx * 40);
-        });
-        
-        SoundFx.packTear();
-        if (typeof createConfetti === "function") createConfetti();
-
-        setTimeout(() => {
-            if (packTearCallback) {
-                const cb = packTearCallback;
-                packTearCallback = null;
-                cb();
-            }
-        }, 600);
-    }
-
-    window.executePackTear = executeTear;
-
     // 1. Direct Tap / Click on Prompt Button
     if (prompt) {
         prompt.onclick = (e) => {
             if (e) e.stopPropagation();
-            executeTear();
+            executePackTear();
         };
     }
 
