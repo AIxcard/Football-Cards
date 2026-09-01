@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=360.0">
+<link rel="stylesheet" href="style.css?v=370.0">
 </head>
 
 <body>
@@ -684,15 +684,18 @@
         </select>
     </div>
 
-    <!-- INDEX PROGRESS SUMMARY -->
+    <!-- INDEX PROGRESS SUMMARY & CLAIM ALL ACTION -->
     <div class="panel index-summary-panel">
-        <div class="index-summary-content">
-            <div>
+        <div class="index-summary-content" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+            <div style="flex:1;min-width:240px;">
                 <h3>📖 Index Discovery Progress</h3>
                 <p id="indexProgressText">0 / 52 Players Discovered (0%)</p>
+                <div class="index-progress-track" style="margin-top:6px;">
+                    <div id="indexProgressBar" class="index-progress-bar" style="width:0%;"></div>
+                </div>
             </div>
-            <div class="index-progress-track">
-                <div id="indexProgressBar" class="index-progress-bar" style="width:0%;"></div>
+            <div id="indexClaimAllWrap" style="display:flex;align-items:center;">
+                <button id="indexClaimAllBtn" class="primary-btn" style="background:linear-gradient(135deg, #00f2fe, #4facfe);font-weight:900;padding:12px 20px;" onclick="claimAllIndexRewards()">✨ Claim All Rewards (+0 🪙)</button>
             </div>
         </div>
     </div>
@@ -799,9 +802,11 @@
         <h2>🔍 Search Player Profile</h2>
         <p>Look up any collector's account to inspect their stats & 6-slot card showcase.</p>
         <div style="display:flex;gap:10px;margin-top:12px;">
-            <input id="playerSearchInput" placeholder="Enter username (e.g. b)" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;">
+            <input id="playerSearchInput" placeholder="Enter username (e.g. Alucard, Timekung2835)" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;">
             <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="searchPlayerProfile()">Search</button>
         </div>
+        <!-- INLINE SEARCHED PROFILE SECTION -->
+        <div id="searchedProfileInlineContainer" style="display:none;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);"></div>
     </div>
 
     <div id="profileHero" class="profile-hero">
@@ -1023,6 +1028,20 @@
         </div>
     </div>
 
+    <!-- ⚡ AUTO-SELL DUPLICATES SETTING -->
+    <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h2>⚡ Auto-Sell Duplicate Cards</h2>
+                <p style="color:var(--muted);font-size:13px;margin:4px 0 0;">Automatically sells duplicate cards upon pack opening for gold coins (never sells locked, serialized, World Class, or Secret cards).</p>
+            </div>
+            <label style="display:inline-flex;align-items:center;cursor:pointer;gap:8px;font-weight:700;">
+                <input id="autoSellDuplicatesToggle" type="checkbox" style="width:20px;height:20px;cursor:pointer;" onchange="toggleAutoSellDuplicatesSetting(this.checked)">
+                <span id="autoSellDuplicatesStatus" style="color:var(--cyan);font-size:14px;">Disabled</span>
+            </label>
+        </div>
+    </div>
+
     <div class="panel">
         <h2>🎁 Redeem Promo Codes</h2>
         <p>Enter promo codes to receive free rewards &amp; unlock features!</p>
@@ -1088,6 +1107,7 @@
             <button id="adminTabBtnTitles" class="admin-tab" onclick="setAdminTab('titles')">🎖️ Grant Titles</button>
             <button id="adminTabBtnTournament" class="admin-tab" onclick="setAdminTab('tournament')">🏆 Tournament</button>
             <button id="adminTabBtnModeration" class="admin-tab" onclick="setAdminTab('moderation')">🛡️ Moderation</button>
+            <button id="adminTabBtnAccounts" class="admin-tab" onclick="setAdminTab('accounts')">📋 All Accounts</button>
             <button id="adminTabBtnDelete" class="admin-tab" onclick="setAdminTab('delete')" style="border-color:rgba(239,68,68,0.5);color:var(--red);">🗑️ Delete Account</button>
         </div>
 
@@ -1227,6 +1247,20 @@
             </div>
 
             <div id="adminDeleteStatus" style="font-size:13px;color:var(--muted);margin-top:8px;"></div>
+        </div>
+
+        <!-- 8. ALL ACCOUNTS LIST TAB -->
+        <div id="adminTabAccounts" class="admin-tab-content" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <div>
+                    <h3 style="margin:0;">📋 All Registered Accounts</h3>
+                    <p style="font-size:12px;color:var(--muted);margin:2px 0 0;">Live list of all accounts · Auto-updates every 60s</p>
+                </div>
+                <button class="ghost-btn" style="padding:6px 12px;font-size:12px;" onclick="renderAdminAccountsList()">🔄 Refresh List</button>
+            </div>
+            <div id="adminAccountsListWrap" style="max-height:360px;overflow-y:auto;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:12px;padding:8px;">
+                <p style="text-align:center;color:var(--muted);padding:20px;">Loading registered accounts...</p>
+            </div>
         </div>
     </div>
 </div>
@@ -1414,6 +1448,6 @@
     </div>
 </div>
 
-<script src="script.js?v=360.0"></script>
+<script src="script.js?v=370.0"></script>
 </body>
 </html>
