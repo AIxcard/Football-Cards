@@ -6021,3 +6021,46 @@ body {
     0% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.2); }
     100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); }
 }
+
+/* =========================================================
+   LEVEL MILESTONES SECTION
+   ========================================================= */
+.milestone-card {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 18px !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
+    transition: all 0.25s ease !important;
+    position: relative !important;
+}
+
+.milestone-card.claimable {
+    border-color: var(--gold) !important;
+    background: radial-gradient(circle at top right, rgba(234, 179, 8, 0.18), rgba(15, 23, 42, 0.95)) !important;
+    box-shadow: 0 0 22px rgba(234, 179, 8, 0.35) !important;
+    animation: availableNodeGlow 2s infinite alternate !important;
+}
+
+.milestone-card.claimed {
+    border-color: rgba(34, 197, 94, 0.4) !important;
+    background: rgba(15, 23, 42, 0.6) !important;
+    opacity: 0.85 !important;
+}
+
+.milestone-card.locked {
+    opacity: 0.55 !important;
+    filter: grayscale(0.5) !important;
+}
+
+.free-pack-glow-btn {
+    animation: freePackPulse 1.5s infinite alternate !important;
+}
+
+@keyframes freePackPulse {
+    0% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+    100% { box-shadow: 0 0 22px rgba(16, 185, 129, 0.9); }
+}
