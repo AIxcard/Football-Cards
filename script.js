@@ -1134,6 +1134,10 @@ function freshState() {
             elixirCharges: 0
         },
 
+        skillPoints: 0,
+        skillPointsPurchased: 0,
+        unlockedSkills: [],
+
         dailyRewardClaimed: 0,
         freeKickClaimed: 0,
         worldClassPending: null,
@@ -2706,6 +2710,8 @@ function renderAll() {
     try { renderCards(); } catch(e) { console.error("Cards error", e); }
     try { renderIndex(); } catch(e) { console.error("Index error", e); }
     try { renderTradeHub(); } catch(e) { console.error("TradeHub error", e); }
+    try { renderAlchemy(); } catch(e) { console.error("Alchemy error", e); }
+    try { renderSkillTree(); } catch(e) { console.error("SkillTree error", e); }
     try { renderShop(); } catch(e) { console.error("Shop error", e); }
     try { renderProfile(); } catch(e) { console.error("Profile error", e); }
     try { renderShowcase(); } catch(e) { console.error("Showcase error", e); }
@@ -3357,8 +3363,10 @@ function openPack(type, count = 1) {
     const pack = PACKS[type];
     if (!pack) return;
 
-    const pullCount = Math.max(1, Math.min(5, Number(count) || 1));
-    const totalCost = pack.cost * pullCount;
+    let pullCount = Math.max(1, Math.min(5, Number(count) || 1));
+    let packCostEach = pack.cost;
+    if (hasSkill("packs_3")) packCostEach = Math.round(packCostEach * 0.95); // -5% discount from Bulk Buyer skill
+    const totalCost = packCostEach * pullCount;
 
     if (Number(state.coins || 0) < totalCost) {
         toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
@@ -3367,6 +3375,18 @@ function openPack(type, count = 1) {
     }
 
     if (!spendCoins(totalCost)) return;
+
+    // Swift Unpacker Skill (5% chance of full coin refund)
+    if (hasSkill("packs_1") && Math.random() < 0.05) {
+        addCoins(totalCost);
+        toast(`🎁 Swift Unpacker Triggered! Full refund of ${totalCost.toLocaleString()} 🪙 returned!`);
+    }
+
+    // Grand Packmaster Skill (10% chance for extra bonus card)
+    if (hasSkill("packs_4") && Math.random() < 0.10) {
+        pullCount++;
+        toast("🌟 Grand Packmaster Triggered! +1 Extra Bonus Card pulled!");
+    }
 
     isOpeningPackInProgress = true;
     setTimeout(() => { isOpeningPackInProgress = false; }, 600);
@@ -5124,7 +5144,9 @@ function sellCard(id) {
         toast("🔒 Card is locked! Unlock it first to sell.");
         return;
     }
-    const value = DUPLICATE_VALUES[card.rarity] || 5;
+    let value = DUPLICATE_VALUES[card.rarity] || 5;
+    if (hasSkill("econ_2")) value = Math.round(value * 1.15); // +15% from Scrap Merchant skill
+    if (hasSkill("econ_4")) value = Math.round(value * 1.20); // +20% from Master of Wealth skill
 
     state.cards.splice(index, 1);
     state.stats.cardsSold++;
@@ -6745,13 +6767,16 @@ function buyMerchantItem(slotIndex) {
         return;
     }
 
-    if (state.coins < item.cost) {
-        toast(`🪙 Not enough coins! Need ${item.cost.toLocaleString()} 🪙.`);
+    let finalCost = item.cost;
+    if (hasSkill("econ_3")) finalCost = Math.round(finalCost * 0.90); // -10% from Market Broker skill
+
+    if (state.coins < finalCost) {
+        toast(`🪙 Not enough coins! Need ${finalCost.toLocaleString()} 🪙.`);
         SoundFx.click();
         return;
     }
 
-    if (!spendCoins(item.cost)) return;
+    if (!spendCoins(finalCost)) return;
 
     merchantPurchases[purchaseKey] = true;
 
@@ -6809,10 +6834,11 @@ function drinkPotion(type) {
             return;
         }
         state.potions[type]--;
-        const duration = 600000;
+        let duration = 600000;
+        if (hasSkill("luck_2")) duration += 120000; // +2 mins from Potion Connoisseur skill
         const key = type + "Until";
         state.activePotions[key] = Math.max(now, state.activePotions[key] || 0) + duration;
-        toast(`🧪 ${POTIONS_DEF[type].name} Activated: ${POTIONS_DEF[type].boostText} for 10 Minutes!`);
+        toast(`🧪 ${POTIONS_DEF[type].name} Activated: ${POTIONS_DEF[type].boostText} for ${Math.round(duration/60000)} Minutes!`);
     } else if (type === "elixir") {
         // Elixir of luck stacks with everything!
         state.potions.elixir--;
@@ -6821,6 +6847,7 @@ function drinkPotion(type) {
     }
 
     saveGame();
+    renderAlchemy();
     renderShop();
     renderActivePotionsHUD();
     SoundFx.levelUp();
@@ -6958,11 +6985,19 @@ function getActiveLuckMultiplier() {
     const act = state.activePotions || {};
     let mult = 1.0;
 
-    if (act.tier1Until > now) mult += 0.25;
-    if (act.tier2Until > now) mult += 0.50;
-    if (act.tier3Until > now) mult += 1.00;
-    if (act.astralUntil > now) mult += 2.00;
-    if (act.elixirCharges > 0) mult += 10.00;
+    // Passive Base Luck from Skill Tree
+    if (hasSkill("luck_1")) mult += 0.10; // +10%
+    if (hasSkill("luck_3")) mult += 0.20; // +20%
+    if (hasSkill("luck_4")) mult += 0.35; // +35% (Master Node)
+
+    // Potion boosts (amplified +50% if Fortune's Chosen master skill is unlocked)
+    const potAmp = hasSkill("luck_4") ? 1.5 : 1.0;
+
+    if (act.tier1Until > now) mult += (0.25 * potAmp);
+    if (act.tier2Until > now) mult += (0.50 * potAmp);
+    if (act.tier3Until > now) mult += (1.00 * potAmp);
+    if (act.astralUntil > now) mult += (2.00 * potAmp);
+    if (act.elixirCharges > 0) mult += (10.00 * potAmp);
 
     return mult;
 }
@@ -7095,6 +7130,384 @@ function dismissDeletedAccountModal() {
    SHOP (MERCHANT, POTIONS, STADIUMS & AVATAR FRAMES)
    ========================================================= */
 
+/* =========================================================
+   ALCHEMY SECTION (CARD TRANSMUTATION & POTIONS POUCH)
+   ========================================================= */
+
+function renderAlchemy() {
+    const invGrid = document.getElementById("potionsInventoryGrid");
+    if (invGrid) {
+        state.potions = state.potions || { tier1: 0, tier2: 0, tier3: 0, astral: 0, elixir: 0 };
+        const keys = ["tier1", "tier2", "tier3", "astral", "elixir"];
+        invGrid.innerHTML = keys.map(k => {
+            const def = POTIONS_DEF[k];
+            const qty = state.potions[k] || 0;
+            return `
+            <div class="potion-card" style="border-color:${def.color}44;">
+                ${getPotionSVG(k)}
+                <h4 style="margin:4px 0 2px;font-size:14px;color:#fff;">${escapeHTML(def.name)}</h4>
+                <span style="font-size:11.5px;color:${def.color};font-weight:900;margin-bottom:4px;">${def.boostText}</span>
+                <span style="font-size:12px;color:var(--gold);font-weight:800;margin-bottom:10px;">Owned: <b>${qty}</b></span>
+                <button class="${qty > 0 ? 'primary-btn' : 'ghost-btn'}" ${qty > 0 ? '' : 'disabled'} style="width:100%;font-size:12px;padding:7px;background:${qty > 0 ? `linear-gradient(135deg, ${def.color}, #09131d)` : ''};" onclick="drinkPotion('${k}')">
+                    🧪 Drink Potion
+                </button>
+            </div>
+            `;
+        }).join("");
+    }
+}
+
+/* =========================================================
+   SKILL TREE & TALENT MASTERY ENGINE
+   ========================================================= */
+
+const SKILL_POINTS_COST_TABLE = [
+    5000,
+    7500,
+    10000,
+    15000,
+    20000,
+    30000,
+    40000,
+    55000,
+    75000,
+    100000
+];
+
+function getNextSkillPointCost() {
+    const purchased = state.skillPointsPurchased || 0;
+    if (purchased < SKILL_POINTS_COST_TABLE.length) {
+        return SKILL_POINTS_COST_TABLE[purchased];
+    }
+    const extra = purchased - (SKILL_POINTS_COST_TABLE.length - 1);
+    return Math.round(100000 * Math.pow(1.25, extra));
+}
+
+function buySkillPoint() {
+    const cost = getNextSkillPointCost();
+    if (Number(state.coins || 0) < cost) {
+        toast(`🪙 Not enough coins! Need ${cost.toLocaleString()} 🪙 for next Skill Point.`);
+        SoundFx.click();
+        return;
+    }
+
+    if (!spendCoins(cost)) return;
+
+    state.skillPoints = (state.skillPoints || 0) + 1;
+    state.skillPointsPurchased = (state.skillPointsPurchased || 0) + 1;
+    saveGame();
+    renderSkillTree();
+    renderAll();
+    SoundFx.levelUp();
+    toast(`⚡ Skill Point Acquired! You now have ${state.skillPoints} SP available to spend.`);
+}
+
+const SKILL_TREE_DEF = [
+    {
+        branchId: "econ",
+        name: "Economy Mastery",
+        icon: "💰",
+        color: "#f59e0b",
+        glow: "rgba(245, 158, 11, 0.25)",
+        desc: "Boost your coin income from gameplay, selling duplicates, and merchant trades.",
+        nodes: [
+            {
+                id: "econ_1",
+                tier: 1,
+                name: "Bargain Hunter",
+                icon: "🪙",
+                benefit: "+10% Coins from Daily Rewards & Missions",
+                req: null
+            },
+            {
+                id: "econ_2",
+                tier: 2,
+                name: "Scrap Merchant",
+                icon: "♻️",
+                benefit: "+15% Coin value when Quick Selling duplicate cards",
+                req: "econ_1"
+            },
+            {
+                id: "econ_3",
+                tier: 3,
+                name: "Market Broker",
+                icon: "🤝",
+                benefit: "-10% Coin cost on all Traveling Merchant stock",
+                req: "econ_2"
+            },
+            {
+                id: "econ_4",
+                tier: 4,
+                name: "Master of Wealth",
+                icon: "👑",
+                benefit: "[MASTER] +25% Coins earned from all sources & +20% card sell value",
+                req: "econ_3",
+                isMaster: true
+            }
+        ]
+    },
+    {
+        branchId: "packs",
+        name: "Pack Mastery",
+        icon: "🎴",
+        color: "#38bdf8",
+        glow: "rgba(56, 189, 248, 0.25)",
+        desc: "Enhance pack opening efficiency, scouting costs, and unlock bonus card rolls.",
+        nodes: [
+            {
+                id: "packs_1",
+                tier: 1,
+                name: "Swift Unpacker",
+                icon: "📦",
+                benefit: "5% chance on opening any pack to receive a full coin refund",
+                req: null
+            },
+            {
+                id: "packs_2",
+                tier: 2,
+                name: "Scout's Intuition",
+                icon: "🔍",
+                benefit: "Guarantees at least 1 Rare or higher floor on multi-pack pulls",
+                req: "packs_1"
+            },
+            {
+                id: "packs_3",
+                tier: 3,
+                name: "Bulk Buyer",
+                icon: "🏷️",
+                benefit: "-5% Discount on all booster pack scouting costs",
+                req: "packs_2"
+            },
+            {
+                id: "packs_4",
+                tier: 4,
+                name: "Grand Packmaster",
+                icon: "🌟",
+                benefit: "[MASTER] 10% chance for every opened pack to trigger an extra bonus card roll",
+                req: "packs_3",
+                isMaster: true
+            }
+        ]
+    },
+    {
+        branchId: "luck",
+        name: "Luck Mastery",
+        icon: "🍀",
+        color: "#22c55e",
+        glow: "rgba(34, 197, 94, 0.25)",
+        desc: "Permanently boost your passive base luck and amplify all potion alchemy.",
+        nodes: [
+            {
+                id: "luck_1",
+                tier: 1,
+                name: "Four-Leaf Clover",
+                icon: "🍀",
+                benefit: "Permanent +10% Passive Base Luck on all pack openings",
+                req: null
+            },
+            {
+                id: "luck_2",
+                tier: 2,
+                name: "Potion Connoisseur",
+                icon: "🧪",
+                benefit: "All consumed Luck Potion durations increased by +2 Minutes",
+                req: "luck_1"
+            },
+            {
+                id: "luck_3",
+                tier: 3,
+                name: "Starlight Blessing",
+                icon: "✨",
+                benefit: "Permanent +20% Passive Base Luck on all pack openings",
+                req: "luck_2"
+            },
+            {
+                id: "luck_4",
+                tier: 4,
+                name: "Fortune's Chosen",
+                icon: "🔮",
+                benefit: "[MASTER] +35% Base Luck & +50% extra effectiveness on all Luck Potions",
+                req: "luck_3",
+                isMaster: true
+            }
+        ]
+    },
+    {
+        branchId: "prog",
+        name: "Progression Mastery",
+        icon: "⭐",
+        color: "#c084fc",
+        glow: "rgba(192, 132, 252, 0.25)",
+        desc: "Accelerate your leveling speed, training rewards, and mission requirements.",
+        nodes: [
+            {
+                id: "prog_1",
+                tier: 1,
+                name: "Fast Learner",
+                icon: "⭐",
+                benefit: "+15% XP earned across all pack openings & missions",
+                req: null
+            },
+            {
+                id: "prog_2",
+                tier: 2,
+                name: "Training Regimen",
+                icon: "⚽",
+                benefit: "Daily training rewards grant +50 bonus XP and +100 bonus Coins",
+                req: "prog_1"
+            },
+            {
+                id: "prog_3",
+                tier: 3,
+                name: "Overachiever",
+                icon: "🎯",
+                benefit: "Mission completion progress requirements reduced by 10%",
+                req: "prog_2"
+            },
+            {
+                id: "prog_4",
+                tier: 4,
+                name: "Legendary Ascendant",
+                icon: "🏆",
+                benefit: "[MASTER] Leveling up grants double reward coins & golden profile aura",
+                req: "prog_3",
+                isMaster: true
+            }
+        ]
+    }
+];
+
+function hasSkill(skillId) {
+    return Array.isArray(state.unlockedSkills) && state.unlockedSkills.includes(skillId);
+}
+
+function unlockSkillNode(nodeId) {
+    if (hasSkill(nodeId)) {
+        toast("You have already mastered this skill.");
+        return;
+    }
+
+    if ((state.skillPoints || 0) < 1) {
+        toast("⚡ You need at least 1 Skill Point (SP) to unlock a skill node.");
+        SoundFx.click();
+        return;
+    }
+
+    // Find node def
+    let foundNode = null;
+    for (const b of SKILL_TREE_DEF) {
+        const n = b.nodes.find(x => x.id === nodeId);
+        if (n) { foundNode = n; break; }
+    }
+    if (!foundNode) return;
+
+    // Verify Prerequisite
+    if (foundNode.req && !hasSkill(foundNode.req)) {
+        let reqNode = null;
+        for (const b of SKILL_TREE_DEF) {
+            const n = b.nodes.find(x => x.id === foundNode.req);
+            if (n) { reqNode = n; break; }
+        }
+        toast(`🔒 Prerequisite Required: Must unlock "${reqNode ? reqNode.name : foundNode.req}" first!`);
+        SoundFx.click();
+        return;
+    }
+
+    state.skillPoints = Math.max(0, (state.skillPoints || 0) - 1);
+    if (!Array.isArray(state.unlockedSkills)) state.unlockedSkills = [];
+    state.unlockedSkills.push(nodeId);
+
+    saveGame();
+    renderSkillTree();
+    renderAll();
+    SoundFx.levelUp();
+    toast(`✨ Mastered Skill: "${foundNode.name}"! (${foundNode.benefit})`);
+}
+
+function respecSkillTree() {
+    const totalSpent = (state.unlockedSkills || []).length;
+    if (totalSpent === 0) {
+        toast("No skills have been unlocked to respec.");
+        return;
+    }
+
+    state.skillPoints = (state.skillPoints || 0) + totalSpent;
+    state.unlockedSkills = [];
+    saveGame();
+    renderSkillTree();
+    renderAll();
+    SoundFx.coin();
+    toast(`🔄 Skill Tree Respec Complete! Refunded ${totalSpent} Skill Points.`);
+}
+
+function renderSkillTree() {
+    const spCountEl = document.getElementById("skillPointsAvailableCount");
+    const nextCostEl = document.getElementById("nextSkillPointCost");
+    const summaryEl = document.getElementById("unlockedSkillsSummary");
+    const container = document.getElementById("skillBranchesContainer");
+
+    if (spCountEl) spCountEl.textContent = (state.skillPoints || 0).toLocaleString();
+    if (nextCostEl) nextCostEl.textContent = getNextSkillPointCost().toLocaleString();
+    if (summaryEl) summaryEl.textContent = `${(state.unlockedSkills || []).length}/16 Nodes Mastered`;
+
+    if (!container) return;
+
+    container.innerHTML = SKILL_TREE_DEF.map(branch => {
+        return `
+        <div class="skill-branch-column" style="--branch-border:${branch.color}55;--branch-glow:${branch.glow};">
+            <div class="skill-branch-head">
+                <span style="font-size:24px;">${branch.icon}</span>
+                <div>
+                    <h3 style="margin:0;font-size:16px;color:${branch.color};">${escapeHTML(branch.name)}</h3>
+                    <p style="margin:2px 0 0;font-size:11.5px;color:var(--muted);">${escapeHTML(branch.desc)}</p>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                ${branch.nodes.map((node, idx) => {
+                    const isUnlocked = hasSkill(node.id);
+                    const canUnlock = !isUnlocked && (!node.req || hasSkill(node.req)) && (state.skillPoints || 0) >= 1;
+                    const isLocked = !isUnlocked && (!node.req || hasSkill(node.req)) ? false : !isUnlocked;
+                    
+                    let statusClass = isUnlocked ? "unlocked" : (canUnlock ? "available" : "locked");
+                    if (node.isMaster) statusClass += " master-node";
+
+                    return `
+                    ${idx > 0 ? `<div class="skill-connection-arrow">↓</div>` : ""}
+                    <div class="skill-node-card ${statusClass}">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="font-size:20px;">${node.icon}</span>
+                                <div>
+                                    <h4 style="margin:0;font-size:14px;color:#fff;">${escapeHTML(node.name)}</h4>
+                                    <span style="font-size:10px;font-weight:800;color:${branch.color};">TIER ${node.tier}${node.isMaster ? ' · MASTER' : ''}</span>
+                                </div>
+                            </div>
+                            ${isUnlocked 
+                                ? `<span style="background:rgba(34,197,94,0.2);color:#22c55e;border:1px solid #22c55e;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:900;">✓ MASTERED</span>`
+                                : `<span style="font-size:11px;color:var(--muted);">1 SP</span>`
+                            }
+                        </div>
+                        <p style="margin:2px 0 6px;font-size:12px;color:#cbd5e1;line-height:1.35;">${escapeHTML(node.benefit)}</p>
+                        ${!isUnlocked 
+                            ? `<button class="${canUnlock ? 'primary-btn' : 'ghost-btn'}" style="width:100%;font-size:12px;padding:6px;${canUnlock ? `background:${branch.color};color:#000;font-weight:900;` : ''}" onclick="unlockSkillNode('${node.id}')">
+                                ${canUnlock ? '⚡ Unlock for 1 SP' : (node.req && !hasSkill(node.req) ? '🔒 Prerequisite Locked' : '⚡ Need 1 SP')}
+                               </button>`
+                            : ''
+                        }
+                    </div>
+                    `;
+                }).join("")}
+            </div>
+        </div>
+        `;
+    }).join("");
+}
+
+/* =========================================================
+   SHOP (TRAVELING MERCHANT, STADIUMS & AVATAR FRAMES)
+   ========================================================= */
+
 function renderShop() {
     // 1. Traveling Merchant Slots
     const merchantGrid = document.getElementById("merchantSlotsGrid");
@@ -7138,47 +7551,7 @@ function renderShop() {
         }).join("");
     }
 
-    // 2. Potions Pouch (Owned Potions)
-    const invGrid = document.getElementById("potionsInventoryGrid");
-    if (invGrid) {
-        state.potions = state.potions || { tier1: 0, tier2: 0, tier3: 0, astral: 0, elixir: 0 };
-        const keys = ["tier1", "tier2", "tier3", "astral", "elixir"];
-        invGrid.innerHTML = keys.map(k => {
-            const def = POTIONS_DEF[k];
-            const qty = state.potions[k] || 0;
-            return `
-            <div class="potion-card" style="border-color:${def.color}44;">
-                ${getPotionSVG(k)}
-                <h4 style="margin:4px 0 2px;font-size:14px;color:#fff;">${escapeHTML(def.name)}</h4>
-                <span style="font-size:11.5px;color:${def.color};font-weight:900;margin-bottom:4px;">${def.boostText}</span>
-                <span style="font-size:12px;color:var(--gold);font-weight:800;margin-bottom:10px;">Owned: <b>${qty}</b></span>
-                <button class="${qty > 0 ? 'primary-btn' : 'ghost-btn'}" ${qty > 0 ? '' : 'disabled'} style="width:100%;font-size:12px;padding:7px;background:${qty > 0 ? `linear-gradient(135deg, ${def.color}, #09131d)` : ''};" onclick="drinkPotion('${k}')">
-                    🧪 Drink Potion
-                </button>
-            </div>
-            `;
-        }).join("");
-    }
-
-    // 3. Stadium Backgrounds
-    const backgrounds = document.getElementById("backgroundShop");
-    if (backgrounds) {
-        backgrounds.innerHTML = BACKGROUNDS.map(bg => {
-            const owned = (state.ownedBackgrounds || []).includes(bg.id);
-            return `
-            <div class="shop-item">
-                <div class="shop-preview" style="background:${bg.css}"></div>
-                <h3>${escapeHTML(bg.name)}</h3>
-                <p style="color:var(--gold);font-weight:700;">${bg.cost === 0 ? "Free" : bg.cost.toLocaleString() + " 🪙"}</p>
-                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyBackground('${bg.id}')">
-                    ${owned ? "✓ Owned" : "Buy Atmosphere"}
-                </button>
-            </div>
-            `;
-        }).join("");
-    }
-
-    // 4. Prestige Avatar Frames
+    // 2. Prestige Avatar Frames
     const framesContainer = document.getElementById("framesShop");
     if (framesContainer) {
         framesContainer.innerHTML = FRAMES.map(f => {
@@ -7197,6 +7570,24 @@ function renderShop() {
                     ? `<button class="${isEquipped ? "primary-btn" : "ghost-btn"}" style="width:100%;font-size:12px;padding:8px;" onclick="setProfileFrame('${f.id}')">${isEquipped ? "★ Equipped" : "Equip Frame"}</button>`
                     : `<button class="primary-btn" style="width:100%;font-size:12px;padding:8px;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-weight:900;" onclick="buyFrame('${f.id}')">🛒 Unlock Frame</button>`
                 }
+            </div>
+            `;
+        }).join("");
+    }
+
+    // 3. Stadium Backgrounds
+    const backgrounds = document.getElementById("backgroundShop");
+    if (backgrounds) {
+        backgrounds.innerHTML = BACKGROUNDS.map(bg => {
+            const owned = (state.ownedBackgrounds || []).includes(bg.id);
+            return `
+            <div class="shop-item">
+                <div class="shop-preview" style="background:${bg.css}"></div>
+                <h3>${escapeHTML(bg.name)}</h3>
+                <p style="color:var(--gold);font-weight:700;">${bg.cost === 0 ? "Free" : bg.cost.toLocaleString() + " 🪙"}</p>
+                <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyBackground('${bg.id}')">
+                    ${owned ? "✓ Owned" : "Buy Atmosphere"}
+                </button>
             </div>
             `;
         }).join("");
@@ -8802,7 +9193,10 @@ function spendCoins(amount) {
 }
 
 function addXP(amount) {
-    state.xp += amount;
+    let finalAmount = amount;
+    if (hasSkill("prog_1")) finalAmount = Math.round(finalAmount * 1.15); // +15% from Fast Learner skill
+
+    state.xp += finalAmount;
     let needed = state.level * 50;
 
     while (state.xp >= needed) {
@@ -8811,6 +9205,11 @@ function addXP(amount) {
         needed = state.level * 50;
         SoundFx.levelUp();
         toast(`🎉 Level Up! Level ${state.level}!`);
+        if (hasSkill("prog_4")) {
+            const bonusCoins = state.level * 100;
+            addCoins(bonusCoins);
+            toast(`👑 Legendary Ascendant: +${bonusCoins.toLocaleString()} 🪙 Level Up Bonus!`);
+        }
     }
 
     AntiCheat.signState(state);
@@ -9186,6 +9585,14 @@ document.addEventListener("dragstart", function(e) {
         getMerchantStock,
         getActiveLuckMultiplier,
         renderActivePotionsHUD,
+        getNextSkillPointCost,
+        buySkillPoint,
+        unlockSkillNode,
+        respecSkillTree,
+        renderAlchemy,
+        renderSkillTree,
+        hasSkill,
+        SKILL_TREE_DEF,
         toggleCardLock,
         addCoins,
         spendCoins,
