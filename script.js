@@ -1057,6 +1057,14 @@ function freshState() {
 
         claimedIndexRewards: [],
         autoSellDuplicates: false,
+        autoSellSettings: {
+            Common: "none",
+            Uncommon: "none",
+            Rare: "none",
+            Epic: "none",
+            Legendary: "none",
+            Exclusive: "none"
+        },
         resetV14WipeDone: true,
 
         dailyRewardClaimed: 0,
@@ -1117,6 +1125,15 @@ function loadGame() {
             unlockedCardNames: Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : [],
             claimedIndexRewards: Array.isArray(saved.claimedIndexRewards) ? saved.claimedIndexRewards : [],
             autoSellDuplicates: !!saved.autoSellDuplicates,
+            autoSellSettings: saved.autoSellSettings && typeof saved.autoSellSettings === "object" ? {
+                Common: saved.autoSellSettings.Common || "none",
+                Uncommon: saved.autoSellSettings.Uncommon || "none",
+                Rare: saved.autoSellSettings.Rare || "none",
+                Epic: saved.autoSellSettings.Epic || "none",
+                Legendary: saved.autoSellSettings.Legendary || "none",
+                Exclusive: saved.autoSellSettings.Exclusive || "none"
+            } : fresh.autoSellSettings,
+            dailyRewardClaimed: Number(saved.dailyRewardClaimed) || 0,
             serializedCounts: saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 },
             stats: { ...fresh.stats, ...(saved.stats || {}) },
             tournamentDraft: saved.tournamentDraft ? { ...fresh.tournamentDraft, ...saved.tournamentDraft } : { ...fresh.tournamentDraft },
@@ -2082,10 +2099,9 @@ const CloudSync = {
     getAccounts() {
         try {
             const raw = JSON.parse(localStorage.getItem(CLOUD_STORAGE_KEY) || "{}");
-            const allowed = ["alucard", "hexkeys", "timekung2835"];
             const cleaned = {};
             for (const k in raw) {
-                if (allowed.includes(k.toLowerCase())) {
+                if (k && raw[k] && !k.includes("_1787") && !k.includes("ipadtest")) {
                     cleaned[k.toLowerCase()] = raw[k];
                 }
             }
@@ -2099,10 +2115,9 @@ const CloudSync = {
     },
     saveAccounts(accs) {
         try {
-            const allowed = ["alucard", "hexkeys", "timekung2835"];
             const cleaned = {};
             for (const k in accs) {
-                if (allowed.includes(k.toLowerCase())) {
+                if (k && accs[k] && !k.includes("_1787") && !k.includes("ipadtest")) {
                     cleaned[k.toLowerCase()] = accs[k];
                 }
             }
@@ -2527,14 +2542,14 @@ function renderSettings() {
     if (syncBtn) syncBtn.style.display = isLoggedIn ? "inline-flex" : "none";
     if (authBtn) authBtn.style.display = isLoggedIn ? "none" : "inline-flex";
 
-    // Auto-Sell Duplicate Cards Setting
-    const autoSellToggle = document.getElementById("autoSellDuplicatesToggle");
-    const autoSellStatus = document.getElementById("autoSellDuplicatesStatus");
-    if (autoSellToggle) autoSellToggle.checked = !!state.autoSellDuplicates;
-    if (autoSellStatus) {
-        autoSellStatus.textContent = state.autoSellDuplicates ? "Enabled (Active)" : "Disabled";
-        autoSellStatus.style.color = state.autoSellDuplicates ? "var(--green)" : "var(--cyan)";
-    }
+    // Sync Granular Auto-Sell Dropdowns
+    const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Exclusive"];
+    rarities.forEach(r => {
+        const el = document.getElementById(`autoSell${r}Select`);
+        if (el) {
+            el.value = (state.autoSellSettings && state.autoSellSettings[r]) || "none";
+        }
+    });
 
     // Clear any error messages
     const deleteErr = document.getElementById("deleteAccountError");
@@ -2543,17 +2558,23 @@ function renderSettings() {
     if (deletePassInput) deletePassInput.value = "";
 }
 
-function toggleAutoSellDuplicatesSetting(enabled) {
-    state.autoSellDuplicates = !!enabled;
-    const autoSellStatus = document.getElementById("autoSellDuplicatesStatus");
-    if (autoSellStatus) {
-        autoSellStatus.textContent = state.autoSellDuplicates ? "Enabled (Active)" : "Disabled";
-        autoSellStatus.style.color = state.autoSellDuplicates ? "var(--green)" : "var(--cyan)";
+function updateRarityAutoSell(rarity, mode) {
+    if (!state.autoSellSettings) {
+        state.autoSellSettings = {
+            Common: "none",
+            Uncommon: "none",
+            Rare: "none",
+            Epic: "none",
+            Legendary: "none",
+            Exclusive: "none"
+        };
     }
+    state.autoSellSettings[rarity] = mode || "none";
     AntiCheat.signState(state);
     saveGame();
     SoundFx.click();
-    toast(state.autoSellDuplicates ? "⚡ Auto-Sell Duplicates: ENABLED (Will auto-convert duplicates to coins)" : "⚡ Auto-Sell Duplicates: DISABLED");
+    const modeLabel = mode === "all" ? "Sell All (New & Dupe)" : mode === "dupes" ? "Sell Duplicates Only" : "Keep All";
+    toast(`⚡ Auto-Sell [${rarity}]: ${modeLabel}`);
 }
 
 function updateCoinDisplay() {
@@ -3228,14 +3249,19 @@ function openPack(type, count = 1) {
             obtained: Date.now()
         };
 
-        if (state.autoSellDuplicates && duplicate && !card.locked && !card.serialNumber && rarity !== "World Class" && rarity !== "Secret" && rarity !== "Developer") {
+        const autoSellMode = (state.autoSellSettings && state.autoSellSettings[rarity]) || (state.autoSellDuplicates && duplicate ? "dupes" : "none");
+        const shouldAutoSell = !card.locked && !card.serialNumber && rarity !== "World Class" && rarity !== "Secret" && rarity !== "Developer" && (
+            autoSellMode === "all" || (autoSellMode === "dupes" && duplicate)
+        );
+
+        if (shouldAutoSell) {
             const sellPrice = DUPLICATE_VALUES[card.rarity] || 5;
             state.coins += sellPrice;
             state.stats.coinsEarned += sellPrice;
             state.stats.cardsSold = (state.stats.cardsSold || 0) + 1;
             card.autoSold = true;
             card.soldPrice = sellPrice;
-            toast(`⚡ Auto-Sold duplicate "${card.player}" for +${sellPrice} 🪙`);
+            toast(`⚡ Auto-Sold ${duplicate ? 'duplicate' : ''} "${card.player}" (${card.rarity}) for +${sellPrice} 🪙`);
         } else {
             state.cards.push(card);
         }
@@ -4119,7 +4145,6 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
     const overlay = document.getElementById("cardRevealOverlay");
     const revealCard = document.getElementById("revealCard");
     const revealBadge = document.getElementById("revealBadge");
-    const revealBonus = document.getElementById("revealBonusBadge");
     const revealRarity = document.getElementById("revealRarity");
     const revealPhoto = document.getElementById("revealPhoto");
     const revealRating = document.getElementById("revealRating");
@@ -4145,12 +4170,6 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
         if (revealBadge) {
             revealBadge.textContent = card.serialNumber ? `★ SERIALIZED #${card.serialNumber}/10 ★` : duplicate ? "DUPLICATE CARD" : "NEW CARD";
             revealBadge.classList.toggle("duplicate", !!duplicate && !card.serialNumber);
-        }
-
-        if (revealBonus) {
-            const bonus = DISCOVERY_BONUS[card.rarity] || 10;
-            revealBonus.textContent = `+${bonus} 🪙 FIRST DISCOVERY BONUS!`;
-            revealBonus.style.display = isFirstDiscovery ? "block" : "none";
         }
 
         if (revealRarity) {
@@ -7137,16 +7156,22 @@ async function adminModifyTargetUser(targetUsername, updateCallback, successMess
 
         const updatedDoc = {
             username: cleanTarget,
+            isTradeBanned: !!targetSave.isTradeBanned,
+            tradeBanReason: targetSave.tradeBanReason || "",
             saveData: JSON.stringify(targetSave),
             lastUpdated: Date.now()
         };
 
-        await GlobalCloudRest.pushAccount(cleanTarget, updatedDoc);
-        if (typeof FirebaseSync !== "undefined" && FirebaseSync.pushUser) {
-            FirebaseSync.pushUser(cleanTarget, updatedDoc);
+        if (typeof GlobalCloudRest !== "undefined" && GlobalCloudRest.pushUser) {
+            await GlobalCloudRest.pushUser(cleanTarget, updatedDoc);
         }
         const accs = CloudSync.getAccounts();
-        accs[cleanTarget.toLowerCase()] = { username: cleanTarget, saveData: JSON.stringify(targetSave) };
+        accs[cleanTarget.toLowerCase()] = {
+            username: cleanTarget,
+            isTradeBanned: !!targetSave.isTradeBanned,
+            tradeBanReason: targetSave.tradeBanReason || "",
+            saveData: JSON.stringify(targetSave)
+        };
         CloudSync.saveAccounts(accs);
 
         toast(successMessage || `✅ Admin updated player "${cleanTarget}" successfully!`);
@@ -7164,9 +7189,10 @@ async function wipeAccountEverywhere(username) {
     try {
         // 1. Wipe from cloud user record (KVDB)
         const BUCKET = GlobalCloudRest.BUCKET_URL;
-        const userKey = `user_${u}`;
-        const lbKey = `lb_${u}`;
-        const tradeKey = `trade_${u}`;
+        const prefix = GlobalCloudRest.PREFIX || "v14_";
+        const userKey = `${prefix}user_${u}`;
+        const lbKey = `${prefix}lb_${u}`;
+        const tradeKey = `${prefix}trade_${u}`;
 
         // Delete user record
         try { await fetch(`${BUCKET}/${userKey}`, { method: "DELETE" }); } catch(e) {}
@@ -8134,6 +8160,7 @@ document.addEventListener("dragstart", function(e) {
         renderAdminAccountsList,
         selectAdminTargetUser,
         adminModifyTargetUser,
+        updateRarityAutoSell,
         toggleAutoSellDuplicatesSetting,
         claimIndexReward,
         claimAllIndexRewards,
