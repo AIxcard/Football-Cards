@@ -1119,6 +1119,21 @@ function freshState() {
         },
         resetV14WipeDone: true,
 
+        potions: {
+            tier1: 0,
+            tier2: 0,
+            tier3: 0,
+            astral: 0,
+            elixir: 0
+        },
+        activePotions: {
+            tier1Until: 0,
+            tier2Until: 0,
+            tier3Until: 0,
+            astralUntil: 0,
+            elixirCharges: 0
+        },
+
         dailyRewardClaimed: 0,
         freeKickClaimed: 0,
         worldClassPending: null,
@@ -1946,6 +1961,14 @@ async function executeConfirmedKickDevice() {
 async function checkDeviceRevocation() {
     if (!state.accountUser) return true;
     try {
+        const u = state.accountUser.toLowerCase();
+        if (isAccountDeleted(u)) {
+            CloudSync.logout();
+            const modal = document.getElementById("deletedAccountAlertModal");
+            if (modal) modal.classList.remove("hidden");
+            return false;
+        }
+
         const myDevId = getDeviceId();
         const cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
         if (cloudUser) {
@@ -1956,7 +1979,7 @@ async function checkDeviceRevocation() {
             if (isRevoked || isMissingFromSessions) {
                 console.warn("Device session revoked by account owner.");
                 CloudSync.logout();
-                toast("🔒 You have been logged out: This device was disconnected from another session.");
+                toast("🚪 You have been logged out: This device was disconnected from another session.");
                 return false;
             }
         }
@@ -2213,100 +2236,59 @@ const CloudSync = {
                 }
             }
 
-            // Built-in Roster of Active Player Accounts with Restored Collections
-            function makeRestoredCards(prefix, count, topRarity) {
-                const starPlayers = ["Kylian Mbappe", "Vinicius Jr", "Erling Haaland", "Jude Bellingham", "Kevin De Bruyne", "Luka Modric", "Mohamed Salah", "Bukayo Saka", "Harry Kane", "Pedri", "Robert Lewandowski", "Rodri"];
-                const cards = [];
-                for (let i = 0; i < count; i++) {
-                    const pName = starPlayers[i % starPlayers.length];
-                    const r = (i === 0 && topRarity) ? topRarity : (i % 7 === 0 ? "Legendary" : (i % 4 === 0 ? "Epic" : (i % 2 === 0 ? "Rare" : "Uncommon")));
-                    cards.push({
-                        id: prefix + "_" + i,
-                        player: pName,
-                        rating: 84 + (i % 10),
-                        rarity: r,
-                        position: i % 3 === 0 ? "ST" : (i % 3 === 1 ? "MF" : "DF")
-                    });
-                }
-                return cards;
-            }
-
+            // Built-in Roster of Active Player Accounts (All Start on Clean Synchronized Baseline)
             const defaultRoster = {
                 alucard: {
                     username: "Alucard",
                     passwordHash: "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb",
-                    saveData: JSON.stringify({
-                        ...freshState(),
-                        name: "Alucard",
-                        accountUser: "Alucard",
-                        coins: 100,
-                        level: 1,
-                        equippedTitle: "UNIQUE",
-                        grantedTitles: ["UNIQUE", "Owner", "Admin"],
-                        resetV14WipeDone: true
-                    }),
-                    updatedAt: Date.now()
-                },
-                dih: {
-                    username: "Dih",
-                    passwordHash: "sec_dih_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Dih", accountUser: "Dih", level: 3, coins: 1500, cards: makeRestoredCards("dih", 35, "Legendary"), resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                aun: {
-                    username: "Aun",
-                    passwordHash: "sec_aun_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Aun", accountUser: "Aun", level: 4, coins: 2400, cards: makeRestoredCards("aun", 55, "Legendary"), resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                gubbymaster170: {
-                    username: "Gubbymaster170",
-                    passwordHash: "sec_gubby_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Gubbymaster170", accountUser: "Gubbymaster170", level: 5, coins: 3500, cards: makeRestoredCards("gubby", 80, "Mythic"), resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                meboon: {
-                    username: "Meboon",
-                    passwordHash: "sec_meboon_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Meboon", accountUser: "Meboon", level: 3, coins: 1800, cards: makeRestoredCards("meboon", 40, "Legendary"), resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Alucard", accountUser: "Alucard", coins: 100, level: 1, xp: 0, cards: [], equippedTitle: "UNIQUE", grantedTitles: ["UNIQUE", "Owner", "Admin"], isGrantedAdmin: true, resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 chita: {
                     username: "chita",
                     passwordHash: "sec_chita_pass",
-                    saveData: JSON.stringify({
-                        ...freshState(),
-                        name: "chita",
-                        accountUser: "chita",
-                        level: 17,
-                        coins: 85000,
-                        cards: new Array(500).fill(null).map((_, i) => ({
-                            id: "chita_c_" + i,
-                            player: i % 2 === 0 ? "Lionel Messi" : (i % 3 === 0 ? "Cristiano Ronaldo" : "Erling Haaland"),
-                            rating: 90 + (i % 8),
-                            rarity: i % 10 === 0 ? "World Class" : (i % 5 === 0 ? "Legendary" : "Epic"),
-                            position: "ST"
-                        })),
-                        equippedTitle: "Legend Collector",
-                        resetV14WipeDone: true
-                    }),
+                    saveData: JSON.stringify({ ...freshState(), name: "chita", accountUser: "chita", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                dih: {
+                    username: "Dih",
+                    passwordHash: "sec_dih_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Dih", accountUser: "Dih", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                aun: {
+                    username: "Aun",
+                    passwordHash: "sec_aun_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Aun", accountUser: "Aun", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                gubbymaster170: {
+                    username: "Gubbymaster170",
+                    passwordHash: "sec_gubby_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Gubbymaster170", accountUser: "Gubbymaster170", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
+                    updatedAt: Date.now()
+                },
+                meboon: {
+                    username: "Meboon",
+                    passwordHash: "sec_meboon_pass",
+                    saveData: JSON.stringify({ ...freshState(), name: "Meboon", accountUser: "Meboon", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 hexkeys: {
                     username: "hexkeys",
                     passwordHash: "sec_hexkeys_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "hexkeys", accountUser: "hexkeys", level: 3, coins: 1200, cards: makeRestoredCards("hex", 30, "Epic"), resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "hexkeys", accountUser: "hexkeys", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 },
                 timekung: {
                     username: "Timekung",
                     passwordHash: "sec_timekung_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Timekung", accountUser: "Timekung", level: 4, coins: 2000, cards: makeRestoredCards("timekung", 45, "Legendary"), resetV14WipeDone: true }),
+                    saveData: JSON.stringify({ ...freshState(), name: "Timekung", accountUser: "Timekung", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
                     updatedAt: Date.now()
                 }
             };
 
-            // Ensure all roster accounts have their restored cards and stats populated
+            // Reset roster accounts to baseline in cleaned
             for (const rk in defaultRoster) {
                 if (rk !== "alucard") {
                     cleaned[rk] = defaultRoster[rk];
@@ -2780,8 +2762,6 @@ function renderSettings() {
     // Clear any error messages
     const deleteErr = document.getElementById("deleteAccountError");
     if (deleteErr) deleteErr.textContent = "";
-    const deletePassInput = document.getElementById("deleteAccountPasswordInput");
-    if (deletePassInput) deletePassInput.value = "";
 }
 
 function updateRarityAutoSell(rarity, mode) {
@@ -3505,7 +3485,13 @@ function openPack(type, count = 1) {
         }
     }
 
+    if (state.activePotions && state.activePotions.elixirCharges > 0) {
+        state.activePotions.elixirCharges = Math.max(0, state.activePotions.elixirCharges - 1);
+        toast("🔥 Elixir of Luck (+1000% Boost) was consumed on this pack opening!");
+    }
+
     saveGame();
+    renderActivePotionsHUD();
 
     const foilClasses = {
         starter: { key: "starter", css: "starter-foil", emblem: "📦", title: "STARTER PACK" },
@@ -3724,9 +3710,33 @@ function showSecretCutscene(card) {
 }
 
 function rollRarity(rates) {
+    const luckMult = getActiveLuckMultiplier();
+    const adjustedRates = { ...rates };
+
+    if (luckMult > 1) {
+        let boostedRaritiesWeight = 0;
+        let commonWeight = 0;
+
+        for (const r in adjustedRates) {
+            if (["World Class", "Secret", "Mythic", "Legendary", "Rare", "Epic"].includes(r)) {
+                adjustedRates[r] = (adjustedRates[r] || 0) * luckMult;
+                boostedRaritiesWeight += adjustedRates[r];
+            } else {
+                commonWeight += adjustedRates[r] || 0;
+            }
+        }
+
+        const total = boostedRaritiesWeight + commonWeight;
+        if (total > 0) {
+            for (const r in adjustedRates) {
+                adjustedRates[r] = (adjustedRates[r] / total) * 100;
+            }
+        }
+    }
+
     let random = Math.random() * 100;
-    for (const rarity of Object.keys(rates)) {
-        random -= rates[rarity];
+    for (const rarity of Object.keys(adjustedRates)) {
+        random -= adjustedRates[rarity];
         if (random < 0) return rarity;
     }
     return Object.keys(rates)[Object.keys(rates).length - 1];
@@ -6527,11 +6537,630 @@ function resetDefaultAvatar() {
 }
 
 /* =========================================================
-   SHOP (STADIUMS & AVATAR FRAMES)
+   POTIONS, TRAVELING MERCHANT & ALCHEMY CRAFTING ENGINE
+   ========================================================= */
+
+const POTIONS_DEF = {
+    tier1: {
+        id: "tier1",
+        name: "Tier 1 Luck Potion",
+        boostText: "+25% Luck",
+        boostPercent: 25,
+        durationMs: 600000,
+        desc: "Grants +25% Luck for 10 minutes. Stacks with Tier 2 & Tier 3 Luck Potions.",
+        color: "#22c55e",
+        cost: 50
+    },
+    tier2: {
+        id: "tier2",
+        name: "Tier 2 Luck Potion",
+        boostText: "+50% Luck",
+        boostPercent: 50,
+        durationMs: 600000,
+        desc: "Grants +50% Luck for 10 minutes. Stacks with Tier 1 & Tier 3 Luck Potions.",
+        color: "#10b981",
+        cost: 150
+    },
+    tier3: {
+        id: "tier3",
+        name: "Tier 3 Luck Potion",
+        boostText: "+100% Luck",
+        boostPercent: 100,
+        durationMs: 600000,
+        desc: "Grants +100% Luck for 10 minutes. Stacks with Tier 1 & Tier 2 Luck Potions.",
+        color: "#4ade80",
+        cost: 350
+    },
+    astral: {
+        id: "astral",
+        name: "Astral Potion",
+        boostText: "+200% Luck",
+        boostPercent: 200,
+        durationMs: 300000,
+        desc: "Grants +200% Luck for 5 minutes. Cannot stack with Tier 1-3. Stacks with Elixir of Luck.",
+        color: "#c084fc",
+        cost: 0
+    },
+    elixir: {
+        id: "elixir",
+        name: "Elixir Of Luck Potion",
+        boostText: "+1000% Luck",
+        boostPercent: 1000,
+        durationMs: 0,
+        desc: "Grants +1000% Luck for your next single pack opening! Stacks with all active potions.",
+        color: "#ef4444",
+        cost: 0
+    }
+};
+
+function getPotionSVG(type) {
+    let innerGrad = `<stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#15803d"/>`;
+
+    if (type === "tier1") {
+        innerGrad = `<stop offset="0%" stop-color="#86efac"/><stop offset="50%" stop-color="#22c55e"/><stop offset="100%" stop-color="#14532d"/>`;
+    } else if (type === "tier2") {
+        innerGrad = `<stop offset="0%" stop-color="#34d399"/><stop offset="50%" stop-color="#059669"/><stop offset="100%" stop-color="#064e3b"/>`;
+    } else if (type === "tier3") {
+        innerGrad = `<stop offset="0%" stop-color="#a7f3d0"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#022c22"/>`;
+    } else if (type === "astral") {
+        innerGrad = `<stop offset="0%" stop-color="#c084fc"/><stop offset="50%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#1e1b4b"/>`;
+    } else if (type === "elixir") {
+        innerGrad = `<stop offset="0%" stop-color="#fca5a5"/><stop offset="50%" stop-color="#ef4444"/><stop offset="100%" stop-color="#450a0a"/>`;
+    }
+
+    return `
+    <svg class="potion-vial-art" viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="liquidGrad_${type}" x1="0%" y1="0%" x2="0%" y2="100%">
+                ${innerGrad}
+            </linearGradient>
+            <linearGradient id="glassReflect_${type}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.7)"/>
+                <stop offset="30%" stop-color="rgba(255,255,255,0.1)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+            </linearGradient>
+        </defs>
+        <path d="M42 22 L42 46 C34 58 16 78 16 102 C16 122 30 134 50 134 C70 134 84 122 84 102 C84 78 66 58 58 46 L58 22 Z" fill="rgba(15, 23, 42, 0.6)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" />
+        <path d="M44 54 C36 64 22 82 22 102 C22 118 34 128 50 128 C66 128 78 118 78 102 C78 82 64 64 56 54 Q50 50 44 54 Z" fill="url(#liquidGrad_${type})" />
+        <circle cx="42" cy="98" r="3.5" fill="rgba(255,255,255,0.6)"/>
+        <circle cx="58" cy="85" r="2.5" fill="rgba(255,255,255,0.5)"/>
+        <circle cx="50" cy="112" r="4" fill="rgba(255,255,255,0.7)"/>
+        <path d="M26 96 C26 78 38 64 45 52 C44 56 34 72 34 94 C34 110 40 120 48 124 C34 120 26 110 26 96 Z" fill="url(#glassReflect_${type})"/>
+        <rect x="36" y="18" width="28" height="8" rx="4" fill="#cbd5e1" stroke="#0f172a" stroke-width="2.5"/>
+        <path d="M40 8 L60 8 L58 18 L42 18 Z" fill="#92400e" stroke="#451a03" stroke-width="2"/>
+    </svg>
+    `;
+}
+
+function getMerchantPeriod() {
+    return Math.floor(Date.now() / 900000);
+}
+
+function getMerchantTimeRemaining() {
+    const period = getMerchantPeriod();
+    const nextTime = (period + 1) * 900000;
+    const diff = Math.max(0, nextTime - Date.now());
+    const m = Math.floor(diff / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function pseudoRandomSeed(seed) {
+    let x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
+function generateMerchantStock(period) {
+    let s = period * 1337;
+
+    // Slot 1: Luck Potion (80% Tier 1, 15% Tier 2, 5% Tier 3)
+    const pRoll = pseudoRandomSeed(s++);
+    let potionType = "tier1";
+    if (pRoll > 0.95) {
+        potionType = "tier3";
+    } else if (pRoll > 0.80) {
+        potionType = "tier2";
+    }
+    const potDef = POTIONS_DEF[potionType];
+    const slot1 = {
+        type: "potion",
+        potionId: potionType,
+        name: potDef.name,
+        boostText: potDef.boostText,
+        desc: potDef.desc,
+        cost: potDef.cost
+    };
+
+    // Slot 2 & Slot 3: Random Scouted Cards
+    // Exact odds specified: 20% Common, 30% Uncommon, 20% Rare, 10% Legendary, 5% Mythical, 0.1% Secret, 0.0005% World Class (non-serialized)
+    function rollCardSlot(seedVal) {
+        const r = pseudoRandomSeed(seedVal);
+        let rarity = "Common";
+        let cost = 35;
+
+        if (r < 0.000005) {
+            rarity = "World Class";
+            cost = 12000;
+        } else if (r < 0.001) {
+            rarity = "Secret";
+            cost = 4500;
+        } else if (r < 0.051) {
+            rarity = "Mythic";
+            cost = 1400;
+        } else if (r < 0.151) {
+            rarity = "Legendary";
+            cost = 450;
+        } else if (r < 0.351) {
+            rarity = "Rare";
+            cost = 150;
+        } else if (r < 0.651) {
+            rarity = "Uncommon";
+            cost = 70;
+        } else {
+            rarity = "Common";
+            cost = 35;
+        }
+
+        const eligible = PLAYERS.filter(p => p.rarity === rarity);
+        const cardSeed = pseudoRandomSeed(seedVal + 1);
+        const player = eligible.length > 0 ? eligible[Math.floor(cardSeed * eligible.length)] : PLAYERS[0];
+
+        return {
+            type: "card",
+            player: player.name,
+            rating: player.rating,
+            rarity: player.rarity,
+            position: player.position,
+            cost: cost
+        };
+    }
+
+    const slot2 = rollCardSlot(s + 10);
+    const slot3 = rollCardSlot(s + 20);
+
+    return [slot1, slot2, slot3];
+}
+
+let cachedMerchantPeriod = -1;
+let currentMerchantStock = [];
+let merchantPurchases = {};
+
+function getMerchantStock() {
+    const period = getMerchantPeriod();
+    if (period !== cachedMerchantPeriod) {
+        cachedMerchantPeriod = period;
+        currentMerchantStock = generateMerchantStock(period);
+    }
+    return currentMerchantStock;
+}
+
+function buyMerchantItem(slotIndex) {
+    const stock = getMerchantStock();
+    const item = stock[slotIndex];
+    if (!item) return;
+
+    const purchaseKey = `${cachedMerchantPeriod}_${slotIndex}`;
+    if (merchantPurchases[purchaseKey]) {
+        toast("⚠️ This item has already been purchased this cycle.");
+        return;
+    }
+
+    if (state.coins < item.cost) {
+        toast(`🪙 Not enough coins! Need ${item.cost.toLocaleString()} 🪙.`);
+        SoundFx.click();
+        return;
+    }
+
+    if (!spendCoins(item.cost)) return;
+
+    merchantPurchases[purchaseKey] = true;
+
+    if (item.type === "potion") {
+        if (!state.potions) state.potions = { tier1: 0, tier2: 0, tier3: 0, astral: 0, elixir: 0 };
+        state.potions[item.potionId] = (state.potions[item.potionId] || 0) + 1;
+        toast(`🧪 Purchased ${item.name}! Added to your Potion Inventory.`);
+    } else if (item.type === "card") {
+        const newCard = {
+            id: "merchant_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+            player: item.player,
+            rating: item.rating,
+            rarity: item.rarity,
+            position: item.position,
+            isSerialized: false
+        };
+        state.cards.push(newCard);
+        if (!state.unlockedCardNames.includes(newCard.player)) {
+            state.unlockedCardNames.push(newCard.player);
+        }
+        toast(`🎴 Purchased ${item.player} (${item.rarity})!`);
+    }
+
+    saveGame();
+    renderShop();
+    renderAll();
+    SoundFx.coin();
+}
+
+function drinkPotion(type) {
+    if (!state.potions || (state.potions[type] || 0) <= 0) {
+        toast("You don't have any of this potion in your inventory.");
+        return;
+    }
+
+    const now = Date.now();
+    state.activePotions = state.activePotions || { tier1Until: 0, tier2Until: 0, tier3Until: 0, astralUntil: 0, elixirCharges: 0 };
+
+    if (type === "astral") {
+        // Astral cannot stack with Tier 1-3
+        const hasStandardActive = (state.activePotions.tier1Until > now) || (state.activePotions.tier2Until > now) || (state.activePotions.tier3Until > now);
+        if (hasStandardActive) {
+            toast("⚠️ Cannot use Astral Potion while Tier 1-3 Luck Potions are active!");
+            SoundFx.click();
+            return;
+        }
+        state.potions.astral--;
+        state.activePotions.astralUntil = Math.max(now, state.activePotions.astralUntil || 0) + 300000;
+        toast("🌌 Astral Potion Activated: +200% Luck for 5 Minutes!");
+    } else if (type === "tier1" || type === "tier2" || type === "tier3") {
+        // Tier 1-3 cannot stack with Astral
+        if (state.activePotions.astralUntil > now) {
+            toast("⚠️ Cannot use Tier 1-3 Luck Potions while Astral Potion is active!");
+            SoundFx.click();
+            return;
+        }
+        state.potions[type]--;
+        const duration = 600000;
+        const key = type + "Until";
+        state.activePotions[key] = Math.max(now, state.activePotions[key] || 0) + duration;
+        toast(`🧪 ${POTIONS_DEF[type].name} Activated: ${POTIONS_DEF[type].boostText} for 10 Minutes!`);
+    } else if (type === "elixir") {
+        // Elixir of luck stacks with everything!
+        state.potions.elixir--;
+        state.activePotions.elixirCharges = (state.activePotions.elixirCharges || 0) + 1;
+        toast("🔥 Elixir of Luck Activated: +1000% Luck for Next 1 Pack Pull!");
+    }
+
+    saveGame();
+    renderShop();
+    renderActivePotionsHUD();
+    SoundFx.levelUp();
+}
+
+let currentCraftRecipe = "astral";
+let selectedCraftCardIds = [];
+
+function openCraftingModal(recipeType) {
+    currentCraftRecipe = recipeType;
+    selectedCraftCardIds = [];
+
+    const modal = document.getElementById("craftingModal");
+    const title = document.getElementById("craftingModalTitle");
+    const sub = document.getElementById("craftingModalSub");
+
+    if (recipeType === "astral") {
+        if (title) title.innerHTML = "⚗️ Brew Astral Potion (+200% Luck, 5m)";
+        if (sub) sub.innerHTML = "Select 5 Mythical cards from your collection to sacrifice.";
+    } else {
+        if (title) title.innerHTML = "⚗️ Brew Elixir of Luck (+1000% Luck, 1 Pack)";
+        if (sub) sub.innerHTML = "Select 5 Secret cards from your collection to sacrifice.";
+    }
+
+    renderCraftingModalContent();
+    if (modal) modal.classList.remove("hidden");
+    SoundFx.click();
+}
+
+function closeCraftingModal() {
+    const modal = document.getElementById("craftingModal");
+    if (modal) modal.classList.add("hidden");
+    selectedCraftCardIds = [];
+}
+
+function renderCraftingModalContent() {
+    const reqRarity = currentCraftRecipe === "astral" ? "Mythic" : "Secret";
+    const eligibleCards = (state.cards || []).filter(c => c.rarity === reqRarity && !c.locked);
+
+    const slotsEl = document.getElementById("craftingSelectedSlots");
+    if (slotsEl) {
+        slotsEl.innerHTML = new Array(5).fill(null).map((_, i) => {
+            const cardId = selectedCraftCardIds[i];
+            const card = eligibleCards.find(c => c.id === cardId);
+            if (card) {
+                return `
+                <div class="craft-slot filled" onclick="toggleCraftCardSelect('${card.id}')" style="width:70px;height:95px;border:2px solid ${currentCraftRecipe === 'astral' ? '#a855f7' : '#ef4444'};border-radius:10px;background:rgba(15,23,42,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;padding:4px;text-align:center;">
+                    <span style="font-size:10px;font-weight:900;color:#fff;line-height:1.1;">${escapeHTML(card.player)}</span>
+                    <span style="font-size:9px;color:var(--gold);margin-top:2px;">${card.rating} OVR</span>
+                    <span style="position:absolute;top:-6px;right:-6px;background:red;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;">✕</span>
+                </div>
+                `;
+            }
+            return `
+            <div class="craft-slot empty" style="width:70px;height:95px;border:2px dashed rgba(255,255,255,0.2);border-radius:10px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px;">
+                +
+            </div>
+            `;
+        }).join("");
+    }
+
+    const gridEl = document.getElementById("craftingPickerGrid");
+    if (gridEl) {
+        if (!eligibleCards.length) {
+            gridEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);">No unlocked ${reqRarity} cards found in your collection. Open packs to collect them!</div>`;
+        } else {
+            gridEl.innerHTML = eligibleCards.map(c => {
+                const isSelected = selectedCraftCardIds.includes(c.id);
+                return `
+                <div class="card ${c.rarity.toLowerCase().replace(/\s+/g, '-')} ${isSelected ? 'selected-craft' : ''}" onclick="toggleCraftCardSelect('${c.id}')" style="cursor:pointer;padding:10px;border-radius:12px;${isSelected ? 'outline:3px solid #ffd700;transform:scale(0.96);' : ''}">
+                    <div style="font-weight:900;font-size:12px;color:#fff;">${escapeHTML(c.player)}</div>
+                    <div style="font-size:11px;color:var(--gold);">${c.rating} OVR · ${c.rarity}</div>
+                </div>
+                `;
+            }).join("");
+        }
+    }
+
+    const execBtn = document.getElementById("executeCraftBtn");
+    if (execBtn) {
+        execBtn.textContent = `⚗️ Brew ${currentCraftRecipe === 'astral' ? 'Astral Potion' : 'Elixir of Luck'} (${selectedCraftCardIds.length}/5 Selected)`;
+        execBtn.disabled = selectedCraftCardIds.length !== 5;
+    }
+}
+
+function toggleCraftCardSelect(cardId) {
+    const idx = selectedCraftCardIds.indexOf(cardId);
+    if (idx > -1) {
+        selectedCraftCardIds.splice(idx, 1);
+    } else {
+        if (selectedCraftCardIds.length >= 5) {
+            toast("You can only select 5 cards.");
+            return;
+        }
+        selectedCraftCardIds.push(cardId);
+    }
+    renderCraftingModalContent();
+    SoundFx.click();
+}
+
+function craftingAutoSelect5() {
+    const reqRarity = currentCraftRecipe === "astral" ? "Mythic" : "Secret";
+    const eligible = (state.cards || []).filter(c => c.rarity === reqRarity && !c.locked);
+    selectedCraftCardIds = eligible.slice(0, 5).map(c => c.id);
+    renderCraftingModalContent();
+    SoundFx.click();
+}
+
+function confirmExecuteCraft() {
+    if (selectedCraftCardIds.length !== 5) {
+        toast("Please select exactly 5 cards to brew this potion.");
+        return;
+    }
+
+    const idsToSacrifice = new Set(selectedCraftCardIds);
+    state.cards = state.cards.filter(c => !idsToSacrifice.has(c.id));
+
+    if (!state.potions) state.potions = { tier1: 0, tier2: 0, tier3: 0, astral: 0, elixir: 0 };
+    if (currentCraftRecipe === "astral") {
+        state.potions.astral = (state.potions.astral || 0) + 1;
+        toast("🌌 Alchemy Success! Crafted 1x Astral Potion (+200% Luck for 5m)!");
+    } else {
+        state.potions.elixir = (state.potions.elixir || 0) + 1;
+        toast("🔥 Alchemy Success! Crafted 1x Elixir of Luck (+1000% Luck for Next Pack)!");
+    }
+
+    closeCraftingModal();
+    saveGame();
+    renderAll();
+    SoundFx.levelUp();
+}
+
+function getActiveLuckMultiplier() {
+    const now = Date.now();
+    const act = state.activePotions || {};
+    let mult = 1.0;
+
+    if (act.tier1Until > now) mult += 0.25;
+    if (act.tier2Until > now) mult += 0.50;
+    if (act.tier3Until > now) mult += 1.00;
+    if (act.astralUntil > now) mult += 2.00;
+    if (act.elixirCharges > 0) mult += 10.00;
+
+    return mult;
+}
+
+function updateNotificationBadges() {
+    // 1. Missions badge
+    const missionsBadge = document.getElementById("missionsAlertBadge");
+    if (missionsBadge) {
+        let hasClaimable = false;
+        for (const type of ["hourly", "daily", "weekly", "monthly"]) {
+            const list = MISSIONS[type] || [];
+            list.forEach((m, idx) => {
+                const prog = (state.missionProgress && state.missionProgress[type]) ? state.missionProgress[type][idx] : 0;
+                const claimed = (state.missionClaimed && state.missionClaimed[type]) ? state.missionClaimed[type][idx] : false;
+                if (prog >= m.target && !claimed) hasClaimable = true;
+            });
+        }
+        missionsBadge.classList.toggle("hidden", !hasClaimable);
+    }
+
+    // 2. Index badge
+    const indexBadge = document.getElementById("indexAlertBadge");
+    if (indexBadge) {
+        let hasIndexClaimable = false;
+        const totalUnlocked = (state.unlockedCardNames || []).length;
+        INDEX_REWARDS.forEach(r => {
+            const claimed = (state.claimedIndexRewards || []).includes(r.id);
+            if (totalUnlocked >= r.count && !claimed) hasIndexClaimable = true;
+        });
+        indexBadge.classList.toggle("hidden", !hasIndexClaimable);
+    }
+
+    // 3. Trade badge
+    const tradeBadge = document.getElementById("tradeAlertBadge");
+    if (tradeBadge) {
+        const trades = CloudSync.getTrades();
+        const myName = (state.accountUser || "").toLowerCase();
+        const hasPending = trades.some(t => t.toUser.toLowerCase() === myName && t.status === "pending");
+        tradeBadge.classList.toggle("hidden", !hasPending);
+    }
+}
+
+function renderActivePotionsHUD() {
+    const hud = document.getElementById("activePotionsHUD");
+    if (!hud) return;
+
+    const now = Date.now();
+    const act = state.activePotions || {};
+    const activeList = [];
+
+    if (act.astralUntil > now) {
+        const rem = Math.max(0, act.astralUntil - now);
+        const m = Math.floor(rem / 60000);
+        const s = Math.floor((rem % 60000) / 1000);
+        activeList.push({
+            name: "Astral Potion",
+            icon: "🌌",
+            boost: "+200% Luck",
+            timer: `${m}:${s.toString().padStart(2, '0')}`,
+            color: "#c084fc",
+            desc: "+200% Luck Active. Cannot stack with Tier 1-3."
+        });
+    } else {
+        if (act.tier3Until > now) {
+            const rem = Math.max(0, act.tier3Until - now);
+            const m = Math.floor(rem / 60000);
+            const s = Math.floor((rem % 60000) / 1000);
+            activeList.push({ name: "Tier 3 Luck", icon: "🧪", boost: "+100% Luck", timer: `${m}:${s.toString().padStart(2, '0')}`, color: "#4ade80", desc: "+100% Luck Active." });
+        }
+        if (act.tier2Until > now) {
+            const rem = Math.max(0, act.tier2Until - now);
+            const m = Math.floor(rem / 60000);
+            const s = Math.floor((rem % 60000) / 1000);
+            activeList.push({ name: "Tier 2 Luck", icon: "🧪", boost: "+50% Luck", timer: `${m}:${s.toString().padStart(2, '0')}`, color: "#10b981", desc: "+50% Luck Active." });
+        }
+        if (act.tier1Until > now) {
+            const rem = Math.max(0, act.tier1Until - now);
+            const m = Math.floor(rem / 60000);
+            const s = Math.floor((rem % 60000) / 1000);
+            activeList.push({ name: "Tier 1 Luck", icon: "🧪", boost: "+25% Luck", timer: `${m}:${s.toString().padStart(2, '0')}`, color: "#22c55e", desc: "+25% Luck Active." });
+        }
+    }
+
+    if (act.elixirCharges > 0) {
+        activeList.push({
+            name: "Elixir of Luck",
+            icon: "🔥",
+            boost: "+1000% Luck",
+            timer: `${act.elixirCharges} Pack${act.elixirCharges > 1 ? 's' : ''}`,
+            color: "#ef4444",
+            desc: "+1000% Luck for next pack opening!"
+        });
+    }
+
+    if (!activeList.length) {
+        hud.innerHTML = "";
+        return;
+    }
+
+    const totalMult = getActiveLuckMultiplier();
+    let hudHtml = `
+    <div style="font-size:11px;font-weight:900;color:var(--gold);text-align:right;margin-bottom:-4px;text-shadow:0 0 10px rgba(0,0,0,0.8);">
+        ⚡ LUCK MULTIPLIER: ${(totalMult * 100).toFixed(0)}%
+    </div>
+    `;
+
+    activeList.forEach(item => {
+        hudHtml += `
+        <div class="hud-potion-badge" style="--hud-glow:${item.color};" title="${item.desc}">
+            <div class="hud-potion-icon" style="background:${item.color}22;border:1px solid ${item.color};">${item.icon}</div>
+            <div style="display:flex;flex-direction:column;">
+                <span class="hud-potion-label" style="color:${item.color};">${item.name} (${item.boost})</span>
+                <span class="hud-potion-timer">⏳ ${item.timer}</span>
+            </div>
+        </div>
+        `;
+    });
+
+    hud.innerHTML = hudHtml;
+}
+
+function dismissDeletedAccountModal() {
+    const modal = document.getElementById("deletedAccountAlertModal");
+    if (modal) modal.classList.add("hidden");
+    showPage("home");
+    renderAll();
+}
+
+/* =========================================================
+   SHOP (MERCHANT, POTIONS, STADIUMS & AVATAR FRAMES)
    ========================================================= */
 
 function renderShop() {
-    // 1. Stadium Backgrounds
+    // 1. Traveling Merchant Slots
+    const merchantGrid = document.getElementById("merchantSlotsGrid");
+    const merchantCountdown = document.getElementById("merchantCountdown");
+    if (merchantCountdown) merchantCountdown.textContent = getMerchantTimeRemaining();
+
+    if (merchantGrid) {
+        const stock = getMerchantStock();
+        merchantGrid.innerHTML = stock.map((item, idx) => {
+            const purchaseKey = `${cachedMerchantPeriod}_${idx}`;
+            const isBought = !!merchantPurchases[purchaseKey];
+
+            if (item.type === "potion") {
+                const potDef = POTIONS_DEF[item.potionId];
+                return `
+                <div class="merchant-slot-card" style="border-color:${potDef.color}55;">
+                    <span class="merchant-slot-tag" style="color:${potDef.color};border-color:${potDef.color};">SLOT ${idx+1} · LUCK POTION</span>
+                    ${getPotionSVG(item.potionId)}
+                    <h3 style="margin:4px 0 2px;font-size:16px;color:#fff;">${escapeHTML(item.name)}</h3>
+                    <span style="font-size:12px;color:${potDef.color};font-weight:900;margin-bottom:6px;">${item.boostText}</span>
+                    <p style="font-size:11.5px;color:var(--muted);margin:0 0 12px;min-height:30px;">${escapeHTML(item.desc)}</p>
+                    <button class="${isBought ? 'ghost-btn' : 'primary-btn'}" ${isBought ? 'disabled' : ''} style="width:100%;font-size:13px;padding:9px;" onclick="buyMerchantItem(${idx})">
+                        ${isBought ? '✓ Sold Out' : `🛒 Buy for ${item.cost.toLocaleString()} 🪙`}
+                    </button>
+                </div>
+                `;
+            } else {
+                return `
+                <div class="merchant-slot-card" style="border-color:rgba(56,189,248,0.4);">
+                    <span class="merchant-slot-tag">SLOT ${idx+1} · SCOUTED CARD</span>
+                    <div style="margin:12px 0 8px;font-size:36px;">🎴</div>
+                    <h3 style="margin:4px 0 2px;font-size:16px;color:#fff;">${escapeHTML(item.player)}</h3>
+                    <span class="card-rarity-badge ${item.rarity.toLowerCase().replace(/\s+/g,'-')}" style="font-size:11px;padding:3px 10px;margin-bottom:6px;">${item.rarity} · ${item.rating} OVR</span>
+                    <p style="font-size:11.5px;color:var(--muted);margin:0 0 12px;">Position: <b>${item.position}</b></p>
+                    <button class="${isBought ? 'ghost-btn' : 'primary-btn'}" ${isBought ? 'disabled' : ''} style="width:100%;font-size:13px;padding:9px;" onclick="buyMerchantItem(${idx})">
+                        ${isBought ? '✓ Sold Out' : `🛒 Buy for ${item.cost.toLocaleString()} 🪙`}
+                    </button>
+                </div>
+                `;
+            }
+        }).join("");
+    }
+
+    // 2. Potions Pouch (Owned Potions)
+    const invGrid = document.getElementById("potionsInventoryGrid");
+    if (invGrid) {
+        state.potions = state.potions || { tier1: 0, tier2: 0, tier3: 0, astral: 0, elixir: 0 };
+        const keys = ["tier1", "tier2", "tier3", "astral", "elixir"];
+        invGrid.innerHTML = keys.map(k => {
+            const def = POTIONS_DEF[k];
+            const qty = state.potions[k] || 0;
+            return `
+            <div class="potion-card" style="border-color:${def.color}44;">
+                ${getPotionSVG(k)}
+                <h4 style="margin:4px 0 2px;font-size:14px;color:#fff;">${escapeHTML(def.name)}</h4>
+                <span style="font-size:11.5px;color:${def.color};font-weight:900;margin-bottom:4px;">${def.boostText}</span>
+                <span style="font-size:12px;color:var(--gold);font-weight:800;margin-bottom:10px;">Owned: <b>${qty}</b></span>
+                <button class="${qty > 0 ? 'primary-btn' : 'ghost-btn'}" ${qty > 0 ? '' : 'disabled'} style="width:100%;font-size:12px;padding:7px;background:${qty > 0 ? `linear-gradient(135deg, ${def.color}, #09131d)` : ''};" onclick="drinkPotion('${k}')">
+                    🧪 Drink Potion
+                </button>
+            </div>
+            `;
+        }).join("");
+    }
+
+    // 3. Stadium Backgrounds
     const backgrounds = document.getElementById("backgroundShop");
     if (backgrounds) {
         backgrounds.innerHTML = BACKGROUNDS.map(bg => {
@@ -6549,7 +7178,7 @@ function renderShop() {
         }).join("");
     }
 
-    // 2. Prestige Avatar Frames
+    // 4. Prestige Avatar Frames
     const framesContainer = document.getElementById("framesShop");
     if (framesContainer) {
         framesContainer.innerHTML = FRAMES.map(f => {
@@ -8365,6 +8994,11 @@ let minuteAutoRefreshCounter = 0;
 setInterval(() => {
     updateTimers();
     checkBanStatus();
+    renderActivePotionsHUD();
+    updateNotificationBadges();
+
+    const merchantCountdown = document.getElementById("merchantCountdown");
+    if (merchantCountdown) merchantCountdown.textContent = getMerchantTimeRemaining();
     
     deviceRevokeCounter++;
     if (deviceRevokeCounter >= 5) {
@@ -8384,8 +9018,9 @@ setInterval(() => {
     if (minuteAutoRefreshCounter >= 60) {
         minuteAutoRefreshCounter = 0;
         const activePage = (document.querySelector(".page:not(.hidden)") || {}).id;
-        if (activePage === "leaderboard") renderLeaderboard();
+        if (activePage === "leaderboard") renderLeaderboard(false);
         if (activePage === "trade") renderTradeHub();
+        if (activePage === "shop") renderShop();
         const adminModal = document.getElementById("adminModal");
         if (adminModal && !adminModal.classList.contains("hidden")) {
             const accsTab = document.getElementById("adminTabAccounts");
@@ -8540,6 +9175,17 @@ document.addEventListener("dragstart", function(e) {
         buyBackground,
         buyFrame,
         setProfileFrame,
+        buyMerchantItem,
+        drinkPotion,
+        openCraftingModal,
+        closeCraftingModal,
+        toggleCraftCardSelect,
+        craftingAutoSelect5,
+        confirmExecuteCraft,
+        dismissDeletedAccountModal,
+        getMerchantStock,
+        getActiveLuckMultiplier,
+        renderActivePotionsHUD,
         toggleCardLock,
         addCoins,
         spendCoins,
