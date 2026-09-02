@@ -1285,7 +1285,7 @@ function updatePlaytime() {
    ========================================================= */
 
 const ServerAPI = {
-    BASE_URL: (typeof location !== "undefined" && location.hostname === "localhost") ? "http://localhost:3000" : "",
+    BASE_URL: (typeof location !== "undefined" && !location.hostname.includes("github.io") && location.origin !== "null" && !location.origin.startsWith("file://")) ? location.origin : "",
     token: localStorage.getItem("football_cards_token") || "",
 
     setToken(token) {
