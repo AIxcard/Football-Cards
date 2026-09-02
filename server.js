@@ -1,4 +1,4 @@
-﻿const http = require("http");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -88,7 +88,7 @@ const server = http.createServer((req, res) => {
         return sendJSON(200, { status: "online", time: Date.now(), usersCount: Object.keys(database.users || {}).length });
     }
 
-    if (pathname === "/api/auth/register" && req.method === "POST") {
+    if ((pathname === "/api/auth/register" || pathname === "/api/auth/signup") && req.method === "POST") {
         return getBody((err, body) => {
             if (err || !body.username || !body.password) return sendJSON(400, { success: false, error: "Invalid data" });
             const key = body.username.trim().toLowerCase();
