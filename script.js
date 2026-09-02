@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -1215,6 +1215,41 @@ let playStarted = Date.now();
 let currentAuthTab = "login";
 let activeShowcaseSlot = 0;
 let searchedUserData = null;
+
+/* =========================================================
+/* =========================================================
+   SEASON RESET & GAME ENGINE INITIALIZATION
+   ========================================================= */
+
+const GLOBAL_RESET_KEY = "football_cards_clean_reset_v18_server";
+
+function checkGlobalSeasonReset() {
+    try {
+        const hasAcknowledged = localStorage.getItem(GLOBAL_RESET_KEY);
+        const isOwner = (state && (state.accountUser || state.name || "").toLowerCase() === "alucard");
+
+        if (!hasAcknowledged) {
+            localStorage.setItem(GLOBAL_RESET_KEY, "true");
+            if (!isOwner) {
+                state = freshState();
+                AntiCheat.signState(state);
+                saveGame();
+                renderAll();
+                setTimeout(() => {
+                    const modal = document.getElementById("seasonResetModal");
+                    if (modal) modal.classList.remove("hidden");
+                }, 400);
+            }
+        }
+    } catch (e) {}
+}
+
+function dismissSeasonResetModal() {
+    const modal = document.getElementById("seasonResetModal");
+    if (modal) modal.classList.add("hidden");
+    SoundFx.levelUp();
+    toast("✨ Welcome to Season 1! Enjoy opening packs.");
+}
 
 /* =========================================================
    SAVE & CLOUD SYNC
@@ -9559,6 +9594,7 @@ if (state.initialized) {
     }
     renderAll();
     checkDeviceRevocation();
+    checkGlobalSeasonReset();
     autoSyncCloud();
 
     // Restore last visited page if present
@@ -9586,6 +9622,7 @@ setInterval(() => {
     if (deviceRevokeCounter >= 5) {
         deviceRevokeCounter = 0;
         checkDeviceRevocation();
+    checkGlobalSeasonReset();
     }
 
     tradePollerCounter++;
@@ -9769,6 +9806,9 @@ document.addEventListener("dragstart", function(e) {
         craftingAutoSelect5,
         confirmExecuteCraft,
         dismissDeletedAccountModal,
+        dismissSeasonResetModal,
+        checkIsAdmin,
+        openAdminPanel,
         getMerchantStock,
         getActiveLuckMultiplier,
         renderActivePotionsHUD,
