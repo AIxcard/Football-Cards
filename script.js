@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -1451,275 +1451,88 @@ const ServerAPI = {
 };
 
 /* =========================================================
-   GLOBAL MULTI-DEVICE CLOUD REST SYNC & AUTH (HIGH-SPEED KVDB CLOUD)
+   GLOBAL SERVER REST CLIENT (RENDER ENGINE)
    ========================================================= */
 
 const GlobalCloudRest = {
-    BUCKET_URL: "https://kvdb.io/MmjyNhMePJggoofHrX9cjo",
-    PREFIX: "v14_",
-
     async fetchFile(key) {
-        try {
-            const cleanKey = this.PREFIX + key.replace(/[/.]/g, "_");
-            const res = await fetch(`${this.BUCKET_URL}/${cleanKey}?t=${Date.now()}`);
-            if (!res.ok) return null;
-            const data = await res.json();
-            return { data: data };
-        } catch (e) {
-            return null;
-        }
-    },
-
-    async saveFile(key, dataObj) {
-        try {
-            const cleanKey = this.PREFIX + key.replace(/[/.]/g, "_");
-            const res = await fetch(`${this.BUCKET_URL}/${cleanKey}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dataObj)
-            });
-            return res.ok;
-        } catch (e) {
-            return false;
-        }
-    },
-
-    async getGlobalSerialCounts() {
-        try {
-            const doc = await this.fetchFile("global_serial_counts");
-            if (doc && doc.data && typeof doc.data === "object") {
-                return doc.data;
-            }
-        } catch (e) {}
         return null;
     },
 
+    async saveFile(key, dataObj) {
+        return true;
+    },
+
+    async getGlobalSerialCounts() {
+        return { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+    },
+
     async allocateGlobalSerial(playerName) {
-        try {
-            const p = (playerName === "Lionel Messi") ? "Lionel Messi" : ((playerName === "Cristiano Ronaldo") ? "Cristiano Ronaldo" : null);
-            if (!p) return null;
-
-            let counts = await this.getGlobalSerialCounts() || {};
-            counts["Lionel Messi"] = Number(counts["Lionel Messi"]) || 0;
-            counts["Cristiano Ronaldo"] = Number(counts["Cristiano Ronaldo"]) || 0;
-
-            if (counts[p] < 10) {
-                counts[p]++;
-                const allocated = counts[p];
-                await this.saveFile("global_serial_counts", counts);
-                return allocated;
-            }
-        } catch (e) {}
         return null;
     },
 
     async fetchUser(username) {
         if (!username) return null;
         try {
-            const uKey = this.PREFIX + "user_" + username.trim().toLowerCase();
-            const res = await fetch(`${this.BUCKET_URL}/${uKey}?t=${Date.now()}`);
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/save?username=${encodeURIComponent(username.trim())}`);
             if (!res.ok) return null;
-            const user = await res.json();
-            return (user && user.username) ? user : null;
-        } catch (e) {
+            const data = await res.json();
+            return (data && data.success && data.saveData) ? { username: username, saveData: data.saveData } : null;
+        } catch(e) {
             return null;
         }
     },
 
     async pushUser(username, accountPayload) {
-        if (!username || !accountPayload) return false;
+        if (!username) return false;
         try {
-            const uKey = this.PREFIX + "user_" + username.trim().toLowerCase();
-            let existing = await this.fetchUser(username) || {};
-
-            let devInfo = {};
-            try { devInfo = getDeviceInfo(); } catch(e) {}
-            const sessions = existing.sessions || {};
-            if (devInfo.deviceId) sessions[devInfo.deviceId] = devInfo;
-
-            let passHash = accountPayload.passwordHash || existing.passwordHash || "";
-            if (!passHash && (accountPayload.password || existing.password)) {
-                passHash = await hashPassword(accountPayload.password || existing.password);
-            }
-
-            const userDoc = {
-                username: username,
-                passwordHash: passHash,
-                isTradeBanned: !!accountPayload.isTradeBanned,
-                tradeBanReason: accountPayload.tradeBanReason || "",
-                saveData: typeof accountPayload.saveData === "string" ? accountPayload.saveData : JSON.stringify(accountPayload.saveData || {}),
-                sessions: sessions,
-                revokedSessions: existing.revokedSessions || [],
-                updatedAt: Date.now()
-            };
-
-            await fetch(`${this.BUCKET_URL}/${uKey}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(userDoc)
-            });
-
-            // Update leaderboard entry in cloud database
-            let pData = {};
-            try { pData = JSON.parse(userDoc.saveData); } catch(e) {}
-            if (userDoc.isTradeBanned) pData.isTradeBanned = true;
-            this.pushLeaderboard(username, pData);
+            const sData = (accountPayload && accountPayload.saveData) ? (typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : accountPayload.saveData) : state;
+            await ServerAPI.saveGame(username, sData);
             return true;
-        } catch (e) {
+        } catch(e) {
             return false;
         }
     },
 
     async fetchAllUsers() {
         try {
-            const res = await fetch(`${this.BUCKET_URL}/?prefix=${this.PREFIX}user_&t=${Date.now()}`);
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/users`);
             if (!res.ok) return {};
-            const text = await res.text();
-            const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
-            const userPromises = keys.map(async k => {
-                try {
-                    const uRes = await fetch(`${this.BUCKET_URL}/${k}?t=${Date.now()}`);
-                    if (uRes.ok) return await uRes.json();
-                } catch(e) {}
-                return null;
-            });
-            const usersList = await Promise.all(userPromises);
-            const map = {};
-            usersList.forEach(u => {
-                if (u && u.username) map[u.username.toLowerCase()] = u;
-            });
-            return map;
-        } catch (e) {
+            const data = await res.json();
+            return (data && data.success && data.users) ? data.users : {};
+        } catch(e) {
             return {};
         }
     },
 
     async fetchLeaderboard() {
         try {
-            const res = await fetch(`${this.BUCKET_URL}/?prefix=${this.PREFIX}lb_&t=${Date.now()}`);
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/leaderboard`);
             if (!res.ok) return {};
-            const text = await res.text();
-            const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
-            const lbPromises = keys.map(async k => {
-                try {
-                    const lbRes = await fetch(`${this.BUCKET_URL}/${k}?t=${Date.now()}`);
-                    if (lbRes.ok) return await lbRes.json();
-                } catch(e) {}
-                return null;
-            });
-            const entries = await Promise.all(lbPromises);
-            const map = {};
-            entries.forEach(e => {
-                if (e && (e.username || e.name)) {
-                    map[(e.username || e.name).toLowerCase()] = e;
-                }
-            });
-            return map;
-        } catch (e) {
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.leaderboard)) {
+                const map = {};
+                data.leaderboard.forEach(e => {
+                    if (e && (e.username || e.name)) map[(e.username || e.name).toLowerCase()] = e;
+                });
+                return map;
+            }
+            return {};
+        } catch(e) {
             return {};
         }
     },
 
     async pushLeaderboard(username, pData) {
-        if (!username || !pData) return;
-        try {
-            const lbKey = this.PREFIX + "lb_" + username.trim().toLowerCase();
-            const lbDoc = {
-                name: pData.name || username,
-                username: username,
-                gold: Number(pData.coins || pData.gold || 0),
-                value: Number(pData.value || calculateCollectionValue(pData.cards || [])),
-                cards: Number((pData.cards || []).length || pData.cardsCount || 0),
-                level: Number(pData.level || 1),
-                equippedTitle: pData.equippedTitle || "Collector",
-                profileFrame: pData.profileFrame || (state && state.profileFrame) || "default",
-                avatar: pData.avatar || (state && state.avatar) || "player_temp.png",
-                isTradeBanned: !!(pData.isTradeBanned || (state && state.accountUser === username && state.isTradeBanned)),
-                tradeBanReason: pData.tradeBanReason || (state && state.accountUser === username ? state.tradeBanReason : "") || "",
-                bannedUntil: Number(pData.bannedUntil || 0),
-                updatedAt: Date.now()
-            };
-            await fetch(`${this.BUCKET_URL}/${lbKey}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(lbDoc)
-            });
-        } catch (e) {}
+        return;
     },
 
     async fetchTrades() {
         try {
-            const res = await fetch(`${this.BUCKET_URL}/?prefix=${this.PREFIX}trade_&t=${Date.now()}`);
-            if (!res.ok) return [];
-            const text = await res.text();
-            const keys = text.split("\n").map(k => k.trim()).filter(Boolean);
-            const tradePromises = keys.map(async k => {
-                try {
-                    const tRes = await fetch(`${this.BUCKET_URL}/${k}?t=${Date.now()}`);
-                    if (tRes.ok) return await tRes.json();
-                } catch(e) {}
-                return null;
-            });
-            const trades = await Promise.all(tradePromises);
-            return trades.filter(t => t && t.id);
-        } catch (e) {
+            return await ServerAPI.fetchTrades();
+        } catch(e) {
             return [];
         }
-    },
-
-    async saveTrades(trades) {
-        if (!Array.isArray(trades)) return;
-        try {
-            for (const t of trades) {
-                if (t && t.id) {
-                    await fetch(`${this.BUCKET_URL}/${this.PREFIX}trade_${t.id}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(t)
-                    });
-                }
-            }
-        } catch (e) {}
-    },
-
-    async setBan(username, durationMs, reason) {
-        const u = (username || "").trim().toLowerCase();
-        if (!u || u === "alucard") return;
-        try {
-            const lbKey = this.PREFIX + "lb_" + u;
-            let current = {};
-            const res = await fetch(`${this.BUCKET_URL}/${lbKey}?t=${Date.now()}`);
-            if (res.ok) current = await res.json();
-            current.isTradeBanned = true;
-            current.tradeBanReason = reason;
-            current.bannedUntil = Date.now() + durationMs;
-            current.banReason = reason;
-            await fetch(`${this.BUCKET_URL}/${lbKey}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(current)
-            });
-        } catch (e) {}
-    },
-
-    async removeBan(username) {
-        const u = (username || "").trim().toLowerCase();
-        if (!u) return;
-        try {
-            const lbKey = this.PREFIX + "lb_" + u;
-            let current = {};
-            const res = await fetch(`${this.BUCKET_URL}/${lbKey}?t=${Date.now()}`);
-            if (res.ok) current = await res.json();
-            current.isTradeBanned = false;
-            current.tradeBanReason = "";
-            current.bannedUntil = 0;
-            current.banReason = "";
-            await fetch(`${this.BUCKET_URL}/${lbKey}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(current)
-            });
-        } catch (e) {}
     }
 };
 
