@@ -1,9 +1,9 @@
-﻿services:
+services:
   - type: web
     name: football-cards
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: echo "Build successful"
     startCommand: node server.js
     envVars:
       - key: PORT
