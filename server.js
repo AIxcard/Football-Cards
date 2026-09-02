@@ -6,7 +6,7 @@ const cors = require(cors);
 const { WebSocketServer } = require(ws);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json({ limit: 15mb }));
@@ -52,7 +52,7 @@ loadDatabase();
 
 // Health Check
 app.get(/api/health, (req, res) => {
-    res.json({ status: online, time: Date.now(), usersCount: Object.keys(database.users).length });
+    res.json({ status: online, time: Date.now(), usersCount: Object.keys(database.users || {}).length });
 });
 
 // Authentication: Register
@@ -69,7 +69,7 @@ app.post(/api/auth/register, (req, res) => {
 
     const userDoc = {
         username: username.trim(),
-        password: password, // In production, bcrypt hash can be used
+        password: password,
         saveData: initialData || {},
         createdAt: Date.now(),
         lastActive: Date.now()
@@ -202,7 +202,7 @@ app.get(*, (req, res) => {
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: /ws });
 
-const connectedClients = new Map(); // username -> ws socket
+const connectedClients = new Map();
 
 wss.on(connection, (ws, req) => {
  let clientUsername = null;
@@ -248,7 +248,6 @@ function broadcastOnlineCount() {
  });
 }
 
-server.listen(PORT, () => {
- console.log([Football Cards Server] Running on http://localhost:);
- console.log([WebSocket] Live Trading Gateway active on ws://localhost:/ws);
+server.listen(PORT, 0.0.0.0, () => {
+ console.log([Football Cards Server] Listening on port );
 });
