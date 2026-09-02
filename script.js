@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -1335,7 +1335,8 @@ const ServerAPI = {
             const data = await res.json();
             if (res.ok && data.success) {
                 this.setToken(data.token);
-                return { success: true, data: data.user ? data.user.saveData : null, msg: "Welcome back! Server save loaded." };
+                const sData = (data.user && data.user.saveData) ? data.user.saveData : (data.saveData || data.data);
+                return { success: true, data: sData, msg: "Welcome back! Server save loaded." };
             }
             return { success: false, msg: data.error || "Login failed on server." };
         } catch (e) {
@@ -1463,6 +1464,7 @@ const CloudSync = {
                     ...cloudSave,
                     accountUser: u,
                     name: cloudSave.name || u,
+                    coins: (cloudSave.coins !== undefined) ? Number(cloudSave.coins) : 100,
                     cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : [],
                     stats: { ...freshState().stats, ...(cloudSave.stats || {}) },
                     tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || {}) }
@@ -1485,11 +1487,16 @@ const CloudSync = {
         return { success: false, msg: "Account not found on server. Please click Sign Up to create a new account." };
     },
 
-    logout() {
+    async logout() {
+        if (state.accountUser) {
+            try {
+                await ServerAPI.saveGame(state.accountUser, state);
+            } catch(e) {}
+        }
         ServerAPI.setToken("");
         state = freshState();
         AntiCheat.signState(state);
-        saveGame();
+        try { localStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state)); } catch(e) {}
         renderAll();
         updateAuthUI();
         checkAdminStatus();
@@ -8973,8 +8980,6 @@ setInterval(() => {
     deviceRevokeCounter++;
     if (deviceRevokeCounter >= 5) {
         deviceRevokeCounter = 0;
-        checkDeviceRevocation();
-    checkGlobalSeasonReset();
     }
 
     tradePollerCounter++;
