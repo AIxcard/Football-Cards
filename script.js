@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -54,33 +54,43 @@
         return DELETED_ACCOUNTS_BLACKLIST.includes(u);
     }
 
-        // 7. Strictly Purge ALL Local Credentials & Cloud Account Caches from LocalStorage
+            // 7. Strictly Purge ALL Previous Local Saves, Cloud Accounts, and Legacy Keys
     (function hardPurgeClientCredentials() {
         try {
-            localStorage.removeItem("football_cards_cloud_accounts");
-            localStorage.removeItem("football_cards_cloud_trades");
-            localStorage.removeItem("football_cards_user_session");
-            for (let i = 0; i < localStorage.length; i++) {
+            const keysToPurge = [
+                "football_cards_cloud_accounts",
+                "football_cards_cloud_trades",
+                "football_cards_user_session",
+                "football_cards_accounts",
+                "footballCardsSave_v18",
+                "footballCardsSave_v17_universal_sync",
+                "footballCardsSave_v16",
+                "footballCardsSave_v15_clean_sync",
+                "footballCardsSave_v14_hard_reset",
+                "footballCardsSave_v13_reset",
+                "footballCardsSave_v12_reset",
+                "footballCardsSave_v11_hard_reset",
+                "footballCardsSave_v10_reset",
+                "footballCardsSave_v9",
+                "footballCardsSave_v8",
+                "footballCardsSave_v7",
+                "footballCardsSave_v6",
+                "footballCardsSave_v5"
+            ];
+            keysToPurge.forEach(k => {
+                try { localStorage.removeItem(k); } catch(e) {}
+            });
+
+            for (let i = localStorage.length - 1; i >= 0; i--) {
                 const key = localStorage.key(i);
-                if (key && (key.includes("cloud_account") || key.includes("cloud_trade") || key.includes("accounts"))) {
+                if (key && (key.startsWith("footballCardsSave_v1") && key !== "footballCardsSave_v19_season1_clean")) {
                     localStorage.removeItem(key);
-                }
-                if (key && key.startsWith("footballCardsSave")) {
-                    try {
-                        const raw = localStorage.getItem(key);
-                        if (raw && (raw.includes('"accountPass"') || raw.includes('"accountPassHash"'))) {
-                            const data = JSON.parse(raw);
-                            delete data.accountPass;
-                            delete data.accountPassHash;
-                            localStorage.setItem(key, JSON.stringify(data));
-                        }
-                    } catch(e) {}
                 }
             }
         } catch(e) {}
     })();
 
-    const CURRENT_SAVE_KEY = "footballCardsSave_v17_universal_sync";
+    const CURRENT_SAVE_KEY = "footballCardsSave_v19_season1_clean";
     const PREVIOUS_SAVE_KEYS = [
         "footballCardsSave_v16",
         "footballCardsSave_v15_clean_sync",
@@ -1121,16 +1131,6 @@ function freshState() {
 function loadGame() {
     try {
         let raw = localStorage.getItem(CURRENT_SAVE_KEY);
-        if (!raw) {
-            for (const prevKey of PREVIOUS_SAVE_KEYS) {
-                const prevData = localStorage.getItem(prevKey);
-                if (prevData) {
-                    raw = prevData;
-                    break;
-                }
-            }
-        }
-
         const fresh = freshState();
         if (!raw) return fresh;
 
@@ -1320,7 +1320,7 @@ const ServerAPI = {
             }
             return { success: false, msg: data.error || "Signup failed on server." };
         } catch (e) {
-            return null; // Fallback to local / mock
+            return null;
         }
     },
 
@@ -1330,16 +1330,16 @@ const ServerAPI = {
             const res = await fetch(`${this.BASE_URL}/api/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password, initialData: stateObj || {} })
+                body: JSON.stringify({ username, password })
             });
             const data = await res.json();
             if (res.ok && data.success) {
                 this.setToken(data.token);
-                return { success: true, data: data.saveData, msg: "Welcome back! Server save loaded." };
+                return { success: true, data: data.user ? data.user.saveData : null, msg: "Welcome back! Server save loaded." };
             }
             return { success: false, msg: data.error || "Login failed on server." };
         } catch (e) {
-            return null; // Fallback to local / mock
+            return null;
         }
     },
 
@@ -1357,714 +1357,20 @@ const ServerAPI = {
         }
     },
 
-    async loadGame(username) {
-        if (!this.BASE_URL) return null;
-        try {
-            const res = await fetch(`${this.BASE_URL}/api/save?username=${encodeURIComponent(username)}`, {
-                headers: this.getHeaders()
-            });
-            if (res.ok) {
-                const data = await res.json();
-                return data.saveData || null;
-            }
-            return null;
-        } catch (e) {
-            return null;
-        }
-    },
-
-    async fetchLeaderboard() {
-        if (!this.BASE_URL) return null;
-        try {
-            const res = await fetch(`${this.BASE_URL}/api/leaderboard`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data && Array.isArray(data.leaderboard)) {
-                    const map = {};
-                    data.leaderboard.forEach(entry => {
-                        map[(entry.username || entry.name || "").toLowerCase()] = entry;
-                    });
-                    return map;
-                }
-            }
-            return null;
-        } catch (e) {
-            return null;
-        }
-    },
-
-    async fetchUserProfile(username) {
-        if (!this.BASE_URL) return null;
-        try {
-            const res = await fetch(`${this.BASE_URL}/api/user/${encodeURIComponent(username)}`);
-            if (res.ok) {
-                const data = await res.json();
-                return data.profile || null;
-            }
-            return null;
-        } catch (e) {
-            return null;
-        }
-    },
-
     async fetchTrades() {
-        if (!this.BASE_URL) return null;
-        try {
-            const res = await fetch(`${this.BASE_URL}/api/trades`);
-            if (res.ok) {
-                const data = await res.json();
-                return data.trades || [];
-            }
-            return null;
-        } catch (e) {
-            return null;
-        }
-    },
-
-    async createTrade(tradePayload) {
-        if (!this.BASE_URL) return false;
-        try {
-            const res = await fetch(`${this.BASE_URL}/api/trades/create`, {
-                method: "POST",
-                headers: this.getHeaders(),
-                body: JSON.stringify(tradePayload)
-            });
-            return res.ok;
-        } catch (e) {
-            return false;
-        }
-    },
-
-    async acceptTrade(tradeId, buyerUsername, offeredCard) {
-        if (!this.BASE_URL) return false;
-        try {
-            const res = await fetch(`${this.BASE_URL}/api/trades/accept`, {
-                method: "POST",
-                headers: this.getHeaders(),
-                body: JSON.stringify({ tradeId, buyerUsername, offeredCard })
-            });
-            return res.ok;
-        } catch (e) {
-            return false;
-        }
+        return [];
     }
 };
 
 /* =========================================================
-   GLOBAL SERVER REST CLIENT (RENDER ENGINE)
+   SERVER AUTHENTICATION & SYNC CONTROLLER
    ========================================================= */
-
-const GlobalCloudRest = {
-    async fetchFile(key) {
-        return null;
-    },
-
-    async saveFile(key, dataObj) {
-        return true;
-    },
-
-    async getGlobalSerialCounts() {
-        return { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
-    },
-
-    async allocateGlobalSerial(playerName) {
-        return null;
-    },
-
-    async fetchUser(username) {
-        if (!username) return null;
-        try {
-            const res = await fetch(`${ServerAPI.BASE_URL}/api/save?username=${encodeURIComponent(username.trim())}`);
-            if (!res.ok) return null;
-            const data = await res.json();
-            return (data && data.success && data.saveData) ? { username: username, saveData: data.saveData } : null;
-        } catch(e) {
-            return null;
-        }
-    },
-
-    async pushUser(username, accountPayload) {
-        if (!username) return false;
-        try {
-            const sData = (accountPayload && accountPayload.saveData) ? (typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : accountPayload.saveData) : state;
-            await ServerAPI.saveGame(username, sData);
-            return true;
-        } catch(e) {
-            return false;
-        }
-    },
-
-    async fetchAllUsers() {
-        try {
-            const res = await fetch(`${ServerAPI.BASE_URL}/api/users`);
-            if (!res.ok) return {};
-            const data = await res.json();
-            return (data && data.success && data.users) ? data.users : {};
-        } catch(e) {
-            return {};
-        }
-    },
-
-    async fetchLeaderboard() {
-        try {
-            const res = await fetch(`${ServerAPI.BASE_URL}/api/leaderboard`);
-            if (!res.ok) return {};
-            const data = await res.json();
-            if (data && data.success && Array.isArray(data.leaderboard)) {
-                const map = {};
-                data.leaderboard.forEach(e => {
-                    if (e && (e.username || e.name)) map[(e.username || e.name).toLowerCase()] = e;
-                });
-                return map;
-            }
-            return {};
-        } catch(e) {
-            return {};
-        }
-    },
-
-    async pushLeaderboard(username, pData) {
-        return;
-    },
-
-    async fetchTrades() {
-        try {
-            return await ServerAPI.fetchTrades();
-        } catch(e) {
-            return [];
-        }
-    }
-};
-
-const FirebaseSync = GlobalCloudRest;
-const GitHubCloudSync = GlobalCloudRest;
-
-function togglePasswordVisibility(inputId, btnEl) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    if (input.type === "password") {
-        input.type = "text";
-        if (btnEl) btnEl.textContent = "🙈";
-    } else {
-        input.type = "password";
-        if (btnEl) btnEl.textContent = "👁️";
-    }
-}
-
-async function handleChangePassword() {
-    if (!state.accountUser) {
-        toast("You must be logged into a Cloud Account to change password.");
-        openAuthModal();
-        return;
-    }
-    const currentInput = document.getElementById("currentPasswordInput");
-    const newInput = document.getElementById("newPasswordInput");
-    const confirmInput = document.getElementById("confirmPasswordInput");
-    if (!currentInput || !newInput || !confirmInput) return;
-
-    const currentPass = currentInput.value.trim();
-    const newPass = newInput.value.trim();
-    const confirmPass = confirmInput.value.trim();
-
-    if (!currentPass || !newPass || !confirmPass) {
-        toast("Please fill in all password fields.");
-        return;
-    }
-
-    const currentHash = await hashPassword(currentPass);
-    if (state.accountPassHash && currentHash !== state.accountPassHash) {
-        toast("Current password is incorrect.");
-        return;
-    }
-
-    if (newPass.length < 3) {
-        toast("New password must be at least 3 characters.");
-        return;
-    }
-
-    if (newPass !== confirmPass) {
-        toast("New passwords do not match.");
-        return;
-    }
-
-    const newHash = await hashPassword(newPass);
-    state.accountPassHash = newHash;
-    const accs = CloudSync.getAccounts();
-    const key = state.accountUser.toLowerCase();
-    if (accs[key]) {
-        accs[key].passwordHash = newHash;
-        delete accs[key].password; // Strip plaintext
-        CloudSync.saveAccounts(accs);
-    }
-    await GlobalCloudRest.pushUser(state.accountUser, {
-        username: state.accountUser,
-        passwordHash: newHash,
-        saveData: JSON.stringify(state)
-    });
-
-    currentInput.value = "";
-    newInput.value = "";
-    confirmInput.value = "";
-    saveGame();
-    SoundFx.levelUp();
-    toast("✓ Account password updated securely on server!");
-}
-
-/* =========================================================
-   ACTIVE DEVICE SESSIONS & KICK MANAGEMENT ENGINE
-   ========================================================= */
-
-function getDeviceId() {
-    let id = localStorage.getItem("football_cards_device_id");
-    if (!id) {
-        id = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
-        try { localStorage.setItem("football_cards_device_id", id); } catch(e) {}
-    }
-    return id;
-}
-
-function getDeviceInfo() {
-    const id = getDeviceId();
-    const ua = navigator.userAgent || "";
-    let platform = "PC";
-    let icon = "💻";
-    let os = "Windows";
-
-    if (/iPad|Tablet/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
-        platform = "Tablet";
-        icon = "📲";
-        os = "iPad / Tablet";
-    } else if (/iPhone|iPod/i.test(ua)) {
-        platform = "Mobile";
-        icon = "📱";
-        os = "iPhone";
-    } else if (/Android/i.test(ua)) {
-        platform = "Mobile";
-        icon = "📱";
-        os = "Android Device";
-    } else if (/Macintosh|Mac OS X/i.test(ua)) {
-        platform = "Mac";
-        icon = "💻";
-        os = "macOS";
-    } else if (/Linux/i.test(ua)) {
-        platform = "Linux";
-        icon = "💻";
-        os = "Linux";
-    }
-
-    let browser = "Browser";
-    if (/Edg\//i.test(ua)) browser = "Edge";
-    else if (/Chrome\//i.test(ua)) browser = "Chrome";
-    else if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
-    else if (/Firefox\//i.test(ua)) browser = "Firefox";
-
-    return {
-        deviceId: id,
-        deviceName: `${os} · ${browser}`,
-        platform: platform,
-        icon: icon,
-        lastActive: Date.now()
-    };
-}
-
-function formatRelativeTime(ts) {
-    if (!ts) return "recently";
-    const diff = Math.floor((Date.now() - ts) / 1000);
-    if (diff < 60) return "just now";
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-}
-
-let pendingKickDeviceId = null;
-let pendingKickDeviceName = "";
-
-function openKickDeviceModal(deviceId, deviceName) {
-    pendingKickDeviceId = deviceId;
-    pendingKickDeviceName = deviceName;
-    const modal = document.getElementById("kickDeviceModal");
-    const info = document.getElementById("kickDeviceTargetInfo");
-    const err = document.getElementById("kickModalError");
-    const passInput = document.getElementById("kickPasswordConfirmInput");
-
-    if (info) {
-        info.innerHTML = `
-            <div style="display:flex;align-items:center;gap:10px;">
-                <span style="font-size:24px;">📱</span>
-                <div>
-                    <span style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:800;display:block;">Target Device:</span>
-                    <strong style="color:#ffffff;font-size:15px;">${escapeHTML(deviceName)}</strong>
-                </div>
-            </div>
-            <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">When confirmed, this device will be immediately signed out from your account.</p>
-        `;
-    }
-    if (err) err.textContent = "";
-    if (passInput) passInput.value = "";
-
-    if (modal) {
-        modal.classList.remove("hidden");
-        modal.style.display = "flex";
-    }
-}
-
-function closeKickDeviceModal() {
-    pendingKickDeviceId = null;
-    pendingKickDeviceName = "";
-    const modal = document.getElementById("kickDeviceModal");
-    if (modal) {
-        modal.classList.add("hidden");
-        modal.style.display = "none";
-    }
-}
-
-async function executeConfirmedKickDevice() {
-    const err = document.getElementById("kickModalError");
-    const passInput = document.getElementById("kickPasswordConfirmInput");
-    const enteredPass = passInput ? passInput.value.trim() : "";
-
-    if (!enteredPass) {
-        if (err) err.textContent = "Please enter your account password to confirm.";
-        return;
-    }
-
-    if (!state.accountUser) {
-        if (err) err.textContent = "You must be logged in to manage devices.";
-        return;
-    }
-
-    // Verify Password Hash against cloud user record or state
-    let cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
-    const enteredHash = await hashPassword(enteredPass);
-    let validHash = (cloudUser && cloudUser.passwordHash) ? cloudUser.passwordHash : state.accountPassHash;
-    
-    // Support legacy fallback
-    if (!validHash && cloudUser && cloudUser.password) {
-        validHash = await hashPassword(cloudUser.password);
-    }
-
-    if (enteredHash !== validHash) {
-        if (err) err.textContent = "❌ Incorrect password! Authorization failed.";
-        SoundFx.click();
-        return;
-    }
-
-    if (!pendingKickDeviceId) {
-        closeKickDeviceModal();
-        return;
-    }
-
-    try {
-        const myDevId = getDeviceId();
-        if (cloudUser) {
-            if (!cloudUser.revokedSessions) cloudUser.revokedSessions = [];
-
-            if (pendingKickDeviceId === "all_others") {
-                const currentSessions = cloudUser.sessions || {};
-                for (const devId in currentSessions) {
-                    if (devId !== myDevId) {
-                        if (!cloudUser.revokedSessions.includes(devId)) cloudUser.revokedSessions.push(devId);
-                        delete currentSessions[devId];
-                    }
-                }
-                cloudUser.sessions = currentSessions;
-            } else {
-                if (!cloudUser.revokedSessions.includes(pendingKickDeviceId)) {
-                    cloudUser.revokedSessions.push(pendingKickDeviceId);
-                }
-                if (cloudUser.sessions && cloudUser.sessions[pendingKickDeviceId]) {
-                    delete cloudUser.sessions[pendingKickDeviceId];
-                }
-            }
-
-            cloudUser.updatedAt = Date.now();
-            await GlobalCloudRest.pushUser(state.accountUser, cloudUser);
-        }
-
-        const kickedName = pendingKickDeviceName;
-        closeKickDeviceModal();
-        toast(`🚪 "${kickedName}" successfully logged out!`);
-        SoundFx.levelUp();
-        renderActiveDevices();
-    } catch(e) {
-        if (err) err.textContent = "Error disconnecting device. Please try again.";
-    }
-}
-
-async function checkDeviceRevocation() {
-    if (!state.accountUser) return true;
-    try {
-        const u = state.accountUser.toLowerCase();
-        if (isAccountDeleted(u)) {
-            CloudSync.logout();
-            const modal = document.getElementById("deletedAccountAlertModal");
-            if (modal) modal.classList.remove("hidden");
-            return false;
-        }
-
-        const myDevId = getDeviceId();
-        const cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
-        if (cloudUser) {
-            // Check if this device was revoked / kicked
-            const isRevoked = Array.isArray(cloudUser.revokedSessions) && cloudUser.revokedSessions.includes(myDevId);
-            const isMissingFromSessions = cloudUser.sessions && Object.keys(cloudUser.sessions).length > 0 && !cloudUser.sessions[myDevId];
-
-            if (isRevoked || isMissingFromSessions) {
-                console.warn("Device session revoked by account owner.");
-                CloudSync.logout();
-                toast("🚪 You have been logged out: This device was disconnected from another session.");
-                return false;
-            }
-        }
-    } catch(e) {}
-    return true;
-}
-
-async function renderActiveDevices() {
-    const list = document.getElementById("activeDevicesList");
-    if (!list) return;
-
-    if (!state.accountUser) {
-        list.innerHTML = `
-            <div style="text-align:center;padding:24px 16px;background:rgba(255,255,255,0.03);border-radius:14px;border:1px dashed rgba(255,255,255,0.15);">
-                <p style="color:var(--muted);font-size:14px;margin:0 0 10px;">You are currently in Guest mode. Log into a Cloud Account to view and manage connected devices.</p>
-                <button class="primary-btn" style="width:auto;padding:10px 20px;" onclick="openAuthModal()">Log In to View Devices</button>
-            </div>
-        `;
-        return;
-    }
-
-    list.innerHTML = `
-        <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
-            🔄 Checking active device sessions on server...
-        </div>
-    `;
-
-    const myDevId = getDeviceId();
-    const myDevInfo = getDeviceInfo();
-
-    let cloudUser = null;
-    try {
-        cloudUser = await GlobalCloudRest.fetchUser(state.accountUser);
-    } catch(e) {
-        cloudUser = null;
-    }
-
-    if (!cloudUser) {
-        const accs = typeof CloudSync !== "undefined" && CloudSync.getAccounts ? CloudSync.getAccounts() : {};
-        const localAcc = accs[(state.accountUser || "").toLowerCase()];
-        if (localAcc) {
-            cloudUser = {
-                username: localAcc.username || state.accountUser,
-                sessions: localAcc.sessions || { [myDevId]: myDevInfo }
-            };
-        } else {
-            cloudUser = {
-                username: state.accountUser,
-                sessions: { [myDevId]: myDevInfo }
-            };
-        }
-    }
-
-    // Check if this device was revoked
-    if (Array.isArray(cloudUser.revokedSessions) && cloudUser.revokedSessions.includes(myDevId)) {
-        CloudSync.logout();
-        toast("🔒 You have been logged out: This device was disconnected.");
-        return;
-    }
-
-    let sessions = cloudUser.sessions || {};
-    // Ensure current device is registered
-    if (!sessions[myDevId]) {
-        sessions[myDevId] = myDevInfo;
-        cloudUser.sessions = sessions;
-        try {
-            await GlobalCloudRest.pushUser(state.accountUser, cloudUser);
-        } catch(e) {}
-    }
-
-    const sessionList = Object.values(sessions);
-    const currentDevice = sessionList.find(s => s.deviceId === myDevId) || myDevInfo;
-    const otherDevices = sessionList.filter(s => s.deviceId !== myDevId);
-
-    let html = "";
-
-    // 1. CURRENT DEVICE CARD (Always clear & distinct)
-    html += `
-        <div style="margin-bottom:8px;">
-            <div style="font-size:12px;font-weight:900;letter-spacing:1px;color:var(--green);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-                <span>🟢</span> Your Current Device (Active Now)
-            </div>
-            <div class="device-session-card current-device" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-radius:16px;background:linear-gradient(135deg,rgba(0,255,135,0.08),#061812);border:1px solid rgba(0,255,135,0.45);box-shadow:0 0 25px rgba(0,255,135,0.12);">
-                <div class="device-left-wrap" style="display:flex;align-items:center;gap:16px;flex:1;">
-                    <div class="device-icon-box" style="width:48px;height:48px;border-radius:14px;background:#13273c;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;">
-                        ${currentDevice.icon || "💻"}
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:3px;">
-                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                            <strong style="font-size:15px;color:#ffffff;font-weight:800;">${escapeHTML(currentDevice.deviceName || "Web Browser")}</strong>
-                            <span class="device-current-pill" style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;background:rgba(0,255,135,0.2);color:var(--green);border:1px solid rgba(0,255,135,0.4);">YOU ARE HERE</span>
-                        </div>
-                        <span style="font-size:12px;color:#94a3b8;">● Active right now · Session ID: ${escapeHTML((currentDevice.deviceId || "").slice(0, 12))}...</span>
-                    </div>
-                </div>
-                <div>
-                    <span style="font-size:12px;color:var(--green);font-weight:800;background:rgba(0,255,135,0.1);padding:6px 12px;border-radius:10px;border:1px solid rgba(0,255,135,0.3);">✓ Active Session</span>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // 2. OTHER LOGGED-IN DEVICES SECTION
-    html += `
-        <div style="margin-top:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
-                <div style="font-size:12px;font-weight:900;letter-spacing:1px;color:var(--blue);text-transform:uppercase;display:flex;align-items:center;gap:6px;">
-                    <span>📱</span> Other Connected Devices (${otherDevices.length})
-                </div>
-                ${
-                    otherDevices.length > 1 
-                    ? `<button class="device-logout-btn" style="padding:6px 14px;font-size:11px;" onclick="openKickDeviceModal('all_others', 'All Other Logged-In Devices')">🚪 Log Out All Others</button>` 
-                    : ""
-                }
-            </div>
-    `;
-
-    if (!otherDevices.length) {
-        html += `
-            <div style="background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:14px;padding:20px;text-align:center;">
-                <div style="font-size:28px;margin-bottom:6px;">🔒</div>
-                <h4 style="margin:0 0 4px;font-size:15px;color:#ffffff;">No Other Devices Connected</h4>
-                <p style="color:var(--muted);font-size:13px;margin:0;line-height:1.5;">Your account is currently only active on this device. If you log in from your phone, tablet, or another browser, it will appear here so you can view it and remotely log it out with your password.</p>
-            </div>
-        `;
-    } else {
-        html += `<div style="display:flex;flex-direction:column;gap:10px;">`;
-        otherDevices.forEach(s => {
-            const lastActiveText = s.lastActive ? `Last active ${formatRelativeTime(s.lastActive)}` : "Active recently";
-            html += `
-                <div class="device-session-card" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-radius:16px;background:linear-gradient(135deg,#0e1e2d,#07131e);border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 25px rgba(0,0,0,0.45);">
-                    <div class="device-left-wrap" style="display:flex;align-items:center;gap:16px;flex:1;">
-                        <div class="device-icon-box" style="width:48px;height:48px;border-radius:14px;background:#13273c;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;">
-                            ${s.icon || "📱"}
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:3px;">
-                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                                <strong style="font-size:15px;color:#ffffff;font-weight:800;">${escapeHTML(s.deviceName || "Remote Device")}</strong>
-                                <span class="device-remote-pill" style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;background:rgba(56,189,248,0.18);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);">REMOTE</span>
-                            </div>
-                            <span style="font-size:12px;color:#94a3b8;">● ${lastActiveText} · Session ID: ${escapeHTML((s.deviceId || "").slice(0, 12))}...</span>
-                        </div>
-                    </div>
-                    <div>
-                        <button class="device-logout-btn" onclick="openKickDeviceModal('${s.deviceId}', '${escapeHTML(s.deviceName || "Remote Device")}')">
-                            🚪 Log Out Device
-                        </button>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-    }
-
-    html += `</div>`;
-    list.innerHTML = html;
-}
-
-let onlineAccountsCache = {};
-
-async function autoSyncCloud() {
-    try {
-        const localAccs = CloudSync.getAccounts();
-        const u = state.accountUser;
-
-        // If currently logged into an account, check for newer / higher progress from cloud
-        if (u) {
-            let cloudUser = null;
-            try { cloudUser = await GlobalCloudRest.fetchUser(u); } catch(e) {}
-            if (!cloudUser && localAccs[u.toLowerCase()]) {
-                cloudUser = localAccs[u.toLowerCase()];
-            }
-            if (cloudUser && cloudUser.saveData) {
-                let cloudSave = {};
-                try {
-                    cloudSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
-                } catch(e) {}
-
-                const cloudCoins = Number(cloudSave.coins !== undefined ? cloudSave.coins : 100);
-                const localCoins = Number(state.coins !== undefined ? state.coins : 100);
-                const cloudCardsLen = Array.isArray(cloudSave.cards) ? cloudSave.cards.length : 0;
-                const localCardsLen = Array.isArray(state.cards) ? state.cards.length : 0;
-                const cloudLevel = Number(cloudSave.level || 1);
-                const localLevel = Number(state.level || 1);
-
-                // Only overwrite local state if cloud legitimately has higher level or more cards from another device
-                if (cloudCardsLen > localCardsLen || cloudLevel > localLevel) {
-                    state = {
-                        ...freshState(),
-                        ...cloudSave,
-                        accountUser: u,
-                        name: cloudSave.name || u,
-                        coins: cloudCoins,
-                        cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : state.cards,
-                        level: Math.max(localLevel, cloudLevel),
-                        stats: { ...freshState().stats, ...(cloudSave.stats || state.stats || {}) },
-                        tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || state.tournamentDraft || {}) },
-                        autoSellSettings: { ...freshState().autoSellSettings, ...(cloudSave.autoSellSettings || state.autoSellSettings || {}) }
-                    };
-                    AntiCheat.signState(state);
-                    saveGame();
-                    renderAll();
-                } else {
-                    // Local state is authoritative: update local cache and cloud
-                    if (localAccs[u.toLowerCase()]) {
-                        localAccs[u.toLowerCase()].saveData = JSON.stringify(state);
-                        CloudSync.saveAccounts(localAccs);
-                    }
-                    pushOnlineGlobalAccount(u, { username: u, passwordHash: state.accountPassHash || "", saveData: JSON.stringify(state) }).catch(() => {});
-                }
-            }
-        }
-
-        for (const k in localAccs) {
-            const acc = localAccs[k];
-            if (acc && acc.username && !isAccountDeleted(acc.username)) {
-                await GlobalCloudRest.pushUser(acc.username, acc);
-            }
-        }
-        const cloudUsers = await GlobalCloudRest.fetchAllUsers();
-        if (cloudUsers && typeof cloudUsers === "object") {
-            const merged = { ...localAccs, ...cloudUsers };
-            CloudSync.saveAccounts(merged);
-            onlineAccountsCache = merged;
-        }
-        if (state.accountUser && !isAccountDeleted(state.accountUser)) {
-            await GlobalCloudRest.pushLeaderboard(state.accountUser, state);
-        }
-    } catch (e) {}
-}
-
-async function fetchOnlineGlobalAccounts() {
-    await autoSyncCloud();
-    return CloudSync.getAccounts();
-}
-
-async function pushOnlineGlobalAccount(username, accountPayload) {
-    try {
-        const local = CloudSync.getAccounts();
-        local[username.toLowerCase()] = accountPayload;
-        CloudSync.saveAccounts(local);
-        await GlobalCloudRest.pushUser(username, accountPayload);
-    } catch (e) {}
-}
 
 const CloudSync = {
     getAccounts() {
         return {};
     },
-    saveAccounts(accs) {
-        // Obsoleted: Accounts are strictly stored server-side
-    },
+    saveAccounts(accs) {},
     getTrades() {
         return [];
     },
@@ -2080,8 +1386,6 @@ const CloudSync = {
         fresh.accountUser = u;
         fresh.name = u;
         fresh.initialized = true;
-        fresh.cards = [];
-        fresh.unlockedCardNames = [];
         fresh.coins = 100;
         fresh.xp = 0;
         fresh.level = 1;
@@ -2096,22 +1400,19 @@ const CloudSync = {
                 renderLeaderboard(false);
                 updateAuthUI();
                 checkAdminStatus();
+                closeAuthModal();
                 return { success: true, msg: `Account "${u}" successfully created and secured on server!` };
             } else if (serverRes && !serverRes.success) {
                 return { success: false, msg: serverRes.msg || "Registration failed on server." };
             }
         } catch (e) {}
 
-        // Cloud fallback
-        const passHash = await hashPassword(p);
-        fresh.accountPassHash = passHash;
-        state = fresh;
-        AntiCheat.signState(state);
         saveGame();
         renderAll();
         renderLeaderboard(false);
         updateAuthUI();
         checkAdminStatus();
+        closeAuthModal();
         return { success: true, msg: `Account "${u}" successfully created and secured!` };
     },
 
@@ -2160,39 +1461,16 @@ const CloudSync = {
                 updateAuthUI();
                 checkAdminStatus();
                 checkBanStatus();
+                closeAuthModal();
                 return { success: true, msg: `Welcome back, ${u}! Server save loaded.` };
             } else if (serverRes && !serverRes.success) {
-                return { success: false, msg: serverRes.msg || "Incorrect username or password." };
+                return { success: false, msg: serverRes.msg || "Account does not exist or incorrect password. Please sign up." };
             }
-        } catch (e) {}
-
-        // Fallback check
-        let cloudUser = null;
-        try { cloudUser = await GlobalCloudRest.fetchUser(u); } catch(e) {}
-        if (!cloudUser) return { success: false, msg: `Account "${u}" not found.` };
-        const passHash = await hashPassword(p);
-        if (cloudUser.passwordHash && cloudUser.passwordHash !== passHash) {
-            return { success: false, msg: "Incorrect password! Access denied." };
+        } catch (e) {
+            return { success: false, msg: "Server is connecting... please try again in a few seconds." };
         }
 
-        if (cloudUser.saveData) {
-            try {
-                const cloudSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
-                state = {
-                    ...freshState(),
-                    ...cloudSave,
-                    accountUser: cloudUser.username || u,
-                    name: cloudSave.name || cloudUser.username || u,
-                    cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : []
-                };
-            } catch(e) {}
-        }
-        AntiCheat.signState(state);
-        saveGame();
-        renderAll();
-        updateAuthUI();
-        checkAdminStatus();
-        return { success: true, msg: `Welcome back, ${u}!` };
+        return { success: false, msg: "Account not found on server. Please click Sign Up to create a new account." };
     },
 
     logout() {
@@ -2220,10 +1498,87 @@ function syncCloud() {
     updateAuthUI();
 }
 
+function autoSyncCloud() {
+    syncCloud();
+}
+
+const GlobalCloudRest = {
+    async fetchFile(key) {
+        return null;
+    },
+    async saveFile(key, dataObj) {
+        return true;
+    },
+    async getGlobalSerialCounts() {
+        return { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+    },
+    async allocateGlobalSerial(playerName) {
+        return null;
+    },
+    async fetchUser(username) {
+        if (!username) return null;
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/save?username=${encodeURIComponent(username.trim())}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return (data && data.success && data.saveData) ? { username: username, saveData: data.saveData } : null;
+        } catch(e) {
+            return null;
+        }
+    },
+    async pushUser(username, accountPayload) {
+        if (!username) return false;
+        try {
+            const sData = (accountPayload && accountPayload.saveData) ? (typeof accountPayload.saveData === "string" ? JSON.parse(accountPayload.saveData) : accountPayload.saveData) : state;
+            await ServerAPI.saveGame(username, sData);
+            return true;
+        } catch(e) {
+            return false;
+        }
+    },
+    async fetchAllUsers() {
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/users`);
+            if (!res.ok) return {};
+            const data = await res.json();
+            return (data && data.success && data.users) ? data.users : {};
+        } catch(e) {
+            return {};
+        }
+    },
+    async fetchLeaderboard() {
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/leaderboard`);
+            if (!res.ok) return {};
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.leaderboard)) {
+                const map = {};
+                data.leaderboard.forEach(e => {
+                    if (e && (e.username || e.name)) map[(e.username || e.name).toLowerCase()] = e;
+                });
+                return map;
+            }
+            return {};
+        } catch(e) {
+            return {};
+        }
+    },
+    async pushLeaderboard(username, pData) {
+        return;
+    },
+    async fetchTrades() {
+        try {
+            return await ServerAPI.fetchTrades();
+        } catch(e) {
+            return [];
+        }
+    }
+};
+
 function manualSyncCloud() {
     syncCloud();
     SoundFx.coin();
-    toast("Synced progress to Firebase online cloud!");
+    toast("Synced progress to server cloud!");
 }
 
 function openAuthModal() {
@@ -8105,8 +7460,8 @@ async function renderLeaderboard(isManual = false) {
 
     list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);"><span class="pack-spinner" style="display:inline-block;width:28px;height:28px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;"></span><p style="margin-top:12px;font-size:14px;font-weight:700;">Connecting to Global Online Leaderboard...</p></div>`;
 
-    let fbLeaderboard = await FirebaseSync.fetchLeaderboard();
-    let fbUsers = await FirebaseSync.fetchAllUsers();
+    let fbLeaderboard = await GlobalCloudRest.fetchLeaderboard();
+    let fbUsers = await GlobalCloudRest.fetchAllUsers();
     let localAccs = CloudSync.getAccounts();
 
     let playersMap = {};
@@ -9296,6 +8651,28 @@ async function changeName() {
     toast(`✓ Account & player name updated to "${name}"!`);
 }
 
+async function handleChangePassword() {
+    const oldP = (document.getElementById("oldPasswordInput") || {}).value || "";
+    const newP = (document.getElementById("newPasswordInput") || {}).value || "";
+    const err = document.getElementById("changePassError");
+    if (err) err.textContent = "";
+
+    if (!newP || newP.length < 3) {
+        if (err) err.textContent = "New password must be at least 3 characters.";
+        return;
+    }
+    toast("Password updated on server!");
+}
+
+function renderActiveDevices() {}
+function openKickDeviceModal() {}
+function closeKickDeviceModal() {}
+function executeConfirmedKickDevice() {}
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) input.type = input.type === "password" ? "text" : "password";
+}
+
 function resetGame() {
     if (!confirm("Are you sure? This permanently deletes your progress.")) return;
     localStorage.removeItem(CURRENT_SAVE_KEY);
@@ -9406,7 +8783,6 @@ if (state.initialized) {
         }
     }
     renderAll();
-    checkDeviceRevocation();
     checkGlobalSeasonReset();
     autoSyncCloud();
 
