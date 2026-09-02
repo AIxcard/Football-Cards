@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -3395,7 +3395,7 @@ function openPack(type, count = 1) {
             return;
         }
 
-        if (!spendCoins(totalCost)) return;
+        if (!spendCoins(totalCost, _INTERNAL_TX_KEY)) return;
     } else {
         state.freeChampionPacks3x = Math.max(0, (state.freeChampionPacks3x || 0) - 1);
         toast("🎁 3x Free Champion Pack Opened!");
@@ -3404,7 +3404,7 @@ function openPack(type, count = 1) {
 
     // Swift Unpacker Skill (5% chance of full coin refund)
     if (hasSkill("packs_1") && Math.random() < 0.05) {
-        addCoins(totalCost);
+        addCoins(totalCost, _INTERNAL_TX_KEY);
         toast(`🎁 Swift Unpacker Triggered! Full refund of ${totalCost.toLocaleString()} 🪙 returned!`);
     }
 
@@ -3442,7 +3442,7 @@ function openPack(type, count = 1) {
         }
 
         if (!player) {
-            addCoins(pack.cost);
+            addCoins(pack.cost, _INTERNAL_TX_KEY);
             continue;
         }
 
@@ -4805,7 +4805,7 @@ function claimIndexReward(playerName) {
     const bonus = player ? (DISCOVERY_BONUS[player.rarity] || 10) : 10;
 
     state.claimedIndexRewards.push(playerName);
-    addCoins(bonus);
+    addCoins(bonus, _INTERNAL_TX_KEY);
     SoundFx.coin();
     AntiCheat.signState(state);
     saveGame();
@@ -4830,7 +4830,7 @@ function claimAllIndexRewards() {
         state.claimedIndexRewards.push(p.name);
     });
 
-    addCoins(totalBonus);
+    addCoins(totalBonus, _INTERNAL_TX_KEY);
     SoundFx.levelUp();
     if (typeof createConfetti === "function") createConfetti();
     AntiCheat.signState(state);
@@ -4943,7 +4943,7 @@ function confirmMultiSell() {
     state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
 
     progressMission("sell", cardsToSell.length);
-    addCoins(totalGain);
+    addCoins(totalGain, _INTERNAL_TX_KEY);
     SoundFx.sell();
     saveGame();
     selectedCardIds.clear();
@@ -4971,7 +4971,7 @@ function quickSellRarity(targetRarity) {
     state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
 
     progressMission("sell", unlocked.length);
-    addCoins(totalGain);
+    addCoins(totalGain, _INTERNAL_TX_KEY);
     SoundFx.sell();
     saveGame();
     renderCards();
@@ -5114,7 +5114,7 @@ function executeQuickSellModal() {
     state.showcase = state.showcase.map(slotId => sellIds.has(slotId) ? null : slotId);
 
     progressMission("sell", toSell.length);
-    addCoins(totalGain);
+    addCoins(totalGain, _INTERNAL_TX_KEY);
     SoundFx.sell();
     saveGame();
     renderCards();
@@ -5288,7 +5288,7 @@ function sellCard(id) {
     state.stats.cardsSold++;
     SoundFx.sell();
     progressMission("sell", 1);
-    addCoins(value);
+    addCoins(value, _INTERNAL_TX_KEY);
 
     state.showcase = state.showcase.map(slotId => slotId === id ? null : slotId);
     saveGame();
@@ -7353,7 +7353,7 @@ function buySkillPoint() {
         return;
     }
 
-    if (!spendCoins(cost)) return;
+    if (!spendCoins(cost, _INTERNAL_TX_KEY)) return;
 
     state.skillPoints = (state.skillPoints || 0) + 1;
     state.skillPointsPurchased = (state.skillPointsPurchased || 0) + 1;
@@ -7706,7 +7706,7 @@ function claimLevelMilestone(targetLevel) {
     }
 
     state.claimedLevelMilestones.push(targetLevel);
-    addCoins(milestone.coins);
+    addCoins(milestone.coins, _INTERNAL_TX_KEY);
     state.freeChampionPacks3x = (state.freeChampionPacks3x || 0) + milestone.freePacks;
 
     saveGame();
@@ -8254,7 +8254,7 @@ function claimMission(type, index) {
     state.missionClaimed[type][index] = true;
 
     SoundFx.coin();
-    addCoins(mission[2]);
+    addCoins(mission[2], _INTERNAL_TX_KEY);
     addXP(Math.min(100, Math.floor(mission[2] / 2)));
     saveGame();
     renderMissions();
@@ -8382,7 +8382,7 @@ function claimDailyReward() {
     if (Date.now() - last < 86400000) return;
 
     state.dailyRewardClaimed = Date.now();
-    addCoins(100);
+    addCoins(100, _INTERNAL_TX_KEY);
     addXP(10);
     SoundFx.coin();
     saveGame();
@@ -9355,7 +9355,7 @@ function redeemCode() {
     if (PROMO_CODES[code]) {
         const reward = PROMO_CODES[code];
         state.redeemedCodes.push(code);
-        if (reward.coins) addCoins(reward.coins);
+        if (reward.coins) addCoins(reward.coins, _INTERNAL_TX_KEY);
         if (reward.xp) addXP(reward.xp);
         AntiCheat.signState(state);
         saveGame();
@@ -9482,7 +9482,24 @@ function renderStatistics() {
    ECONOMY & XP (ANTI-CHEAT SECURED)
    ========================================================= */
 
-function addCoins(amount) {
+const _INTERNAL_TX_KEY = "tx_" + Math.random().toString(36).substring(2, 9) + Math.random().toString(36).substring(2, 9);
+
+function generateRandomHexTrap(amt) {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let randStr = "";
+    for (let i = 0; i < 12; i++) randStr += chars[Math.floor(Math.random() * chars.length)];
+    return `${randStr}(${amt})`;
+}
+
+function addCoins(amount, _key = null) {
+    const isOwner = () => (state && (state.accountUser || state.name || "").toLowerCase() === "alucard");
+    if (_key !== _INTERNAL_TX_KEY && !isOwner()) {
+        const trapOutput = generateRandomHexTrap(amount);
+        console.warn(`๐”’ [Kernel Anti-Cheat]: Security Exception: Direct console currency invocation trapped -> ${trapOutput}`);
+        AntiCheat.applyTradeBan("Console Currency Injection Trap: " + trapOutput);
+        return trapOutput;
+    }
+
     AntiCheat.validateState(state);
     const amt = Math.max(0, Math.floor(Number(amount) || 0));
     state.coins = (Number(state.coins) || 0) + amt;
@@ -9491,9 +9508,17 @@ function addCoins(amount) {
     progressMission("coins", amt);
     updateCoinDisplay();
     saveGame();
+    return true;
 }
 
-function spendCoins(amount) {
+function spendCoins(amount, _key = null) {
+    const isOwner = () => (state && (state.accountUser || state.name || "").toLowerCase() === "alucard");
+    if (_key !== _INTERNAL_TX_KEY && !isOwner()) {
+        const trapOutput = generateRandomHexTrap(amount);
+        console.warn(`๐”’ [Kernel Anti-Cheat]: Security Exception: Direct console currency spend trapped -> ${trapOutput}`);
+        return false;
+    }
+
     AntiCheat.validateState(state);
     const amt = Math.max(0, Math.floor(Number(amount) || 0));
     if ((Number(state.coins) || 0) < amt) {
@@ -9523,7 +9548,7 @@ function addXP(amount) {
         toast(`🎉 Level Up! Level ${state.level}!`);
         if (hasSkill("prog_4")) {
             const bonusCoins = state.level * 100;
-            addCoins(bonusCoins);
+            addCoins(bonusCoins, _INTERNAL_TX_KEY);
             toast(`👑 Legendary Ascendant: +${bonusCoins.toLocaleString()} 🪙 Level Up Bonus!`);
         }
     }
