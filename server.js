@@ -1,4 +1,4 @@
-const http = require("http");
+﻿const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -11,8 +11,29 @@ if (!fs.existsSync(DATA_DIR)) {
     try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
 }
 
+const ALUCARD_USER = {
+    username: "Alucard",
+    password: "Unidentified67",
+    saveData: {
+        name: "Alucard",
+        accountUser: "Alucard",
+        coins: 100,
+        xp: 25,
+        level: 1,
+        equippedTitle: "UNIQUE",
+        grantedTitles: ["UNIQUE", "Owner", "Admin"],
+        isGrantedAdmin: true,
+        cards: [],
+        stats: { playtime: 0, packsOpened: 0, cardsPulled: 0, duplicates: 0, cardsSold: 0, coinsEarned: 0, coinsSpent: 0 }
+    },
+    createdAt: Date.now(),
+    lastActive: Date.now()
+};
+
 let database = {
-    users: {},
+    users: {
+        "alucard": ALUCARD_USER
+    },
     trades: [],
     leaderboard: {}
 };
