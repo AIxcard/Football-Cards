@@ -1,18 +1,12 @@
-{
-  "name": "football-cards-server",
+﻿{
+  "name": "football-cards",
   "version": "1.0.0",
-  "description": "Football Cards Authoritative Server Backend",
-  "license": "MIT",
   "private": true,
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo build_ok",
-    "postinstall": "echo install_ok",
-    "test": "echo test_ok"
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "dependencies": {}
+  }
 }
