@@ -54,57 +54,25 @@
         return DELETED_ACCOUNTS_BLACKLIST.includes(u);
     }
 
-    // 7. Auto-Sanitize Existing LocalStorage Passwords & Purge Deleted Accounts on Startup
-    (async function sanitizeStoredAccounts() {
+        // 7. Strictly Purge ALL Local Credentials & Cloud Account Caches from LocalStorage
+    (function hardPurgeClientCredentials() {
         try {
-            // Sanitize Cloud Accounts in LocalStorage
-            const raw = localStorage.getItem("football_cards_cloud_accounts");
-            if (raw) {
-                const accs = JSON.parse(raw);
-                let modified = false;
-                for (const k in accs) {
-                    const acc = accs[k];
-                    if (isAccountDeleted(k) || (acc && isAccountDeleted(acc.username))) {
-                        delete accs[k];
-                        modified = true;
-                        continue;
-                    }
-                    if (acc && acc.password) {
-                        acc.passwordHash = await hashPassword(acc.password);
-                        delete acc.password;
-                        modified = true;
-                    }
-                }
-                if (modified) {
-                    localStorage.setItem("football_cards_cloud_accounts", JSON.stringify(accs));
-                }
-            }
-
-            // Sanitize Trades in LocalStorage
-            const rawTrades = localStorage.getItem("football_cards_cloud_trades");
-            if (rawTrades) {
-                try {
-                    const trades = JSON.parse(rawTrades);
-                    const cleanTrades = trades.filter(t => t && !isAccountDeleted(t.sender) && !isAccountDeleted(t.recipient));
-                    if (cleanTrades.length !== trades.length) {
-                        localStorage.setItem("football_cards_cloud_trades", JSON.stringify(cleanTrades));
-                    }
-                } catch(e) {}
-            }
-
-            // Sanitize Save States in LocalStorage
+            localStorage.removeItem("football_cards_cloud_accounts");
+            localStorage.removeItem("football_cards_cloud_trades");
+            localStorage.removeItem("football_cards_user_session");
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
+                if (key && (key.includes("cloud_account") || key.includes("cloud_trade") || key.includes("accounts"))) {
+                    localStorage.removeItem(key);
+                }
                 if (key && key.startsWith("footballCardsSave")) {
                     try {
-                        const saveRaw = localStorage.getItem(key);
-                        if (saveRaw && saveRaw.includes('"accountPass"')) {
-                            const saveData = JSON.parse(saveRaw);
-                            if (saveData.accountPass) {
-                                saveData.accountPassHash = await hashPassword(saveData.accountPass);
-                                delete saveData.accountPass;
-                                localStorage.setItem(key, JSON.stringify(saveData));
-                            }
+                        const raw = localStorage.getItem(key);
+                        if (raw && (raw.includes('"accountPass"') || raw.includes('"accountPassHash"'))) {
+                            const data = JSON.parse(raw);
+                            delete data.accountPass;
+                            delete data.accountPassHash;
+                            localStorage.setItem(key, JSON.stringify(data));
                         }
                     } catch(e) {}
                 }
@@ -1043,7 +1011,7 @@ function freshState() {
     return {
         initialized: true,
         accountUser: "",
-        accountPassHash: "",
+        
         name: defaultName,
         coins: 100,
         xp: 25,
@@ -1190,7 +1158,7 @@ function loadGame() {
             resetV14WipeDone: true,
             name: activeName,
             accountUser: saved.accountUser || "",
-            accountPassHash: saved.accountPassHash || "",
+            
             coins: finalCoins,
             xp: saved.xp !== undefined ? Number(saved.xp) : 0,
             level: finalLevel,
