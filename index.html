@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=580.0">
+<link rel="stylesheet" href="style.css?v=590.0">
 </head>
 
 <body>
@@ -1829,12 +1829,28 @@
 </div>
 
 <!-- =========================================================
+     GLOBAL GAME RESET NOTIFICATION POPUP
+     ========================================================= -->
+<div id="seasonResetModal" class="modal hidden" style="z-index:99999999;background:rgba(2,6,14,0.92);backdrop-filter:blur(10px);">
+    <div class="modal-box" style="text-align:center;border-color:var(--cyan);max-width:440px;">
+        <div style="font-size:52px;margin-bottom:8px;animation:pulse 2s infinite;">🔄</div>
+        <h2 style="color:#fff;font-size:24px;margin:0 0 8px;font-weight:900;background:linear-gradient(135deg,#00f2fe,#4facfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Game Clean Reset</h2>
+        <div style="background:rgba(0,242,254,0.06);border:1px solid rgba(0,242,254,0.2);border-radius:12px;padding:14px;margin:14px 0;text-align:left;font-size:13px;line-height:1.6;color:#e2e8f0;">
+            <p style="margin:0 0 8px;"><strong>Welcome to the Fresh Start!</strong></p>
+            <p style="margin:0 0 8px;">A complete server security & backend database migration has been completed. All player accounts, inventories, and leaderboards have been cleanly restarted from zero.</p>
+            <p style="margin:0;color:var(--gold);font-weight:700;">✨ Everyone starts on a level playing field — go open packs and climb the new global leaderboard!</p>
+        </div>
+        <button class="primary-btn" style="width:100%;padding:12px;font-size:15px;font-weight:900;background:linear-gradient(135deg,#00f2fe,#4facfe);" onclick="dismissSeasonResetModal()">🚀 Let's Play!</button>
+    </div>
+</div>
+
+<!-- =========================================================
      ACTIVE POTIONS LIVE HUD (BOTTOM RIGHT CORNER)
      ========================================================= -->
 <div id="activePotionsHUD" class="active-potions-hud">
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=580.0"></script>
+<script src="script.js?v=590.0"></script>
 </body>
 </html>
