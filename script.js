@@ -2821,35 +2821,48 @@ function showSecretCutscene(card) {
 
 function rollRarity(rates) {
     const luckMult = getActiveLuckMultiplier();
-    const adjustedRates = { ...rates };
+    
+    // Rarity hierarchy evaluated strictly from RAREST to COMMON
+    const RARITY_HIERARCHY = ["World Class", "Secret", "Mythic", "Legendary", "Epic", "Rare", "Uncommon", "Common"];
+    
+    const adjusted = {};
+    for (const r of RARITY_HIERARCHY) {
+        if (rates[r] !== undefined) {
+            adjusted[r] = Number(rates[r]) || 0;
+        }
+    }
 
     if (luckMult > 1) {
-        let boostedRaritiesWeight = 0;
-        let commonWeight = 0;
-
-        for (const r in adjustedRates) {
-            if (["World Class", "Secret", "Mythic", "Legendary", "Rare", "Epic"].includes(r)) {
-                adjustedRates[r] = (adjustedRates[r] || 0) * luckMult;
-                boostedRaritiesWeight += adjustedRates[r];
-            } else {
-                commonWeight += adjustedRates[r] || 0;
-            }
-        }
-
-        const total = boostedRaritiesWeight + commonWeight;
-        if (total > 0) {
-            for (const r in adjustedRates) {
-                adjustedRates[r] = (adjustedRates[r] / total) * 100;
+        for (const r of ["World Class", "Secret", "Mythic", "Legendary"]) {
+            if (adjusted[r] !== undefined) {
+                adjusted[r] = adjusted[r] * luckMult;
             }
         }
     }
 
-    let random = Math.random() * 100;
-    for (const rarity of Object.keys(adjustedRates)) {
-        random -= adjustedRates[rarity];
-        if (random < 0) return rarity;
+    let totalWeight = 0;
+    for (const r in adjusted) {
+        totalWeight += adjusted[r];
     }
-    return Object.keys(rates)[Object.keys(rates).length - 1];
+
+    if (totalWeight > 0) {
+        for (const r in adjusted) {
+            adjusted[r] = (adjusted[r] / totalWeight) * 100;
+        }
+    }
+
+    const roll = Math.random() * 100;
+    let accumulated = 0;
+    for (const r of RARITY_HIERARCHY) {
+        if (adjusted[r] !== undefined) {
+            accumulated += adjusted[r];
+            if (roll < accumulated) {
+                return r;
+            }
+        }
+    }
+
+    return Object.keys(rates)[Object.keys(rates).length - 1] || "Common";
 }
 
 function choosePlayer(rarity) {
@@ -7474,8 +7487,15 @@ function claimDailyReward() {
     if (Date.now() - last < 86400000) return;
 
     state.dailyRewardClaimed = Date.now();
-    addCoins(100, _INTERNAL_TX_KEY);
-    addXP(10);
+    let coinAmount = 100;
+    let xpAmount = 10;
+    if (hasSkill("econ_1")) coinAmount = Math.round(coinAmount * 1.5);
+    if (hasSkill("prog_2")) {
+        xpAmount += 50;
+        coinAmount += 100;
+    }
+    addCoins(coinAmount, _INTERNAL_TX_KEY);
+    addXP(xpAmount);
     SoundFx.coin();
     saveGame();
     updateDailyReward();
@@ -8698,7 +8718,8 @@ function addCoins(amount, _key = null) {
     }
 
     AntiCheat.validateState(state);
-    const amt = Math.max(0, Math.floor(Number(amount) || 0));
+    let amt = Math.max(0, Math.floor(Number(amount) || 0));
+    if (hasSkill("econ_4")) amt = Math.round(amt * 1.20);
     state.coins = (Number(state.coins) || 0) + amt;
     state.stats.coinsEarned = (Number(state.stats.coinsEarned) || 0) + amt;
     AntiCheat.signState(state);
@@ -9184,6 +9205,7 @@ document.addEventListener("dragstart", function(e) {
         renderPacks,
         LEVEL_MILESTONES,
         refreshTradingHub,
+        rollRarity,
         PACKS,
         CARD_VALUES,
         DUPLICATE_VALUES,
