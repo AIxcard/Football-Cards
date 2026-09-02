@@ -1,4 +1,4 @@
-﻿const http = require("http");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -39,6 +39,18 @@ let database = {
 };
 
 const HARD_WIPE_VERSION = "v18_season_reset";
+
+function saveDatabase() {
+    try {
+        if (!fs.existsSync(DATA_DIR)) {
+            fs.mkdirSync(DATA_DIR, { recursive: true });
+        }
+        fs.writeFileSync(DB_FILE, JSON.stringify(database, null, 2), "utf-8");
+    } catch (e) {
+        console.error("Error saving database:", e);
+    }
+}
+
 function loadDatabase() {
     try {
         if (fs.existsSync(DB_FILE)) {
