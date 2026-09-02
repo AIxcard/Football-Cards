@@ -264,31 +264,31 @@ const AntiCheat = {
 try { AntiCheat.initConsoleProtection(); } catch(e) {}
 
 const DUPLICATE_VALUES = {
-    Common: 5,
-    Uncommon: 12,
-    Rare: 25,
-    Epic: 50,
-    Legendary: 100,
-    Exclusive: 180,
-    Mythic: 350,
-    Secret: 700,
-    Tournament: 1500,
-    "World Class": 3000,
-    Developer: 10000
+    Common: 1,
+    Uncommon: 2,
+    Rare: 5,
+    Epic: 12,
+    Legendary: 30,
+    Exclusive: 60,
+    Mythic: 150,
+    Secret: 350,
+    Tournament: 700,
+    "World Class": 1500,
+    Developer: 3000
 };
 
 const CARD_VALUES = {
-    Common: 5,
-    Uncommon: 15,
-    Rare: 40,
-    Epic: 100,
-    Legendary: 300,
-    Exclusive: 600,
-    Mythic: 1200,
-    Secret: 3000,
-    Tournament: 8000,
-    "World Class": 15000,
-    Developer: 50000
+    Common: 1,
+    Uncommon: 3,
+    Rare: 8,
+    Epic: 20,
+    Legendary: 50,
+    Exclusive: 100,
+    Mythic: 250,
+    Secret: 600,
+    Tournament: 1200,
+    "World Class": 2500,
+    Developer: 5000
 };
 
 const FRAMES = [
@@ -306,10 +306,9 @@ const FRAMES = [
 function getCardValue(card) {
     if (!card) return 0;
     if (card.serialNumber || (card.rarity === "World Class" && (card.player === "Lionel Messi" || card.player === "Cristiano Ronaldo") && card.isSerialized)) {
-        return 10000;
+        return 5000;
     }
-    if (card.serialNumber) return 10000;
-    return CARD_VALUES[card.rarity] || 5;
+    return CARD_VALUES[card.rarity] || 1;
 }
 
 function calculateCollectionValue(cards) {
@@ -1140,6 +1139,7 @@ function freshState() {
 
         claimedLevelMilestones: [],
         freeChampionPacks3x: 0,
+        merchantPurchases: {},
 
         dailyRewardClaimed: 0,
         freeKickClaimed: 0,
@@ -1212,6 +1212,14 @@ function loadGame() {
                 Legendary: saved.autoSellSettings.Legendary || "none",
                 Exclusive: saved.autoSellSettings.Exclusive || "none"
             } : fresh.autoSellSettings,
+            potions: saved.potions && typeof saved.potions === "object" ? { ...fresh.potions, ...saved.potions } : fresh.potions,
+            activePotions: saved.activePotions && typeof saved.activePotions === "object" ? { ...fresh.activePotions, ...saved.activePotions } : fresh.activePotions,
+            skillPoints: saved.skillPoints !== undefined ? Number(saved.skillPoints) : 0,
+            skillPointsPurchased: saved.skillPointsPurchased !== undefined ? Number(saved.skillPointsPurchased) : 0,
+            unlockedSkills: Array.isArray(saved.unlockedSkills) ? saved.unlockedSkills : [],
+            claimedLevelMilestones: Array.isArray(saved.claimedLevelMilestones) ? saved.claimedLevelMilestones : [],
+            freeChampionPacks3x: saved.freeChampionPacks3x !== undefined ? Number(saved.freeChampionPacks3x) : 0,
+            merchantPurchases: saved.merchantPurchases && typeof saved.merchantPurchases === "object" ? saved.merchantPurchases : {},
             dailyRewardClaimed: Number(saved.dailyRewardClaimed) || 0,
             serializedCounts: saved.serializedCounts || { "Lionel Messi": 0, "Cristiano Ronaldo": 0 },
             stats: { ...fresh.stats, ...(saved.stats || {}) },
@@ -2812,11 +2820,14 @@ function updateCoinDisplay() {
 }
 
 function renderHero() {
+    const lvl = Number(state.level || 1);
+    const currentXP = Number(state.xp || 0);
+    const needed = lvl * 50;
     setText("homeName", state.name || state.accountUser || "Player");
-    setText("homeLevel", state.level);
-    setText("homeXP", state.xp);
-    const needed = state.level * 50;
-    const pct = Math.min(100, (state.xp / needed) * 100);
+    setText("homeLevel", lvl);
+    setText("homeXP", currentXP);
+    setText("homeNeededXP", needed);
+    const pct = Math.min(100, Math.max(0, (currentXP / needed) * 100));
     const bar = document.getElementById("homeXPBar");
     if (bar) bar.style.width = `${pct}%`;
     const titleBadge = document.getElementById("homeEquippedTitle");
@@ -4966,28 +4977,133 @@ function quickSellRarity(targetRarity) {
     toast(`💰 Sold ${unlocked.length} ${targetRarity} cards for +${totalGain.toLocaleString()} 🪙!`);
 }
 
-function quickSellDuplicates() {
-    const seen = new Set();
-    const toSell = [];
+let currentQuickSellDuplicates = {};
 
-    // Keep the best / locked copies, sell duplicates of unlocked cards
+function openQuickSellModal() {
+    const seen = new Set();
+    const duplicates = [];
+
     state.cards.forEach(c => {
         if (c.locked || c.serialNumber) return;
         if (seen.has(c.player)) {
-            toSell.push(c);
+            duplicates.push(c);
         } else {
             seen.add(c.player);
         }
     });
 
-    if (!toSell.length) {
-        toast("No unlocked duplicate cards found.");
+    if (!duplicates.length) {
+        toast("No unlocked duplicate cards found in your collection.");
         return;
     }
 
+    const groups = {};
+    const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Exclusive", "Mythic", "Secret", "Tournament", "World Class", "Developer"];
+    rarities.forEach(r => groups[r] = []);
+
+    duplicates.forEach(c => {
+        if (!groups[c.rarity]) groups[c.rarity] = [];
+        groups[c.rarity].push(c);
+    });
+
+    currentQuickSellDuplicates = groups;
+
+    const list = document.getElementById("quickSellRarityBreakdownList");
+    if (!list) return;
+
+    let mult = 1.0;
+    if (hasSkill("econ_2")) mult += 0.15;
+    if (hasSkill("econ_4")) mult += 0.20;
+
+    const availableRarities = rarities.filter(r => (groups[r] || []).length > 0);
+
+    list.innerHTML = availableRarities.map(r => {
+        const cards = groups[r];
+        const count = cards.length;
+        const unitVal = Math.max(1, Math.round((DUPLICATE_VALUES[r] || 1) * mult));
+        const totalVal = unitVal * count;
+        const isPreselected = ["Common", "Uncommon", "Rare"].includes(r);
+        const rClass = rarityClassName(r);
+
+        return `
+        <label style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:10px 14px;border-radius:10px;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <input type="checkbox" class="quicksell-rarity-checkbox" data-rarity="${r}" ${isPreselected ? 'checked' : ''} onchange="updateQuickSellModalSummary()" style="width:18px;height:18px;accent-color:var(--cyan);cursor:pointer;">
+                <span class="rarity ${rClass}" style="padding:3px 10px;border-radius:6px;font-size:12px;font-weight:900;">${escapeHTML(r)}</span>
+            </div>
+            <div style="text-align:right;">
+                <b style="color:#fff;font-size:13px;">${count} duplicate${count > 1 ? 's' : ''}</b>
+                <span style="font-size:12px;color:var(--gold);font-weight:800;margin-left:8px;">+${totalVal.toLocaleString()} 🪙</span>
+            </div>
+        </label>
+        `;
+    }).join("");
+
+    updateQuickSellModalSummary();
+    const modal = document.getElementById("quickSellModal");
+    if (modal) modal.classList.remove("hidden");
+    SoundFx.click();
+}
+
+function updateQuickSellModalSummary() {
+    const checkboxes = document.querySelectorAll(".quicksell-rarity-checkbox:checked");
+    let totalCards = 0;
+    let totalGain = 0;
+
+    let mult = 1.0;
+    if (hasSkill("econ_2")) mult += 0.15;
+    if (hasSkill("econ_4")) mult += 0.20;
+
+    checkboxes.forEach(cb => {
+        const r = cb.getAttribute("data-rarity");
+        const cards = currentQuickSellDuplicates[r] || [];
+        const unitVal = Math.max(1, Math.round((DUPLICATE_VALUES[r] || 1) * mult));
+        totalCards += cards.length;
+        totalGain += unitVal * cards.length;
+    });
+
+    const summary = document.getElementById("quickSellTotalSummary");
+    if (summary) summary.textContent = `${totalCards} Cards · +${totalGain.toLocaleString()} 🪙`;
+
+    const confirmBtn = document.getElementById("confirmQuickSellBtn");
+    if (confirmBtn) {
+        confirmBtn.disabled = totalCards === 0;
+        confirmBtn.style.opacity = totalCards === 0 ? "0.5" : "1";
+    }
+}
+
+function closeQuickSellModal() {
+    const modal = document.getElementById("quickSellModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function executeQuickSellModal() {
+    const checkboxes = document.querySelectorAll(".quicksell-rarity-checkbox:checked");
+    if (!checkboxes.length) {
+        toast("No rarities selected to sell.");
+        return;
+    }
+
+    const toSell = [];
+    checkboxes.forEach(cb => {
+        const r = cb.getAttribute("data-rarity");
+        const cards = currentQuickSellDuplicates[r] || [];
+        cards.forEach(c => toSell.push(c));
+    });
+
+    if (!toSell.length) {
+        toast("No cards selected to sell.");
+        return;
+    }
+
+    let mult = 1.0;
+    if (hasSkill("econ_2")) mult += 0.15;
+    if (hasSkill("econ_4")) mult += 0.20;
+
     let totalGain = 0;
     toSell.forEach(c => {
-        totalGain += (DUPLICATE_VALUES[c.rarity] || 5);
+        const unitVal = Math.max(1, Math.round((DUPLICATE_VALUES[c.rarity] || 1) * mult));
+        totalGain += unitVal;
         state.stats.cardsSold++;
     });
 
@@ -5001,7 +5117,12 @@ function quickSellDuplicates() {
     saveGame();
     renderCards();
     renderShowcase();
-    toast(`⚡ Quick Sold ${toSell.length} duplicate cards for +${totalGain.toLocaleString()} 🪙!`);
+    closeQuickSellModal();
+    toast(`⚡ Sold ${toSell.length} duplicate cards for +${totalGain.toLocaleString()} 🪙!`);
+}
+
+function quickSellDuplicates() {
+    openQuickSellModal();
 }
 
 function renderCards() {
@@ -6345,65 +6466,77 @@ async function renderTradeHub() {
     const list = document.getElementById("tradeOnlinePlayersList");
     if (!list) return;
 
-    let allUsers = await GlobalCloudRest.fetchAllUsers();
     let localAccs = CloudSync.getAccounts();
-    let merged = { ...localAccs, ...allUsers };
-
     const myName = (state.accountUser || "").toLowerCase();
-    const otherPlayers = [];
-    const seenUsers = new Set();
 
-    for (const key in merged) {
-        const u = merged[key];
-        const rawUsername = u.username || key;
-        const lowerName = rawUsername.toLowerCase();
+    function buildAndRender(mergedUsers) {
+        const otherPlayers = [];
+        const seenUsers = new Set();
 
-        if (lowerName !== myName && !isAccountDeleted(lowerName) && !seenUsers.has(lowerName)) {
-            seenUsers.add(lowerName);
-            let pData = {};
-            try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-            const isUserFlagged = !!(u.isTradeBanned || pData.isTradeBanned || (pData.bannedUntil && pData.bannedUntil > Date.now()));
-            otherPlayers.push({
-                username: rawUsername,
-                name: pData.name || rawUsername,
-                level: Number(pData.level || 1),
-                cards: Array.isArray(pData.cards) ? pData.cards.length : 0,
-                title: pData.equippedTitle || "Collector",
-                isTradeBanned: isUserFlagged
-            });
+        for (const key in mergedUsers) {
+            const u = mergedUsers[key];
+            const rawUsername = u.username || key;
+            const lowerName = rawUsername.toLowerCase();
+
+            if (lowerName !== myName && !isAccountDeleted(lowerName) && !seenUsers.has(lowerName)) {
+                seenUsers.add(lowerName);
+                let pData = {};
+                try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+                const isUserFlagged = !!(u.isTradeBanned || pData.isTradeBanned || (pData.bannedUntil && pData.bannedUntil > Date.now()));
+                otherPlayers.push({
+                    username: rawUsername,
+                    name: pData.name || rawUsername,
+                    level: Number(pData.level || 1),
+                    cards: Array.isArray(pData.cards) ? pData.cards.length : 0,
+                    title: pData.equippedTitle || "Collector",
+                    isTradeBanned: isUserFlagged
+                });
+            }
+        }
+
+        otherPlayers.sort((a, b) => b.level - a.level);
+
+        let flagBanner = "";
+        if (state.isTradeBanned) {
+            flagBanner = `<div style="grid-column:1/-1;background:rgba(239,68,68,0.15);border:1px solid #ef4444;border-radius:12px;padding:14px;text-align:center;color:#fca5a5;font-weight:700;margin-bottom:14px;">⚠️ ACCOUNT FLAGGED: Trading privileges are disabled on this account. You may still open packs, manage cards, and play normally.</div>`;
+        }
+
+        if (!otherPlayers.length) {
+            list.innerHTML = `${flagBanner}<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">No other online players found yet. Invite a friend to play!</p>`;
+        } else {
+            list.innerHTML = flagBanner + otherPlayers.map(p => `
+                <div style="background:rgba(255,255,255,0.03);border:1px solid ${p.isTradeBanned ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'};border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="font-size:26px;">👤</div>
+                        <div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <strong style="color:#fff;font-size:14px;">${escapeHTML(p.username)}</strong>
+                                ${p.isTradeBanned ? `<span class="flagged-badge" style="background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef4444;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:800;cursor:help;" title="Flagged Account: Suspected of cheating or confirmed client modification">⚠️ Flagged</span>` : ''}
+                            </div>
+                            <p style="margin:2px 0 0;font-size:11px;color:var(--cyan);">${escapeHTML(p.title)} · Level ${p.level}</p>
+                        </div>
+                    </div>
+                    ${p.isTradeBanned || state.isTradeBanned 
+                        ? `<button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:#334155;color:#94a3b8;font-weight:900;cursor:not-allowed;" title="Flagged accounts cannot participate in trades" disabled>🚫 Flagged</button>`
+                        : `<button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;" onclick="sendTradeOffer('${escapeHTML(p.username)}')">🤝 Trade</button>`
+                    }
+                </div>
+            `).join("");
         }
     }
 
-    // Sort by level descending
-    otherPlayers.sort((a, b) => b.level - a.level);
+    // Immediate 0ms render from local accounts
+    buildAndRender(localAccs);
 
-    let flagBanner = "";
-    if (state.isTradeBanned) {
-        flagBanner = `<div style="grid-column:1/-1;background:rgba(239,68,68,0.15);border:1px solid #ef4444;border-radius:12px;padding:14px;text-align:center;color:#fca5a5;font-weight:700;margin-bottom:14px;">⚠️ ACCOUNT FLAGGED: Trading privileges are disabled on this account. You may still open packs, manage cards, and play normally.</div>`;
-    }
-
-    if (!otherPlayers.length) {
-        list.innerHTML = `${flagBanner}<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">No other online players found yet. Invite a friend to play!</p>`;
-    } else {
-        list.innerHTML = flagBanner + otherPlayers.map(p => `
-            <div style="background:rgba(255,255,255,0.03);border:1px solid ${p.isTradeBanned ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'};border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="font-size:26px;">👤</div>
-                    <div>
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <strong style="color:#fff;font-size:14px;">${escapeHTML(p.username)}</strong>
-                            ${p.isTradeBanned ? `<span class="flagged-badge" style="background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef4444;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:800;cursor:help;" title="Flagged Account: Suspected of cheating or confirmed client modification">⚠️ Flagged</span>` : ''}
-                        </div>
-                        <p style="margin:2px 0 0;font-size:11px;color:var(--cyan);">${escapeHTML(p.title)} · Level ${p.level}</p>
-                    </div>
-                </div>
-                ${p.isTradeBanned || state.isTradeBanned 
-                    ? `<button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:#334155;color:#94a3b8;font-weight:900;cursor:not-allowed;" title="Flagged accounts cannot participate in trades" disabled>🚫 Flagged</button>`
-                    : `<button class="primary-btn" style="width:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;" onclick="sendTradeOffer('${escapeHTML(p.username)}')">🤝 Trade</button>`
-                }
-            </div>
-        `).join("");
-    }
+    // Background fetch latest cloud accounts and re-render seamlessly
+    try {
+        const allUsers = await GlobalCloudRest.fetchAllUsers();
+        if (allUsers && Object.keys(allUsers).length > 0) {
+            const merged = { ...localAccs, ...allUsers };
+            CloudSync.saveAccounts(merged);
+            buildAndRender(merged);
+        }
+    } catch(e) {}
 }
 
 async function refreshTradingHub(showToast = false) {
@@ -6590,7 +6723,7 @@ const POTIONS_DEF = {
         durationMs: 600000,
         desc: "Grants +25% Luck for 10 minutes. Stacks with Tier 2 & Tier 3 Luck Potions.",
         color: "#22c55e",
-        cost: 50
+        cost: 150
     },
     tier2: {
         id: "tier2",
@@ -6600,7 +6733,7 @@ const POTIONS_DEF = {
         durationMs: 600000,
         desc: "Grants +50% Luck for 10 minutes. Stacks with Tier 1 & Tier 3 Luck Potions.",
         color: "#10b981",
-        cost: 150
+        cost: 450
     },
     tier3: {
         id: "tier3",
@@ -6610,7 +6743,7 @@ const POTIONS_DEF = {
         durationMs: 600000,
         desc: "Grants +100% Luck for 10 minutes. Stacks with Tier 1 & Tier 2 Luck Potions.",
         color: "#4ade80",
-        cost: 350
+        cost: 1200
     },
     astral: {
         id: "astral",
@@ -6679,33 +6812,36 @@ function getMerchantPeriod() {
 
 function getMerchantTimeRemaining() {
     const period = getMerchantPeriod();
-    const nextTime = (period + 1) * 900000;
-    const diff = Math.max(0, nextTime - Date.now());
-    const m = Math.floor(diff / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    const nextPeriodMs = (period + 1) * 900000;
+    const rem = Math.max(0, nextPeriodMs - Date.now());
+    const m = Math.floor(rem / 60000);
+    const s = Math.floor((rem % 60000) / 1000);
+    return `${m}m ${s.toString().padStart(2, '0')}s`;
 }
 
 function pseudoRandomSeed(seed) {
-    let x = Math.sin(seed++) * 10000;
+    const x = Math.sin(seed++) * 10000;
     return x - Math.floor(x);
 }
 
 function generateMerchantStock(period) {
-    let s = period * 1337;
+    const s = period * 1337;
 
     // Slot 1: Luck Potion (80% Tier 1, 15% Tier 2, 5% Tier 3)
-    const pRoll = pseudoRandomSeed(s++);
-    let potionType = "tier1";
-    if (pRoll > 0.95) {
-        potionType = "tier3";
-    } else if (pRoll > 0.80) {
-        potionType = "tier2";
+    const potSeed = pseudoRandomSeed(s + 1);
+    let potionKey = "tier1";
+    if (potSeed < 0.05) {
+        potionKey = "tier3";
+    } else if (potSeed < 0.20) {
+        potionKey = "tier2";
+    } else {
+        potionKey = "tier1";
     }
-    const potDef = POTIONS_DEF[potionType];
+    const potDef = POTIONS_DEF[potionKey];
+
     const slot1 = {
         type: "potion",
-        potionId: potionType,
+        potionId: potionKey,
         name: potDef.name,
         boostText: potDef.boostText,
         desc: potDef.desc,
@@ -6713,33 +6849,32 @@ function generateMerchantStock(period) {
     };
 
     // Slot 2 & Slot 3: Random Scouted Cards
-    // Exact odds specified: 20% Common, 30% Uncommon, 20% Rare, 10% Legendary, 5% Mythical, 0.1% Secret, 0.0005% World Class (non-serialized)
     function rollCardSlot(seedVal) {
         const r = pseudoRandomSeed(seedVal);
         let rarity = "Common";
-        let cost = 35;
+        let cost = 75;
 
         if (r < 0.000005) {
             rarity = "World Class";
-            cost = 12000;
+            cost = 35000;
         } else if (r < 0.001) {
             rarity = "Secret";
-            cost = 4500;
+            cost = 10000;
         } else if (r < 0.051) {
             rarity = "Mythic";
-            cost = 1400;
+            cost = 3500;
         } else if (r < 0.151) {
             rarity = "Legendary";
-            cost = 450;
+            cost = 1200;
         } else if (r < 0.351) {
             rarity = "Rare";
-            cost = 150;
+            cost = 400;
         } else if (r < 0.651) {
             rarity = "Uncommon";
-            cost = 70;
+            cost = 150;
         } else {
             rarity = "Common";
-            cost = 35;
+            cost = 75;
         }
 
         const eligible = PLAYERS.filter(p => p.rarity === rarity);
@@ -6764,7 +6899,6 @@ function generateMerchantStock(period) {
 
 let cachedMerchantPeriod = -1;
 let currentMerchantStock = [];
-let merchantPurchases = {};
 
 function getMerchantStock() {
     const period = getMerchantPeriod();
@@ -6780,8 +6914,9 @@ function buyMerchantItem(slotIndex) {
     const item = stock[slotIndex];
     if (!item) return;
 
+    state.merchantPurchases = state.merchantPurchases || {};
     const purchaseKey = `${cachedMerchantPeriod}_${slotIndex}`;
-    if (merchantPurchases[purchaseKey]) {
+    if (state.merchantPurchases[purchaseKey]) {
         toast("⚠️ This item has already been purchased this cycle.");
         return;
     }
@@ -6797,7 +6932,7 @@ function buyMerchantItem(slotIndex) {
 
     if (!spendCoins(finalCost)) return;
 
-    merchantPurchases[purchaseKey] = true;
+    state.merchantPurchases[purchaseKey] = true;
 
     if (item.type === "potion") {
         if (!state.potions) state.potions = { tier1: 0, tier2: 0, tier3: 0, astral: 0, elixir: 0 };
@@ -7695,7 +7830,7 @@ function renderShop() {
         const stock = getMerchantStock();
         merchantGrid.innerHTML = stock.map((item, idx) => {
             const purchaseKey = `${cachedMerchantPeriod}_${idx}`;
-            const isBought = !!merchantPurchases[purchaseKey];
+            const isBought = !!((state.merchantPurchases || {})[purchaseKey]);
 
             if (item.type === "potion") {
                 const potDef = POTIONS_DEF[item.potionId];
@@ -8335,12 +8470,13 @@ async function renderLeaderboard(isManual = false) {
                     bannedUntil: pData.bannedUntil || 0
                 };
             } else {
-                playersMap[key].level = Math.max(playersMap[key].level, lvl);
-                playersMap[key].cards = Math.max(playersMap[key].cards, cardsList.length);
-                playersMap[key].gold = Math.max(playersMap[key].gold, gold);
-                playersMap[key].value = Math.max(playersMap[key].value, val);
-                if (pData.equippedTitle && pData.equippedTitle !== "Collector") playersMap[key].equippedTitle = pData.equippedTitle;
-                if (pData.profileFrame && pData.profileFrame !== "default") playersMap[key].profileFrame = pData.profileFrame;
+                playersMap[key].level = lvl;
+                playersMap[key].cards = cardsList.length;
+                playersMap[key].gold = gold;
+                playersMap[key].value = val;
+                if (pData.equippedTitle) playersMap[key].equippedTitle = pData.equippedTitle;
+                if (pData.profileFrame) playersMap[key].profileFrame = pData.profileFrame;
+                if (pData.avatar) playersMap[key].avatar = pData.avatar;
             }
         }
     }
@@ -8372,12 +8508,13 @@ async function renderLeaderboard(isManual = false) {
                 bannedUntil: pData.bannedUntil || 0
             };
         } else {
-            playersMap[key].level = Math.max(playersMap[key].level, lvl);
-            playersMap[key].cards = Math.max(playersMap[key].cards, cardsList.length);
-            playersMap[key].gold = Math.max(playersMap[key].gold, gold);
-            playersMap[key].value = Math.max(playersMap[key].value, val);
-            if (pData.equippedTitle && pData.equippedTitle !== "Collector") playersMap[key].equippedTitle = pData.equippedTitle;
-            if (pData.profileFrame && pData.profileFrame !== "default") playersMap[key].profileFrame = pData.profileFrame;
+            playersMap[key].level = lvl;
+            playersMap[key].cards = cardsList.length;
+            playersMap[key].gold = gold;
+            playersMap[key].value = val;
+            if (pData.equippedTitle) playersMap[key].equippedTitle = pData.equippedTitle;
+            if (pData.profileFrame) playersMap[key].profileFrame = pData.profileFrame;
+            if (pData.avatar) playersMap[key].avatar = pData.avatar;
         }
     }
 
@@ -9737,6 +9874,10 @@ document.addEventListener("dragstart", function(e) {
         multiSelectAllUnlocked,
         multiSelectClear,
         confirmMultiSell,
+        openQuickSellModal,
+        closeQuickSellModal,
+        updateQuickSellModalSummary,
+        executeQuickSellModal,
         quickSellDuplicates,
         quickSellRarity,
         sellCard,
@@ -9776,6 +9917,10 @@ document.addEventListener("dragstart", function(e) {
         LEVEL_MILESTONES,
         refreshTradingHub,
         PACKS,
+        CARD_VALUES,
+        DUPLICATE_VALUES,
+        calculateCollectionValue,
+        getCardValue,
         toggleCardLock,
         addCoins,
         spendCoins,
