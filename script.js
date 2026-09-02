@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -278,7 +278,7 @@ const FRAMES = [
     { id: "neon_cyber", name: "⚡ Cyberpunk Neon", css: "frame-neon-cyber", cost: 8000, desc: "Electric cyan and neon magenta lasers", previewBg: "linear-gradient(135deg, #00f2fe, #ff007f)" },
     { id: "cosmic_galaxy", name: "🌌 Cosmic Galaxy", css: "frame-cosmic-galaxy", cost: 14000, desc: "Deep space nebula violet and celestial stars", previewBg: "linear-gradient(135deg, #7928ca, #ff0080)" },
     { id: "ucl_star", name: "⭐ Champions League", css: "frame-ucl-star", cost: 20000, desc: "Iconic UCL navy and starburst European crest", previewBg: "linear-gradient(135deg, #001f54, #3b82f6)" },
-    { id: "dragon_warlord", name: "🐉 Dragon Warlord", css: "frame-dragon-warlord", cost: 30000, desc: "Mythic golden dragon scales and jade aura", previewBg: "linear-gradient(135deg, #059669, #ffd700)" }
+    { id: "dragon_warlord", name: "✨ Jade", css: "frame-dragon-warlord", cost: 30000, desc: "Carved from mystical imperial green jade stone, glowing with an ancient emerald radiance", previewBg: "linear-gradient(135deg, #059669, #10b981, #064e3b)" }
 ];
 
 function getCardValue(card) {
