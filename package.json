@@ -7,9 +7,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "node -e \"console.log('Build completed successfully')\"",
-    "postinstall": "node -e \"console.log('Postinstall completed successfully')\"",
-    "test": "node -e \"console.log('Tests completed successfully')\""
+    "build": "echo build_ok",
+    "postinstall": "echo install_ok",
+    "test": "echo test_ok"
   },
   "engines": {
     "node": ">=18.0.0"
