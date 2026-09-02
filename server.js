@@ -1,4 +1,4 @@
-const http = require("http");
+﻿const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -244,37 +244,6 @@ const server = http.createServer((req, res) => {
         }
     });
 });
-
-// Optional WebSocket enhancement
-try {
-    const { WebSocketServer } = require("ws");
-    const wss = new WebSocketServer({ server, path: "/ws" });
-    const connectedClients = new Map();
-
-    wss.on("connection", (ws) => {
-        let clientUsername = null;
-        ws.on("message", (msg) => {
-            try {
-                const data = JSON.parse(msg);
-                if (data.type === "AUTH") {
-                    clientUsername = (data.payload.username || "").trim().toLowerCase();
-                    connectedClients.set(clientUsername, ws);
-                } else if (data.type === "TRADE_INVITE") {
-                    const target = connectedClients.get((data.payload.toUser || "").trim().toLowerCase());
-                    if (target && target.readyState === 1) target.send(JSON.stringify({ type: "INCOMING_TRADE", payload: data.payload }));
-                } else if (data.type === "TRADE_ACTION") {
-                    const target = connectedClients.get((data.payload.targetUser || "").trim().toLowerCase());
-                    if (target && target.readyState === 1) target.send(JSON.stringify({ type: "TRADE_UPDATE", payload: data.payload }));
-                }
-            } catch (e) {}
-        });
-        ws.on("close", () => {
-            if (clientUsername) connectedClients.delete(clientUsername);
-        });
-    });
-} catch (e) {
-    console.log("WebSocket optional module skipped, running on HTTP server mode.");
-}
 
 server.listen(PORT, "0.0.0.0", () => {
     console.log(`[Football Cards Server] Listening on 0.0.0.0:${PORT}`);
