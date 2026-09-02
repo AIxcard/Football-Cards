@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -271,10 +271,10 @@ const CARD_VALUES = {
 
 const FRAMES = [
     { id: "default", name: "Classic Silver", css: "frame-default", cost: 0, desc: "Sleek standard silver stadium border", previewBg: "linear-gradient(135deg, #a0aec0, #cbd5e0)" },
-    { id: "royal_champion", name: "👑 Royal Champion", css: "frame-royal-champion", cost: 25000, desc: "Ornate gilded wings, purple jewel crest and royal gold filigree", previewBg: "radial-gradient(circle, #ffd700 0%, #b45309 60%, #78350f 100%)" },
+    { id: "royal_champion", name: "👑 Royal Champion", css: "frame-royal-champion", cost: 50000, desc: "Ornate gilded wings, purple jewel crest and royal gold filigree", previewBg: "radial-gradient(circle, #ffd700 0%, #b45309 60%, #78350f 100%)" },
     { id: "golden_ball", name: "⚽ Ballon d'Or", css: "frame-golden-ball", cost: 15000, desc: "Radiant 24K gold football pentagon shader", previewBg: "linear-gradient(135deg, #ffd700, #ff8c00)" },
     { id: "inferno_striker", name: "🔥 Inferno Striker", css: "frame-inferno-striker", cost: 10000, desc: "Blazing crimson flames and pulsing embers", previewBg: "linear-gradient(135deg, #ff1744, #ff8c00)" },
-    { id: "diamond_legend", name: "💎 Diamond Legend", css: "frame-diamond-legend", cost: 12000, desc: "Prismatic cyan crystal facets and sparkles", previewBg: "linear-gradient(135deg, #00f2fe, #4facfe)" },
+    { id: "diamond_legend", name: "💎 Diamond Legend", css: "frame-diamond-legend", cost: 35000, desc: "Prismatic cyan crystal facets and sparkles", previewBg: "linear-gradient(135deg, #00f2fe, #4facfe)" },
     { id: "neon_cyber", name: "⚡ Cyberpunk Neon", css: "frame-neon-cyber", cost: 8000, desc: "Electric cyan and neon magenta lasers", previewBg: "linear-gradient(135deg, #00f2fe, #ff007f)" },
     { id: "cosmic_galaxy", name: "🌌 Cosmic Galaxy", css: "frame-cosmic-galaxy", cost: 14000, desc: "Deep space nebula violet and celestial stars", previewBg: "linear-gradient(135deg, #7928ca, #ff0080)" },
     { id: "ucl_star", name: "⭐ Champions League", css: "frame-ucl-star", cost: 20000, desc: "Iconic UCL navy and starburst European crest", previewBg: "linear-gradient(135deg, #001f54, #3b82f6)" },
@@ -766,7 +766,7 @@ const BACKGROUNDS = [
 { id: "bernabeu", name: "Santiago Bernabéu", cost: 50, css: "url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
 { id: "wembley", name: "Wembley Stadium", cost: 100, css: "url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
 { id: "sansiro", name: "San Siro Arena", cost: 175, css: "url('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
-{ id: "maracana", name: "Maracanã Pitch", cost: 250, css: "url('https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" }
+{ id: "maracana", name: "Maracanã Pitch", cost: 500, css: "url('https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" }
 ];
 
 /* =========================================================
@@ -5782,7 +5782,7 @@ const POTIONS_DEF = {
         durationMs: 600000,
         desc: "Grants +25% Luck for 10 minutes. Stacks with Tier 2 & Tier 3 Luck Potions.",
         color: "#22c55e",
-        cost: 150
+        cost: 500
     },
     tier2: {
         id: "tier2",
@@ -5792,7 +5792,7 @@ const POTIONS_DEF = {
         durationMs: 600000,
         desc: "Grants +50% Luck for 10 minutes. Stacks with Tier 1 & Tier 3 Luck Potions.",
         color: "#10b981",
-        cost: 450
+        cost: 1500
     },
     tier3: {
         id: "tier3",
@@ -5802,7 +5802,7 @@ const POTIONS_DEF = {
         durationMs: 600000,
         desc: "Grants +100% Luck for 10 minutes. Stacks with Tier 1 & Tier 2 Luck Potions.",
         color: "#4ade80",
-        cost: 1200
+        cost: 3500
     },
     astral: {
         id: "astral",
@@ -5827,38 +5827,66 @@ const POTIONS_DEF = {
 };
 
 function getPotionSVG(type) {
-    let innerGrad = `<stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#15803d"/>`;
+    const uid = Math.random().toString(36).substring(2, 8);
+    let colorPrimary = "#22c55e";
+    let colorDark = "#14532d";
+    let colorLight = "#86efac";
 
     if (type === "tier1") {
-        innerGrad = `<stop offset="0%" stop-color="#86efac"/><stop offset="50%" stop-color="#22c55e"/><stop offset="100%" stop-color="#14532d"/>`;
+        colorPrimary = "#22c55e";
+        colorDark = "#14532d";
+        colorLight = "#86efac";
     } else if (type === "tier2") {
-        innerGrad = `<stop offset="0%" stop-color="#34d399"/><stop offset="50%" stop-color="#059669"/><stop offset="100%" stop-color="#064e3b"/>`;
+        colorPrimary = "#10b981";
+        colorDark = "#064e3b";
+        colorLight = "#6ee7b7";
     } else if (type === "tier3") {
-        innerGrad = `<stop offset="0%" stop-color="#a7f3d0"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#022c22"/>`;
+        colorPrimary = "#059669";
+        colorDark = "#022c22";
+        colorLight = "#a7f3d0";
     } else if (type === "astral") {
-        innerGrad = `<stop offset="0%" stop-color="#c084fc"/><stop offset="50%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#1e1b4b"/>`;
+        colorPrimary = "#8b5cf6";
+        colorDark = "#2e1065";
+        colorLight = "#d8b4fe";
     } else if (type === "elixir") {
-        innerGrad = `<stop offset="0%" stop-color="#fca5a5"/><stop offset="50%" stop-color="#ef4444"/><stop offset="100%" stop-color="#450a0a"/>`;
+        colorPrimary = "#ef4444";
+        colorDark = "#450a0a";
+        colorLight = "#fca5a5";
     }
 
     return `
     <svg class="potion-vial-art" viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="liquidGrad_${type}" x1="0%" y1="0%" x2="0%" y2="100%">
-                ${innerGrad}
+            <linearGradient id="liquidGrad_${type}_${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="${colorLight}"/>
+                <stop offset="50%" stop-color="${colorPrimary}"/>
+                <stop offset="100%" stop-color="${colorDark}"/>
             </linearGradient>
-            <linearGradient id="glassReflect_${type}" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="rgba(255,255,255,0.7)"/>
-                <stop offset="30%" stop-color="rgba(255,255,255,0.1)"/>
+            <linearGradient id="glassReflect_${type}_${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.8)"/>
+                <stop offset="35%" stop-color="rgba(255,255,255,0.15)"/>
                 <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
             </linearGradient>
         </defs>
-        <path d="M42 22 L42 46 C34 58 16 78 16 102 C16 122 30 134 50 134 C70 134 84 122 84 102 C84 78 66 58 58 46 L58 22 Z" fill="rgba(15, 23, 42, 0.6)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="4" />
-        <path d="M44 54 C36 64 22 82 22 102 C22 118 34 128 50 128 C66 128 78 118 78 102 C78 82 64 64 56 54 Q50 50 44 54 Z" fill="url(#liquidGrad_${type})" />
-        <circle cx="42" cy="98" r="3.5" fill="rgba(255,255,255,0.6)"/>
-        <circle cx="58" cy="85" r="2.5" fill="rgba(255,255,255,0.5)"/>
-        <circle cx="50" cy="112" r="4" fill="rgba(255,255,255,0.7)"/>
-        <path d="M26 96 C26 78 38 64 45 52 C44 56 34 72 34 94 C34 110 40 120 48 124 C34 120 26 110 26 96 Z" fill="url(#glassReflect_${type})"/>
+        <!-- Glass Outer Shell -->
+        <path d="M42 22 L42 46 C34 58 16 78 16 102 C16 122 30 134 50 134 C70 134 84 122 84 102 C84 78 66 58 58 46 L58 22 Z" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="4" />
+        
+        <!-- Glowing Liquid Fill -->
+        <path d="M44 54 C36 64 22 82 22 102 C22 118 34 128 50 128 C66 128 78 118 78 102 C78 82 64 64 56 54 Q50 50 44 54 Z" fill="url(#liquidGrad_${type}_${uid})" opacity="0.95" />
+        
+        <!-- Liquid Surface Glow -->
+        <ellipse cx="50" cy="62" rx="14" ry="4" fill="${colorLight}" opacity="0.7"/>
+
+        <!-- Magical Bubbles -->
+        <circle cx="42" cy="98" r="4" fill="#ffffff" opacity="0.8"/>
+        <circle cx="58" cy="85" r="3" fill="#ffffff" opacity="0.7"/>
+        <circle cx="50" cy="112" r="4.5" fill="#ffffff" opacity="0.85"/>
+        <circle cx="36" cy="115" r="2.5" fill="#ffffff" opacity="0.6"/>
+
+        <!-- Glass Curved Specular Highlight -->
+        <path d="M26 96 C26 78 38 64 45 52 C44 56 34 72 34 94 C34 110 40 120 48 124 C34 120 26 110 26 96 Z" fill="url(#glassReflect_${type}_${uid})"/>
+        
+        <!-- Neck Collar & Cork Stopper -->
         <rect x="36" y="18" width="28" height="8" rx="4" fill="#cbd5e1" stroke="#0f172a" stroke-width="2.5"/>
         <path d="M40 8 L60 8 L58 18 L42 18 Z" fill="#92400e" stroke="#451a03" stroke-width="2"/>
     </svg>
@@ -5915,25 +5943,25 @@ function generateMerchantStock(period) {
 
         if (r < 0.000005) {
             rarity = "World Class";
-            cost = 35000;
+            cost = 100000;
         } else if (r < 0.001) {
             rarity = "Secret";
-            cost = 10000;
+            cost = 35000;
         } else if (r < 0.051) {
             rarity = "Mythic";
-            cost = 3500;
+            cost = 10000;
         } else if (r < 0.151) {
             rarity = "Legendary";
-            cost = 1200;
+            cost = 3000;
         } else if (r < 0.351) {
             rarity = "Rare";
-            cost = 400;
+            cost = 1000;
         } else if (r < 0.651) {
             rarity = "Uncommon";
-            cost = 150;
+            cost = 350;
         } else {
             rarity = "Common";
-            cost = 75;
+            cost = 150;
         }
 
         const eligible = PLAYERS.filter(p => p.rarity === rarity);
@@ -6098,7 +6126,7 @@ function closeCraftingModal() {
 
 function renderCraftingModalContent() {
     const reqRarity = currentCraftRecipe === "astral" ? "Mythic" : "Secret";
-    const eligibleCards = (state.cards || []).filter(c => c.rarity === reqRarity && !c.locked);
+    const eligibleCards = (state.cards || []).filter(c => c.rarity === reqRarity);
 
     const slotsEl = document.getElementById("craftingSelectedSlots");
     if (slotsEl) {
@@ -6957,7 +6985,7 @@ function renderShop() {
                 <h3>${escapeHTML(bg.name)}</h3>
                 <p style="color:var(--gold);font-weight:700;">${bg.cost === 0 ? "Free" : bg.cost.toLocaleString() + " 🪙"}</p>
                 <button ${owned ? "disabled" : ""} class="${owned ? "owned" : "primary-btn"}" onclick="buyBackground('${bg.id}')">
-                    ${owned ? "✓ Owned" : "Buy Atmosphere"}
+                    ${owned ? "✓ Owned" : "Buy Background"}
                 </button>
             </div>
             `;
