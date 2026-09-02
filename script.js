@@ -1284,8 +1284,10 @@ function updatePlaytime() {
    SERVER-SIDE BACKEND & REST API CLIENT
    ========================================================= */
 
+const RENDER_BACKEND_URL = "https://football-cards-yrry.onrender.com";
+
 const ServerAPI = {
-    BASE_URL: (typeof location !== "undefined" && !location.hostname.includes("github.io") && location.origin !== "null" && !location.origin.startsWith("file://")) ? location.origin : "",
+    BASE_URL: (typeof location !== "undefined" && (location.origin.includes("localhost") || location.origin.includes("127.0.0.1"))) ? location.origin : RENDER_BACKEND_URL,
     token: localStorage.getItem("football_cards_token") || "",
 
     setToken(token) {
