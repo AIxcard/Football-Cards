@@ -38,22 +38,28 @@ let database = {
     leaderboard: {}
 };
 
+const HARD_WIPE_VERSION = "v18_season_reset";
 function loadDatabase() {
     try {
         if (fs.existsSync(DB_FILE)) {
-            database = JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
+            const raw = JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
+            if (raw.wipeVersion === HARD_WIPE_VERSION && raw.users) {
+                database = raw;
+                database.users["alucard"] = ALUCARD_USER;
+                return;
+            }
         }
-    } catch (e) {
-        console.error("Database load error:", e);
-    }
-}
+    } catch (e) {}
 
-function saveDatabase() {
-    try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(database, null, 2), "utf-8");
-    } catch (e) {
-        console.error("Database save error:", e);
-    }
+    database = {
+        wipeVersion: HARD_WIPE_VERSION,
+        users: {
+            "alucard": ALUCARD_USER
+        },
+        trades: [],
+        leaderboard: {}
+    };
+    saveDatabase();
 }
 
 loadDatabase();
