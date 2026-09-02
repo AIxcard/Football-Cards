@@ -134,7 +134,7 @@
         "footballCards"
     ];
 
-const CLOUD_STORAGE_KEY = "football_cards_cloud_accounts";
+// Server-Side Account Storage (Local legacy purged for security)`nlocalStorage.removeItem("football_cards_cloud_accounts");`nconst CLOUD_STORAGE_KEY = "football_cards_user_session";
 const CLOUD_TRADES_KEY = "football_cards_cloud_trades";
 
 const RARITY_ORDER = {
@@ -1302,13 +1302,13 @@ const ServerAPI = {
         return headers;
     },
 
-    async signup(username, password) {
+    async signup(username, password, stateObj = null) {
         if (!this.BASE_URL) return null;
         try {
             const res = await fetch(`${this.BASE_URL}/api/auth/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, password, initialData: stateObj || {} })
             });
             const data = await res.json();
             if (res.ok && data.success) {
@@ -1327,7 +1327,7 @@ const ServerAPI = {
             const res = await fetch(`${this.BASE_URL}/api/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, password, initialData: stateObj || {} })
             });
             const data = await res.json();
             if (res.ok && data.success) {
@@ -2244,110 +2244,15 @@ async function pushOnlineGlobalAccount(username, accountPayload) {
 
 const CloudSync = {
     getAccounts() {
-        try {
-            const raw = JSON.parse(localStorage.getItem(CLOUD_STORAGE_KEY) || "{}");
-            const cleaned = {};
-            for (const k in raw) {
-                if (k && raw[k] && !isAccountDeleted(k) && !isAccountDeleted(raw[k].username)) {
-                    cleaned[k.toLowerCase()] = raw[k];
-                }
-            }
-
-            // Built-in Roster of Active Player Accounts (All Start on Clean Synchronized Baseline)
-            const defaultRoster = {
-                alucard: {
-                    username: "Alucard",
-                    passwordHash: "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb",
-                    saveData: JSON.stringify({ ...freshState(), name: "Alucard", accountUser: "Alucard", coins: 100, level: 1, xp: 0, cards: [], equippedTitle: "UNIQUE", grantedTitles: ["UNIQUE", "Owner", "Admin"], isGrantedAdmin: true, resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                chita: {
-                    username: "chita",
-                    passwordHash: "sec_chita_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "chita", accountUser: "chita", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                dih: {
-                    username: "Dih",
-                    passwordHash: "sec_dih_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Dih", accountUser: "Dih", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                aun: {
-                    username: "Aun",
-                    passwordHash: "sec_aun_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Aun", accountUser: "Aun", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                gubbymaster170: {
-                    username: "Gubbymaster170",
-                    passwordHash: "sec_gubby_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Gubbymaster170", accountUser: "Gubbymaster170", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                meboon: {
-                    username: "Meboon",
-                    passwordHash: "sec_meboon_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Meboon", accountUser: "Meboon", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                hexkeys: {
-                    username: "hexkeys",
-                    passwordHash: "sec_hexkeys_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "hexkeys", accountUser: "hexkeys", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                },
-                timekung: {
-                    username: "Timekung",
-                    passwordHash: "sec_timekung_pass",
-                    saveData: JSON.stringify({ ...freshState(), name: "Timekung", accountUser: "Timekung", level: 1, xp: 0, coins: 100, cards: [], resetV14WipeDone: true }),
-                    updatedAt: Date.now()
-                }
-            };
-
-            // Reset roster accounts to baseline in cleaned
-            for (const rk in defaultRoster) {
-                if (rk !== "alucard") {
-                    cleaned[rk] = defaultRoster[rk];
-                }
-            }
-
-            // Consolidate all Alucard variants into one canonical account
-            const alucardHash = "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb";
-            for (const k in cleaned) {
-                if (k.toLowerCase() === "alucard" && k !== "alucard") {
-                    delete cleaned[k];
-                }
-            }
-            if (!cleaned["alucard"]) {
-                cleaned["alucard"] = defaultRoster["alucard"];
-            } else {
-                cleaned["alucard"].username = "Alucard";
-                cleaned["alucard"].passwordHash = alucardHash;
-            }
-
-            return cleaned;
-        } catch (e) { return {}; }
+        return {};
     },
     saveAccounts(accs) {
-        try {
-            const cleaned = {};
-            for (const k in accs) {
-                if (k && accs[k] && !isAccountDeleted(k) && !isAccountDeleted(accs[k].username)) {
-                    cleaned[k.toLowerCase()] = accs[k];
-                }
-            }
-            localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(cleaned));
-        } catch (e) {}
+        // Obsoleted: Accounts are strictly stored server-side
     },
     getTrades() {
-        try {
-            return JSON.parse(localStorage.getItem(CLOUD_TRADES_KEY) || "[]");
-        } catch (e) { return []; }
+        return [];
     },
-    saveTrades(trades) {
-        try { localStorage.setItem(CLOUD_TRADES_KEY, JSON.stringify(trades)); } catch (e) {}
-    },
+    saveTrades(trades) {},
 
     async signUp(username, password) {
         const u = username.trim();
@@ -2355,27 +2260,8 @@ const CloudSync = {
         if (u.length < 2) return { success: false, msg: "Username must be at least 2 characters." };
         if (p.length < 3) return { success: false, msg: "Password must be at least 3 characters." };
 
-        const key = u.toLowerCase();
-
-        // 1. Check Local Accounts (case-insensitive)
-        const accs = this.getAccounts();
-        if (accs[key]) {
-            return { success: false, msg: `Username "${u}" is already registered. Please log in.` };
-        }
-
-        // 2. Check Remote Cloud Database (case-insensitive: prevents duplicate accounts)
-        try {
-            const cloudUser = await GlobalCloudRest.fetchUser(u);
-            if (cloudUser && cloudUser.username) {
-                return { success: false, msg: `Username "${u}" is already taken. Please log in instead.` };
-            }
-        } catch (e) {}
-
-        // 3. Register New Account with Cryptographic Hash
-        const passHash = await hashPassword(p);
         const fresh = freshState();
         fresh.accountUser = u;
-        fresh.accountPassHash = passHash;
         fresh.name = u;
         fresh.initialized = true;
         fresh.cards = [];
@@ -2386,23 +2272,30 @@ const CloudSync = {
         state = fresh;
         AntiCheat.signState(state);
 
-        const accObj = {
-            username: u,
-            passwordHash: passHash,
-            saveData: JSON.stringify(state),
-            updatedAt: Date.now()
-        };
-        accs[key] = accObj;
-        this.saveAccounts(accs);
-        await pushOnlineGlobalAccount(u, accObj);
-        try { await GlobalCloudRest.pushLeaderboard(u, state); } catch(e) {}
+        try {
+            const serverRes = await ServerAPI.signup(u, p, state);
+            if (serverRes && serverRes.success) {
+                saveGame();
+                renderAll();
+                renderLeaderboard(false);
+                updateAuthUI();
+                checkAdminStatus();
+                return { success: true, msg: `Account "${u}" successfully created and secured on server!` };
+            } else if (serverRes && !serverRes.success) {
+                return { success: false, msg: serverRes.msg || "Registration failed on server." };
+            }
+        } catch (e) {}
 
+        // Cloud fallback
+        const passHash = await hashPassword(p);
+        fresh.accountPassHash = passHash;
+        state = fresh;
+        AntiCheat.signState(state);
         saveGame();
         renderAll();
         renderLeaderboard(false);
         updateAuthUI();
         checkAdminStatus();
-        autoSyncCloud();
         return { success: true, msg: `Account "${u}" successfully created and secured!` };
     },
 
@@ -2412,18 +2305,12 @@ const CloudSync = {
         if (!u || !p) return { success: false, msg: "Please enter your username and password." };
 
         const key = u.toLowerCase();
-        let accs = this.getAccounts();
 
         // Special handling for Master Owner account Alucard
         if (key === "alucard") {
             if (p !== "Unidentified67") {
                 return { success: false, msg: "Incorrect password for Owner account Alucard." };
             }
-            const acc = accs["alucard"] || {
-                username: "Alucard",
-                passwordHash: "a45d0a689d1d095fbd5ec422c375144b14ddbbe168366dfd6e7cbadeed86f4cb",
-                saveData: JSON.stringify({ ...freshState(), name: "Alucard", accountUser: "Alucard", coins: 100, level: 1, equippedTitle: "UNIQUE", grantedTitles: ["UNIQUE", "Owner", "Admin"], isGrantedAdmin: true, resetV14WipeDone: true })
-            };
             state.accountUser = "Alucard";
             state.name = "Alucard";
             state.equippedTitle = "UNIQUE";
@@ -2433,68 +2320,63 @@ const CloudSync = {
             renderAll();
             updateAuthUI();
             checkAdminStatus();
-            toast("👑 Welcome back, Owner Alucard!");
+            toast("๐‘‘ Welcome back, Owner Alucard!");
             closeAuthModal();
             return { success: true, msg: "Logged in as Alucard." };
         }
 
-        let cloudUser = null;
         try {
-            cloudUser = await GlobalCloudRest.fetchUser(u);
-        } catch (e) {}
-
-        let acc = cloudUser || accs[key];
-
-        if (!acc) {
-            return { success: false, msg: `Account "${u}" not found. Please check spelling or create an account.` };
-        }
-
-        const passHash = await hashPassword(p);
-        if (acc.passwordHash && acc.passwordHash !== passHash) {
-            return { success: false, msg: "Incorrect password! Access denied." };
-        }
-
-        // Save authenticated credential locally & push to cloud
-        accs[key] = acc;
-        this.saveAccounts(accs);
-        try { await GlobalCloudRest.pushUser(u, acc); } catch(e) {}
-
-        if (acc.saveData) {
-            try {
-                const cloudSave = typeof acc.saveData === "string" ? JSON.parse(acc.saveData) : acc.saveData;
+            const serverRes = await ServerAPI.login(u, p);
+            if (serverRes && serverRes.success && serverRes.data) {
+                const cloudSave = typeof serverRes.data === "string" ? JSON.parse(serverRes.data) : serverRes.data;
                 state = {
                     ...freshState(),
                     ...cloudSave,
-                    accountUser: acc.username || u,
-                    accountPassHash: passHash,
-                    name: cloudSave.name || acc.username || u,
+                    accountUser: u,
+                    name: cloudSave.name || u,
                     cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : [],
                     stats: { ...freshState().stats, ...(cloudSave.stats || {}) },
                     tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || {}) }
                 };
-            } catch (e) {
-                const fresh = freshState();
-                fresh.accountUser = acc.username || u;
-                fresh.accountPassHash = passHash;
-                fresh.name = acc.username || u;
-                state = fresh;
+                AntiCheat.signState(state);
+                saveGame();
+                renderAll();
+                updateAuthUI();
+                checkAdminStatus();
+                checkBanStatus();
+                return { success: true, msg: `Welcome back, ${u}! Server save loaded.` };
+            } else if (serverRes && !serverRes.success) {
+                return { success: false, msg: serverRes.msg || "Incorrect username or password." };
             }
-        } else {
-            const fresh = freshState();
-            fresh.accountUser = acc.username || u;
-            fresh.accountPassHash = passHash;
-            fresh.name = acc.username || u;
-            state = fresh;
+        } catch (e) {}
+
+        // Fallback check
+        let cloudUser = null;
+        try { cloudUser = await GlobalCloudRest.fetchUser(u); } catch(e) {}
+        if (!cloudUser) return { success: false, msg: `Account "${u}" not found.` };
+        const passHash = await hashPassword(p);
+        if (cloudUser.passwordHash && cloudUser.passwordHash !== passHash) {
+            return { success: false, msg: "Incorrect password! Access denied." };
         }
 
+        if (cloudUser.saveData) {
+            try {
+                const cloudSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
+                state = {
+                    ...freshState(),
+                    ...cloudSave,
+                    accountUser: cloudUser.username || u,
+                    name: cloudSave.name || cloudUser.username || u,
+                    cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : []
+                };
+            } catch(e) {}
+        }
         AntiCheat.signState(state);
         saveGame();
         renderAll();
         updateAuthUI();
         checkAdminStatus();
-        checkBanStatus();
-        autoSyncCloud();
-        return { success: true, msg: `Welcome back, ${state.accountUser}! Game progress loaded.` };
+        return { success: true, msg: `Welcome back, ${u}!` };
     },
 
     logout() {
@@ -2514,14 +2396,6 @@ const CloudSync = {
     sync() {
         if (!state.accountUser) return;
         ServerAPI.saveGame(state.accountUser, state);
-        const accs = this.getAccounts();
-        const key = state.accountUser.toLowerCase();
-        if (accs[key]) {
-            accs[key].saveData = JSON.stringify(state);
-            accs[key].updatedAt = Date.now();
-            this.saveAccounts(accs);
-            pushOnlineGlobalAccount(state.accountUser, accs[key]);
-        }
     }
 };
 
