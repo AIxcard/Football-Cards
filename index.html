@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Football Cards</title>
-<link rel="stylesheet" href="style.css?v=610.0">
+<link rel="stylesheet" href="style.css?v=620.0">
 </head>
 
 <body>
@@ -1414,7 +1414,25 @@
             <button id="adminTabBtnTournament" class="admin-tab" onclick="setAdminTab('tournament')">🏆 Tournament</button>
             <button id="adminTabBtnModeration" class="admin-tab" onclick="setAdminTab('moderation')">🛡️ Moderation</button>
             <button id="adminTabBtnAccounts" class="admin-tab" onclick="setAdminTab('accounts')">📋 All Accounts</button>
+            <button id="adminTabBtnAudit" class="admin-tab" onclick="setAdminTab('audit')" style="border-color:rgba(0,242,254,0.4);color:var(--cyan);">📜 Action Logs &amp; Restore</button>
             <button id="adminTabBtnDelete" class="admin-tab" onclick="setAdminTab('delete')" style="border-color:rgba(239,68,68,0.5);color:var(--red);">🗑️ Delete Account</button>
+        </div>
+
+        <!-- 9. ACTION LOGS & RESTORE TAB -->
+        <div id="adminTabAudit" class="admin-tab-content" style="display:none;">
+            <h3>📜 Player Action Logs &amp; Snapshot Restore</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Inspect real-time action logs, past card inventory snapshots, and restore any player account with 1 click.</p>
+            
+            <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:200px;">
+                    <label>Target Player Username</label>
+                    <input type="text" id="adminAuditTargetInput" placeholder="Enter username (e.g. Alucard, hex)..." style="width:100%;">
+                </div>
+                <button class="primary-btn" style="padding:10px 18px;font-weight:900;" onclick="adminInspectPlayerAudit()">🔍 Inspect Player</button>
+            </div>
+            <div id="adminAuditResultsWrap" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;min-height:160px;">
+                <p style="text-align:center;color:var(--muted);margin-top:30px;">Select a player above and click Inspect to view action logs and inventory history.</p>
+            </div>
         </div>
 
         <!-- 1. ECONOMY TAB -->
@@ -1851,6 +1869,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=610.0"></script>
+<script src="script.js?v=620.0"></script>
 </body>
 </html>

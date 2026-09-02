@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -1339,6 +1339,18 @@ const ServerAPI = {
             }
             return { success: false, msg: data.error || "Login failed on server." };
         } catch (e) {
+            return null;
+        }
+    },
+
+        async loadGame(username) {
+        if (!this.BASE_URL || !username) return null;
+        try {
+            const res = await fetch(`${this.BASE_URL}/api/save?username=${encodeURIComponent(username.trim())}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return (data && data.success && data.saveData) ? (typeof data.saveData === "string" ? JSON.parse(data.saveData) : data.saveData) : null;
+        } catch(e) {
             return null;
         }
     },
@@ -7745,7 +7757,7 @@ function closeAdminPanel() {
 }
 
 function setAdminTab(tabName) {
-    const tabs = ["currency", "cards", "level", "titles", "tournament", "moderation", "accounts", "delete"];
+    const tabs = ["currency", "cards", "level", "titles", "tournament", "moderation", "accounts", "audit", "delete"];
     tabs.forEach(t => {
         const btn = document.getElementById(`adminTabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -7826,7 +7838,7 @@ async function renderAdminAccountsList() {
 }
 
 function selectAdminTargetUser(username) {
-    ["adminGoldTarget", "adminCardTarget", "adminLevelTarget", "adminTitleTarget", "adminModTarget", "adminDeleteTarget"].forEach(id => {
+    ["adminGoldTarget", "adminCardTarget", "adminLevelTarget", "adminTitleTarget", "adminModTarget", "adminDeleteTarget", "adminAuditTargetInput"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = username;
     });
@@ -7841,55 +7853,160 @@ async function adminModifyTargetUser(targetUsername, updateCallback, successMess
         saveGame();
         renderAll();
         SoundFx.levelUp();
-        toast(successMessage || "✅ Admin action completed successfully on your account!");
+        toast(successMessage || "โ… Admin action completed successfully on your account!");
         return true;
     }
 
     try {
-        let cloudUser = await GlobalCloudRest.fetchUser(cleanTarget);
         let targetSave = null;
-        if (cloudUser && cloudUser.saveData) {
-            targetSave = typeof cloudUser.saveData === "string" ? JSON.parse(cloudUser.saveData) : cloudUser.saveData;
-        }
-        if (!targetSave) {
-            const accs = CloudSync.getAccounts();
-            const key = cleanTarget.toLowerCase();
-            if (accs[key]) {
-                targetSave = typeof accs[key].saveData === "string" ? JSON.parse(accs[key].saveData) : accs[key].saveData;
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/save?username=${encodeURIComponent(cleanTarget)}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.success && data.saveData) {
+                    targetSave = typeof data.saveData === "string" ? JSON.parse(data.saveData) : data.saveData;
+                }
             }
-        }
+        } catch(e) {}
+
         if (!targetSave) {
             targetSave = { ...freshState(), name: cleanTarget, accountUser: cleanTarget };
         }
 
         updateCallback(targetSave);
+        AntiCheat.signState(targetSave);
 
-        const updatedDoc = {
-            username: cleanTarget,
-            isTradeBanned: !!targetSave.isTradeBanned,
-            tradeBanReason: targetSave.tradeBanReason || "",
-            saveData: JSON.stringify(targetSave),
-            lastUpdated: Date.now()
-        };
+        targetSave.auditLogs = targetSave.auditLogs || [];
+        targetSave.auditLogs.unshift({
+            timestamp: Date.now(),
+            action: successMessage || "Admin Modification",
+            admin: state.accountUser || "Alucard"
+        });
+        if (targetSave.auditLogs.length > 50) targetSave.auditLogs.pop();
 
-        if (typeof GlobalCloudRest !== "undefined" && GlobalCloudRest.pushUser) {
-            await GlobalCloudRest.pushUser(cleanTarget, updatedDoc);
-        }
-        const accs = CloudSync.getAccounts();
-        accs[cleanTarget.toLowerCase()] = {
-            username: cleanTarget,
-            isTradeBanned: !!targetSave.isTradeBanned,
-            tradeBanReason: targetSave.tradeBanReason || "",
-            saveData: JSON.stringify(targetSave)
-        };
-        CloudSync.saveAccounts(accs);
+        await fetch(`${ServerAPI.BASE_URL}/api/save`, {
+            method: "POST",
+            headers: ServerAPI.getHeaders(),
+            body: JSON.stringify({ username: cleanTarget, saveData: targetSave })
+        });
 
-        toast(successMessage || `✅ Admin updated player "${cleanTarget}" successfully!`);
+        toast(successMessage || `โ… Admin updated player "${cleanTarget}" successfully!`);
         SoundFx.levelUp();
+        renderAdminAccountsList();
         return true;
     } catch (e) {
-        toast(`❌ Failed to update player "${cleanTarget}": ` + e.message);
+        toast(`โ Failed to update player "${cleanTarget}": ` + e.message);
         return false;
+    }
+}
+
+async function adminInspectPlayerAudit() {
+    const input = document.getElementById("adminAuditTargetInput");
+    const target = (input ? input.value.trim() : "");
+    const wrap = document.getElementById("adminAuditResultsWrap");
+    if (!wrap) return;
+
+    if (!target) {
+        wrap.innerHTML = `<p style="text-align:center;color:var(--red);padding:14px;">โ ๏ธ Please enter a target username.</p>`;
+        return;
+    }
+
+    wrap.innerHTML = `<p style="text-align:center;color:var(--muted);padding:14px;">๐” Fetching real-time history & card inventory for "${escapeHTML(target)}"...</p>`;
+
+    try {
+        const res = await fetch(`${ServerAPI.BASE_URL}/api/user/history?username=${encodeURIComponent(target)}`);
+        if (!res.ok) {
+            wrap.innerHTML = `<p style="text-align:center;color:var(--red);padding:14px;">โ Player "${escapeHTML(target)}" not found on server.</p>`;
+            return;
+        }
+        const data = await res.json();
+        let currentSave = data.current;
+        if (typeof currentSave === "string") {
+            try { currentSave = JSON.parse(currentSave); } catch(e) {}
+        }
+        currentSave = currentSave || {};
+
+        const cards = Array.isArray(currentSave.cards) ? currentSave.cards : [];
+        const logs = Array.isArray(currentSave.auditLogs) ? currentSave.auditLogs : [];
+        const backups = Array.isArray(data.backups) ? data.backups : [];
+
+        let html = `
+            <div style="margin-bottom:14px;background:rgba(0,242,254,0.06);border:1px solid rgba(0,242,254,0.2);border-radius:10px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <strong style="font-size:16px;color:#fff;">${escapeHTML(target)}</strong>
+                        <span style="font-size:12px;color:var(--cyan);margin-left:8px;">Level ${currentSave.level || 1} ยท ${Number(currentSave.coins || 0).toLocaleString()} ๐ช ยท ${cards.length} Cards</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--muted);">Title: <b>${escapeHTML(currentSave.equippedTitle || 'Collector')}</b></div>
+                </div>
+            </div>
+
+            <!-- CARDS INVENTORY BREAKDOWN -->
+            <div style="margin-bottom:16px;">
+                <h4 style="color:var(--gold);margin:0 0 8px;font-size:13px;">๐ด Current Card Inventory (${cards.length} Total):</h4>
+                <div style="max-height:160px;overflow-y:auto;background:rgba(0,0,0,0.3);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:4px;">
+                    ${cards.length ? cards.map((c, i) => `
+                        <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 6px;background:rgba(255,255,255,0.02);border-radius:4px;">
+                            <span><b>#${i+1}</b> ${escapeHTML(c.player || c.name || 'Unknown')} <span style="color:var(--muted)">(${escapeHTML(c.rarity || 'Common')})</span></span>
+                            <span style="color:var(--cyan);font-weight:700;">${c.rating || 80} OVR ${c.serialNumber ? `ยท #${c.serialNumber}/10` : ''}</span>
+                        </div>
+                    `).join('') : '<p style="color:var(--muted);font-size:11px;text-align:center;margin:6px 0;">No cards in inventory.</p>'}
+                </div>
+            </div>
+
+            <!-- BACKUPS & RESTORE SNAPSHOTS -->
+            <div style="margin-bottom:16px;">
+                <h4 style="color:#00f2fe;margin:0 0 8px;font-size:13px;">๐’พ Server Snapshots &amp; 1-Click Restore:</h4>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    ${backups.length ? backups.map((b, idx) => {
+                        let bSave = typeof b.saveData === "string" ? JSON.parse(b.saveData) : b.saveData;
+                        const dateStr = new Date(b.timestamp).toLocaleTimeString();
+                        const bCards = Array.isArray(bSave.cards) ? bSave.cards.length : 0;
+                        return `
+                            <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:6px 10px;">
+                                <div>
+                                    <span style="font-size:12px;font-weight:700;color:#fff;">Snapshot ${idx+1} (${dateStr})</span>
+                                    <div style="font-size:11px;color:var(--muted);">Lvl ${bSave.level || 1} ยท ${Number(bSave.coins || 0).toLocaleString()} ๐ช ยท ${bCards} Cards</div>
+                                </div>
+                                <button class="primary-btn" style="padding:4px 10px;font-size:11px;background:linear-gradient(135deg,#10b981,#059669);" onclick="adminRestoreSnapshot('${escapeHTML(target)}', ${idx})">๐” Restore</button>
+                            </div>
+                        `;
+                    }).join('') : '<p style="color:var(--muted);font-size:11px;text-align:center;">No previous server snapshots recorded yet.</p>'}
+                </div>
+            </div>
+        `;
+        wrap.innerHTML = html;
+    } catch(e) {
+        wrap.innerHTML = `<p style="text-align:center;color:var(--red);padding:14px;">โ Error loading audit logs: ${escapeHTML(e.message)}</p>`;
+    }
+}
+
+async function adminRestoreSnapshot(targetUsername, snapshotIndex) {
+    if (!checkIsAdmin()) return;
+    if (!confirm(`Are you sure you want to restore player "${targetUsername}" to Snapshot #${snapshotIndex+1}?`)) return;
+
+    try {
+        const res = await fetch(`${ServerAPI.BASE_URL}/api/user/history?username=${encodeURIComponent(targetUsername)}`);
+        const data = await res.json();
+        const backup = (data.backups || [])[snapshotIndex];
+        if (!backup || !backup.saveData) {
+            toast("โ Snapshot not found.");
+            return;
+        }
+
+        const restoredSave = typeof backup.saveData === "string" ? JSON.parse(backup.saveData) : backup.saveData;
+        
+        await fetch(`${ServerAPI.BASE_URL}/api/save`, {
+            method: "POST",
+            headers: ServerAPI.getHeaders(),
+            body: JSON.stringify({ username: targetUsername, saveData: restoredSave })
+        });
+
+        toast(`โ… Player "${targetUsername}" successfully restored to Snapshot #${snapshotIndex+1}!`);
+        SoundFx.levelUp();
+        adminInspectPlayerAudit();
+    } catch(e) {
+        toast("โ Failed to restore snapshot: " + e.message);
     }
 }
 
@@ -8782,8 +8899,26 @@ if (state.initialized) {
             saveGame();
         }
     }
-    renderAll();
+        renderAll();
     checkGlobalSeasonReset();
+
+    // Seamless Server-Authoritative Refresh Protection: Restore live account data
+    if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
+        ServerAPI.loadGame(state.accountUser).then(serverSave => {
+            if (serverSave && serverSave.cards) {
+                state = {
+                    ...freshState(),
+                    ...serverSave,
+                    accountUser: state.accountUser,
+                    name: serverSave.name || state.accountUser
+                };
+                AntiCheat.signState(state);
+                saveGame();
+                renderAll();
+            }
+        }).catch(() => {});
+    }
+
     autoSyncCloud();
 
     // Restore last visited page if present
@@ -8940,6 +9075,8 @@ document.addEventListener("dragstart", function(e) {
         wipeAccountEverywhere,
         renderAdminAccountsList,
         selectAdminTargetUser,
+        adminInspectPlayerAudit,
+        adminRestoreSnapshot,
         adminModifyTargetUser,
         isAccountDeleted,
         DELETED_ACCOUNTS_BLACKLIST,

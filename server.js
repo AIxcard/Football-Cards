@@ -1,4 +1,4 @@
-﻿const http = require("http");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -148,14 +148,37 @@ const server = http.createServer((req, res) => {
         return getBody((err, body) => {
             if (err || !body.username || !body.saveData) return sendJSON(400, { success: false, error: "Invalid data" });
             const key = body.username.trim().toLowerCase();
+            database.backups = database.backups || {};
             if (!database.users[key]) {
                 database.users[key] = { username: body.username.trim(), password: "", saveData: body.saveData, lastActive: Date.now() };
             } else {
+                if (database.users[key].saveData) {
+                    database.backups[key] = database.backups[key] || [];
+                    database.backups[key].unshift({
+                        timestamp: Date.now(),
+                        saveData: database.users[key].saveData
+                    });
+                    if (database.backups[key].length > 15) database.backups[key].pop();
+                }
                 database.users[key].saveData = body.saveData;
                 database.users[key].lastActive = Date.now();
             }
             saveDatabase();
             return sendJSON(200, { success: true });
+        });
+    }
+
+    if (pathname === "/api/user/history" && req.method === "GET") {
+        const username = parsedUrl.query.username;
+        if (!username) return sendJSON(400, { success: false, error: "Username required" });
+        const key = String(username).trim().toLowerCase();
+        database.backups = database.backups || {};
+        const backups = database.backups[key] || [];
+        const currentUser = database.users[key];
+        return sendJSON(200, {
+            success: true,
+            current: currentUser ? currentUser.saveData : null,
+            backups: backups
         });
     }
 
