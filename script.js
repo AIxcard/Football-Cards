@@ -9265,7 +9265,7 @@ document.addEventListener("dragstart", function(e) {
         claimLevelMilestone,
         renderLevelMilestones,
         renderPacks,
-        renderCollection,
+        renderCards,
         renderAll,
         LEVEL_MILESTONES,
         refreshTradingHub,
