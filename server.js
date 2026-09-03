@@ -237,8 +237,9 @@ const server = http.createServer((req, res) => {
         return sendJSON(200, { success: true, leaderboard: list });
     }
 
-    // Static Files Serving
-    let filePath = path.join(__dirname, pathname === "/" ? "index.html" : pathname);
+    // Static Files Serving (Cross-platform POSIX / Windows path normalization)
+    const cleanPath = (pathname === "/" || !pathname) ? "index.html" : pathname.replace(/^\/+/, "");
+    let filePath = path.join(__dirname, cleanPath);
     if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
         filePath = path.join(__dirname, "index.html");
     }
