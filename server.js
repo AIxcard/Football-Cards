@@ -1,4 +1,4 @@
-const http = require("http");
+﻿const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -144,10 +144,15 @@ const server = http.createServer((req, res) => {
 
     if (pathname === "/api/auth/login" && req.method === "POST") {
         return getBody((err, body) => {
-            if (err || !body.username || !body.password) return sendJSON(400, { success: false, error: "Invalid data" });
+            if (err || !body.username || !body.password) return sendJSON(400, { success: false, error: "Please provide both username and password." });
             const key = body.username.trim().toLowerCase();
             const user = database.users[key];
-            if (!user || user.password !== body.password) return sendJSON(401, { success: false, error: "Incorrect credentials" });
+            if (!user) {
+                return sendJSON(404, { success: false, error: "Username does not exist. Please click Sign Up to create this account." });
+            }
+            if (user.password !== body.password) {
+                return sendJSON(401, { success: false, error: "Incorrect password. Please try again." });
+            }
             user.lastActive = Date.now();
             saveDatabase();
             return sendJSON(200, { success: true, user: { username: user.username, saveData: user.saveData } });
