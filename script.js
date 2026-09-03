@@ -1224,24 +1224,7 @@ let searchedUserData = null;
 const GLOBAL_RESET_KEY = "football_cards_clean_reset_v18_server";
 
 function checkGlobalSeasonReset() {
-    try {
-        const hasAcknowledged = localStorage.getItem(GLOBAL_RESET_KEY);
-        const isOwner = (state && (state.accountUser || state.name || "").toLowerCase() === "alucard");
-
-        if (!hasAcknowledged) {
-            localStorage.setItem(GLOBAL_RESET_KEY, "true");
-            if (!isOwner) {
-                state = freshState();
-                AntiCheat.signState(state);
-                saveGame();
-                renderAll();
-                setTimeout(() => {
-                    const modal = document.getElementById("seasonResetModal");
-                    if (modal) modal.classList.remove("hidden");
-                }, 400);
-            }
-        }
-    } catch (e) {}
+    // Non-destructive: preserves all player accounts and active states
 }
 
 function dismissSeasonResetModal() {
@@ -8958,15 +8941,42 @@ if (state.initialized) {
         renderAll();
     checkGlobalSeasonReset();
 
-    // Seamless Server-Authoritative Refresh Protection: Restore live account data
+    // Seamless Server-Authoritative Refresh Protection: Restore and merge live account data
     if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
         ServerAPI.loadGame(state.accountUser).then(serverSave => {
-            if (serverSave && serverSave.cards) {
+            if (serverSave) {
+                const localCoins = Number(state.coins) || 0;
+                const serverCoins = (serverSave.coins !== undefined) ? Number(serverSave.coins) : 0;
+                const finalCoins = Math.max(localCoins, serverCoins);
+
+                const localLevel = Number(state.level) || 1;
+                const serverLevel = Number(serverSave.level) || 1;
+                const finalLevel = Math.max(localLevel, serverLevel);
+
+                const localCards = Array.isArray(state.cards) ? state.cards : [];
+                const serverCards = Array.isArray(serverSave.cards) ? serverSave.cards : [];
+                const finalCards = localCards.length >= serverCards.length ? localCards : serverCards;
+
                 state = {
                     ...freshState(),
                     ...serverSave,
+                    ...state,
                     accountUser: state.accountUser,
-                    name: serverSave.name || state.accountUser
+                    name: serverSave.name || state.name || state.accountUser,
+                    coins: finalCoins,
+                    level: finalLevel,
+                    cards: finalCards,
+                    unlockedSkills: Array.isArray(serverSave.unlockedSkills) && serverSave.unlockedSkills.length >= (state.unlockedSkills || []).length ? serverSave.unlockedSkills : (state.unlockedSkills || []),
+                    claimedLevelMilestones: Array.isArray(serverSave.claimedLevelMilestones) && serverSave.claimedLevelMilestones.length >= (state.claimedLevelMilestones || []).length ? serverSave.claimedLevelMilestones : (state.claimedLevelMilestones || []),
+                    stats: {
+                        ...freshState().stats,
+                        ...(serverSave.stats || {}),
+                        ...(state.stats || {}),
+                        packsOpened: Math.max(state.stats?.packsOpened || 0, serverSave.stats?.packsOpened || 0),
+                        cardsPulled: Math.max(state.stats?.cardsPulled || 0, serverSave.stats?.cardsPulled || 0),
+                        coinsEarned: Math.max(state.stats?.coinsEarned || 0, serverSave.stats?.coinsEarned || 0),
+                        playtime: Math.max(state.stats?.playtime || 0, serverSave.stats?.playtime || 0)
+                    }
                 };
                 AntiCheat.signState(state);
                 saveGame();
