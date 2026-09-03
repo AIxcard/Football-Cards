@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -584,7 +584,10 @@ function getCardImage(card) {
     if (nameLower.includes("monkey") || nameLower.includes("wukong") || card.devCard || card.rarity === "Developer") {
         return "monkey_king.png";
     }
-    return "player_temp.png";
+    if (nameLower.includes("ronaldo") || nameLower.includes("cr7")) {
+        return "ronaldo_custom.png";
+    }
+    return card.image || "player_temp.png";
 }
 
 /* =========================================================
@@ -600,7 +603,7 @@ const PLAYERS = [
 
 // --- WORLD CLASS (GOATS) ---
 { name: "Lionel Messi", rating: 97, pos: "RW", rarity: "World Class", image: "player_temp.png" },
-{ name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "player_temp.png" },
+{ name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "ronaldo_custom.png" },
 
 // --- SECRET ---
 { name: "Lamine Yamal", rating: 96, pos: "RW", rarity: "Secret", image: "player_temp.png" },
@@ -2575,6 +2578,22 @@ function openPack(type, count = 1) {
 
         if (!bestCard || (RARITY_ORDER[rarity] || 0) > (RARITY_ORDER[bestCard.card.rarity] || 0)) {
             bestCard = { card, duplicate, isFirstDiscovery };
+        }
+    }
+
+        // Scout's Intuition Skill: Guarantees at least 1 Rare or higher rarity on multi-pack pulls
+    if (pullCount >= 3 && hasSkill("packs_2")) {
+        const hasRareOrBetter = pulledCards.some(c => (RARITY_ORDER[c.rarity] || 0) >= RARITY_ORDER.Rare);
+        if (!hasRareOrBetter && pulledCards.length > 0) {
+            const upgradedRarity = Math.random() < 0.80 ? "Rare" : (Math.random() < 0.95 ? "Epic" : "Legendary");
+            const upgradedPlayer = choosePlayer(upgradedRarity);
+            if (upgradedPlayer) {
+                pulledCards[0].rarity = upgradedRarity;
+                pulledCards[0].player = upgradedPlayer.name;
+                pulledCards[0].rating = upgradedPlayer.rating;
+                pulledCards[0].pos = upgradedPlayer.pos;
+                pulledCards[0].image = getCardImage(upgradedPlayer);
+            }
         }
     }
 
@@ -6298,44 +6317,81 @@ function renderActivePotionsHUD() {
     const act = state.activePotions || {};
     const activeList = [];
 
+    // Permanent Passive Base Luck Badge from Skill Tree
+    let baseLuckPercent = 0;
+    if (hasSkill("luck_1")) baseLuckPercent += 10;
+    if (hasSkill("luck_3")) baseLuckPercent += 20;
+    if (hasSkill("luck_4")) baseLuckPercent += 35;
+
+    if (baseLuckPercent > 0) {
+        activeList.push({
+            name: "Passive Base Luck",
+            icon: "๐€",
+            boost: `+${baseLuckPercent}% Luck`,
+            timer: "Permanent",
+            color: "#22c55e",
+            desc: `Passive Skill Tree Bonus: Permanent +${baseLuckPercent}% Luck on all pack openings!`
+        });
+    }
+
+    if (act.tier1Until > now) {
+        const remMs = act.tier1Until - now;
+        const potAmp = hasSkill("luck_4") ? " (+37.5%)" : " (+25%)";
+        activeList.push({
+            name: "Tier 1 Luck",
+            icon: "๐งช",
+            boost: potAmp,
+            timer: formatCountdown(remMs),
+            color: "#22c55e",
+            desc: "+25% Luck for 10 minutes"
+        });
+    }
+
+    if (act.tier2Until > now) {
+        const remMs = act.tier2Until - now;
+        const potAmp = hasSkill("luck_4") ? " (+75%)" : " (+50%)";
+        activeList.push({
+            name: "Tier 2 Luck",
+            icon: "๐งช",
+            boost: potAmp,
+            timer: formatCountdown(remMs),
+            color: "#10b981",
+            desc: "+50% Luck for 10 minutes"
+        });
+    }
+
+    if (act.tier3Until > now) {
+        const remMs = act.tier3Until - now;
+        const potAmp = hasSkill("luck_4") ? " (+150%)" : " (+100%)";
+        activeList.push({
+            name: "Tier 3 Luck",
+            icon: "๐งช",
+            boost: potAmp,
+            timer: formatCountdown(remMs),
+            color: "#4ade80",
+            desc: "+100% Luck for 10 minutes"
+        });
+    }
+
     if (act.astralUntil > now) {
-        const rem = Math.max(0, act.astralUntil - now);
-        const m = Math.floor(rem / 60000);
-        const s = Math.floor((rem % 60000) / 1000);
+        const remMs = act.astralUntil - now;
+        const potAmp = hasSkill("luck_4") ? " (+300%)" : " (+200%)";
         activeList.push({
             name: "Astral Potion",
-            icon: "🌌",
-            boost: "+200% Luck",
-            timer: `${m}:${s.toString().padStart(2, '0')}`,
+            icon: "๐”ฎ",
+            boost: potAmp,
+            timer: formatCountdown(remMs),
             color: "#c084fc",
-            desc: "+200% Luck Active. Cannot stack with Tier 1-3."
+            desc: "+200% Luck for 5 minutes"
         });
-    } else {
-        if (act.tier3Until > now) {
-            const rem = Math.max(0, act.tier3Until - now);
-            const m = Math.floor(rem / 60000);
-            const s = Math.floor((rem % 60000) / 1000);
-            activeList.push({ name: "Tier 3 Luck", icon: "🧪", boost: "+100% Luck", timer: `${m}:${s.toString().padStart(2, '0')}`, color: "#4ade80", desc: "+100% Luck Active." });
-        }
-        if (act.tier2Until > now) {
-            const rem = Math.max(0, act.tier2Until - now);
-            const m = Math.floor(rem / 60000);
-            const s = Math.floor((rem % 60000) / 1000);
-            activeList.push({ name: "Tier 2 Luck", icon: "🧪", boost: "+50% Luck", timer: `${m}:${s.toString().padStart(2, '0')}`, color: "#10b981", desc: "+50% Luck Active." });
-        }
-        if (act.tier1Until > now) {
-            const rem = Math.max(0, act.tier1Until - now);
-            const m = Math.floor(rem / 60000);
-            const s = Math.floor((rem % 60000) / 1000);
-            activeList.push({ name: "Tier 1 Luck", icon: "🧪", boost: "+25% Luck", timer: `${m}:${s.toString().padStart(2, '0')}`, color: "#22c55e", desc: "+25% Luck Active." });
-        }
     }
 
     if (act.elixirCharges > 0) {
+        const potAmp = hasSkill("luck_4") ? " (+1500%)" : " (+1000%)";
         activeList.push({
             name: "Elixir of Luck",
-            icon: "🔥",
-            boost: "+1000% Luck",
+            icon: "โ—๏ธ",
+            boost: potAmp,
             timer: `${act.elixirCharges} Pack${act.elixirCharges > 1 ? 's' : ''}`,
             color: "#ef4444",
             desc: "+1000% Luck for next pack opening!"
@@ -6350,7 +6406,7 @@ function renderActivePotionsHUD() {
     const totalMult = getActiveLuckMultiplier();
     let hudHtml = `
     <div style="font-size:11px;font-weight:900;color:var(--gold);text-align:right;margin-bottom:-4px;text-shadow:0 0 10px rgba(0,0,0,0.8);">
-        ⚡ LUCK MULTIPLIER: ${(totalMult * 100).toFixed(0)}%
+        โก TOTAL LUCK: ${(totalMult * 100).toFixed(0)}%
     </div>
     `;
 
@@ -6359,8 +6415,8 @@ function renderActivePotionsHUD() {
         <div class="hud-potion-badge" style="--hud-glow:${item.color};" title="${item.desc}">
             <div class="hud-potion-icon" style="background:${item.color}22;border:1px solid ${item.color};">${item.icon}</div>
             <div style="display:flex;flex-direction:column;">
-                <span class="hud-potion-label" style="color:${item.color};">${item.name} (${item.boost})</span>
-                <span class="hud-potion-timer">⏳ ${item.timer}</span>
+                <span class="hud-potion-label" style="color:${item.color};">${item.name} <small style="font-weight:900;">${item.boost}</small></span>
+                <span class="hud-potion-timer">โณ ${item.timer}</span>
             </div>
         </div>
         `;
@@ -6576,7 +6632,7 @@ const SKILL_TREE_DEF = [
                 tier: 4,
                 name: "Fortune's Chosen",
                 icon: "🔮",
-                benefit: "[MASTER] +35% Base Luck & +50% extra effectiveness on all Luck Potions",
+                benefit: "[MASTER] +35% Base Luck & +50% extra Luck Power on all Luck Potions",
                 req: "luck_3",
                 isMaster: true
             }
@@ -7811,18 +7867,16 @@ async function renderAdminAccountsList() {
     const wrap = document.getElementById("adminAccountsListWrap");
     if (!wrap) return;
     try {
-        wrap.innerHTML = `<p style="text-align:center;color:var(--muted);padding:14px;">Fetching live account records from cloud...</p>`;
+        wrap.innerHTML = `<p style="text-align:center;color:var(--muted);padding:14px;">Fetching live account records from server...</p>`;
         const cloudUsers = await GlobalCloudRest.fetchAllUsers();
-        const localAccs = CloudSync.getAccounts();
-        const merged = { ...localAccs, ...cloudUsers };
 
         const rows = [];
         const seen = new Set();
-        for (const k in merged) {
-            const u = merged[k];
+        for (const k in cloudUsers) {
+            const u = cloudUsers[k];
             const rawName = u.username || k;
             const lower = rawName.toLowerCase();
-            if (seen.has(lower) || isAccountDeleted(lower)) continue;
+            if (seen.has(lower)) continue;
             seen.add(lower);
 
             let pData = {};
@@ -7848,12 +7902,12 @@ async function renderAdminAccountsList() {
         rows.sort((a, b) => b.level - a.level || b.cardsCount - a.cardsCount);
 
         if (!rows.length) {
-            wrap.innerHTML = `<p style="text-align:center;color:var(--muted);padding:20px;">No registered accounts found.</p>`;
+            wrap.innerHTML = `<p style="text-align:center;color:var(--muted);padding:20px;">No registered accounts found on server.</p>`;
             return;
         }
 
         wrap.innerHTML = `
-            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;padding:0 4px;">Total Accounts: <b>${rows.length}</b></div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;padding:0 4px;">Registered Server Accounts: <b>${rows.length}</b></div>
             <div style="display:flex;flex-direction:column;gap:6px;">
                 ${rows.map(r => `
                     <div style="background:rgba(255,255,255,0.04);border:1px solid ${r.isFlagged ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)'};border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -7861,9 +7915,9 @@ async function renderAdminAccountsList() {
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <strong style="color:#fff;font-size:13px;">${escapeHTML(r.username)}</strong>
                                 ${r.isSelf ? `<span style="background:rgba(0,242,254,0.2);color:var(--cyan);font-size:10px;padding:1px 5px;border-radius:4px;">YOU</span>` : ''}
-                                ${r.isFlagged ? `<span style="background:rgba(239,68,68,0.2);color:var(--red);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:800;">⚠️ FLAGGED</span>` : ''}
+                                ${r.isFlagged ? `<span style="background:rgba(239,68,68,0.2);color:var(--red);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:800;">โ ๏ธ FLAGGED</span>` : ''}
                             </div>
-                            <span style="font-size:11px;color:var(--muted);">${escapeHTML(r.title)} · Level ${r.level} · ${r.cardsCount} Cards · ${Number(r.coins).toLocaleString()} 🪙</span>
+                            <span style="font-size:11px;color:var(--muted);">${escapeHTML(r.title)} ยท Level ${r.level} ยท ${r.cardsCount} Cards ยท ${Number(r.coins).toLocaleString()} ๐ช</span>
                         </div>
                         <button class="ghost-btn" style="font-size:11px;padding:4px 8px;" onclick="selectAdminTargetUser('${escapeHTML(r.username)}')">Select</button>
                     </div>
@@ -8702,7 +8756,7 @@ function addCoins(amount, _key = null) {
 
     AntiCheat.validateState(state);
     let amt = Math.max(0, Math.floor(Number(amount) || 0));
-    if (hasSkill("econ_4")) amt = Math.round(amt * 1.20);
+    if (hasSkill("econ_4")) amt = Math.round(amt * 1.25);
     state.coins = (Number(state.coins) || 0) + amt;
     state.stats.coinsEarned = (Number(state.stats.coinsEarned) || 0) + amt;
     AntiCheat.signState(state);
