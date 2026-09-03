@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -563,7 +563,7 @@ const SoundFx = {
 
 function getCardImage(card) {
     if (!card) return "player_temp.png";
-    const nameLower = (card.player || card.name || "").toLowerCase();
+    const nameLower = (card.player || card.name || "").trim().toLowerCase();
     if (nameLower.includes("monkey") || nameLower.includes("wukong") || card.devCard || card.rarity === "Developer") {
         return "monkey_king.png";
     }
@@ -571,7 +571,8 @@ function getCardImage(card) {
     if (isCristiano) {
         return "ronaldo_custom.png";
     }
-    return card.image || "player_temp.png";
+    // Strict safeguard: Ronaldo Nazario, Ronaldinho, or any other player ALWAYS returns player_temp.png
+    return "player_temp.png";
 }
 
 /* =========================================================
@@ -1260,7 +1261,7 @@ function updatePlaytime() {
 const RENDER_BACKEND_URL = "https://football-cards-yrry.onrender.com";
 
 const ServerAPI = {
-    BASE_URL: (typeof location !== "undefined" && (location.origin.includes("localhost") || location.origin.includes("127.0.0.1"))) ? location.origin : RENDER_BACKEND_URL,
+    BASE_URL: (typeof location !== "undefined" && location.origin && !location.origin.startsWith("file:")) ? location.origin : RENDER_BACKEND_URL,
     token: localStorage.getItem("football_cards_token") || "",
 
     setToken(token) {
