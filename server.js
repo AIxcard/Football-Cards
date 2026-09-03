@@ -55,22 +55,20 @@ function loadDatabase() {
     try {
         if (fs.existsSync(DB_FILE)) {
             const raw = JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
-            if (raw.wipeVersion === HARD_WIPE_VERSION && raw.users) {
+            if (raw && raw.users) {
                 database = raw;
-                database.users["alucard"] = ALUCARD_USER;
+                database.users = database.users || {};
+                database.users["alucard"] = { ...ALUCARD_USER, ...(database.users["alucard"] || {}) };
                 return;
             }
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error("Error loading database:", e);
+    }
 
-    database = {
-        wipeVersion: HARD_WIPE_VERSION,
-        users: {
-            "alucard": ALUCARD_USER
-        },
-        trades: [],
-        leaderboard: {}
-    };
+    database = database || { users: {}, trades: [], leaderboard: {} };
+    database.users = database.users || {};
+    database.users["alucard"] = ALUCARD_USER;
     saveDatabase();
 }
 
