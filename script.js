@@ -4268,9 +4268,10 @@ function renderCards() {
 
         const isLocked = !!card.locked;
         const isSelected = selectedCardIds.has(card.id);
-        const obtainedDate = card.obtained ? new Date(card.obtained).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Aug 31, 2026";
+        const obtainedDate = (card.obtained || card.obtainedAt) ? new Date(card.obtained || card.obtainedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : (card.date || new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }));
         const existCount = getCardExistCount(card);
         const popTag = `⚡ ${existCount} Exist`;
+        const cardPos = card.pos || card.position || (PLAYERS.find(p => p.name === card.player)?.pos) || "ST";
         const customStyle = card.serialGradient ? `style="background:${card.serialGradient} !important; background-size:200% 200% !important; animation:serializedHoloShift 4s ease-in-out infinite alternate !important;"` : "";
 
         return `
@@ -4291,7 +4292,7 @@ function renderCards() {
                 <img class="card-photo" draggable="false" src="${cardImg}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='player_temp.png';">
             </div>
             <div class="card-rating">${card.rating}</div>
-            <div class="card-position">${escapeHTML(card.pos)}</div>
+            <div class="card-position">${escapeHTML(cardPos)}</div>
             <h3>${escapeHTML(card.player)}</h3>
             <div class="card-meta-row">
                 <span class="card-rarity-badge rarity-${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
@@ -6032,12 +6033,25 @@ function buyMerchantItem(slotIndex) {
         state.potions[item.potionId] = (state.potions[item.potionId] || 0) + 1;
         toast(`🧪 Purchased ${item.name}! Added to your Potion Inventory.`);
     } else if (item.type === "card") {
+        const pObj = PLAYERS.find(p => p.name === item.player);
+        const resolvedPos = item.pos || item.position || (pObj ? pObj.pos : "ST");
+        const resolvedImage = pObj ? (pObj.image || getCardImage(pObj)) : getCardImage({ player: item.player });
+        const now = Date.now();
         const newCard = {
-            id: "merchant_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+            id: "merchant_" + now + "_" + Math.floor(Math.random() * 1000),
             player: item.player,
             rating: item.rating,
+            pos: resolvedPos,
+            position: resolvedPos,
             rarity: item.rarity,
-            position: item.position,
+            image: resolvedImage,
+            frame: "default",
+            serialNumber: null,
+            serialGradient: null,
+            locked: item.rarity === "World Class" || item.rarity === "Secret",
+            obtained: now,
+            obtainedAt: now,
+            date: new Date(now).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
             isSerialized: false
         };
         state.cards.push(newCard);
@@ -6310,7 +6324,7 @@ function renderActivePotionsHUD() {
     if (baseLuckPercent > 0) {
         activeList.push({
             name: "Passive Base Luck",
-            icon: "๐€",
+            icon: "\uD83C\uDF40",
             boost: `+${baseLuckPercent}% Luck`,
             timer: "Permanent",
             color: "#22c55e",
@@ -6323,7 +6337,7 @@ function renderActivePotionsHUD() {
         const potAmp = hasSkill("luck_4") ? " (+37.5%)" : " (+25%)";
         activeList.push({
             name: "Tier 1 Luck",
-            icon: "๐งช",
+            icon: "\uD83E\uDDEA",
             boost: potAmp,
             timer: formatCountdown(remMs),
             color: "#22c55e",
@@ -6336,7 +6350,7 @@ function renderActivePotionsHUD() {
         const potAmp = hasSkill("luck_4") ? " (+75%)" : " (+50%)";
         activeList.push({
             name: "Tier 2 Luck",
-            icon: "๐งช",
+            icon: "\uD83E\uDDEA",
             boost: potAmp,
             timer: formatCountdown(remMs),
             color: "#10b981",
@@ -6349,7 +6363,7 @@ function renderActivePotionsHUD() {
         const potAmp = hasSkill("luck_4") ? " (+150%)" : " (+100%)";
         activeList.push({
             name: "Tier 3 Luck",
-            icon: "๐งช",
+            icon: "\uD83E\uDDEA",
             boost: potAmp,
             timer: formatCountdown(remMs),
             color: "#4ade80",
@@ -6362,7 +6376,7 @@ function renderActivePotionsHUD() {
         const potAmp = hasSkill("luck_4") ? " (+300%)" : " (+200%)";
         activeList.push({
             name: "Astral Potion",
-            icon: "๐”ฎ",
+            icon: "\uD83D\uDD2E",
             boost: potAmp,
             timer: formatCountdown(remMs),
             color: "#c084fc",
@@ -6374,7 +6388,7 @@ function renderActivePotionsHUD() {
         const potAmp = hasSkill("luck_4") ? " (+1500%)" : " (+1000%)";
         activeList.push({
             name: "Elixir of Luck",
-            icon: "โ—๏ธ",
+            icon: "\u2697\uFE0F",
             boost: potAmp,
             timer: `${act.elixirCharges} Pack${act.elixirCharges > 1 ? 's' : ''}`,
             color: "#ef4444",
@@ -6390,7 +6404,7 @@ function renderActivePotionsHUD() {
     const totalMult = getActiveLuckMultiplier();
     let hudHtml = `
     <div style="font-size:11px;font-weight:900;color:var(--gold);text-align:right;margin-bottom:-4px;text-shadow:0 0 10px rgba(0,0,0,0.8);">
-        โก TOTAL LUCK: ${(totalMult * 100).toFixed(0)}%
+        \u26A1 TOTAL LUCK: ${(totalMult * 100).toFixed(0)}%
     </div>
     `;
 
@@ -6400,7 +6414,7 @@ function renderActivePotionsHUD() {
             <div class="hud-potion-icon" style="background:${item.color}22;border:1px solid ${item.color};">${item.icon}</div>
             <div style="display:flex;flex-direction:column;">
                 <span class="hud-potion-label" style="color:${item.color};">${item.name} <small style="font-weight:900;">${item.boost}</small></span>
-                <span class="hud-potion-timer">โณ ${item.timer}</span>
+                <span class="hud-potion-timer">\u23F3 ${item.timer}</span>
             </div>
         </div>
         `;
@@ -9251,6 +9265,8 @@ document.addEventListener("dragstart", function(e) {
         claimLevelMilestone,
         renderLevelMilestones,
         renderPacks,
+        renderCollection,
+        renderAll,
         LEVEL_MILESTONES,
         refreshTradingHub,
         rollRarity,
