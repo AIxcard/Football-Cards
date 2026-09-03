@@ -2337,14 +2337,14 @@ select,input{
    ========================================================= */
 
 .card-image-wrap {
-    height: 155px;
+    height: 190px;
     display: grid;
     place-items: center;
     position: relative;
     overflow: hidden;
     border-radius: 12px;
-    margin: 6px 0 10px;
-    background: radial-gradient(circle, rgba(33,70,93,0.35), rgba(10,20,29,0.7) 80%);
+    margin: 6px 0 8px;
+    background: radial-gradient(circle, rgba(33,70,93,0.25), rgba(10,20,29,0.5) 80%);
 }
 
 .card-photo {
@@ -2356,11 +2356,20 @@ select,input{
 }
 
 .reveal-card-body .card-image-wrap {
-    height: 180px;
+    height: 270px !important;
+    max-height: 55vh;
+    margin: 6px 0 8px;
+    background: transparent !important;
+}
+
+#card3DCard .card-image-wrap {
+    height: 260px !important;
+    background: transparent !important;
 }
 
 #card3DPhoto, #revealPhoto {
     object-fit: contain !important;
+    object-position: center !important;
 }
 
 .card:hover .card-photo {
