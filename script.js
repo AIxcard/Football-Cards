@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -567,7 +567,8 @@ function getCardImage(card) {
     if (nameLower.includes("monkey") || nameLower.includes("wukong") || card.devCard || card.rarity === "Developer") {
         return "monkey_king.png";
     }
-    if (nameLower.includes("ronaldo") || nameLower.includes("cr7")) {
+    const isCristiano = nameLower === "cristiano ronaldo" || nameLower === "cr7" || (nameLower.includes("cristiano") && nameLower.includes("ronaldo"));
+    if (isCristiano) {
         return "ronaldo_custom.png";
     }
     return card.image || "player_temp.png";
@@ -3219,7 +3220,7 @@ const SolsCutsceneEngine = {
         const normName = (c.player || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         const isMonkey = normName.includes("monkey") || normName.includes("wukong");
         const isMessi = normName.includes("messi");
-        const isRonaldo = normName.includes("ronaldo");
+        const isRonaldo = normName.includes("cristiano") || normName === "cr7";
         const isYamal = normName.includes("yamal");
         const isMbappe = normName.includes("mbappe");
         const isHaaland = normName.includes("haaland");
