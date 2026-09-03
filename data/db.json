@@ -1,0 +1,37 @@
+﻿{
+  "users": {
+    "alucard": {
+      "username": "Alucard",
+      "password": "Unidentified67",
+      "saveData": {
+        "name": "Alucard",
+        "accountUser": "Alucard",
+        "coins": 100,
+        "xp": 25,
+        "level": 1,
+        "equippedTitle": "UNIQUE",
+        "grantedTitles": [
+          "UNIQUE",
+          "Owner",
+          "Admin"
+        ],
+        "isGrantedAdmin": true,
+        "cards": [],
+        "stats": {
+          "playtime": 0,
+          "packsOpened": 0,
+          "cardsPulled": 0,
+          "duplicates": 0,
+          "cardsSold": 0,
+          "coinsEarned": 0,
+          "coinsSpent": 0
+        }
+      },
+      "createdAt": 1788350000000,
+      "lastActive": 1788350000000
+    }
+  },
+  "trades": [],
+  "leaderboard": {},
+  "backups": {}
+}
