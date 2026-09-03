@@ -30,28 +30,11 @@
     // Expose globally so functions outside this IIFE can call hashPassword(...)
     window.hashPassword = hashPassword;
 
-    // Blacklist of Deleted Test Accounts (Purged completely across all devices)
-    const DELETED_ACCOUNTS_BLACKLIST = [
-        "adminaccount",
-        "test",
-        "test2",
-        "testing",
-        "jeff",
-        "timekung2835",
-        "ipadtester",
-        "playertwo",
-        "ipadtest",
-        "testuser",
-        "tester1",
-        "tester2",
-        "sampleuser"
-    ];
+    // Deleted account usernames are completely free and reusable by any player
+    const DELETED_ACCOUNTS_BLACKLIST = [];
 
     function isAccountDeleted(username) {
-        if (!username) return true;
-        const u = String(username).trim().toLowerCase();
-        if (u.includes("_1787") || u.startsWith("ipadtest") || u.startsWith("testuser")) return true;
-        return DELETED_ACCOUNTS_BLACKLIST.includes(u);
+        return false;
     }
 
             // 7. Strictly Purge ALL Previous Local Saves, Cloud Accounts, and Legacy Keys
