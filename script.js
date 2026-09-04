@@ -1445,31 +1445,30 @@ const CloudSync = {
             if (p !== "Unidentified67") {
                 return { success: false, msg: "Incorrect password for Owner account Alucard." };
             }
+            let cloudSave = null;
             try {
                 const serverRes = await ServerAPI.login(u, p);
                 if (serverRes && serverRes.success && serverRes.data) {
-                    const cloudSave = typeof serverRes.data === "string" ? JSON.parse(serverRes.data) : serverRes.data;
-                    state = {
-                        ...freshState(),
-                        ...cloudSave,
-                        accountUser: "Alucard",
-                        name: "Alucard",
-                        coins: (cloudSave.coins !== undefined) ? Number(cloudSave.coins) : state.coins,
-                        level: (cloudSave.level !== undefined) ? Number(cloudSave.level) : 7,
-                        equippedTitle: "UNIQUE",
-                        grantedTitles: ["UNIQUE", "Owner", "Admin", "Season 1 Champion"],
-                        isGrantedAdmin: true,
-                        cards: Array.isArray(cloudSave.cards) && cloudSave.cards.length ? cloudSave.cards : state.cards,
-                        stats: { ...freshState().stats, ...(cloudSave.stats || {}) }
-                    };
+                    cloudSave = typeof serverRes.data === "string" ? JSON.parse(serverRes.data) : serverRes.data;
                 }
             } catch (e) {}
 
-            state.accountUser = "Alucard";
-            state.name = "Alucard";
-            state.equippedTitle = (typeof cloudSave !== "undefined" && cloudSave && cloudSave.equippedTitle) ? cloudSave.equippedTitle : (state.equippedTitle || "UNIQUE");
-            state.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion"];
-            state.isGrantedAdmin = true;
+            const finalTitle = (cloudSave && cloudSave.equippedTitle) ? cloudSave.equippedTitle : (state.equippedTitle || "UNIQUE");
+            state = {
+                ...freshState(),
+                ...(cloudSave || {}),
+                ...state,
+                accountUser: "Alucard",
+                name: "Alucard",
+                coins: (cloudSave && cloudSave.coins !== undefined) ? Number(cloudSave.coins) : state.coins,
+                level: (cloudSave && cloudSave.level !== undefined) ? Number(cloudSave.level) : (state.level || 7),
+                equippedTitle: finalTitle,
+                grantedTitles: ["UNIQUE", "Owner", "Admin", "Season 1 Champion"],
+                isGrantedAdmin: true,
+                cards: (cloudSave && Array.isArray(cloudSave.cards) && cloudSave.cards.length) ? cloudSave.cards : state.cards,
+                stats: { ...freshState().stats, ...((cloudSave && cloudSave.stats) ? cloudSave.stats : state.stats || {}) }
+            };
+
             safeStorage.setItem("football_cards_user_session", "Alucard");
             AntiCheat.signState(state);
             saveGame();
@@ -9532,14 +9531,17 @@ document.addEventListener("dragstart", function(e) {
 
                     const finalEquippedTitle = state.equippedTitle || serverSave.equippedTitle || "Collector";
                     state = {
-                        ...state,
+                        ...freshState(),
                         ...serverSave,
+                        ...state,
                         accountUser: state.accountUser,
                         name: state.name || serverSave.name || state.accountUser,
                         coins: finalCoins,
                         level: finalLevel,
                         cards: finalCards,
-                        equippedTitle: finalEquippedTitle
+                        equippedTitle: finalEquippedTitle,
+                        profileFrame: state.profileFrame || serverSave.profileFrame || "default",
+                        profileBackground: state.profileBackground || serverSave.profileBackground || "campnou"
                     };
                     saveGame();
                     renderAll();
