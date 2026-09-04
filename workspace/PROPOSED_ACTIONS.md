@@ -14,6 +14,7 @@ This document manages all active tasks, assigned subagents, prioritized backlogs
 
 ## 📋 Active Sprint & Immediate Next Steps
 
+| `ACT-158` | `P0` | Permanently resolve startup freeze, unwrap IIFE to global scope, deploy safeStorage wrapper, calibrate Alucard balance to 270,000 coins | `script.js`, `index.html`, `server.js` | `web_game_dev` | 🟢 Done |
 | `ACT-153` | `P0` | Rebalance Exclusive pack price to 1,000 coins (1x/3x/5x = 1k/3k/5k) and Exclusive card sell price to flat 800 coins | `index.html`, `script.js` | `web_game_dev` | 🟢 Done |
 | `ACT-154` | `P0` | Build AntiBotGuard engine to block bookmarklet bot scripts and rapid autoclickers on pack opening | `script.js` | `web_game_dev` | 🟢 Done |
 | `ACT-155` | `P0` | Implement Alucard Solo Tournament Arena with 4-stage card clash game mechanics, strictly locked for non-Alucard players | `index.html`, `script.js` | `web_game_dev` | 🟢 Done |
