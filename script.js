@@ -3,8 +3,32 @@
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
 
-(function initFootballTCGSecurityCore() {
-    "use strict";
+// Bulletproof Safe LocalStorage Wrapper (Prevents DOMException / SecurityError crashes)
+const safeStorage = {
+    getItem(key) {
+        try {
+            if (typeof window !== "undefined" && window.localStorage) {
+                return window.safeStorage.getItem(key);
+            }
+        } catch(e) {}
+        return null;
+    },
+    setItem(key, val) {
+        try {
+            if (typeof window !== "undefined" && window.localStorage) {
+                window.safeStorage.setItem(key, val);
+            }
+        } catch(e) {}
+    },
+    removeItem(key) {
+        try {
+            if (typeof window !== "undefined" && window.localStorage) {
+                window.safeStorage.removeItem(key);
+            }
+        } catch(e) {}
+    }
+};
+
 
     // Cryptographic SHA-256 Password Hash Engine
     async function hashPassword(plainText) {
@@ -35,6 +59,33 @@
 
     function isAccountDeleted(username) {
         return false;
+    }
+
+    function setText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = (text !== undefined && text !== null) ? text : "";
+    }
+
+    function escapeHTML(value) {
+        return String(value !== undefined && value !== null ? value : "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function toast(msg) {
+        const t = document.getElementById("toast");
+        if (!t) return;
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => t.classList.remove("show"), 2500);
+    }
+
+    function formatNumber(num) {
+        return Number(num || 0).toLocaleString();
     }
 
     const CURRENT_SAVE_KEY = "footballCardsSave_v19_season1_clean";
@@ -194,7 +245,7 @@ const DUPLICATE_VALUES = {
     Rare: 20,
     Epic: 55,
     Legendary: 150,
-    Exclusive: 300,
+    Exclusive: 800,
     Mythic: 750,
     Secret: 2000,
     Tournament: 15000,
@@ -208,7 +259,7 @@ const CARD_VALUES = {
     Rare: 150,
     Epic: 400,
     Legendary: 1200,
-    Exclusive: 2500,
+    Exclusive: 800,
     Mythic: 6000,
     Secret: 15000,
     Tournament: 30000,
@@ -684,7 +735,7 @@ champion: {
 },
 exclusive: {
     name: "Exclusive Legends",
-    cost: 60,
+    cost: 1000,
     rates: { Exclusive: 100 }
 },
 mythic: {
@@ -1082,7 +1133,7 @@ function freshState() {
 
 function loadGame() {
     try {
-        let raw = localStorage.getItem(CURRENT_SAVE_KEY);
+        let raw = safeStorage.getItem(CURRENT_SAVE_KEY);
         const fresh = freshState();
         if (!raw) return fresh;
 
@@ -1195,7 +1246,7 @@ function saveGame() {
     AntiCheat.signState(state);
     state.lastSave = Date.now();
     try {
-        localStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state));
+        safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state));
     } catch (e) {}
     syncCloud();
 }
@@ -1226,12 +1277,12 @@ const RENDER_BACKEND_URL = "https://football-cards-yrry.onrender.com";
 
 const ServerAPI = {
     BASE_URL: (typeof location !== "undefined" && location.origin && !location.origin.startsWith("file:")) ? location.origin : RENDER_BACKEND_URL,
-    token: localStorage.getItem("football_cards_token") || "",
+    token: safeStorage.getItem("football_cards_token") || "",
 
     setToken(token) {
         this.token = token || "";
-        if (token) localStorage.setItem("football_cards_token", token);
-        else localStorage.removeItem("football_cards_token");
+        if (token) safeStorage.setItem("football_cards_token", token);
+        else safeStorage.removeItem("football_cards_token");
     },
 
     getHeaders() {
@@ -1452,7 +1503,7 @@ const CloudSync = {
         ServerAPI.setToken("");
         state = freshState();
         AntiCheat.signState(state);
-        try { localStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state)); } catch(e) {}
+        try { safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state)); } catch(e) {}
         renderAll();
         updateAuthUI();
         checkAdminStatus();
@@ -1661,19 +1712,6 @@ function updateAuthUI() {
 /* =========================================================
    INITIALIZATION & EVENTS
    ========================================================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-    bindEvents();
-    init3DInspector();
-    checkName();
-    renderAll();
-    updateTimers();
-    updateGlobalCardPopulations();
-
-    setInterval(updateTimers, 1000);
-    setInterval(checkMissionResets, 1000);
-    setInterval(updateGlobalCardPopulations, 60000);
-});
 
 function bindEvents() {
     window.addEventListener("pointerdown", () => SoundFx.init(), { once: true });
@@ -7172,6 +7210,10 @@ function openTournamentPack() {
     }
 
     SoundFx.cardReveal(rarity);
+    saveGame();
+    renderTournament();
+}
+
 // --- CHAMPIONSHIP CARD CLASH TOURNAMENT ENGINE ---
 
 const TOURNAMENT_STAGES = [
@@ -7542,19 +7584,6 @@ function renderTournament() {
                 <div style="font-size:14px;font-weight:900;color:var(--gold);">${r.score.toLocaleString()} pts</div>
             </div>
         `).join("");
-    }
-}
-        if (!realPlayers.length) {
-            el.innerHTML = `<p style="text-align:center;color:var(--muted);padding:15px;">No tournament entries recorded yet.</p>`;
-        } else {
-            el.innerHTML = realPlayers.map((r, i) => `
-                <div class="rank-row">
-                    <b>#${i + 1}</b>
-                    <strong>${escapeHTML(r.name)}</strong>
-                    <span>${r.score} pts</span>
-                </div>
-            `).join("");
-        }
     }
 }
 
@@ -8387,7 +8416,7 @@ async function wipeAccountEverywhere(username) {
                 state.grantedTitles = ["UNIQUE", "Owner", "Admin"];
             }
             AntiCheat.signState(state);
-            try { localStorage.removeItem(CURRENT_SAVE_KEY); } catch(e) {}
+            try { safeStorage.removeItem(CURRENT_SAVE_KEY); } catch(e) {}
             saveGame();
             renderAll();
             updateAuthUI();
@@ -9136,8 +9165,8 @@ function togglePasswordVisibility(inputId) {
 
 function resetGame() {
     if (!confirm("Are you sure? This permanently deletes your progress.")) return;
-    localStorage.removeItem(CURRENT_SAVE_KEY);
-    PREVIOUS_SAVE_KEYS.forEach(k => localStorage.removeItem(k));
+    safeStorage.removeItem(CURRENT_SAVE_KEY);
+    PREVIOUS_SAVE_KEYS.forEach(k => safeStorage.removeItem(k));
     location.reload();
 }
 
@@ -9162,7 +9191,7 @@ function showPage(pageId, skipScroll = false) {
 
     // Save active page in localStorage so refreshing preserves the user's current page!
     try {
-        localStorage.setItem("football_tcg_active_page", pageId);
+        safeStorage.setItem("football_tcg_active_page", pageId);
     } catch(e) {}
 
     if (pageId === "statistics") renderStatistics();
@@ -9197,53 +9226,8 @@ function closeSidebar() {
     if (overlay) overlay.classList.remove("visible");
 }
 
-function toast(msg) {
-    const t = document.getElementById("toast");
-    if (!t) return;
-    t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => t.classList.remove("show"), 2500);
-}
-
-function setText(id, text) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = text;
-}
-
-function escapeHTML(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-
-
 if (state.initialized) {
-    if ((state.accountUser || "").toLowerCase() === "alucard" || (state.name || "").toLowerCase() === "alucard") {
-        if (!localStorage.getItem("football_tcg_alucard_clean_reset_v16")) {
-            state = {
-                ...freshState(),
-                accountUser: "Alucard",
-                name: "Alucard",
-                coins: 100,
-                level: 1,
-                xp: 25,
-                cards: [],
-                equippedTitle: "UNIQUE",
-                grantedTitles: ["UNIQUE", "Owner", "Admin"],
-                isGrantedAdmin: true,
-                resetV14WipeDone: true
-            };
-            localStorage.setItem("football_tcg_alucard_clean_reset_v16", "true");
-            AntiCheat.signState(state);
-            saveGame();
-        }
-    }
-        renderAll();
+    renderAll();
     checkGlobalSeasonReset();
 
     // Seamless Server-Authoritative Refresh Protection: Restore and merge live account data
@@ -9294,7 +9278,7 @@ if (state.initialized) {
 
     // Restore last visited page if present
     try {
-        const savedPage = localStorage.getItem("football_tcg_active_page");
+        const savedPage = safeStorage.getItem("football_tcg_active_page");
         if (savedPage && document.getElementById(savedPage)) {
             showPage(savedPage, true);
         }
@@ -9421,7 +9405,6 @@ document.addEventListener("dragstart", function(e) {
         closeTournamentEnterModal,
         confirmTournamentEntry,
         openTournamentPack,
-        finishTournamentDraft,
         openAdminPanel,
         closeAdminPanel,
         setAdminTab,
@@ -9554,4 +9537,21 @@ document.addEventListener("dragstart", function(e) {
     window.state = state;
     window.getState = () => state;
 
-})();
+    function initGame() {
+        try { bindEvents(); } catch(e) {}
+        try { init3DInspector(); } catch(e) {}
+        try { checkName(); } catch(e) {}
+        try { renderAll(); } catch(e) {}
+        try { updateTimers(); } catch(e) {}
+        try { updateGlobalCardPopulations(); } catch(e) {}
+
+        setInterval(() => { try { updateTimers(); } catch(e) {} }, 1000);
+        setInterval(() => { try { checkMissionResets(); } catch(e) {} }, 1000);
+        setInterval(() => { try { updateGlobalCardPopulations(); } catch(e) {} }, 60000);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initGame);
+    } else {
+        initGame();
+    }
