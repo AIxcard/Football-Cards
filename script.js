@@ -1385,8 +1385,8 @@ const CloudSync = {
                         ...cloudSave,
                         accountUser: "Alucard",
                         name: "Alucard",
-                        coins: Number(cloudSave.coins) || 2000021533,
-                        level: Number(cloudSave.level) || 7,
+                        coins: (cloudSave.coins !== undefined) ? Number(cloudSave.coins) : state.coins,
+                        level: (cloudSave.level !== undefined) ? Number(cloudSave.level) : 7,
                         equippedTitle: "UNIQUE",
                         grantedTitles: ["UNIQUE", "Owner", "Admin", "Season 1 Champion"],
                         isGrantedAdmin: true,
@@ -1401,8 +1401,6 @@ const CloudSync = {
             state.equippedTitle = "UNIQUE";
             state.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion"];
             state.isGrantedAdmin = true;
-            if (state.coins < 1000000) state.coins = 2000021533;
-            if (state.level < 7) state.level = 7;
             AntiCheat.signState(state);
             saveGame();
             renderAll();
