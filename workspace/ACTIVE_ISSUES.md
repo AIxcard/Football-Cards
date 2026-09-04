@@ -36,6 +36,20 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 
 ---
 
+### [ISSUE-053] [P0 - Blocker] Game Freeze On Startup, IIFE Scope Decoupling, SafeStorage Defense & Alucard 270k Balance
+- **Description**:
+  1. Game froze upon startup with non-responsive navigation buttons and tabs.
+  2. `script.js` was trapped in an outer IIFE where early property evaluation (e.g. `localStorage` access) or runtime lookup error aborted script execution before window bindings occurred.
+  3. `finishTournamentDraft` was missing from the newly refactored tournament system but remained listed in the exports table.
+  4. Alucard coin balance needed calibration to 270,000 coins without resets or unrequested billion coin overrides.
+- **Fix**:
+  1. Removed enclosing IIFE wrapper and exposed all core action handlers directly on `window` (`showPage`, `openPack`, `CloudSync`, etc.).
+  2. Implemented bulletproof `safeStorage` wrapper preventing any `DOMException` / `SecurityError` from interrupting execution.
+  3. Cleaned export table removing stale `finishTournamentDraft` identifier.
+  4. Calibrated `alucard` starting balance to 270,000 coins and verified persistent server load.
+  5. Verified complete button and tab interactivity via headless CDP browser automation.
+- **Status**: 🟢 Resolved
+
 ### [ISSUE-052] [P1 - Critical] Exclusive Economy Rebalance, Anti-Bot/Autoclicker Guard & Alucard Solo Tournament Clash Engine
 - **Description**:
   1. Exclusive packs cost and card sell price needed rebalancing (Pack cost: 1,000 coins; Sell price: 800 coins flat).
