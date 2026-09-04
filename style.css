@@ -1,4 +1,4 @@
-﻿*{box-sizing:border-box}
+*{box-sizing:border-box}
 
 :root{
     --bg:#061018;
@@ -2337,7 +2337,10 @@ select,input{
    ========================================================= */
 
 .card-image-wrap {
-    height: 190px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    min-height: 150px;
+    max-height: 240px;
     display: grid;
     place-items: center;
     position: relative;
@@ -2356,14 +2359,19 @@ select,input{
 }
 
 .reveal-card-body .card-image-wrap {
-    height: 270px !important;
-    max-height: 55vh;
-    margin: 6px 0 8px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 270px !important;
+    height: auto !important;
+    margin: 6px auto 10px;
     background: transparent !important;
 }
 
 #card3DCard .card-image-wrap {
-    height: 260px !important;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 260px !important;
+    height: auto !important;
     background: transparent !important;
 }
 
