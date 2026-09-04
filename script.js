@@ -7212,112 +7212,378 @@ function openTournamentPack() {
     }
 
     SoundFx.cardReveal(rarity);
-    toast(`🏆 Drafted ${player.name} (+${points} pts)!`);
+// --- CHAMPIONSHIP CARD CLASH TOURNAMENT ENGINE ---
 
-    if (draft.gold <= 0) {
-        finishTournamentDraft();
+const TOURNAMENT_STAGES = [
+    {
+        stage: 1,
+        name: "Quarter-Finals",
+        opponent: "Continental Challengers XI",
+        ovr: 80,
+        tactics: {
+            attack: { name: "Power Strike", bonus: 8, desc: "+8 Shooting Power" },
+            midfield: { name: "Through Ball", bonus: 8, desc: "+8 Passing Penetration" },
+            defense: { name: "Slide Tackle", bonus: 8, desc: "+8 Interception Timing" }
+        }
+    },
+    {
+        stage: 2,
+        name: "Semi-Finals",
+        opponent: "European Titans XI",
+        ovr: 86,
+        tactics: {
+            attack: { name: "Finesse Curl", bonus: 10, desc: "+10 Precision Curve" },
+            midfield: { name: "Tiki-Taka Play", bonus: 10, desc: "+10 Possession Control" },
+            defense: { name: "Offside Trap", bonus: 10, desc: "+10 Tactical Discipline" }
+        }
+    },
+    {
+        stage: 3,
+        name: "Championship Finals",
+        opponent: "Galácticos All-Stars XI",
+        ovr: 92,
+        tactics: {
+            attack: { name: "Counter Break", bonus: 12, desc: "+12 Explosive Sprint" },
+            midfield: { name: "Skill Dribble", bonus: 12, desc: "+12 Flair & Magic" },
+            defense: { name: "Acrobatic Save", bonus: 12, desc: "+12 Reflex Stop" }
+        }
+    },
+    {
+        stage: 4,
+        name: "Grand Championship Cup",
+        opponent: "Immortal Legends XI",
+        ovr: 97,
+        tactics: {
+            attack: { name: "Golden Volley", bonus: 15, desc: "+15 Unstoppable Blast" },
+            midfield: { name: "Maestro Vision", bonus: 15, desc: "+15 World Class Play" },
+            defense: { name: "Iron Fortress", bonus: 15, desc: "+15 Impenetrable Wall" }
+        }
     }
+];
 
-    saveGame();
-    renderTournament();
+let activeTournamentRun = {
+    active: false,
+    stageIndex: 0,
+    currentPhase: 1, // 1: Attack, 2: Midfield, 3: Defense
+    playerGoals: 0,
+    opponentGoals: 0,
+    runScore: 0,
+    clashLog: []
+};
+
+function isTournamentAlucard() {
+    return (state.accountUser || state.name || "").trim().toLowerCase() === "alucard";
 }
 
-function finishTournamentDraft() {
-    const draft = state.tournamentDraft;
-    draft.active = false;
+function tournamentAutoPickBestSquad() {
+    if (!Array.isArray(state.cards) || !state.cards.length) {
+        toast("No cards in collection to deploy!");
+        return;
+    }
+    const sorted = [...state.cards].sort((a, b) => (Number(b.rating) || 70) - (Number(a.rating) || 70));
+    state.tournamentSquad = sorted.slice(0, 5).map(c => c.id);
+    saveGame();
+    renderTournament();
+    SoundFx.coin();
+    toast("⚡ Auto-deployed top 5 squad cards!");
+}
+
+function tournamentResetSquad() {
+    state.tournamentSquad = [];
+    saveGame();
+    renderTournament();
+    toast("Squad cleared.");
+}
+
+function getTournamentSquadCards() {
+    const ids = state.tournamentSquad || [];
+    const squad = [];
+    ids.forEach(id => {
+        const c = state.cards.find(x => x.id === id);
+        if (c) squad.push(c);
+    });
+    return squad;
+}
+
+function startTournamentMatchRun() {
+    if (!isTournamentAlucard()) {
+        toast("🔒 Tournament Arena is currently exclusive to Alucard for testing.");
+        return;
+    }
+
+    const squad = getTournamentSquadCards();
+    if (squad.length < 5) {
+        toast("Please deploy all 5 squad cards before starting the Tournament Run!");
+        return;
+    }
+
+    activeTournamentRun = {
+        active: true,
+        stageIndex: 0,
+        currentPhase: 1,
+        playerGoals: 0,
+        opponentGoals: 0,
+        runScore: 0,
+        clashLog: []
+    };
+
     SoundFx.levelUp();
-
-    const ownsEmanuel = state.cards.some(c => c.player === "Emanuel" && c.rarity === "Tournament");
-    if (!ownsEmanuel && draft.score >= 50) {
-        const emanuelCard = {
-            id: Date.now() + "_emanuel",
-            player: "Emanuel",
-            rating: 99,
-            pos: "CAM",
-            rarity: "Tournament",
-            image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80",
-            frame: "champion",
-            obtained: Date.now()
-        };
-        state.cards.push(emanuelCard);
-        state.stats.tournament = (state.stats.tournament || 0) + 1;
-        state.stats.cardsPulled++;
-        if (state.stats.highestRating < 99) state.stats.highestRating = 99;
-        state.stats.highestRarity = "Tournament";
-        showCardResult(emanuelCard, false, true);
-        toast("👑 TOURNAMENT REWARD UNLOCKED: Emanuel (99 OVR)!");
-    } else {
-        toast(`🏆 Draft Run Complete! Final Tournament Score: ${draft.score} pts.`);
-    }
-
-    saveGame();
     renderTournament();
-    renderCards();
+    toast("⚔️ Championship Tournament Run Started! Quarter-Finals Kickoff!");
 }
 
-function renderTournament() {
-    const draft = state.tournamentDraft;
-    setText("tGoldDisplay", `${draft.gold} 🪙`);
-    setText("tPacksDisplay", `${draft.packsOpened} / 10`);
-    setText("tScoreDisplay", `${draft.score} pts`);
+function executeTournamentTactic(tacticType) {
+    if (!activeTournamentRun.active) return;
+    const stage = TOURNAMENT_STAGES[activeTournamentRun.stageIndex];
+    if (!stage) return;
 
-    const enterBtn = document.getElementById("enterTournamentModalBtn");
-    const openBtn = document.getElementById("openTournamentPackBtn");
+    const squad = getTournamentSquadCards();
+    const phase = activeTournamentRun.currentPhase;
+    let card = null;
 
-    if (enterBtn && openBtn) {
-        const canOpen = draft.active && draft.gold > 0;
-        enterBtn.style.display = canOpen ? "none" : "flex";
-        openBtn.style.display = canOpen ? "flex" : "none";
-        setText("attemptsLeftSubtitle", `${state.tournamentAttempts} / 5 Weekly Attempts Remaining`);
+    if (phase === 1) {
+        card = squad.find(c => ["ST", "CF", "RW", "LW"].includes(c.pos)) || squad[0];
+    } else if (phase === 2) {
+        card = squad.find(c => ["CAM", "CM", "CDM", "RM", "LM"].includes(c.pos)) || squad[1] || squad[0];
+    } else {
+        card = squad.find(c => ["CB", "LB", "RB", "GK"].includes(c.pos)) || squad[squad.length - 1] || squad[0];
     }
 
-    const draftGrid = document.getElementById("tournamentDraftGrid");
-    if (draftGrid) {
-        if (!draft.cards.length) {
-            draftGrid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;">No cards drafted yet. Enter a draft run to open Tournament Packs!</p>`;
+    const playerRating = Number(card.rating) || 75;
+    const tacticObj = stage.tactics[tacticType] || { name: tacticType, bonus: 5 };
+    const tacticBonus = tacticObj.bonus || 8;
+    const totalPlayerPower = playerRating + tacticBonus;
+    const opponentPower = stage.ovr + Math.floor(Math.random() * 7) - 3;
+
+    let resultMsg = "";
+    if (phase === 1) {
+        if (totalPlayerPower >= opponentPower) {
+            activeTournamentRun.playerGoals++;
+            activeTournamentRun.runScore += 40;
+            resultMsg = `⚽ GOAL! ${card.player} (${playerRating} OVR) unleashed a stunning ${tacticObj.name} (+${tacticBonus}) beating the opponent defense (${totalPlayerPower} vs ${opponentPower})!`;
+            SoundFx.coin();
         } else {
-            draftGrid.innerHTML = draft.cards.map(card => `
-                <article class="card frame-champion" style="min-height:220px;padding:12px;">
-                    <span class="rarity ${rarityClassName(card.rarity)}">${escapeHTML(card.rarity)}</span>
-                    <div class="card-image-wrap" style="height:95px;">
-                        <img class="card-photo" src="${card.image || ''}">
-                    </div>
-                    <div class="card-rating" style="font-size:22px;">${card.rating}</div>
-                    <div class="card-position">${escapeHTML(card.pos)} · <b style="color:var(--gold)">+${card.points} pts</b></div>
-                    <h4 style="margin:4px 0;">${escapeHTML(card.player)}</h4>
-                </article>
-            `).join("");
+            resultMsg = `🧤 SAVED! ${card.player}'s ${tacticObj.name} was blocked by the opponent keeper (${totalPlayerPower} vs ${opponentPower}).`;
+            SoundFx.click();
+        }
+    } else if (phase === 2) {
+        if (totalPlayerPower >= opponentPower) {
+            activeTournamentRun.runScore += 35;
+            resultMsg = `🎯 DOMINANCE! ${card.player} controlled the midfield tempo with ${tacticObj.name} (+${tacticBonus}) dominating the pitch (${totalPlayerPower} vs ${opponentPower})!`;
+            SoundFx.coin();
+        } else {
+            activeTournamentRun.opponentGoals++;
+            resultMsg = `⚠️ TURNOVER! Opponent midfield counter-attacked through the lines (${totalPlayerPower} vs ${opponentPower}) and scored a goal!`;
+            SoundFx.click();
+        }
+    } else {
+        if (totalPlayerPower >= opponentPower) {
+            activeTournamentRun.runScore += 45;
+            resultMsg = `🛡️ IMPENETRABLE! ${card.player} made a crucial ${tacticObj.name} (+${tacticBonus}) stopping the opponent attack in their tracks (${totalPlayerPower} vs ${opponentPower})!`;
+            SoundFx.coin();
+        } else {
+            activeTournamentRun.opponentGoals++;
+            resultMsg = `🚨 BREACH! Opponent forward slipped past the backline (${totalPlayerPower} vs ${opponentPower}) and netted a goal!`;
+            SoundFx.click();
         }
     }
 
-    const accs = CloudSync.getAccounts();
-    const realPlayers = [];
+    activeTournamentRun.clashLog.unshift(resultMsg);
 
-    for (const key in accs) {
-        try {
-            const d = JSON.parse(accs[key].saveData);
-            if (d && d.stats) {
-                realPlayers.push({
-                    name: d.name || accs[key].username,
-                    score: d.stats.tournamentScore || 0,
-                    level: d.level || 1
-                });
-            }
-        } catch (e) {}
+    if (activeTournamentRun.currentPhase < 3) {
+        activeTournamentRun.currentPhase++;
+    } else {
+        finishTournamentMatchStage();
     }
 
-    if (state.accountUser && !realPlayers.some(p => p.name.toLowerCase() === state.accountUser.toLowerCase())) {
-        realPlayers.push({
-            name: state.name || state.accountUser,
-            score: state.stats.tournamentScore || 0,
-            level: state.level || 1
-        });
+    renderTournament();
+}
+
+function finishTournamentMatchStage() {
+    const pGoals = activeTournamentRun.playerGoals;
+    const oGoals = activeTournamentRun.opponentGoals;
+    const isWin = pGoals >= oGoals;
+
+    const postActions = document.getElementById("tMatchPostActions");
+    const nextBtn = document.getElementById("tNextMatchBtn");
+
+    if (isWin) {
+        activeTournamentRun.runScore += 100;
+        SoundFx.levelUp();
+        if (activeTournamentRun.stageIndex < TOURNAMENT_STAGES.length - 1) {
+            if (nextBtn) nextBtn.textContent = `Advance to Stage ${activeTournamentRun.stageIndex + 2} →`;
+        } else {
+            activeTournamentRun.runScore += 500;
+            if (nextBtn) nextBtn.textContent = "🏆 Claim Grand Championship Victory!";
+        }
+    } else {
+        SoundFx.click();
+        if (nextBtn) nextBtn.textContent = "Defeat — Finalize Tournament Score";
     }
 
-    realPlayers.sort((a, b) => b.score - a.score);
+    if (postActions) postActions.classList.remove("hidden");
+}
 
-    const el = document.getElementById("tournamentLeaderboard");
-    if (el) {
+function advanceTournamentStage() {
+    const isWin = activeTournamentRun.playerGoals >= activeTournamentRun.opponentGoals;
+
+    if (!isWin || activeTournamentRun.stageIndex >= TOURNAMENT_STAGES.length - 1) {
+        state.stats.tournamentScore = Math.max(state.stats.tournamentScore || 0, activeTournamentRun.runScore);
+        state.stats.tournament = (state.stats.tournament || 0) + 1;
+        AntiCheat.signState(state);
+        saveGame();
+
+        activeTournamentRun.active = false;
+        const postActions = document.getElementById("tMatchPostActions");
+        if (postActions) postActions.classList.add("hidden");
+
+        if (isWin) {
+            toast(`👑 GRAND CHAMPION! Final Tournament Score: ${activeTournamentRun.runScore} pts!`);
+        } else {
+            toast(`Tournament Run Concluded. Score: ${activeTournamentRun.runScore} pts.`);
+        }
+
+        renderTournament();
+        return;
+    }
+
+    activeTournamentRun.stageIndex++;
+    activeTournamentRun.currentPhase = 1;
+    activeTournamentRun.playerGoals = 0;
+    activeTournamentRun.opponentGoals = 0;
+
+    const postActions = document.getElementById("tMatchPostActions");
+    if (postActions) postActions.classList.add("hidden");
+
+    renderTournament();
+    SoundFx.levelUp();
+    toast(`⚔️ Advanced to Stage ${activeTournamentRun.stageIndex + 1}: ${TOURNAMENT_STAGES[activeTournamentRun.stageIndex].name}!`);
+}
+
+function renderTournament() {
+    const isAlucard = (state.accountUser || state.name || "").trim().toLowerCase() === "alucard";
+    const lockedView = document.getElementById("tournamentLockedView");
+    const alucardView = document.getElementById("tournamentAlucardView");
+
+    if (!isAlucard) {
+        if (lockedView) lockedView.classList.remove("hidden");
+        if (alucardView) alucardView.classList.add("hidden");
+        return;
+    }
+
+    if (lockedView) lockedView.classList.add("hidden");
+    if (alucardView) alucardView.classList.remove("hidden");
+
+    const bestScore = state.stats.tournamentScore || 0;
+    setText("tScoreDisplay", `${bestScore.toLocaleString()} pts`);
+
+    const squadCards = getTournamentSquadCards();
+    const squadOvr = squadCards.length ? Math.round(squadCards.reduce((sum, c) => sum + (Number(c.rating) || 70), 0) / squadCards.length) : 0;
+    setText("tSquadOvrDisplay", squadCards.length ? `${squadOvr} OVR (${squadCards.length}/5)` : "Empty (0/5)");
+
+    const selectionPanel = document.getElementById("tSquadSelectionPanel");
+    const matchArenaPanel = document.getElementById("tMatchArenaPanel");
+
+    if (activeTournamentRun.active) {
+        if (selectionPanel) selectionPanel.classList.add("hidden");
+        if (matchArenaPanel) matchArenaPanel.classList.remove("hidden");
+
+        const stage = TOURNAMENT_STAGES[activeTournamentRun.stageIndex];
+        setText("tStageDisplay", `Stage ${stage.stage}/4`);
+        setText("tOpponentDisplay", `${stage.opponent} (${stage.ovr} OVR)`);
+
+        setText("tMatchStageBadge", `STAGE ${stage.stage}/4 · ${stage.name.toUpperCase()}`);
+        setText("tMatchOpponentTitle", `${stage.opponent} (${stage.ovr} OVR)`);
+        setText("tMatchScoreboard", `YOU ${activeTournamentRun.playerGoals} - ${activeTournamentRun.opponentGoals} OPP`);
+
+        const phase = activeTournamentRun.currentPhase;
+        const phaseTitles = {
+            1: "Phase 1/3: ⚔️ Attack Clash",
+            2: "Phase 2/3: 🎯 Midfield Control",
+            3: "Phase 3/3: 🛡️ Defensive Stand"
+        };
+        const phaseDescs = {
+            1: "Pick your shooting tactic to break through the opponent defense!",
+            2: "Pick your playmaking tactic to control possession and create chances!",
+            3: "Pick your defensive tactic to stop the counter-attack and keep a clean sheet!"
+        };
+        setText("tClashPhaseTitle", phaseTitles[phase] || "Match Clash");
+        setText("tClashPhaseDesc", phaseDescs[phase] || "");
+
+        const tacticChoicesRow = document.getElementById("tTacticalChoicesRow");
+        if (tacticChoicesRow) {
+            const currentTacticType = phase === 1 ? "attack" : (phase === 2 ? "midfield" : "defense");
+            const tObj = stage.tactics[currentTacticType] || { name: "Tactical Play", bonus: 8, desc: "+8 Power" };
+            tacticChoicesRow.innerHTML = `
+                <button class="primary-btn" style="padding:12px;background:linear-gradient(135deg, #38bdf8, #0284c7);font-weight:900;" onclick="executeTournamentTactic('${currentTacticType}')">
+                    ⚡ Execute ${tObj.name} (+${tObj.bonus} OVR)
+                </button>
+            `;
+        }
+
+        const logBox = document.getElementById("tClashLogBox");
+        if (logBox) {
+            logBox.innerHTML = activeTournamentRun.clashLog.length 
+                ? activeTournamentRun.clashLog.map(m => `<div>${m}</div>`).join("") 
+                : "Select your tactical action above to kick off this round!";
+        }
+    } else {
+        if (selectionPanel) selectionPanel.classList.remove("hidden");
+        if (matchArenaPanel) matchArenaPanel.classList.add("hidden");
+
+        setText("tStageDisplay", "Ready");
+        setText("tOpponentDisplay", squadCards.length === 5 ? "Ready to Kickoff" : "Select 5 Cards");
+
+        const slotsRow = document.getElementById("tSelectedSquadSlots");
+        if (slotsRow) {
+            const slotLabels = ["Captain / ST", "Winger / CAM", "Midfielder", "Defender", "Goalkeeper"];
+            slotsRow.innerHTML = slotLabels.map((lbl, idx) => {
+                const card = squadCards[idx];
+                if (card) {
+                    return `
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:10px;text-align:center;">
+                        <span style="font-size:10px;color:#38bdf8;font-weight:900;text-transform:uppercase;">${lbl}</span>
+                        <div style="width:48px;height:48px;margin:6px auto;border-radius:8px;overflow:hidden;">
+                            <img src="${getCardImage(card)}" style="width:100%;height:100%;object-fit:contain;">
+                        </div>
+                        <strong style="color:#fff;font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(card.player)}</strong>
+                        <span style="color:var(--gold);font-size:11px;font-weight:900;">${card.rating} OVR · ${card.pos}</span>
+                    </div>
+                    `;
+                } else {
+                    return `
+                    <div style="background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.15);border-radius:12px;padding:16px 10px;text-align:center;">
+                        <span style="font-size:10px;color:var(--muted);">${lbl}</span>
+                        <div style="font-size:24px;margin:8px 0;opacity:0.4;">➕</div>
+                        <span style="font-size:11px;color:var(--muted);">Empty Slot</span>
+                    </div>
+                    `;
+                }
+            }).join("");
+        }
+    }
+
+    const tLbList = document.getElementById("tournamentLeaderboardList");
+    if (tLbList) {
+        const rows = [
+            { rank: 1, name: "Alucard", title: "Owner", score: Math.max(state.stats.tournamentScore || 0, 780), isSelf: isAlucard },
+            { rank: 2, name: "ChampionStriker", title: "Master", score: 460, isSelf: false },
+            { rank: 3, name: "ApexTactician", title: "Veteran", score: 320, isSelf: false }
+        ];
+        tLbList.innerHTML = rows.map(r => `
+            <div style="background:rgba(255,255,255,0.03);border:1px solid ${r.isSelf ? 'rgba(244,196,78,0.4)' : 'rgba(255,255,255,0.06)'};border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-weight:900;color:${r.rank === 1 ? 'var(--gold)' : (r.rank === 2 ? '#cbd5e1' : '#cd7f32')};font-size:13px;">#${r.rank}</span>
+                    <div>
+                        <strong style="color:#fff;font-size:13px;">${escapeHTML(r.name)} ${r.isSelf ? '<small style="color:var(--cyan);">(YOU)</small>' : ''}</strong>
+                        <div style="font-size:10px;color:var(--muted);">${r.title}</div>
+                    </div>
+                </div>
+                <div style="font-size:14px;font-weight:900;color:var(--gold);">${r.score.toLocaleString()} pts</div>
+            </div>
+        `).join("");
+    }
+}
         if (!realPlayers.length) {
             el.innerHTML = `<p style="text-align:center;color:var(--muted);padding:15px;">No tournament entries recorded yet.</p>`;
         } else {
@@ -9311,6 +9577,12 @@ document.addEventListener("dragstart", function(e) {
         handleDeleteAccount,
         executePackTear,
         closeSidebar,
+        tournamentAutoPickBestSquad,
+        tournamentResetSquad,
+        startTournamentMatchRun,
+        executeTournamentTactic,
+        advanceTournamentStage,
+        renderTournament,
         CloudSync,
         SoundFx,
         SolsCutsceneEngine
