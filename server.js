@@ -17,7 +17,7 @@ const ALUCARD_USER = {
     saveData: {
         name: "Alucard",
         accountUser: "Alucard",
-        coins: 2000021533,
+        coins: 270000,
         xp: 3500,
         level: 7,
         equippedTitle: "UNIQUE",
@@ -132,7 +132,7 @@ const ALUCARD_USER = {
             cardsPulled: 200,
             duplicates: 30,
             cardsSold: 20,
-            coinsEarned: 2000021533,
+            coinsEarned: 270000,
             coinsSpent: 10000,
             tournamentScore: 850
         }
@@ -169,7 +169,9 @@ function loadDatabase() {
             if (raw && raw.users) {
                 database = raw;
                 database.users = database.users || {};
-                database.users["alucard"] = { ...ALUCARD_USER, ...(database.users["alucard"] || {}) };
+                if (!database.users["alucard"]) {
+                    database.users["alucard"] = ALUCARD_USER;
+                }
                 return;
             }
         }
