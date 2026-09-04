@@ -1,4 +1,4 @@
-﻿const http = require("http");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
@@ -215,25 +215,70 @@ const server = http.createServer((req, res) => {
         return sendJSON(200, { success: true, users: summary });
     }
 
+const SERVER_CARD_VALUES = {
+    Common: 20,
+    Uncommon: 50,
+    Rare: 150,
+    Epic: 400,
+    Legendary: 1200,
+    Exclusive: 2500,
+    Mythic: 6000,
+    Secret: 15000,
+    Tournament: 30000,
+    "World Class": 75000,
+    Developer: 200000
+};
+
+function calculateServerCollectionValue(cards) {
+    if (!Array.isArray(cards)) return 0;
+    return cards.reduce((sum, c) => {
+        if (!c) return sum;
+        if (c.serialNumber) return sum + 500000;
+        return sum + (SERVER_CARD_VALUES[c.rarity] || 20);
+    }, 0);
+}
+
+    if ((pathname === "/api/user/delete" || pathname === "/api/user") && (req.method === "POST" || req.method === "DELETE")) {
+        return getBody((err, body) => {
+            const rawTarget = (body && body.username) || parsedUrl.query.username;
+            if (!rawTarget) return sendJSON(400, { success: false, error: "Username required" });
+            const key = String(rawTarget).trim().toLowerCase();
+            if (key === "alucard") return sendJSON(403, { success: false, error: "Cannot delete owner account" });
+            if (database.users[key]) {
+                delete database.users[key];
+            }
+            if (database.backups && database.backups[key]) {
+                delete database.backups[key];
+            }
+            saveDatabase();
+            return sendJSON(200, { success: true, message: `Account ${rawTarget} deleted permanently.` });
+        });
+    }
+
     if (pathname === "/api/leaderboard" && req.method === "GET") {
         const list = [];
         for (const k in database.users) {
             const u = database.users[k];
             let pData = {};
             try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch (e) {}
+            const cardsArr = Array.isArray(pData.cards) ? pData.cards : [];
+            const colVal = (pData.collectionValue !== undefined && Number(pData.collectionValue) > 0)
+                ? Number(pData.collectionValue)
+                : calculateServerCollectionValue(cardsArr);
             list.push({
                 username: u.username,
                 name: pData.name || u.username,
                 level: Number(pData.level || 1),
-                cards: Array.isArray(pData.cards) ? pData.cards.length : 0,
+                cards: cardsArr.length,
                 gold: Number(pData.coins || 100),
+                value: colVal,
                 equippedTitle: pData.equippedTitle || "Collector",
                 profileFrame: pData.profileFrame || "default",
                 avatar: pData.avatar || "player_temp.png",
                 isTradeBanned: !!pData.isTradeBanned
             });
         }
-        list.sort((a, b) => b.level - a.level);
+        list.sort((a, b) => b.level - a.level || b.value - a.value);
         return sendJSON(200, { success: true, leaderboard: list });
     }
 
