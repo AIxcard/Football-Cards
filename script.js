@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    FOOTBALL CARDS — ULTIMATE EDITION
    CLOUD TRADING, TOURNAMENT DRAFT, INDEX & 3D INSPECTOR
    ========================================================= */
@@ -225,31 +225,31 @@ const AntiCheat = {
 try { AntiCheat.initConsoleProtection(); } catch(e) {}
 
 const DUPLICATE_VALUES = {
-    Common: 1,
-    Uncommon: 2,
-    Rare: 5,
-    Epic: 12,
-    Legendary: 30,
-    Exclusive: 60,
-    Mythic: 150,
-    Secret: 350,
-    Tournament: 700,
-    "World Class": 1500,
-    Developer: 3000
+    Common: 10,
+    Uncommon: 25,
+    Rare: 75,
+    Epic: 200,
+    Legendary: 600,
+    Exclusive: 1250,
+    Mythic: 3000,
+    Secret: 7500,
+    Tournament: 15000,
+    "World Class": 37500,
+    Developer: 100000
 };
 
 const CARD_VALUES = {
-    Common: 1,
-    Uncommon: 3,
-    Rare: 8,
-    Epic: 20,
-    Legendary: 50,
-    Exclusive: 100,
-    Mythic: 250,
-    Secret: 600,
-    Tournament: 1200,
-    "World Class": 2500,
-    Developer: 5000
+    Common: 20,
+    Uncommon: 50,
+    Rare: 150,
+    Epic: 400,
+    Legendary: 1200,
+    Exclusive: 2500,
+    Mythic: 6000,
+    Secret: 15000,
+    Tournament: 30000,
+    "World Class": 75000,
+    Developer: 200000
 };
 
 const FRAMES = [
@@ -267,9 +267,9 @@ const FRAMES = [
 function getCardValue(card) {
     if (!card) return 0;
     if (card.serialNumber || (card.rarity === "World Class" && (card.player === "Lionel Messi" || card.player === "Cristiano Ronaldo") && card.isSerialized)) {
-        return 5000;
+        return 500000;
     }
-    return CARD_VALUES[card.rarity] || 1;
+    return CARD_VALUES[card.rarity] || 20;
 }
 
 function calculateCollectionValue(cards) {
@@ -4586,36 +4586,10 @@ function calculateCardRAP(card) {
         return 999000000 - Number(card.serialNumber);
     }
 
-    const baseTable = {
-        "Common": 100,
-        "Uncommon": 350,
-        "Rare": 1200,
-        "Epic": 6000,
-        "Legendary": 30000,
-        "Exclusive": 100000,
-        "Mythic": 500000,
-        "Secret": 1500000,
-        "Tournament": 4000000,
-        "World Class": 10000000,
-        "Developer": 50000000
-    };
-    const ratingMultiplier = {
-        "Common": 2,
-        "Uncommon": 5,
-        "Rare": 15,
-        "Epic": 60,
-        "Legendary": 250,
-        "Exclusive": 1000,
-        "Mythic": 3500,
-        "Secret": 10000,
-        "Tournament": 25000,
-        "World Class": 65000,
-        "Developer": 250000
-    };
-
     const rarity = card.rarity || "Common";
-    let rap = (baseTable[rarity] || 100) + (Number(card.rating) || 75) * (ratingMultiplier[rarity] || 2);
-    return Math.round(rap);
+    const baseVal = CARD_VALUES[rarity] || 20;
+    const ratingBonus = Math.max(0, (Number(card.rating) || 75) - 75) * Math.max(1, Math.round(baseVal * 0.015));
+    return Math.round(baseVal + ratingBonus);
 }
 
 function formatRAP(val, card) {
@@ -8104,23 +8078,15 @@ async function adminRestoreSnapshot(targetUsername, snapshotIndex) {
 async function wipeAccountEverywhere(username) {
     if (!username) return false;
     const u = username.trim().toLowerCase();
-    if (!DELETED_ACCOUNTS_BLACKLIST.includes(u)) {
-        DELETED_ACCOUNTS_BLACKLIST.push(u);
-    }
     try {
-        // 1. Wipe from cloud user record (KVDB)
-        const BUCKET = GlobalCloudRest.BUCKET_URL;
-        const prefix = GlobalCloudRest.PREFIX || "v14_";
-        const userKey = `${prefix}user_${u}`;
-        const lbKey = `${prefix}lb_${u}`;
-        const tradeKey = `${prefix}trade_${u}`;
-
-        // Delete user record
-        try { await fetch(`${BUCKET}/${userKey}`, { method: "DELETE" }); } catch(e) {}
-        // Delete leaderboard entry
-        try { await fetch(`${BUCKET}/${lbKey}`, { method: "DELETE" }); } catch(e) {}
-        // Delete any trade sessions involving this user
-        try { await fetch(`${BUCKET}/${tradeKey}`, { method: "DELETE" }); } catch(e) {}
+        // 1. Delete on Render Server Backend
+        try {
+            await fetch(`${ServerAPI.BASE_URL}/api/user/delete`, {
+                method: "POST",
+                headers: ServerAPI.getHeaders(),
+                body: JSON.stringify({ username: u })
+            });
+        } catch(e) {}
 
         // 2. Wipe from local CloudSync accounts
         const accs = CloudSync.getAccounts();
@@ -8129,8 +8095,7 @@ async function wipeAccountEverywhere(username) {
             CloudSync.saveAccounts(accs);
         }
 
-        // 3. Wipe from leaderboard data (KVDB lb_ key already done above)
-        // If the deleted user was the current user, log them out
+        // 3. If the deleted user was the current active user, log them out
         if (state.accountUser && state.accountUser.toLowerCase() === u) {
             state = freshState();
             if (u === "alucard") {
@@ -8145,6 +8110,9 @@ async function wipeAccountEverywhere(username) {
             checkAdminStatus();
         }
 
+        // 4. Refresh live accounts list and leaderboard
+        try { renderAdminAccountsList(); } catch(e) {}
+        try { renderLeaderboard(true); } catch(e) {}
         return true;
     } catch(e) {
         return false;
