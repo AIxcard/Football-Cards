@@ -3751,7 +3751,6 @@ body.modal-open, html.modal-open {
     overflow: hidden !important;
     height: 100vh !important;
     height: 100dvh !important;
-    touch-action: none !important;
     overscroll-behavior: none !important;
 }
 
@@ -4407,17 +4406,18 @@ body.modal-open, html.modal-open {
     height: 100dvh !important;
     background: #000000 !important;
     z-index: 999999 !important;
-    display: none;
+    display: none !important;
+    pointer-events: none !important;
     align-items: center !important;
     justify-content: center !important;
     overflow: hidden !important;
     user-select: none !important;
     -webkit-user-select: none !important;
-    touch-action: none !important;
 }
 
 .sols-cinematic-stage.active {
     display: flex !important;
+    pointer-events: auto !important;
 }
 
 .sols-fx-canvas {
