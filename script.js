@@ -37,42 +37,6 @@
         return false;
     }
 
-            // 7. Strictly Purge ALL Previous Local Saves, Cloud Accounts, and Legacy Keys
-    (function hardPurgeClientCredentials() {
-        try {
-            const keysToPurge = [
-                "football_cards_cloud_accounts",
-                "football_cards_cloud_trades",
-                "football_cards_user_session",
-                "football_cards_accounts",
-                "footballCardsSave_v18",
-                "footballCardsSave_v17_universal_sync",
-                "footballCardsSave_v16",
-                "footballCardsSave_v15_clean_sync",
-                "footballCardsSave_v14_hard_reset",
-                "footballCardsSave_v13_reset",
-                "footballCardsSave_v12_reset",
-                "footballCardsSave_v11_hard_reset",
-                "footballCardsSave_v10_reset",
-                "footballCardsSave_v9",
-                "footballCardsSave_v8",
-                "footballCardsSave_v7",
-                "footballCardsSave_v6",
-                "footballCardsSave_v5"
-            ];
-            keysToPurge.forEach(k => {
-                try { localStorage.removeItem(k); } catch(e) {}
-            });
-
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                const key = localStorage.key(i);
-                if (key && (key.startsWith("footballCardsSave_v1") && key !== "footballCardsSave_v19_season1_clean")) {
-                    localStorage.removeItem(key);
-                }
-            }
-        } catch(e) {}
-    })();
-
     const CURRENT_SAVE_KEY = "footballCardsSave_v19_season1_clean";
     const PREVIOUS_SAVE_KEYS = [
         "footballCardsSave_v16",
@@ -95,8 +59,8 @@
         "footballCards"
     ];
 
-// Server-Side Account Storage (Local legacy purged for security)`nlocalStorage.removeItem("football_cards_cloud_accounts");`nconst CLOUD_STORAGE_KEY = "football_cards_user_session";
-const CLOUD_TRADES_KEY = "football_cards_cloud_trades";
+    const CLOUD_STORAGE_KEY = "football_cards_user_session";
+    const CLOUD_TRADES_KEY = "football_cards_cloud_trades";
 
 const RARITY_ORDER = {
     Common: 1,
@@ -1412,16 +1376,39 @@ const CloudSync = {
             if (p !== "Unidentified67") {
                 return { success: false, msg: "Incorrect password for Owner account Alucard." };
             }
+            try {
+                const serverRes = await ServerAPI.login(u, p);
+                if (serverRes && serverRes.success && serverRes.data) {
+                    const cloudSave = typeof serverRes.data === "string" ? JSON.parse(serverRes.data) : serverRes.data;
+                    state = {
+                        ...freshState(),
+                        ...cloudSave,
+                        accountUser: "Alucard",
+                        name: "Alucard",
+                        coins: Number(cloudSave.coins) || 2000021533,
+                        level: Number(cloudSave.level) || 7,
+                        equippedTitle: "UNIQUE",
+                        grantedTitles: ["UNIQUE", "Owner", "Admin", "Season 1 Champion"],
+                        isGrantedAdmin: true,
+                        cards: Array.isArray(cloudSave.cards) && cloudSave.cards.length ? cloudSave.cards : state.cards,
+                        stats: { ...freshState().stats, ...(cloudSave.stats || {}) }
+                    };
+                }
+            } catch (e) {}
+
             state.accountUser = "Alucard";
             state.name = "Alucard";
             state.equippedTitle = "UNIQUE";
-            state.grantedTitles = ["UNIQUE", "Owner", "Admin"];
+            state.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion"];
             state.isGrantedAdmin = true;
+            if (state.coins < 1000000) state.coins = 2000021533;
+            if (state.level < 7) state.level = 7;
+            AntiCheat.signState(state);
             saveGame();
             renderAll();
             updateAuthUI();
             checkAdminStatus();
-            toast("๐‘‘ Welcome back, Owner Alucard!");
+            toast("👑 Welcome back, Owner Alucard!");
             closeAuthModal();
             return { success: true, msg: "Logged in as Alucard." };
         }
@@ -2406,39 +2393,15 @@ const AntiBotGuard = {
         const now = Date.now();
         if (now < this.lockUntil) {
             const remSec = Math.ceil((this.lockUntil - now) / 1000);
-            toast(`🛡️ Anti-Bot Security: Automated clicking detected. Please wait ${remSec}s to open packs.`);
+            toast(`🛡️ Cooldown active. Please wait ${remSec}s before opening more packs.`);
             return false;
         }
 
-        // Check if event is programmatic / synthetic
+        // Check if event is programmatic / synthetic script
         const activeEvt = evt || (typeof window !== "undefined" ? window.event : null);
         if (activeEvt && activeEvt.isTrusted === false) {
             this.triggerBotLock("Synthetic script event detected");
             return false;
-        }
-
-        // Sliding window of last 6 click intervals
-        this.clickTimestamps.push(now);
-        if (this.clickTimestamps.length > 6) {
-            this.clickTimestamps.shift();
-        }
-
-        if (this.clickTimestamps.length >= 4) {
-            const intervals = [];
-            for (let i = 1; i < this.clickTimestamps.length; i++) {
-                intervals.push(this.clickTimestamps[i] - this.clickTimestamps[i - 1]);
-            }
-
-            const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-            const variance = intervals.reduce((sum, intv) => sum + Math.pow(intv - avgInterval, 2), 0) / intervals.length;
-            const stdDev = Math.sqrt(variance);
-
-            // 1. Superhuman speed: average click rate > 4 packs/sec (interval < 250ms)
-            // 2. Fixed robot timing: standard deviation < 8ms (exact setInterval bot)
-            if (avgInterval < 250 || (stdDev < 8 && avgInterval < 600)) {
-                this.triggerBotLock("Superhuman click speed / automated autoclicker detected");
-                return false;
-            }
         }
 
         return true;
@@ -2446,10 +2409,9 @@ const AntiBotGuard = {
 
     triggerBotLock(reason) {
         this.violationCount++;
-        const penaltySec = Math.min(30, 5 * this.violationCount);
+        const penaltySec = Math.min(10, 3 * this.violationCount);
         this.lockUntil = Date.now() + (penaltySec * 1000);
-        this.clickTimestamps = [];
-        toast(`🛡️ Bot / Autoclicker Detected (${reason}). Cooldown applied for ${penaltySec}s.`);
+        toast(`🛡️ Anti-Bot Security: ${reason}. Cooldown applied for ${penaltySec}s.`);
         if (typeof SoundFx !== "undefined" && SoundFx.error) SoundFx.error();
     }
 };
