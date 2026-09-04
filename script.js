@@ -1134,10 +1134,28 @@ function freshState() {
 function loadGame() {
     try {
         let raw = safeStorage.getItem(CURRENT_SAVE_KEY);
+        if (!raw) {
+            for (const oldKey of PREVIOUS_SAVE_KEYS) {
+                const oldRaw = safeStorage.getItem(oldKey);
+                if (oldRaw) {
+                    raw = oldRaw;
+                    try { safeStorage.setItem(CURRENT_SAVE_KEY, raw); } catch(e) {}
+                    break;
+                }
+            }
+        }
         const fresh = freshState();
-        if (!raw) return fresh;
+        const savedSessionUser = safeStorage.getItem("football_cards_user_session") || "";
+        if (!raw) {
+            if (savedSessionUser) {
+                fresh.accountUser = savedSessionUser;
+                fresh.name = savedSessionUser;
+            }
+            return fresh;
+        }
 
         const saved = JSON.parse(raw);
+        const activeAccountUser = saved.accountUser || savedSessionUser || "";
         let activeName = saved.name;
         if (!activeName || activeName === "Football Player" || activeName === "Player") {
             activeName = saved.accountUser || fresh.name;
@@ -1160,7 +1178,7 @@ function loadGame() {
             ...fresh,
             resetV14WipeDone: true,
             name: activeName,
-            accountUser: saved.accountUser || "",
+            accountUser: activeAccountUser,
             
             coins: finalCoins,
             xp: saved.xp !== undefined ? Number(saved.xp) : 0,
@@ -1449,9 +1467,10 @@ const CloudSync = {
 
             state.accountUser = "Alucard";
             state.name = "Alucard";
-            state.equippedTitle = "UNIQUE";
+            state.equippedTitle = (typeof cloudSave !== "undefined" && cloudSave && cloudSave.equippedTitle) ? cloudSave.equippedTitle : (state.equippedTitle || "UNIQUE");
             state.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion"];
             state.isGrantedAdmin = true;
+            safeStorage.setItem("football_cards_user_session", "Alucard");
             AntiCheat.signState(state);
             saveGame();
             renderAll();
@@ -1471,6 +1490,7 @@ const CloudSync = {
                     ...cloudSave,
                     accountUser: u,
                     name: cloudSave.name || u,
+                    equippedTitle: cloudSave.equippedTitle || state.equippedTitle || "Collector",
                     coins: (cloudSave.coins !== undefined) ? Number(cloudSave.coins) : 100,
                     cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : [],
                     stats: { ...freshState().stats, ...(cloudSave.stats || {}) },
@@ -1501,6 +1521,7 @@ const CloudSync = {
             } catch(e) {}
         }
         ServerAPI.setToken("");
+        safeStorage.removeItem("football_cards_user_session");
         state = freshState();
         AntiCheat.signState(state);
         try { safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state)); } catch(e) {}
@@ -5673,6 +5694,9 @@ function renderTitles() {
 function equipTitle(titleName) {
     state.equippedTitle = titleName;
     saveGame();
+    if (state.accountUser) {
+        ServerAPI.saveGame(state.accountUser, state);
+    }
     renderHero();
     renderProfile();
     renderTitles();
@@ -9246,15 +9270,17 @@ if (state.initialized) {
                 const serverCards = Array.isArray(serverSave.cards) ? serverSave.cards : [];
                 const finalCards = localCards.length >= serverCards.length ? localCards : serverCards;
 
+                const finalEquippedTitle = state.equippedTitle || serverSave.equippedTitle || "Collector";
                 state = {
                     ...freshState(),
                     ...serverSave,
                     ...state,
                     accountUser: state.accountUser,
-                    name: serverSave.name || state.name || state.accountUser,
+                    name: state.name || serverSave.name || state.accountUser,
                     coins: finalCoins,
                     level: finalLevel,
                     cards: finalCards,
+                    equippedTitle: finalEquippedTitle,
                     unlockedSkills: Array.isArray(serverSave.unlockedSkills) && serverSave.unlockedSkills.length >= (state.unlockedSkills || []).length ? serverSave.unlockedSkills : (state.unlockedSkills || []),
                     claimedLevelMilestones: Array.isArray(serverSave.claimedLevelMilestones) && serverSave.claimedLevelMilestones.length >= (state.claimedLevelMilestones || []).length ? serverSave.claimedLevelMilestones : (state.claimedLevelMilestones || []),
                     stats: {
@@ -9541,6 +9567,7 @@ document.addEventListener("dragstart", function(e) {
         try { bindEvents(); } catch(e) {}
         try { init3DInspector(); } catch(e) {}
         try { checkName(); } catch(e) {}
+        try { updateAuthUI(); } catch(e) {}
         try { renderAll(); } catch(e) {}
         try { updateTimers(); } catch(e) {}
         try { updateGlobalCardPopulations(); } catch(e) {}
