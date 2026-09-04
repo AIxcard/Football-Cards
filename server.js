@@ -17,14 +17,125 @@ const ALUCARD_USER = {
     saveData: {
         name: "Alucard",
         accountUser: "Alucard",
-        coins: 100,
-        xp: 25,
-        level: 1,
+        coins: 2000021533,
+        xp: 3500,
+        level: 7,
         equippedTitle: "UNIQUE",
-        grantedTitles: ["UNIQUE", "Owner", "Admin"],
+        grantedTitles: ["UNIQUE", "Owner", "Admin", "Season 1 Champion"],
         isGrantedAdmin: true,
-        cards: [],
-        stats: { playtime: 0, packsOpened: 0, cardsPulled: 0, duplicates: 0, cardsSold: 0, coinsEarned: 0, coinsSpent: 0 }
+        cards: [
+            {
+                id: "alucard_mk_1",
+                player: "Monkey King",
+                position: "ST",
+                rarity: "Developer",
+                rating: 99,
+                devCard: true,
+                image: "monkey_king.png",
+                obtained: Date.now(),
+                locked: true
+            },
+            {
+                id: "alucard_mk_2",
+                player: "Monkey King",
+                position: "ST",
+                rarity: "Developer",
+                rating: 99,
+                devCard: true,
+                image: "monkey_king.png",
+                obtained: Date.now(),
+                locked: true
+            },
+            {
+                id: "alucard_messi_wc1",
+                player: "Lionel Messi",
+                position: "RW",
+                rarity: "World Class",
+                rating: 99,
+                serialNumber: 1,
+                maxSerial: 10,
+                image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500&auto=format&fit=crop&q=60",
+                obtained: Date.now(),
+                locked: true
+            },
+            {
+                id: "alucard_ronaldo_wc1",
+                player: "Cristiano Ronaldo",
+                position: "ST",
+                rarity: "World Class",
+                rating: 99,
+                serialNumber: 1,
+                maxSerial: 10,
+                image: "ronaldo_custom.png",
+                obtained: Date.now(),
+                locked: true
+            },
+            {
+                id: "alucard_emanuel_tourn",
+                player: "Emanuel",
+                position: "CAM",
+                rarity: "Tournament",
+                rating: 99,
+                image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=500&auto=format&fit=crop&q=60",
+                obtained: Date.now(),
+                locked: true
+            },
+            {
+                id: "alucard_haaland_sec",
+                player: "Erling Haaland",
+                position: "ST",
+                rarity: "Secret",
+                rating: 98,
+                image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop&q=60",
+                obtained: Date.now()
+            },
+            {
+                id: "alucard_mbappe_sec",
+                player: "Kylian Mbappé",
+                position: "ST",
+                rarity: "Secret",
+                rating: 97,
+                image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=500&auto=format&fit=crop&q=60",
+                obtained: Date.now()
+            },
+            {
+                id: "alucard_vini_myth",
+                player: "Vinícius Júnior",
+                position: "LW",
+                rarity: "Mythic",
+                rating: 95,
+                image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=500&auto=format&fit=crop&q=60",
+                obtained: Date.now()
+            },
+            {
+                id: "alucard_jude_myth",
+                player: "Jude Bellingham",
+                position: "CAM",
+                rarity: "Mythic",
+                rating: 94,
+                image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500&auto=format&fit=crop&q=60",
+                obtained: Date.now()
+            },
+            {
+                id: "alucard_kdb_leg",
+                player: "Kevin De Bruyne",
+                position: "CM",
+                rarity: "Legendary",
+                rating: 93,
+                image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=500&auto=format&fit=crop&q=60",
+                obtained: Date.now()
+            }
+        ],
+        stats: {
+            playtime: 3600,
+            packsOpened: 150,
+            cardsPulled: 200,
+            duplicates: 30,
+            cardsSold: 20,
+            coinsEarned: 2000021533,
+            coinsSpent: 10000,
+            tournamentScore: 850
+        }
     },
     createdAt: Date.now(),
     lastActive: Date.now()
