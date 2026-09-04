@@ -225,14 +225,14 @@ const AntiCheat = {
 try { AntiCheat.initConsoleProtection(); } catch(e) {}
 
 const DUPLICATE_VALUES = {
-    Common: 10,
-    Uncommon: 25,
-    Rare: 75,
-    Epic: 200,
-    Legendary: 600,
-    Exclusive: 1250,
-    Mythic: 3000,
-    Secret: 7500,
+    Common: 3,
+    Uncommon: 8,
+    Rare: 20,
+    Epic: 55,
+    Legendary: 150,
+    Exclusive: 300,
+    Mythic: 750,
+    Secret: 2000,
     Tournament: 15000,
     "World Class": 37500,
     Developer: 100000
@@ -2397,7 +2397,65 @@ function unlockModalScroll() {
 
 let isOpeningPackInProgress = false;
 
-function openPack(type, count = 1) {
+const AntiBotGuard = {
+    clickTimestamps: [],
+    lockUntil: 0,
+    violationCount: 0,
+
+    validateUserGesture(evt) {
+        const now = Date.now();
+        if (now < this.lockUntil) {
+            const remSec = Math.ceil((this.lockUntil - now) / 1000);
+            toast(`🛡️ Anti-Bot Security: Automated clicking detected. Please wait ${remSec}s to open packs.`);
+            return false;
+        }
+
+        // Check if event is programmatic / synthetic
+        const activeEvt = evt || (typeof window !== "undefined" ? window.event : null);
+        if (activeEvt && activeEvt.isTrusted === false) {
+            this.triggerBotLock("Synthetic script event detected");
+            return false;
+        }
+
+        // Sliding window of last 6 click intervals
+        this.clickTimestamps.push(now);
+        if (this.clickTimestamps.length > 6) {
+            this.clickTimestamps.shift();
+        }
+
+        if (this.clickTimestamps.length >= 4) {
+            const intervals = [];
+            for (let i = 1; i < this.clickTimestamps.length; i++) {
+                intervals.push(this.clickTimestamps[i] - this.clickTimestamps[i - 1]);
+            }
+
+            const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+            const variance = intervals.reduce((sum, intv) => sum + Math.pow(intv - avgInterval, 2), 0) / intervals.length;
+            const stdDev = Math.sqrt(variance);
+
+            // 1. Superhuman speed: average click rate > 4 packs/sec (interval < 250ms)
+            // 2. Fixed robot timing: standard deviation < 8ms (exact setInterval bot)
+            if (avgInterval < 250 || (stdDev < 8 && avgInterval < 600)) {
+                this.triggerBotLock("Superhuman click speed / automated autoclicker detected");
+                return false;
+            }
+        }
+
+        return true;
+    },
+
+    triggerBotLock(reason) {
+        this.violationCount++;
+        const penaltySec = Math.min(30, 5 * this.violationCount);
+        this.lockUntil = Date.now() + (penaltySec * 1000);
+        this.clickTimestamps = [];
+        toast(`🛡️ Bot / Autoclicker Detected (${reason}). Cooldown applied for ${penaltySec}s.`);
+        if (typeof SoundFx !== "undefined" && SoundFx.error) SoundFx.error();
+    }
+};
+
+function openPack(type, count = 1, evt = null) {
+    if (!AntiBotGuard.validateUserGesture(evt)) return;
     if (isOpeningPackInProgress) return;
 
     const isAlucard = (state.accountUser || "").trim().toLowerCase() === "alucard";
