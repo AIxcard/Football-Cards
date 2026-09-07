@@ -1539,6 +1539,12 @@ const CloudSync = {
     }
 };
 
+window.logout = function() {
+    if (typeof CloudSync !== "undefined" && CloudSync.logout) {
+        CloudSync.logout();
+    }
+};
+
 function syncCloud() {
     CloudSync.sync();
     updateAuthUI();
