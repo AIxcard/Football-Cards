@@ -10,7 +10,7 @@
         window.location.replace("https://football-cards-yrry.onrender.com" + window.location.search);
     }
 </script>
-<link rel="stylesheet" href="style.css?v=850.0">
+<link rel="stylesheet" href="style.css?v=860.0">
 </head>
 
 <body>
@@ -1165,138 +1165,222 @@
 </section>
 
 
-<!-- ==================== TOURNAMENT (SEASON 1 POKER ARENA) ==================== -->
+<!-- ==================== TOURNAMENT (SEASON 1 ARENA) ==================== -->
 <section id="tournament" class="page">
 
-    <div class="tournament-hero">
-        <p class="eyebrow" style="color:var(--gold);font-weight:900;letter-spacing:1.5px;">CHAMPIONSHIP CARD DUEL ARENA</p>
-        <h1 style="margin:6px 0 10px;font-size:32px;">World Football Poker Arena</h1>
-        <p style="color:var(--muted);max-width:700px;margin:0 0 16px;line-height:1.6;">
-            Clash your football cards against the Grand Tactician AI in 5-Card Football Poker! Form high-ranking squad synergies, discard and redraw tactical cards, raise the stakes, and conquer the Championship Bracket.
-        </p>
-        <div id="tournamentStatusBadge" class="tournament-timer-badge" style="background:rgba(244, 196, 78, 0.15);color:var(--gold);border:1px solid var(--gold);font-weight:900;display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;">
-            🏆 SEASON 1 TOURNAMENT · BETA TESTING ARENA
-        </div>
-    </div>
-
-    <!-- STATS & SCORE STRIP -->
-    <div class="stats-grid">
-        <div class="stat-card" style="border-color:rgba(244,196,78,0.3);background:rgba(244,196,78,0.06);">
-            <div class="stat-label">TOURNAMENT SCORE</div>
-            <div class="stat-value" id="tScoreDisplay" style="color:var(--gold);">0 pts</div>
-            <div class="stat-sub">Personal Best Run</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">CHAMPIONSHIP STAGE</div>
-            <div class="stat-value" id="tStageDisplay" style="color:#38bdf8;">Stage 1: Groups</div>
-            <div class="stat-sub" id="tOpponentDisplay">Grand Tactician AI</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">CURRENT HAND COMBO</div>
-            <div class="stat-value" id="tComboDisplay" style="color:#22c55e;">Ready</div>
-            <div class="stat-sub" id="tComboMultiplierDisplay">1x Multiplier</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">TOTAL ARENA WINS</div>
-            <div class="stat-value" id="tWinsDisplay" style="color:#ec4899;">0 Wins</div>
-            <div class="stat-sub">Lifetime Clashes Won</div>
-        </div>
-    </div>
-
-    <!-- POKER ARENA FELT TABLE -->
-    <div class="poker-felt-table" id="pokerFeltTable">
+    <!-- TOURNAMENT LOBBY VIEW (DEFAULT) -->
+    <div id="tournamentLobbyView" class="tournament-lobby-box">
         
-        <!-- DEALER ZONE (TOP) -->
-        <div class="poker-dealer-zone">
-            <div class="dealer-header">
-                <span class="dealer-avatar">🤖</span>
-                <span class="dealer-title" id="tDealerName">Grand Tactician AI (Dealer)</span>
-                <span class="dealer-hand-badge" id="tDealerHandBadge">Hand Hidden 🎴</span>
-            </div>
-            
-            <div class="poker-hand-row" id="tDealerHandRow">
-                <!-- 5 Dealer Card Slots -->
+        <div class="tournament-hero">
+            <p class="eyebrow" style="color:var(--gold);font-weight:900;letter-spacing:1.5px;">CHAMPIONSHIP SQUAD DUEL ARENA</p>
+            <h1 style="margin:6px 0 10px;font-size:32px;">World Football Championship Arena</h1>
+            <p style="color:var(--muted);max-width:700px;margin:0 0 16px;line-height:1.6;">
+                Deploy your football cards against <b>King Jeff</b> in timed 15-minute Championship runs! Form high-ranking squad synergies, discard and redraw tactical cards, raise the stakes, and climb the global leaderboard.
+            </p>
+            <div id="tournamentStatusBadge" class="tournament-timer-badge" style="background:rgba(244, 196, 78, 0.15);color:var(--gold);border:1px solid var(--gold);font-weight:900;display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;">
+                🏆 SEASON 1 TOURNAMENT · BETA TESTING ARENA
             </div>
         </div>
 
-        <!-- CENTER TABLE POT & STATUS -->
-        <div class="poker-center-pot">
-            <div class="pot-stage-info" id="tPotStageInfo">STAGE 1/4 · GROUP MATCH</div>
-            <div class="pot-amount" id="tPotAmount">🪙 0 + 🏆 0 pts</div>
-            <div class="poker-banner-message" id="tPokerMessage">Select your bet and click DEAL HAND to start the clash!</div>
+        <!-- START RUN LAUNCH CARD -->
+        <div class="tournament-launch-card">
+            <div style="font-size:42px;">⏱️ ⚔️ 🏆</div>
+            <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Championship Run</h2>
+            <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
+                Score as many points as possible before the 15-minute clock expires! Unlimited free attempts available. You can pause anytime.
+            </p>
+            <button class="tournament-launch-btn" onclick="startTournamentRun()">
+                ⚔️ PLAY TOURNAMENT RUN →
+            </button>
         </div>
 
-        <!-- PLAYER ZONE (BOTTOM) -->
-        <div class="poker-player-zone">
-            <div class="player-combo-badge" id="tPlayerComboBadge">
-                <span>⭐ HAND:</span> <b id="tPlayerComboName">Ready to Deal</b>
+        <!-- STATS & SCORE STRIP -->
+        <div class="stats-grid">
+            <div class="stat-card" style="border-color:rgba(244,196,78,0.3);background:rgba(244,196,78,0.06);">
+                <div class="stat-label">PERSONAL BEST SCORE</div>
+                <div class="stat-value" id="tScoreDisplay" style="color:var(--gold);">0 pts</div>
+                <div class="stat-sub">Highest 15-Min Run Record</div>
             </div>
-
-            <div class="poker-hand-row" id="tPlayerHandRow">
-                <!-- 5 Player Card Slots -->
+            <div class="stat-card">
+                <div class="stat-label">TOTAL ARENA WINS</div>
+                <div class="stat-value" id="tWinsDisplay" style="color:#22c55e;">0 Wins</div>
+                <div class="stat-sub">Lifetime Clashes Won</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">CHAMPIONSHIP TARGET</div>
+                <div class="stat-value" style="color:#38bdf8;">King Jeff</div>
+                <div class="stat-sub">Supreme AI Opponent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">RUN ATTEMPTS</div>
+                <div class="stat-value" style="color:#ec4899;">Unlimited ♾️</div>
+                <div class="stat-sub">Free Infinite Runs</div>
             </div>
         </div>
 
-    </div>
-
-    <!-- CONTROLS & CHIPS DECK -->
-    <div class="poker-controls-deck">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-            <div style="font-size:13px;font-weight:800;color:#94a3b8;">ANTE / BET COINS:</div>
-            <div class="poker-chips-row" id="pokerChipsRow">
-                <button class="poker-chip-btn active" data-bet="100" onclick="setPokerBet(100)">🪙 100</button>
-                <button class="poker-chip-btn" data-bet="500" onclick="setPokerBet(500)">🪙 500</button>
-                <button class="poker-chip-btn" data-bet="2500" onclick="setPokerBet(2500)">🪙 2,500</button>
-                <button class="poker-chip-btn" data-bet="10000" onclick="setPokerBet(10000)">🪙 10K</button>
-                <button class="poker-chip-btn" data-bet="allin" onclick="setPokerBet('allin')">🔥 ALL IN</button>
-            </div>
-        </div>
-
-        <div class="poker-actions-row">
-            <button id="pokerDealBtn" class="poker-act-btn deal" onclick="executePokerDeal()">🎴 DEAL HAND</button>
-            <button id="pokerSwapBtn" class="poker-act-btn swap" style="display:none;" onclick="executePokerSwap()">🔄 SWAP SELECTED (<span id="tSwapCount">0</span>)</button>
-            <button id="pokerRaiseBtn" class="poker-act-btn raise" style="display:none;" onclick="executePokerRaise()">💰 DOUBLE DOWN (RAISE)</button>
-            <button id="pokerShowdownBtn" class="poker-act-btn showdown" style="display:none;" onclick="executePokerShowdown()">⚔️ SHOWDOWN</button>
-        </div>
-    </div>
-
-    <!-- HAND COMBOS CHEAT SHEET GUIDE -->
-    <div class="panel" style="padding:18px;">
-        <h3 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:8px;">📜 Football Poker Hand Combinations & Payouts</h3>
-        <div class="poker-combos-guide">
-            <div class="combo-guide-item"><span class="combo-guide-name">👑 Royal Squad (5x 95+ OVR)</span><span class="combo-guide-multi">50x Payout</span></div>
-            <div class="combo-guide-item"><span class="combo-guide-name">🌟 Synergy Flush (5 Same Rarity)</span><span class="combo-guide-multi">20x Payout</span></div>
-            <div class="combo-guide-item"><span class="combo-guide-name">⚡ Rating Straight (5 Consecutive OVR)</span><span class="combo-guide-multi">15x Payout</span></div>
-            <div class="combo-guide-item"><span class="combo-guide-name">⚽ Full Team (3x Pos + 2x Pos)</span><span class="combo-guide-multi">12x Payout</span></div>
-            <div class="combo-guide-item"><span class="combo-guide-name">🏆 Triple Threat (3 Same Rarity/Pos)</span><span class="combo-guide-multi">5x Payout</span></div>
-            <div class="combo-guide-item"><span class="combo-guide-name">⚔️ Dual Formation (Two Pair)</span><span class="combo-guide-multi">3x Payout</span></div>
-            <div class="combo-guide-item"><span class="combo-guide-name">💎 Star Pair (One Pair)</span><span class="combo-guide-multi">1.5x Payout</span></div>
-            <div class="combo-guide-item"><span class="combo-guide-name">🛡️ High OVR Card</span><span class="combo-guide-multi">1x Payout</span></div>
-        </div>
-    </div>
-
-    <!-- TOURNAMENT LEADERBOARD & REWARDS -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;">
+        <!-- HAND COMBOS CHEAT SHEET GUIDE -->
         <div class="panel" style="padding:18px;">
-            <h3 style="margin:0 0 12px;color:#fff;display:flex;align-items:center;gap:8px;">🏆 Tournament Championship Leaderboard</h3>
-            <div id="tournamentLeaderboardList" style="display:flex;flex-direction:column;gap:8px;">
-                <!-- Real registered player scores -->
+            <h3 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:8px;">📜 Football Squad Synergies & Multipliers</h3>
+            <div class="poker-combos-guide">
+                <div class="combo-guide-item"><span class="combo-guide-name">👑 Royal Squad (5x 95+ OVR)</span><span class="combo-guide-multi">50x Multiplier</span></div>
+                <div class="combo-guide-item"><span class="combo-guide-name">🌟 Synergy Flush (5 Same Rarity)</span><span class="combo-guide-multi">20x Multiplier</span></div>
+                <div class="combo-guide-item"><span class="combo-guide-name">⚡ Rating Straight (5 Consecutive OVR)</span><span class="combo-guide-multi">15x Multiplier</span></div>
+                <div class="combo-guide-item"><span class="combo-guide-name">⚽ Full Team (3x Pos + 2x Pos)</span><span class="combo-guide-multi">12x Multiplier</span></div>
+                <div class="combo-guide-item"><span class="combo-guide-name">🏆 Triple Threat (3 Same Rarity/Pos)</span><span class="combo-guide-multi">5x Multiplier</span></div>
+                <div class="combo-guide-item"><span class="combo-guide-name">⚔️ Dual Formation (Two Pair)</span><span class="combo-guide-multi">3x Multiplier</span></div>
+                <div class="combo-guide-item"><span class="combo-guide-name">💎 Star Pair (One Pair)</span><span class="combo-guide-multi">1.5x Multiplier</span></div>
+                <div class="combo-guide-item"><span class="combo-guide-name">🛡️ High OVR Card</span><span class="combo-guide-multi">1x Multiplier</span></div>
             </div>
         </div>
 
-        <div class="panel" style="padding:18px;border-color:rgba(244,196,78,0.25);">
-            <h3 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:8px;">🎁 Tournament Rewards</h3>
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
-                <strong style="color:#fff;font-size:14px;">Season 1 Grand Champion Prize</strong>
-                <p style="color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
-                    Win Poker clashes against the AI Dealer across 4 Championship stages to rack up massive scores on the global leaderboard!
-                </p>
+        <!-- TOURNAMENT LEADERBOARD & REWARDS -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;">
+            <div class="panel" style="padding:18px;">
+                <h3 style="margin:0 0 12px;color:#fff;display:flex;align-items:center;gap:8px;">🏆 Tournament Championship Leaderboard</h3>
+                <div id="tournamentLeaderboardList" style="display:flex;flex-direction:column;gap:8px;">
+                    <!-- Real registered player scores -->
+                </div>
             </div>
+
+            <div class="panel" style="padding:18px;border-color:rgba(244,196,78,0.25);">
+                <h3 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:8px;">🎁 Tournament Rewards</h3>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
+                    <strong style="color:#fff;font-size:14px;">Season 1 Grand Champion Prize</strong>
+                    <p style="color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
+                        Score high points in your 15-minute runs against King Jeff to secure your position at the top of the global leaderboard!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FULLSCREEN TOURNAMENT RUN ARENA OVERLAY -->
+    <div id="tFullscreenArena" class="tournament-fullscreen-arena hidden">
+        
+        <!-- TOP HUD BAR -->
+        <div class="arena-top-hud">
+            <div class="arena-timer-badge" id="tRunTimerBadge">
+                <span>⏳ TIME:</span> <b id="tRunTimerText">15:00</b>
+            </div>
+
+            <div class="arena-score-badge">
+                <span>🏆 RUN SCORE:</span> <b id="tRunScoreText">0 pts</b>
+            </div>
+
+            <div class="arena-hud-actions">
+                <button class="arena-pause-btn" id="tPauseRunBtn" onclick="toggleTournamentPause()">⏸️ Pause</button>
+                <button class="arena-leave-btn" onclick="promptLeaveTournamentRun()">🚪 Leave Arena</button>
+            </div>
+        </div>
+
+        <!-- FELT TABLE GAME ARENA -->
+        <div class="poker-felt-table" id="pokerFeltTable">
+            
+            <!-- DEALER ZONE (TOP) -->
+            <div class="poker-dealer-zone">
+                <div class="dealer-header">
+                    <span class="dealer-avatar">👑</span>
+                    <span class="dealer-title" id="tDealerName">King Jeff</span>
+                    <span class="dealer-hand-badge" id="tDealerHandBadge">Hand Hidden 🎴</span>
+                </div>
+                
+                <div class="poker-hand-row" id="tDealerHandRow">
+                    <!-- 5 Dealer Card Slots -->
+                </div>
+            </div>
+
+            <!-- CENTER TABLE POT & STATUS -->
+            <div class="poker-center-pot">
+                <div class="pot-stage-info" id="tPotStageInfo">STAGE 1/4 · GROUP MATCH</div>
+                <div class="pot-amount" id="tPotAmount">🪙 0 + 🏆 0 pts</div>
+                <div class="poker-banner-message" id="tPokerMessage">Select your ante and click DEAL CARDS to clash!</div>
+            </div>
+
+            <!-- PLAYER ZONE (BOTTOM) -->
+            <div class="poker-player-zone">
+                <div class="player-combo-badge" id="tPlayerComboBadge">
+                    <span>⭐ SQUAD:</span> <b id="tPlayerComboName">Ready to Deal</b>
+                </div>
+
+                <div class="poker-hand-row" id="tPlayerHandRow">
+                    <!-- 5 Player Card Slots -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CONTROLS & CHIPS DECK -->
+        <div class="poker-controls-deck">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <div style="font-size:13px;font-weight:800;color:#94a3b8;">ANTE / BET COINS:</div>
+                <div class="poker-chips-row" id="pokerChipsRow">
+                    <button class="poker-chip-btn active" data-bet="100" onclick="setPokerBet(100)">🪙 100</button>
+                    <button class="poker-chip-btn" data-bet="500" onclick="setPokerBet(500)">🪙 500</button>
+                    <button class="poker-chip-btn" data-bet="2500" onclick="setPokerBet(2500)">🪙 2,500</button>
+                    <button class="poker-chip-btn" data-bet="10000" onclick="setPokerBet(10000)">🪙 10K</button>
+                    <button class="poker-chip-btn" data-bet="allin" onclick="setPokerBet('allin')">🔥 ALL IN</button>
+                </div>
+            </div>
+
+            <div class="poker-actions-row">
+                <button id="pokerDealBtn" class="poker-act-btn deal" onclick="executePokerDeal()">🎴 DEAL CARDS</button>
+                <button id="pokerSwapBtn" class="poker-act-btn swap" style="display:none;" onclick="executePokerSwap()">🔄 SWAP SELECTED (<span id="tSwapCount">0</span>)</button>
+                <button id="pokerRaiseBtn" class="poker-act-btn raise" style="display:none;" onclick="executePokerRaise()">💰 DOUBLE DOWN</button>
+                <button id="pokerShowdownBtn" class="poker-act-btn showdown" style="display:none;" onclick="executePokerShowdown()">⚔️ SHOWDOWN</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PAUSE MODAL OVERLAY -->
+    <div id="tPauseOverlay" class="arena-modal-backdrop hidden">
+        <div class="arena-modal-box">
+            <div style="font-size:48px;margin-bottom:10px;">⏸️</div>
+            <h2 style="margin:0 0 10px;color:#fff;">Tournament Run Paused</h2>
+            <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">
+                Timer is frozen. You can resume anytime or forfeit this run.
+            </p>
+            <div style="display:flex;gap:12px;">
+                <button class="primary-btn" style="flex:1;" onclick="toggleTournamentPause()">▶️ Resume Run</button>
+                <button class="danger-btn" style="flex:1;" onclick="promptLeaveTournamentRun()">🚪 Leave Run</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEAVE CONFIRMATION MODAL -->
+    <div id="tLeaveConfirmModal" class="arena-modal-backdrop hidden">
+        <div class="arena-modal-box" style="border-color:#ef4444;">
+            <div style="font-size:48px;margin-bottom:10px;">⚠️</div>
+            <h2 style="margin:0 0 10px;color:#fff;">Leave Tournament Run?</h2>
+            <p style="color:#cbd5e1;font-size:14px;line-height:1.6;margin-bottom:20px;">
+                If you leave now, all current 15-minute run progress and active stage streak will be reset.<br><br>
+                <small style="color:var(--green);font-weight:700;">(Your permanent card collection, gold coins, and personal best high score are 100% safe! You can start infinite new runs anytime.)</small>
+            </p>
+            <div style="display:flex;gap:12px;">
+                <button class="ghost-btn" style="flex:1;" onclick="closeLeaveConfirmationModal()">Cancel (Keep Playing)</button>
+                <button class="danger-btn" style="flex:1;" onclick="confirmLeaveTournamentRun()">Yes, Leave Arena</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RUN TIME UP / COMPLETE MODAL -->
+    <div id="tRunCompleteModal" class="arena-modal-backdrop hidden">
+        <div class="arena-modal-box" style="border-color:var(--gold);">
+            <div style="font-size:52px;margin-bottom:10px;">🏁</div>
+            <h2 style="margin:0 0 10px;color:var(--gold);">Time's Up! Run Finished!</h2>
+            <p style="color:var(--muted);font-size:14px;margin-bottom:18px;">
+                Your 15-minute Championship run has concluded.
+            </p>
+            <div style="background:rgba(255,255,255,0.05);padding:14px;border-radius:14px;margin-bottom:20px;">
+                <div style="font-size:12px;color:var(--muted);font-weight:800;">FINAL RUN SCORE</div>
+                <div id="tFinalRunScoreText" style="font-size:28px;font-weight:900;color:var(--gold);margin:4px 0;">0 pts</div>
+            </div>
+            <button class="primary-btn" style="width:100%;" onclick="closeRunCompleteModal()">Claim & Return to Lobby →</button>
         </div>
     </div>
 
 </section>
-
 
 <!-- ==================== MISSIONS ==================== -->
 <section id="missions" class="page">
@@ -1970,6 +2054,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=850.0"></script>
+<script src="script.js?v=860.0"></script>
 </body>
 </html>
