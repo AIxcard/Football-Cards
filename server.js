@@ -272,6 +272,36 @@ const server = http.createServer((req, res) => {
         });
     }
 
+    
+    // Audit Transaction Log Endpoint
+    if (pathname === "/api/audit/log" && req.method === "POST") {
+        return getBody((err, body) => {
+            if (err || !body.username || !body.action) return sendJSON(400, { success: false });
+            const key = body.username.trim().toLowerCase();
+            database.auditLogs = database.auditLogs || {};
+            database.auditLogs[key] = database.auditLogs[key] || [];
+            database.auditLogs[key].unshift({
+                timestamp: Date.now(),
+                action: body.action,
+                details: body.details || {},
+                snapshot: body.snapshot || {}
+            });
+            if (database.auditLogs[key].length > 200) {
+                database.auditLogs[key] = database.auditLogs[key].slice(0, 200);
+            }
+            saveDatabase();
+            return sendJSON(200, { success: true });
+        });
+    }
+
+    if (pathname === "/api/audit/history" && req.method === "GET") {
+        const username = parsedUrl.query.username;
+        if (!username) return sendJSON(400, { success: false, error: "Username required" });
+        const key = username.trim().toLowerCase();
+        database.auditLogs = database.auditLogs || {};
+        return sendJSON(200, { success: true, logs: database.auditLogs[key] || [] });
+    }
+
     if (pathname === "/api/save" && req.method === "POST") {
         return getBody((err, body) => {
             if (err || !body.username || !body.saveData) return sendJSON(400, { success: false, error: "Invalid data" });
