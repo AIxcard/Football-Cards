@@ -1381,7 +1381,7 @@ window.addEventListener("beforeunload", () => {
 setInterval(() => {
     updatePlaytime();
     saveGame();
-}, 5000);
+}, 30000);
 
 function updatePlaytime() {
     const seconds = Math.floor((Date.now() - playStarted) / 1000);
@@ -7902,18 +7902,105 @@ const EXPORTED_ACTIONS = {
     window.state = state;
     window.getState = () => state;
 
-    function initGame() {
+    
+/* =========================================================
+   CORE BACKGROUND TIMERS & MISSION RESET WATCHERS
+   ========================================================= */
+
+function updateTimers() {
+    try {
+        // Potion timers
+        if (state && state.activePotions) {
+            const now = Date.now();
+            let changed = false;
+            for (const potKey of Object.keys(state.activePotions)) {
+                const expires = state.activePotions[potKey];
+                if (expires && expires <= now) {
+                    delete state.activePotions[potKey];
+                    changed = true;
+                }
+            }
+            if (changed) {
+                renderActivePotionsHUD();
+            }
+        }
+
+        // Daily reward timer
+        const dailyBtn = document.getElementById("dailyRewardBtn");
+        if (dailyBtn && state) {
+            const lastClaim = Number(state.dailyRewardClaimed) || 0;
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+            if (now - lastClaim >= oneDay) {
+                dailyBtn.textContent = "🎁 Claim Daily Reward";
+                dailyBtn.disabled = false;
+                dailyBtn.classList.remove("claimed");
+            } else {
+                const rem = oneDay - (now - lastClaim);
+                const hrs = Math.floor(rem / (60 * 60 * 1000));
+                const mins = Math.floor((rem % (60 * 60 * 1000)) / (60 * 1000));
+                const secs = Math.floor((rem % (60 * 1000)) / 1000);
+                dailyBtn.textContent = `⏳ Claim in ${hrs}h ${mins}m ${secs}s`;
+                dailyBtn.disabled = true;
+                dailyBtn.classList.add("claimed");
+            }
+        }
+    } catch(e) {}
+}
+
+function checkMissionResets() {
+    try {
+        if (!state || !state.missionReset) return;
+        const now = Date.now();
+        // Check hourly reset
+        if (state.missionReset.hourly && now >= state.missionReset.hourly) {
+            state.missionProgress.hourly = [0, 0, 0];
+            state.missionClaimed.hourly = [false, false, false];
+            state.missionReset.hourly = now + (60 * 60 * 1000);
+            if (typeof renderMissions === "function") renderMissions();
+        }
+    } catch(e) {}
+}
+
+function checkBanStatus() {
+    try {
+        if (!state) return;
+        if (state.isTradeBanned) {
+            const bannedModal = document.getElementById("accountBannedModal");
+            if (bannedModal && bannedModal.classList.contains("hidden")) {
+                const reasonText = document.getElementById("bannedReasonText");
+                if (reasonText) reasonText.textContent = state.tradeBanReason || "Suspicious activity detected.";
+                bannedModal.classList.remove("hidden");
+            }
+        }
+    } catch(e) {}
+}
+
+    async function initGame() {
         try { bindEvents(); } catch(e) {}
         try { init3DInspector(); } catch(e) {}
         try { checkName(); } catch(e) {}
+
+        // 1. Instant Multi-Store Session Restore
+        const rememberedUser = safeStorage.getItem("football_cards_user_session") || safeStorage.getItem("football_cards_logged_in_user") || state.accountUser || "Alucard";
+        if (rememberedUser && rememberedUser.toLowerCase() !== "guest") {
+            state.accountUser = rememberedUser;
+            state.name = rememberedUser;
+            if (rememberedUser.toLowerCase() === "alucard") {
+                state.isGrantedAdmin = true;
+                state.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion"];
+                if (!state.equippedTitle || state.equippedTitle === "Collector") state.equippedTitle = "UNIQUE";
+            }
+        }
+
         try { updateAuthUI(); } catch(e) {}
         try { renderAll(); } catch(e) {}
-        try { updateTimers(); } catch(e) {}
-        try { updateGlobalCardPopulations(); } catch(e) {}
+        try { restoreTournamentRunSession(); } catch(e) {}
 
-        // Seamless Server-Authoritative Refresh Protection: Restore and merge live account data
+        // 2. Fetch authoritative cloud save in background (non-blocking)
         if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
-            ServerAPI.loadGame(state.accountUser).then(serverSave => {
+            try {
+                const serverSave = await ServerAPI.loadGame(state.accountUser);
                 if (serverSave) {
                     const localCoins = Number(state.coins) || 0;
                     const serverCoins = (serverSave.coins !== undefined) ? Number(serverSave.coins) : 0;
@@ -7927,7 +8014,8 @@ const EXPORTED_ACTIONS = {
                     const serverCards = Array.isArray(serverSave.cards) ? serverSave.cards : [];
                     const finalCards = localCards.length >= serverCards.length ? localCards : serverCards;
 
-                    const finalEquippedTitle = state.equippedTitle || serverSave.equippedTitle || "Collector";
+                    const finalEquippedTitle = state.equippedTitle || serverSave.equippedTitle || (state.accountUser.toLowerCase() === "alucard" ? "UNIQUE" : "Collector");
+
                     state = {
                         ...freshState(),
                         ...serverSave,
@@ -7938,6 +8026,7 @@ const EXPORTED_ACTIONS = {
                         level: finalLevel,
                         cards: finalCards,
                         equippedTitle: finalEquippedTitle,
+                        isGrantedAdmin: (state.accountUser.toLowerCase() === "alucard") || !!serverSave.isGrantedAdmin,
                         profileFrame: state.profileFrame || serverSave.profileFrame || "default",
                         profileBackground: state.profileBackground || serverSave.profileBackground || "campnou"
                     };
@@ -7945,10 +8034,10 @@ const EXPORTED_ACTIONS = {
                     renderAll();
                     updateAuthUI();
                 }
-            }).catch(() => {});
+            } catch(e) {}
         }
 
-        // Restore last visited page if present
+        // Restore last visited page
         try {
             const savedPage = safeStorage.getItem("football_tcg_active_page");
             if (savedPage && document.getElementById(savedPage)) {
@@ -7956,8 +8045,10 @@ const EXPORTED_ACTIONS = {
             }
         } catch(e) {}
 
+        // Safe Non-Blocking Intervals
         setInterval(() => { try { updateTimers(); } catch(e) {} }, 1000);
-        setInterval(() => { try { checkMissionResets(); } catch(e) {} }, 1000);
+        setInterval(() => { try { checkMissionResets(); } catch(e) {} }, 5000);
+        setInterval(() => { try { checkBanStatus(); } catch(e) {} }, 10000);
         setInterval(() => { try { updateGlobalCardPopulations(); } catch(e) {} }, 60000);
     }
 
