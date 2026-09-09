@@ -5377,7 +5377,7 @@ body {
 }
 
 /* =========================================================
-   ROBLOX-STYLE LIVE TRADING ROOM & IN-TRADE CHAT STYLES
+   LIVE CLOUD TRADING ROOM & IN-TRADE CHAT STYLES
    ========================================================= */
 .trade-room-box {
     width: min(980px, 95vw) !important;
@@ -6111,4 +6111,38 @@ body {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
+}
+
+/* =========================================================
+   MOBILE & TABLET (IPAD / IPHONE) PERFORMANCE OPTIMIZATIONS
+   ========================================================= */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.card-grid, .cards-grid {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    contain: content;
+}
+
+.card {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+@media (max-width: 1024px) {
+    .pack-opening-modal {
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+    }
+    .card-image-wrap {
+        aspect-ratio: 1 / 1 !important;
+    }
 }
