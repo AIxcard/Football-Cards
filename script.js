@@ -1900,6 +1900,45 @@ function confirmName() {
     toast(`Welcome, ${name}!`);
 }
 
+
+/* =========================================================
+   PERMANENT PLAYER AUDIT & TRANSACTION LEDGER ENGINE
+   Tracks every card pull, sell, potion craft, trade & deletion
+   ========================================================= */
+
+function logPlayerAudit(action, details = {}) {
+    try {
+        if (!state) return;
+        state.auditLog = state.auditLog || [];
+        const entry = {
+            timestamp: Date.now(),
+            action: action,
+            details: details,
+            snapshot: {
+                totalCards: Array.isArray(state.cards) ? state.cards.length : 0,
+                coins: Number(state.coins) || 0,
+                level: Number(state.level) || 1
+            }
+        };
+        state.auditLog.unshift(entry);
+        if (state.auditLog.length > 200) state.auditLog = state.auditLog.slice(0, 200);
+
+        // Push to server asynchronously (non-blocking)
+        if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
+            fetch(`${ServerAPI.BASE_URL}/api/audit/log`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: state.accountUser,
+                    action: action,
+                    details: details,
+                    snapshot: entry.snapshot
+                })
+            }).catch(() => {});
+        }
+    } catch(e) {}
+}
+
 function renderAll() {
     if (state.cards && state.cards.length) {
         state.cards.forEach(c => {
