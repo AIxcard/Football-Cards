@@ -10,7 +10,7 @@
         window.location.replace("https://football-cards-yrry.onrender.com" + window.location.search);
     }
 </script>
-<link rel="stylesheet" href="style.css?v=860.0">
+<link rel="stylesheet" href="style.css?v=870.0">
 </head>
 
 <body>
@@ -1183,15 +1183,17 @@
         </div>
 
         <!-- START RUN LAUNCH CARD -->
-        <div class="tournament-launch-card">
-            <div style="font-size:42px;">⏱️ ⚔️ 🏆</div>
-            <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Championship Run</h2>
-            <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                Score as many points as possible before the 15-minute clock expires! Unlimited free attempts available. You can pause anytime.
-            </p>
-            <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                ⚔️ PLAY TOURNAMENT RUN →
-            </button>
+        <div id="tLaunchCardContainer">
+            <div class="tournament-launch-card">
+                <div style="font-size:42px;">⏱️ ⚔️ 🏆</div>
+                <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Championship Run</h2>
+                <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
+                    Score as many points as possible before the 15-minute clock expires! Unlimited free attempts available. You can pause anytime.
+                </p>
+                <button class="tournament-launch-btn" onclick="startTournamentRun()">
+                    ⚔️ PLAY TOURNAMENT RUN →
+                </button>
+            </div>
         </div>
 
         <!-- STATS & SCORE STRIP -->
@@ -2054,6 +2056,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=860.0"></script>
+<script src="script.js?v=870.0"></script>
 </body>
 </html>
