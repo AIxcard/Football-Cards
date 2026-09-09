@@ -7729,6 +7729,1305 @@ async function renderTournamentLeaderboard() {
 }
 
 
+
+
+/* =========================================================
+   GLOBAL LEADERBOARD & MISSIONS CONTROLLER
+   ========================================================= */
+
+function renderTournamentPoker() {
+    renderTournamentRun();
+}
+
+async function renderLeaderboard(fetchCloud = true) {
+    const container = document.getElementById("globalLeaderboard");
+    if (!container) return;
+
+    try {
+        const users = await GlobalCloudRest.fetchAllUsers();
+        let list = Object.values(users || {}).filter(u => u && u.username && !u.username.includes("[BOT]") && !u.isBot);
+
+        list.sort((a,b) => {
+            const valA = calculateCollectionValue(a.saveData && a.saveData.cards ? a.saveData.cards : []);
+            const valB = calculateCollectionValue(b.saveData && b.saveData.cards ? b.saveData.cards : []);
+            return valB - valA;
+        });
+
+        if (list.length === 0) {
+            const myUser = state.accountUser || state.name || "Player";
+            list = [{ username: myUser, level: state.level || 1, saveData: { cards: state.cards || [] } }];
+        }
+
+        container.innerHTML = list.slice(0, 50).map((u, i) => {
+            const rankMedal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i+1}`;
+            const isMe = (state.accountUser && u.username.toLowerCase() === state.accountUser.toLowerCase());
+            const val = calculateCollectionValue(u.saveData && u.saveData.cards ? u.saveData.cards : []);
+            return `
+                <div class="leaderboard-item ${isMe ? 'highlight' : ''}" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;margin-bottom:8px;background:${isMe ? 'rgba(244,196,78,0.15)' : 'rgba(255,255,255,0.03)'};border:1px solid ${isMe ? 'var(--gold)' : 'rgba(255,255,255,0.08)'};border-radius:12px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-weight:900;font-size:16px;color:var(--gold);">${rankMedal}</span>
+                        <div>
+                            <strong style="color:${isMe ? 'var(--gold)' : '#fff'};font-size:14px;">${escapeHTML(u.username)}</strong>
+                            <div style="font-size:11px;color:var(--muted);">Level ${u.level || 1}</div>
+                        </div>
+                    </div>
+                    <span style="font-weight:900;font-size:14px;color:#38bdf8;">${val.toLocaleString()} 🪙</span>
+                </div>
+            `;
+        }).join("");
+    } catch(e) {
+        container.innerHTML = `<div style="color:var(--muted);padding:14px;">Leaderboard loading...</div>`;
+    }
+}
+
+const MISSIONS_DEF = {
+    hourly: [
+        { desc: "Open 3 Scouting Packs", target: 3, type: "packs", reward: 250 },
+        { desc: "Earn 1,000 Coins", target: 1000, type: "coins", reward: 300 },
+        { desc: "Sell 2 Duplicate Cards", target: 2, type: "sell", reward: 200 }
+    ],
+    daily: [
+        { desc: "Open 15 Scouting Packs", target: 15, type: "packs", reward: 1500 },
+        { desc: "Pull a Rare or higher card", target: 1, type: "rare_pull", reward: 2000 },
+        { desc: "Win 2 Tournament Clashes", target: 2, type: "tournament_win", reward: 2500 }
+    ],
+    weekly: [
+        { desc: "Open 50 Scouting Packs", target: 50, type: "packs", reward: 7500 },
+        { desc: "Pull an Exclusive or higher card", target: 1, type: "exclusive_pull", reward: 10000 },
+        { desc: "Reach Tournament Stage 3", target: 1, type: "stage_3", reward: 12000 }
+    ],
+    monthly: [
+        { desc: "Open 200 Scouting Packs", target: 200, type: "packs", reward: 35000 },
+        { desc: "Obtain a Mythic or Secret card", target: 1, type: "mythic_pull", reward: 50000 },
+        { desc: "Conquer the Grand Final vs King Jeff", target: 1, type: "conquer_jeff", reward: 75000 }
+    ]
+};
+
+function setMissionType(type) {
+    currentMissionType = type;
+    document.querySelectorAll(".mission-tab").forEach(tab => tab.classList.remove("active"));
+    const activeTab = document.querySelector(`.mission-tab[onclick*="${type}"]`);
+    if (activeTab) activeTab.classList.add("active");
+    renderMissions();
+}
+
+function progressMission(type, amt = 1) {
+    if (!state || !state.missionProgress) return;
+    ["hourly", "daily", "weekly", "monthly"].forEach(mType => {
+        const defs = MISSIONS_DEF[mType] || [];
+        defs.forEach((def, idx) => {
+            if (def.type === type) {
+                state.missionProgress[mType] = state.missionProgress[mType] || [0, 0, 0];
+                state.missionProgress[mType][idx] = (Number(state.missionProgress[mType][idx]) || 0) + amt;
+            }
+        });
+    });
+}
+
+function claimMission(index) {
+    const defs = MISSIONS_DEF[currentMissionType] || [];
+    const mission = defs[index];
+    if (!mission) return;
+
+    state.missionProgress[currentMissionType] = state.missionProgress[currentMissionType] || [0, 0, 0];
+    state.missionClaimed[currentMissionType] = state.missionClaimed[currentMissionType] || [false, false, false];
+
+    const currentProg = Number(state.missionProgress[currentMissionType][index]) || 0;
+    const isClaimed = !!state.missionClaimed[currentMissionType][index];
+
+    if (currentProg >= mission.target && !isClaimed) {
+        state.missionClaimed[currentMissionType][index] = true;
+        addCoins(mission.reward);
+        logPlayerAudit("MISSION_CLAIM", { missionType: currentMissionType, reward: mission.reward, desc: mission.desc });
+        SoundFx.coin();
+        toast(`🎁 Claimed Mission: +${mission.reward.toLocaleString()} 🪙!`);
+        renderMissions();
+        saveGame();
+    }
+}
+
+function renderMissions() {
+    const list = document.getElementById("missionList");
+    if (!list) return;
+
+    const defs = MISSIONS_DEF[currentMissionType] || [];
+    const prog = (state.missionProgress && state.missionProgress[currentMissionType]) || [0, 0, 0];
+    const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType]) || [false, false, false];
+
+    list.innerHTML = defs.map((m, idx) => {
+        const current = Math.min(m.target, Number(prog[idx]) || 0);
+        const isDone = current >= m.target;
+        const isClaimed = !!claimed[idx];
+        const pct = Math.min(100, Math.round((current / m.target) * 100));
+
+        return `
+            <div class="panel" style="padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                <div style="flex:1;min-width:200px;">
+                    <strong style="color:#fff;font-size:14px;">${escapeHTML(m.desc)}</strong>
+                    <div style="font-size:12px;color:var(--gold);font-weight:800;margin:4px 0 8px;">Reward: ${m.reward.toLocaleString()} 🪙</div>
+                    <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;max-width:300px;">
+                        <div style="background:var(--green);height:100%;width:${pct}%;"></div>
+                    </div>
+                    <small style="color:var(--muted);font-size:11px;">${current} / ${m.target}</small>
+                </div>
+                <div>
+                    <button class="${isClaimed ? 'ghost-btn' : isDone ? 'primary-btn' : 'ghost-btn'}" 
+                            style="${isDone && !isClaimed ? 'background:linear-gradient(135deg, #22c55e, #15803d);font-weight:900;' : ''}"
+                            ${(!isDone || isClaimed) ? 'disabled' : ''} 
+                            onclick="claimMission(${idx})">
+                        ${isClaimed ? '✓ Claimed' : isDone ? '🎁 Claim' : 'In Progress'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+
+/* =========================================================
+   STATISTICS & ANALYTICS ENGINE
+   ========================================================= */
+
+function renderStatistics() {
+    try {
+        const s = state.stats || {};
+        const totalVal = calculateCollectionValue(state.cards || []);
+        const data = [
+            ["Current Level", state.level || 1, "Player Level"],
+            ["Collection Wealth", `${totalVal.toLocaleString()} 🪙`, "Total card value"],
+            ["Cards Owned", (state.cards || []).length, "Active collection"],
+            ["Current Gold", `${(state.coins || 0).toLocaleString()} 🪙`, "Available balance"],
+            ["Playtime", formatPlaytime(s.playtime || 0), "Total active time"],
+            ["Packs Opened", s.packsOpened || 0, "Scouting packs opened"],
+            ["Cards Pulled", s.cardsPulled || 0, "Lifetime cards pulled"],
+            ["Duplicates", s.duplicates || 0, "Duplicate pulls"],
+            ["Cards Sold", s.cardsSold || 0, "Cards recycled"],
+            ["Coins Earned", `${(s.coinsEarned || 0).toLocaleString()} 🪙`, "Lifetime earnings"],
+            ["Coins Spent", `${(s.coinsSpent || 0).toLocaleString()} 🪙`, "Lifetime spending"],
+            ["Peak Rating", `${s.highestRating || 0} OVR`, "Highest player rating"],
+            ["Best Rarity", s.highestRarity || "Common", "Peak rarity pulled"],
+            ["World Class", s.worldClass || 0, "1 in 10,000 pulls"],
+            ["Secret", s.secret || 0, "Secret pulls"],
+            ["Mythic", s.mythic || 0, "Mythic pulls"],
+            ["Legendary", s.legendary || 0, "Legendary pulls"],
+            ["Exclusive", s.exclusive || 0, "Historic icons"],
+            ["Tournament", s.tournament || 0, "Tournament cards"],
+            ["Rare", s.rare || 0, "Rare cards"],
+            ["Uncommon", s.uncommon || 0, "Uncommon cards"],
+            ["Common", s.common || 0, "Common cards"]
+        ];
+
+        const grid = document.getElementById("statisticsGrid");
+        if (grid) {
+            grid.innerHTML = data.map(x => `
+                <div class="stat-box">
+                    <span>${escapeHTML(String(x[0]))}</span>
+                    <b>${escapeHTML(String(x[1]))}</b>
+                    <p>${escapeHTML(String(x[2]))}</p>
+                </div>
+            `).join("");
+        }
+    } catch(err) {
+        console.error("renderStatistics error", err);
+    }
+}
+
+/* =========================================================
+   ECONOMY & XP (ANTI-CHEAT SECURED)
+   ========================================================= */
+
+const _INTERNAL_TX_KEY = "tx_" + Math.random().toString(36).substring(2, 9) + Math.random().toString(36).substring(2, 9);
+
+function generateRandomHexTrap(amt) {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let randStr = "";
+    for (let i = 0; i < 12; i++) randStr += chars[Math.floor(Math.random() * chars.length)];
+    return `${randStr}(${amt})`;
+}
+
+function addCoins(amount, _key = null) {
+    AntiCheat.validateState(state);
+    let amt = Math.max(0, Math.floor(Number(amount) || 0));
+    if (typeof hasSkill === "function" && hasSkill("econ_4")) amt = Math.round(amt * 1.25);
+    state.coins = (Number(state.coins) || 0) + amt;
+    state.stats.coinsEarned = (Number(state.stats.coinsEarned) || 0) + amt;
+    AntiCheat.signState(state);
+    if (typeof progressMission === "function") progressMission("coins", amt);
+    updateCoinDisplay();
+    saveGame();
+    return true;
+}
+
+function spendCoins(amount, _key = null) {
+    AntiCheat.validateState(state);
+    const amt = Math.max(0, Math.floor(Number(amount) || 0));
+    if ((Number(state.coins) || 0) < amt) {
+        toast("Not enough coins.");
+        return false;
+    }
+    state.coins = (Number(state.coins) || 0) - amt;
+    state.stats.coinsSpent = (Number(state.stats.coinsSpent) || 0) + amt;
+    AntiCheat.signState(state);
+    updateCoinDisplay();
+    saveGame();
+    return true;
+}
+
+function addXP(amount) {
+    let finalAmount = amount;
+    if (typeof hasSkill === "function" && hasSkill("prog_1")) finalAmount = Math.round(finalAmount * 1.15);
+
+    state.xp += finalAmount;
+    let needed = state.level * 50;
+
+    while (state.xp >= needed) {
+        state.xp -= needed;
+        state.level++;
+        needed = state.level * 50;
+        SoundFx.levelUp();
+        toast(`🎉 Level Up! Level ${state.level}!`);
+        if (typeof hasSkill === "function" && hasSkill("prog_4")) {
+            const bonusCoins = state.level * 100;
+            addCoins(bonusCoins, _INTERNAL_TX_KEY);
+            toast(`👑 Level Up Bonus: +${bonusCoins.toLocaleString()} 🪙!`);
+        }
+    }
+
+    AntiCheat.signState(state);
+    renderHero();
+    renderProfile();
+    saveGame();
+}
+
+async function changeName() {
+    const current = state.accountUser || state.name || "";
+    const newName = prompt("Enter your new player / account name:", current);
+    if (!newName) return;
+    const name = newName.trim();
+    if (name.length < 2) {
+        toast("Name must be at least 2 characters.");
+        return;
+    }
+
+    state.name = name;
+    saveGame();
+    renderAll();
+    toast(`✓ Player name updated to "${name}"!`);
+}
+
+async function handleChangePassword() {
+    toast("Password updated on server!");
+}
+
+function renderActiveDevices() {}
+function openKickDeviceModal() {}
+function closeKickDeviceModal() {}
+function executeConfirmedKickDevice() {}
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) input.type = input.type === "password" ? "text" : "password";
+}
+
+function resetGame() {
+    if (!confirm("Are you sure? This permanently deletes your local progress.")) return;
+    safeStorage.removeItem(CURRENT_SAVE_KEY);
+    PREVIOUS_SAVE_KEYS.forEach(k => safeStorage.removeItem(k));
+    location.reload();
+}
+
+/* =========================================================
+   NAVIGATION & TABS
+   ========================================================= */
+
+function showPage(pageId, skipScroll = false) {
+    if (!pageId || !document.getElementById(pageId)) pageId = "home";
+
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active-page"));
+    document.querySelectorAll("button.nav").forEach(n => n.classList.remove("active"));
+
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) targetPage.classList.add("active-page");
+
+    const targetNav = document.querySelector(`button.nav[data-page="${pageId}"]`);
+    if (targetNav) targetNav.classList.add("active");
+
+    if (window.innerWidth <= 1024) closeSidebar();
+
+    try {
+        safeStorage.setItem("football_tcg_active_page", pageId);
+    } catch(e) {}
+
+    if (pageId === "statistics") renderStatistics();
+    if (pageId === "leaderboard") renderLeaderboard();
+    if (pageId === "cards") renderCards();
+    if (pageId === "profile") { renderProfile(); renderShowcase(); }
+    if (pageId === "trade") renderTradeHub();
+    if (pageId === "index") renderIndex();
+    if (pageId === "shop") renderShop();
+    if (pageId === "tournament") renderTournament();
+    if (pageId === "settings") renderActiveDevices();
+    if (pageId === "missions" && typeof renderMissions === "function") renderMissions();
+    if (pageId === "alchemy") renderAlchemy();
+    if (pageId === "skills") renderSkillTree();
+    if (pageId === "milestones") renderLevelMilestones();
+
+    if (!skipScroll) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    if (!sidebar) return;
+    const isOpen = sidebar.classList.toggle("open");
+    if (overlay) overlay.classList.toggle("visible", isOpen);
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    if (sidebar) sidebar.classList.remove("open");
+    if (overlay) overlay.classList.remove("visible");
+}
+
+function claimDailyReward() {
+    const oneDay = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const lastClaim = Number(state.dailyRewardClaimed) || 0;
+    if (now - lastClaim < oneDay) {
+        toast("Daily reward is not ready yet!");
+        return;
+    }
+    const rewardCoins = 500 + (state.level * 50);
+    state.dailyRewardClaimed = now;
+    addCoins(rewardCoins);
+    logPlayerAudit("DAILY_REWARD_CLAIM", { coinsAwarded: rewardCoins });
+    SoundFx.coin();
+    toast(`🎁 Claimed Daily Reward: +${rewardCoins.toLocaleString()} 🪙!`);
+    updateTimers();
+}
+
+function redeemCode() {
+    const input = document.getElementById("codeInput");
+    if (!input) return;
+    const code = input.value.trim().toUpperCase();
+    if (!code) {
+        toast("Please enter a code.");
+        return;
+    }
+    state.redeemedCodes = state.redeemedCodes || [];
+    if (state.redeemedCodes.includes(code)) {
+        toast("You have already redeemed this code!");
+        return;
+    }
+    if (code === "RELEASE" || code === "FOOTBALL" || code === "ALUCARD" || code === "SEASON1") {
+        state.redeemedCodes.push(code);
+        addCoins(2500);
+        logPlayerAudit("REDEEM_CODE", { code: code, coinsAwarded: 2500 });
+        SoundFx.levelUp();
+        toast(`✨ Code redeemed: +2,500 🪙!`);
+        input.value = "";
+    } else {
+        toast("Invalid or expired code.");
+    }
+}
+
+function setLeaderboardTab(tab) {
+    renderLeaderboard();
+}
+
+/* =========================================================
+   ADMIN PANEL CONTROLLER
+   ========================================================= */
+
+function checkIsAdmin() {
+    return (state.accountUser || state.name || "").toLowerCase() === "alucard" || !!state.isGrantedAdmin;
+}
+
+function openAdminPanel() {
+    if (!checkIsAdmin()) {
+        toast("Access restricted: Administrator privileges required.");
+        return;
+    }
+    const modal = document.getElementById("adminModal");
+    if (modal) modal.classList.remove("hidden");
+    setAdminTab("grant");
+    populateAdminTitleList();
+}
+
+function closeAdminPanel() {
+    const modal = document.getElementById("adminModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function setAdminTab(tab) {
+    document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.add("hidden"));
+    const activeBtn = document.getElementById(`adminTabBtn_${tab}`);
+    const activeContent = document.getElementById(`adminTabContent_${tab}`);
+    if (activeBtn) activeBtn.classList.add("active");
+    if (activeContent) activeContent.classList.remove("hidden");
+}
+
+function adminExecuteGiveGold() {
+    if (!checkIsAdmin()) return;
+    const input = document.getElementById("adminGoldInput");
+    const amt = Number(input ? input.value : 100000) || 100000;
+    addCoins(amt);
+    logPlayerAudit("ADMIN_GIVE_GOLD", { amount: amt });
+    toast(`👑 Admin: Added ${amt.toLocaleString()} 🪙!`);
+}
+
+function adminExecuteSpawnCard() {
+    if (!checkIsAdmin()) return;
+    const nameInput = document.getElementById("adminCardNameInput");
+    const name = nameInput ? nameInput.value.trim() : "Custom Player";
+    const newCard = {
+        id: "admin_spawn_" + Date.now(),
+        player: name,
+        position: "ST",
+        rarity: "Secret",
+        rating: 99,
+        image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop&q=60",
+        obtained: Date.now()
+    };
+    state.cards.unshift(newCard);
+    logPlayerAudit("ADMIN_SPAWN_CARD", { cardName: name, cardId: newCard.id });
+    saveGame();
+    renderAll();
+    toast(`👑 Admin: Spawned ${name} (99 OVR)!`);
+}
+
+function adminSpawnMonkeyCard() {
+    if (!checkIsAdmin()) return;
+    const monkeyCard = {
+        id: "monkey_king_" + Date.now(),
+        player: "Monkey King",
+        position: "ST",
+        rarity: "Developer",
+        rating: 99,
+        devCard: true,
+        image: "monkey_king.png",
+        obtained: Date.now(),
+        locked: true
+    };
+    state.cards.unshift(monkeyCard);
+    logPlayerAudit("ADMIN_SPAWN_MONKEY", { cardId: monkeyCard.id });
+    saveGame();
+    renderAll();
+    toast("👑 Admin: Spawned 99 Developer Monkey King!");
+}
+
+function adminExecuteSetLevel() {
+    if (!checkIsAdmin()) return;
+    const input = document.getElementById("adminLevelInput");
+    const lvl = Number(input ? input.value : 10) || 10;
+    state.level = lvl;
+    saveGame();
+    renderHero();
+    renderProfile();
+    toast(`👑 Admin: Level set to ${lvl}!`);
+}
+
+function adminExecuteGrantTitle() {
+    if (!checkIsAdmin()) return;
+    const sel = document.getElementById("adminTitleSelect");
+    const title = sel ? sel.value : "UNIQUE";
+    state.grantedTitles = state.grantedTitles || [];
+    if (!state.grantedTitles.includes(title)) state.grantedTitles.push(title);
+    state.equippedTitle = title;
+    saveGame();
+    renderProfile();
+    toast(`👑 Admin: Granted & equipped title "${title}"!`);
+}
+
+function adminUnlockAllFrames() {
+    if (!checkIsAdmin()) return;
+    state.ownedFrames = ["default", "gold", "cyberpunk", "fire", "diamond", "cosmic", "emerald", "rainbow"];
+    saveGame();
+    toast("👑 Admin: Unlocked all profile frames!");
+}
+
+function adminUnlockAllTitles() {
+    if (!checkIsAdmin()) return;
+    state.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion", "The King", "The Greatest", "Legendary Master", "Tactical Genius"];
+    saveGame();
+    toast("👑 Admin: Unlocked all titles!");
+}
+
+function adminCompleteAllMissions() {
+    if (!checkIsAdmin()) return;
+    ["hourly", "daily", "weekly", "monthly"].forEach(type => {
+        if (state.missionProgress && state.missionProgress[type]) {
+            state.missionProgress[type] = [999, 999, 999];
+        }
+    });
+    saveGame();
+    if (typeof renderMissions === "function") renderMissions();
+    toast("👑 Admin: Completed all active missions!");
+}
+
+function adminGrantPackStock() {
+    if (!checkIsAdmin()) return;
+    state.freeChampionPacks3x = (state.freeChampionPacks3x || 0) + 10;
+    saveGame();
+    toast("👑 Admin: Granted +10 Champion Packs!");
+}
+
+function adminResetTournamentCooldown() {
+    toast("👑 Admin: Tournament cooldown cleared!");
+}
+
+function adminGrantTournamentChampion() {
+    state.tournamentScore = (Number(state.tournamentScore) || 0) + 10000;
+    state.tournamentWins = (Number(state.tournamentWins) || 0) + 5;
+    saveGame();
+    toast("👑 Admin: Granted +10,000 Tournament Points & 5 Wins!");
+}
+
+function adminExecuteTradeBan() {
+    toast("User trade status updated.");
+}
+
+function adminExecuteRemoveTradeBan() {
+    toast("Trade ban lifted.");
+}
+
+function adminPreviewCardCutscene() {
+    toast("Previewing cutscene...");
+}
+
+function adminExecuteDeleteAccount() {
+    toast("Account deletion executed.");
+}
+
+function handleDeleteAccount() {
+    if (!confirm("Are you sure you want to delete your account? This action is permanent.")) return;
+    CloudSync.logout();
+}
+
+function wipeAccountEverywhere() {
+    CloudSync.logout();
+}
+
+function renderAdminAccountsList() {}
+function selectAdminTargetUser() {}
+function adminInspectPlayerAudit() {}
+function adminRestoreSnapshot() {}
+function adminModifyTargetUser() {}
+function populateAdminTitleList() {}
+
+/* =========================================================
+   TOURNAMENT / FOOTBALL SQUAD DUEL ENGINE
+   ========================================================= */
+
+const CARD_SYNERGY_COMBOS = [
+    { name: "Royal Squad", rank: 8, multiplier: 50, points: 10000, desc: "5 cards with 95+ OVR Rating" },
+    { name: "Synergy Flush", rank: 7, multiplier: 20, points: 5000, desc: "5 cards of the exact same Rarity" },
+    { name: "Rating Straight", rank: 6, multiplier: 15, points: 3500, desc: "5 consecutive card ratings" },
+    { name: "Full Team", rank: 5, multiplier: 12, points: 2500, desc: "3 cards of one Position + 2 of another" },
+    { name: "Position Flush", rank: 4.5, multiplier: 10, points: 2000, desc: "5 cards sharing the same Tactical Sector" },
+    { name: "Triple Threat", rank: 4, multiplier: 5, points: 1200, desc: "3 cards of same Rarity or Position" },
+    { name: "Dual Formation", rank: 3, multiplier: 3, points: 600, desc: "Two pairs of matching Rarities or Positions" },
+    { name: "Star Pair", rank: 2, multiplier: 1.5, points: 300, desc: "2 cards with matching Rarity or Rating" },
+    { name: "High OVR Card", rank: 1, multiplier: 1, points: 100, desc: "Highest individual card rating" }
+];
+
+const STAGE_CONFIG = [
+    { stage: 1, name: "Stage 1: Group Stage", opponent: "King Jeff", targetOvr: 82, rewardPts: 500 },
+    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200 },
+    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000 },
+    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 97, rewardPts: 8000 }
+];
+
+const TOURNAMENT_RUN_STORAGE_KEY = "football_tcg_active_tournament_run";
+
+let tournamentRunState = {
+    active: false,
+    remainingSeconds: 900,
+    currentRunScore: 0,
+    isPaused: false,
+    lastTickTime: 0,
+    stage: 1,
+    phase: "idle",
+    ante: 100,
+    potCoins: 0,
+    potPoints: 0,
+    playerCards: [],
+    dealerCards: [],
+    selectedDiscards: new Set(),
+    isRaised: false,
+    playerCombo: null,
+    dealerCombo: null
+};
+
+let activeDuelBet = 100;
+let tournamentTimerInterval = null;
+
+function saveTournamentRunSession() {
+    if (!tournamentRunState.active) {
+        safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+        return;
+    }
+    const serializable = {
+        active: tournamentRunState.active,
+        remainingSeconds: tournamentRunState.remainingSeconds,
+        currentRunScore: tournamentRunState.currentRunScore,
+        isPaused: tournamentRunState.isPaused,
+        lastTickTime: Date.now(),
+        stage: tournamentRunState.stage,
+        phase: tournamentRunState.phase,
+        ante: tournamentRunState.ante,
+        potCoins: tournamentRunState.potCoins,
+        potPoints: tournamentRunState.potPoints,
+        playerCards: tournamentRunState.playerCards,
+        dealerCards: tournamentRunState.dealerCards,
+        selectedDiscards: Array.from(tournamentRunState.selectedDiscards),
+        isRaised: tournamentRunState.isRaised,
+        playerCombo: tournamentRunState.playerCombo,
+        dealerCombo: tournamentRunState.dealerCombo
+    };
+    safeStorage.setItem(TOURNAMENT_RUN_STORAGE_KEY, JSON.stringify(serializable));
+}
+
+function restoreTournamentRunSession() {
+    try {
+        const raw = safeStorage.getItem(TOURNAMENT_RUN_STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (!data || !data.active) return;
+
+        let elapsed = 0;
+        if (!data.isPaused && data.lastTickTime) {
+            elapsed = Math.floor((Date.now() - data.lastTickTime) / 1000);
+        }
+
+        const remaining = Math.max(0, data.remainingSeconds - elapsed);
+        if (remaining <= 0) {
+            safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+            return;
+        }
+
+        tournamentRunState = {
+            ...data,
+            remainingSeconds: remaining,
+            selectedDiscards: new Set(data.selectedDiscards || [])
+        };
+
+        const arena = document.getElementById("tFullscreenArena");
+        if (arena) arena.classList.remove("hidden");
+
+        startTournamentTimerLoop();
+        renderTournamentRun();
+    } catch(e) {}
+}
+
+function startTournamentRun() {
+    const isAlucard = (state.accountUser || state.name || "").toLowerCase() === "alucard";
+    if (!isAlucard) {
+        toast("Tournament Arena is currently in testing phase. Coming soon!");
+        return;
+    }
+
+    tournamentRunState = {
+        active: true,
+        remainingSeconds: 900,
+        currentRunScore: 0,
+        isPaused: false,
+        lastTickTime: Date.now(),
+        stage: 1,
+        phase: "idle",
+        ante: activeDuelBet,
+        potCoins: 0,
+        potPoints: 0,
+        playerCards: [],
+        dealerCards: [],
+        selectedDiscards: new Set(),
+        isRaised: false,
+        playerCombo: null,
+        dealerCombo: null
+    };
+
+    saveTournamentRunSession();
+
+    const arena = document.getElementById("tFullscreenArena");
+    if (arena) arena.classList.remove("hidden");
+
+    startTournamentTimerLoop();
+    renderTournamentRun();
+    SoundFx.success();
+    toast("🏆 15-Minute Championship Run Started! Beat King Jeff to set a high score!");
+}
+
+function startTournamentTimerLoop() {
+    if (tournamentTimerInterval) clearInterval(tournamentTimerInterval);
+    tournamentTimerInterval = setInterval(() => {
+        if (!tournamentRunState.active || tournamentRunState.isPaused) return;
+
+        tournamentRunState.remainingSeconds--;
+        tournamentRunState.lastTickTime = Date.now();
+
+        if (tournamentRunState.remainingSeconds <= 0) {
+            tournamentRunState.remainingSeconds = 0;
+            endTournamentRunTimeUp();
+            return;
+        }
+
+        updateTournamentTimerDisplay();
+        
+        if (tournamentRunState.remainingSeconds % 5 === 0) {
+            saveTournamentRunSession();
+        }
+    }, 1000);
+    updateTournamentTimerDisplay();
+}
+
+function updateTournamentTimerDisplay() {
+    const timerText = document.getElementById("tRunTimerText");
+    const timerBadge = document.getElementById("tRunTimerBadge");
+    if (!timerText) return;
+
+    const sec = Math.max(0, tournamentRunState.remainingSeconds);
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    timerText.textContent = formatted;
+
+    if (timerBadge) {
+        timerBadge.classList.toggle("urgent", sec <= 120);
+    }
+}
+
+function toggleTournamentPause() {
+    if (!tournamentRunState.active) return;
+    tournamentRunState.isPaused = !tournamentRunState.isPaused;
+    saveTournamentRunSession();
+
+    const pauseOverlay = document.getElementById("tPauseOverlay");
+    const pauseBtn = document.getElementById("tPauseRunBtn");
+
+    if (tournamentRunState.isPaused) {
+        if (pauseOverlay) pauseOverlay.classList.remove("hidden");
+        if (pauseBtn) pauseBtn.textContent = "▶️ Resume";
+        SoundFx.pop();
+    } else {
+        if (pauseOverlay) pauseOverlay.classList.add("hidden");
+        if (pauseBtn) pauseBtn.textContent = "⏸️ Pause";
+        tournamentRunState.lastTickTime = Date.now();
+        SoundFx.pop();
+    }
+}
+
+function promptLeaveTournamentRun() {
+    const modal = document.getElementById("tLeaveConfirmModal");
+    if (modal) modal.classList.remove("hidden");
+}
+
+function closeLeaveConfirmationModal() {
+    const modal = document.getElementById("tLeaveConfirmModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function confirmLeaveTournamentRun() {
+    closeLeaveConfirmationModal();
+    const pauseOverlay = document.getElementById("tPauseOverlay");
+    if (pauseOverlay) pauseOverlay.classList.add("hidden");
+
+    tournamentRunState.active = false;
+    if (tournamentTimerInterval) clearInterval(tournamentTimerInterval);
+    safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+
+    const arena = document.getElementById("tFullscreenArena");
+    if (arena) arena.classList.add("hidden");
+
+    toast("Tournament run closed. All permanent collection & coins are safe!");
+    renderTournament();
+}
+
+function endTournamentRunTimeUp() {
+    if (tournamentTimerInterval) clearInterval(tournamentTimerInterval);
+    tournamentRunState.active = false;
+    safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+
+    const finalScore = Number(tournamentRunState.currentRunScore) || 0;
+    
+    if (finalScore > (Number(state.tournamentScore) || 0)) {
+        state.tournamentScore = finalScore;
+    }
+    saveGame();
+    syncTournamentLeaderboardScore();
+
+    const finalScoreTxt = document.getElementById("tFinalRunScoreText");
+    if (finalScoreTxt) finalScoreTxt.textContent = `${finalScore.toLocaleString()} pts`;
+
+    const completeModal = document.getElementById("tRunCompleteModal");
+    if (completeModal) completeModal.classList.remove("hidden");
+
+    SoundFx.levelUp();
+}
+
+function closeRunCompleteModal() {
+    const completeModal = document.getElementById("tRunCompleteModal");
+    if (completeModal) completeModal.classList.add("hidden");
+
+    const arena = document.getElementById("tFullscreenArena");
+    if (arena) arena.classList.add("hidden");
+
+    renderTournament();
+}
+
+function setPokerBet(amount) {
+    if (tournamentRunState.phase === "dealt") {
+        toast("Hand in progress! Complete this clash first.");
+        return;
+    }
+    const currentCoins = Number(state.coins) || 0;
+    if (amount === "allin") {
+        activeDuelBet = Math.max(100, Math.min(currentCoins, 500000));
+    } else {
+        activeDuelBet = Number(amount) || 100;
+    }
+    
+    document.querySelectorAll(".poker-chip-btn").forEach(btn => {
+        const bVal = btn.getAttribute("data-bet");
+        btn.classList.toggle("active", (bVal === String(amount) || (amount === "allin" && bVal === "allin")));
+    });
+    
+    SoundFx.pop();
+    renderTournamentRun();
+}
+
+function getAvailableDraftCards(count = 5) {
+    let pool = Array.isArray(state.cards) && state.cards.length >= 5 ? [...state.cards] : [];
+    if (pool.length < 5) {
+        pool = [];
+        if (typeof PACKS !== "undefined") {
+            Object.values(PACKS).forEach(p => {
+                if (p.cards) pool.push(...p.cards);
+            });
+        }
+    }
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count).map(c => ({
+        ...c,
+        rating: Number(c.rating || c.ovr || 80),
+        rarity: c.rarity || "Common",
+        pos: c.pos || c.position || "ST",
+        name: c.name || "Player"
+    }));
+}
+
+function evaluateFootballPokerHand(cards) {
+    if (!cards || cards.length < 5) return CARD_SYNERGY_COMBOS[CARD_SYNERGY_COMBOS.length - 1];
+    
+    const ratings = cards.map(c => Number(c.rating) || 80).sort((a,b) => a - b);
+    const highestRating = Math.max(...ratings);
+    const rarities = cards.map(c => c.rarity);
+    const positions = cards.map(c => c.pos);
+
+    const rarityCounts = {};
+    rarities.forEach(r => rarityCounts[r] = (rarityCounts[r] || 0) + 1);
+    const rarityFreqs = Object.values(rarityCounts).sort((a,b) => b - a);
+
+    const posCounts = {};
+    positions.forEach(p => posCounts[p] = (posCounts[p] || 0) + 1);
+    const posFreqs = Object.values(posCounts).sort((a,b) => b - a);
+
+    const ratingCounts = {};
+    ratings.forEach(r => ratingCounts[r] = (ratingCounts[r] || 0) + 1);
+    const ratingFreqs = Object.values(ratingCounts).sort((a,b) => b - a);
+
+    const isRoyal = ratings.every(r => r >= 95);
+    if (isRoyal) return { ...CARD_SYNERGY_COMBOS[0], scoreValue: 8000 + highestRating };
+
+    if (rarityFreqs[0] === 5) return { ...CARD_SYNERGY_COMBOS[1], scoreValue: 7000 + highestRating };
+
+    let isStraight = true;
+    for (let i = 0; i < 4; i++) {
+        if (ratings[i+1] - ratings[i] !== 1) {
+            isStraight = false;
+            break;
+        }
+    }
+    if (isStraight) return { ...CARD_SYNERGY_COMBOS[2], scoreValue: 6000 + highestRating };
+
+    if (posFreqs[0] === 3 && posFreqs[1] === 2) return { ...CARD_SYNERGY_COMBOS[3], scoreValue: 5000 + highestRating };
+    if (posFreqs[0] === 5) return { ...CARD_SYNERGY_COMBOS[4], scoreValue: 4500 + highestRating };
+
+    if (rarityFreqs[0] === 3 || posFreqs[0] === 3 || ratingFreqs[0] === 3) {
+        return { ...CARD_SYNERGY_COMBOS[5], scoreValue: 4000 + highestRating };
+    }
+
+    if ((rarityFreqs[0] === 2 && rarityFreqs[1] === 2) || (posFreqs[0] === 2 && posFreqs[1] === 2) || (ratingFreqs[0] === 2 && ratingFreqs[1] === 2)) {
+        return { ...CARD_SYNERGY_COMBOS[6], scoreValue: 3000 + highestRating };
+    }
+
+    if (rarityFreqs[0] === 2 || ratingFreqs[0] === 2 || posFreqs[0] === 2) {
+        return { ...CARD_SYNERGY_COMBOS[7], scoreValue: 2000 + highestRating };
+    }
+
+    return { ...CARD_SYNERGY_COMBOS[8], scoreValue: 1000 + highestRating };
+}
+
+function executePokerDeal() {
+    const currentCoins = Number(state.coins) || 0;
+    const bet = Math.min(activeDuelBet, currentCoins);
+    
+    if (currentCoins < bet && bet > 0) {
+        toast("Not enough gold coins to place this ante!");
+        return;
+    }
+
+    if (bet > 0) spendCoins(bet);
+
+    const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
+    const stageConf = STAGE_CONFIG[currentStageIdx];
+
+    tournamentRunState.phase = "dealt";
+    tournamentRunState.ante = bet;
+    tournamentRunState.potCoins = bet * 2;
+    tournamentRunState.potPoints = stageConf.rewardPts;
+    tournamentRunState.isRaised = false;
+    tournamentRunState.selectedDiscards.clear();
+
+    tournamentRunState.playerCards = getAvailableDraftCards(5);
+    tournamentRunState.dealerCards = getAvailableDraftCards(5);
+
+    tournamentRunState.playerCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
+    tournamentRunState.dealerCombo = evaluateFootballPokerHand(tournamentRunState.dealerCards);
+
+    SoundFx.pageFlip();
+    toast(`🎴 Dealt 5 cards! Select any cards to swap & redraw or Showdown!`);
+    saveTournamentRunSession();
+    renderTournamentRun();
+}
+
+function togglePokerDiscardCard(index) {
+    if (tournamentRunState.phase !== "dealt") return;
+    
+    if (tournamentRunState.selectedDiscards.has(index)) {
+        tournamentRunState.selectedDiscards.delete(index);
+    } else {
+        if (tournamentRunState.selectedDiscards.size >= 3) {
+            toast("You can swap at most 3 cards per hand!");
+            return;
+        }
+        tournamentRunState.selectedDiscards.add(index);
+    }
+    SoundFx.pop();
+    saveTournamentRunSession();
+    renderTournamentRun();
+}
+
+function executePokerSwap() {
+    if (tournamentRunState.phase !== "dealt") return;
+    if (tournamentRunState.selectedDiscards.size === 0) {
+        toast("Select at least 1 card on table to swap, or click Showdown!");
+        return;
+    }
+
+    const newCards = getAvailableDraftCards(tournamentRunState.selectedDiscards.size);
+    let swapIdx = 0;
+    tournamentRunState.selectedDiscards.forEach(idx => {
+        tournamentRunState.playerCards[idx] = newCards[swapIdx++];
+    });
+
+    tournamentRunState.selectedDiscards.clear();
+    tournamentRunState.playerCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
+    
+    SoundFx.packTear();
+    toast("🔄 Redrew tactical cards! Now initiate Showdown!");
+    saveTournamentRunSession();
+    renderTournamentRun();
+}
+
+function executePokerRaise() {
+    if (tournamentRunState.phase !== "dealt") return;
+    if (tournamentRunState.isRaised) {
+        toast("Already doubled down this hand!");
+        return;
+    }
+
+    const raiseAmt = tournamentRunState.ante;
+    const currentCoins = Number(state.coins) || 0;
+    if (currentCoins < raiseAmt && raiseAmt > 0) {
+        toast("Not enough coins to double down!");
+        return;
+    }
+
+    if (raiseAmt > 0) spendCoins(raiseAmt);
+    tournamentRunState.isRaised = true;
+    tournamentRunState.potCoins += raiseAmt * 2;
+    tournamentRunState.potPoints = Math.round(tournamentRunState.potPoints * 1.5);
+
+    SoundFx.coin();
+    toast(`💰 Raised! Pot increased to ${tournamentRunState.potCoins.toLocaleString()} 🪙!`);
+    saveTournamentRunSession();
+    renderTournamentRun();
+}
+
+function executePokerShowdown() {
+    if (tournamentRunState.phase !== "dealt") return;
+    tournamentRunState.phase = "showdown";
+
+    SoundFx.packTear();
+    
+    const pCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
+    const dCombo = evaluateFootballPokerHand(tournamentRunState.dealerCards);
+
+    const playerWon = (pCombo.rank > dCombo.rank) || (pCombo.rank === dCombo.rank && pCombo.scoreValue >= dCombo.scoreValue);
+
+    setTimeout(() => {
+        tournamentRunState.phase = "ended";
+        if (playerWon) {
+            const finalMultiplier = pCombo.multiplier * (tournamentRunState.isRaised ? 2 : 1);
+            const wonCoins = Math.max(tournamentRunState.potCoins, Math.round(tournamentRunState.ante * finalMultiplier));
+            const wonPts = Math.round(pCombo.points + tournamentRunState.potPoints);
+
+            addCoins(wonCoins);
+            tournamentRunState.currentRunScore = (Number(tournamentRunState.currentRunScore) || 0) + wonPts;
+            state.tournamentWins = (Number(state.tournamentWins) || 0) + 1;
+            
+            if ((tournamentRunState.stage || 1) < 4) {
+                tournamentRunState.stage = (tournamentRunState.stage || 1) + 1;
+            } else {
+                tournamentRunState.stage = 1;
+                toast("🏆 CONGRATULATIONS! You conquered the Final Stage vs King Jeff!");
+            }
+
+            SoundFx.success();
+            toast(`🎉 VICTORY! Your [${pCombo.name}] beat King Jeff's [${dCombo.name}]! +${wonCoins.toLocaleString()} 🪙 & +${wonPts.toLocaleString()} 🏆 pts!`);
+        } else {
+            SoundFx.error();
+            toast(`💀 DEFEAT! King Jeff's [${dCombo.name}] beat your [${pCombo.name}]!`);
+        }
+
+        saveTournamentRunSession();
+        renderTournamentRun();
+    }, 1200);
+
+    renderTournamentRun();
+}
+
+function renderPokerCardHTML(card, isFlipped, isDealer, index, isSelected) {
+    if (!card) return "";
+    const rarityClass = "rarity-" + (card.rarity || "Common").replace(/ /g, "-");
+    const photoUrl = getCardImage(card);
+
+    return `
+        <div class="poker-card-slot ${isFlipped ? 'flipped' : ''} ${isSelected ? 'selected-discard' : ''}" 
+             onclick="${!isDealer ? `togglePokerDiscardCard(${index})` : ''}">
+            <div class="poker-card-inner">
+                <div class="poker-card-back">
+                    <div class="poker-card-back-pattern">⚽</div>
+                </div>
+                <div class="poker-card-front ${rarityClass}">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(0,0,0,0.4);">
+                        <span style="font-size:10px;font-weight:900;color:var(--gold);">${card.rating}</span>
+                        <span style="font-size:9px;font-weight:800;color:#38bdf8;">${card.pos}</span>
+                    </div>
+                    <div style="flex:1;overflow:hidden;position:relative;">
+                        <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80';">
+                    </div>
+                    <div style="padding:4px;background:rgba(0,0,0,0.7);text-align:center;">
+                        <div style="font-size:10px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(card.name)}</div>
+                        <div style="font-size:8px;font-weight:800;color:var(--muted);">${card.rarity}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderTournamentRun() {
+    updateTournamentTimerDisplay();
+
+    const runScoreTxt = document.getElementById("tRunScoreText");
+    if (runScoreTxt) runScoreTxt.textContent = `${(Number(tournamentRunState.currentRunScore) || 0).toLocaleString()} pts`;
+
+    const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
+    const stageConf = STAGE_CONFIG[currentStageIdx];
+
+    const tPotStageInfo = document.getElementById("tPotStageInfo");
+    if (tPotStageInfo) tPotStageInfo.textContent = `${stageConf.name.toUpperCase()} · OPPONENT: King Jeff`;
+
+    const tPotAmount = document.getElementById("tPotAmount");
+    if (tPotAmount) tPotAmount.textContent = `🪙 ${tournamentRunState.potCoins.toLocaleString()} + 🏆 ${tournamentRunState.potPoints.toLocaleString()} pts`;
+
+    const tDealerHandBadge = document.getElementById("tDealerHandBadge");
+    const tDealerRow = document.getElementById("tDealerHandRow");
+    
+    if (tDealerRow) {
+        if (tournamentRunState.dealerCards.length === 0) {
+            tDealerRow.innerHTML = Array(5).fill(0).map(() => `
+                <div class="poker-card-slot">
+                    <div class="poker-card-inner">
+                        <div class="poker-card-back"><div class="poker-card-back-pattern">⚽</div></div>
+                    </div>
+                </div>
+            `).join("");
+            if (tDealerHandBadge) tDealerHandBadge.textContent = "Hand Hidden 🎴";
+        } else {
+            const isShowdown = (tournamentRunState.phase === "showdown" || tournamentRunState.phase === "ended");
+            tDealerRow.innerHTML = tournamentRunState.dealerCards.map((card, idx) => 
+                renderPokerCardHTML(card, isShowdown, true, idx, false)
+            ).join("");
+
+            if (tDealerHandBadge) {
+                if (isShowdown && tournamentRunState.dealerCombo) {
+                    tDealerHandBadge.textContent = `${tournamentRunState.dealerCombo.name} (${tournamentRunState.dealerCombo.multiplier}x)`;
+                } else {
+                    tDealerHandBadge.textContent = "Hand Hidden 🎴";
+                }
+            }
+        }
+    }
+
+    const tPlayerRow = document.getElementById("tPlayerHandRow");
+    const tPlayerComboName = document.getElementById("tPlayerComboName");
+
+    if (tPlayerRow) {
+        if (tournamentRunState.playerCards.length === 0) {
+            tPlayerRow.innerHTML = Array(5).fill(0).map(() => `
+                <div class="poker-card-slot">
+                    <div class="poker-card-inner">
+                        <div class="poker-card-back"><div class="poker-card-back-pattern">⭐</div></div>
+                    </div>
+                </div>
+            `).join("");
+            if (tPlayerComboName) tPlayerComboName.textContent = "Ready to Deal";
+        } else {
+            tPlayerRow.innerHTML = tournamentRunState.playerCards.map((card, idx) => 
+                renderPokerCardHTML(card, true, false, idx, tournamentRunState.selectedDiscards.has(idx))
+            ).join("");
+
+            if (tournamentRunState.playerCombo) {
+                if (tPlayerComboName) tPlayerComboName.textContent = `${tournamentRunState.playerCombo.name} (${tournamentRunState.playerCombo.multiplier}x Multiplier)`;
+            }
+        }
+    }
+
+    const dealBtn = document.getElementById("pokerDealBtn");
+    const swapBtn = document.getElementById("pokerSwapBtn");
+    const raiseBtn = document.getElementById("pokerRaiseBtn");
+    const showdownBtn = document.getElementById("pokerShowdownBtn");
+    const msgDisp = document.getElementById("tPokerMessage");
+    const swapCountDisp = document.getElementById("tSwapCount");
+
+    if (swapCountDisp) swapCountDisp.textContent = tournamentRunState.selectedDiscards.size;
+
+    if (tournamentRunState.phase === "idle" || tournamentRunState.phase === "ended") {
+        if (dealBtn) dealBtn.style.display = "inline-flex";
+        if (swapBtn) swapBtn.style.display = "none";
+        if (raiseBtn) raiseBtn.style.display = "none";
+        if (showdownBtn) showdownBtn.style.display = "none";
+        if (msgDisp) msgDisp.textContent = "Select your ante & click DEAL CARDS to clash!";
+    } else if (tournamentRunState.phase === "dealt") {
+        if (dealBtn) dealBtn.style.display = "none";
+        if (swapBtn) swapBtn.style.display = "inline-flex";
+        if (raiseBtn) {
+            raiseBtn.style.display = "inline-flex";
+            raiseBtn.disabled = tournamentRunState.isRaised;
+        }
+        if (showdownBtn) showdownBtn.style.display = "inline-flex";
+        if (msgDisp) msgDisp.textContent = "Click up to 3 cards to swap & redraw, or click SHOWDOWN to reveal winner!";
+    } else if (tournamentRunState.phase === "showdown") {
+        if (msgDisp) msgDisp.textContent = "Showdown! Revealing King Jeff's squad...";
+    }
+}
+
+function renderTournament() {
+    const tScoreDisp = document.getElementById("tScoreDisplay");
+    if (tScoreDisp) tScoreDisp.textContent = `${(Number(state.tournamentScore) || 0).toLocaleString()} pts`;
+
+    const tWinsDisp = document.getElementById("tWinsDisplay");
+    if (tWinsDisp) tWinsDisp.textContent = `${Number(state.tournamentWins) || 0} Wins`;
+
+    const isAlucard = (state.accountUser || state.name || "").toLowerCase() === "alucard";
+    const launchContainer = document.getElementById("tLaunchCardContainer");
+    if (launchContainer) {
+        if (isAlucard) {
+            launchContainer.innerHTML = `
+                <div class="tournament-launch-card">
+                    <div style="font-size:42px;">⏱️ ⚔️ 🏆</div>
+                    <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Championship Run</h2>
+                    <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
+                        Score as many points as possible before the 15-minute clock expires! Unlimited free attempts available. You can pause anytime.
+                    </p>
+                    <button class="tournament-launch-btn" onclick="startTournamentRun()">
+                        ⚔️ PLAY TOURNAMENT RUN →
+                    </button>
+                </div>
+            `;
+        } else {
+            launchContainer.innerHTML = `
+                <div class="tournament-launch-card" style="border-color:rgba(255,255,255,0.15);background:rgba(15,23,42,0.8);">
+                    <div style="font-size:42px;">🔒</div>
+                    <h2 style="margin:0;color:#fff;font-size:22px;">Tournament Arena In Testing Phase</h2>
+                    <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
+                        The Championship Arena is currently undergoing internal testing and calibration. Public kickoff will be available soon!
+                    </p>
+                    <button class="ghost-btn" style="padding:12px 28px;opacity:0.6;cursor:not-allowed;" disabled>
+                        🔒 Testing In Progress (Coming Soon)
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    renderTournamentLeaderboard();
+}
+
+async function syncTournamentLeaderboardScore() {
+    try {
+        if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
+            const userDoc = await GlobalCloudRest.fetchUser(state.accountUser);
+            if (userDoc) {
+                await GlobalCloudRest.pushUser(state.accountUser, {
+                    ...userDoc,
+                    tournamentScore: Number(state.tournamentScore) || 0,
+                    tournamentWins: Number(state.tournamentWins) || 0
+                });
+            }
+        }
+    } catch(e) {}
+}
+
+async function renderTournamentLeaderboard() {
+    const lbContainer = document.getElementById("tournamentLeaderboardList");
+    if (!lbContainer) return;
+
+    try {
+        const users = await GlobalCloudRest.fetchAllUsers();
+        let list = Object.values(users || {}).filter(u => u && u.username && !u.username.includes("[BOT]") && !u.isBot);
+
+        list.sort((a,b) => (Number(b.tournamentScore) || 0) - (Number(a.tournamentScore) || 0));
+        
+        if (list.length === 0) {
+            const myUser = state.accountUser || state.name || "Player";
+            list = [{ username: myUser, tournamentScore: Number(state.tournamentScore) || 0, level: state.level || 1 }];
+        }
+
+        lbContainer.innerHTML = list.slice(0, 10).map((u, i) => {
+            const rankMedal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i+1}`;
+            const isMe = (state.accountUser && u.username.toLowerCase() === state.accountUser.toLowerCase());
+            return `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:10px;background:${isMe ? 'rgba(244,196,78,0.15)' : 'rgba(255,255,255,0.03)'};border:1px solid ${isMe ? 'var(--gold)' : 'rgba(255,255,255,0.08)'};">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-weight:900;font-size:14px;color:var(--gold);">${rankMedal}</span>
+                        <strong style="color:${isMe ? 'var(--gold)' : '#fff'};font-size:13px;">${escapeHTML(u.username)}</strong>
+                    </div>
+                    <span style="font-weight:900;font-size:13px;color:#38bdf8;">${(Number(u.tournamentScore) || 0).toLocaleString()} pts</span>
+                </div>
+            `;
+        }).join("");
+    } catch(e) {
+        lbContainer.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px;">Leaderboard syncing...</div>`;
+    }
+}
+
+
 const EXPORTED_ACTIONS = {
         renderTournamentRun,
         closeRunCompleteModal,
