@@ -9334,6 +9334,7 @@ function showPage(pageId, skipScroll = false) {
     if (pageId === "shop") renderShop();
     if (pageId === "settings") renderActiveDevices();
     if (pageId === "missions" && typeof renderMissions === "function") renderMissions();
+    if (pageId === "tournament") renderTournament();
 
     if (!skipScroll) {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -9416,7 +9417,506 @@ document.addEventListener("dragstart", function(e) {
     // =========================================================
     // GLOBAL ACTION ATTACHMENT & WINDOW BRIDGE
     // =========================================================
-    const EXPORTED_ACTIONS = {
+    
+/* =========================================================
+   FOOTBALL CARD POKER DUEL ARENA ENGINE (BALATRO & POKER HYBRID)
+   ========================================================= */
+
+const POKER_COMBOS = [
+    { name: "Royal Squad", rank: 8, multiplier: 50, points: 10000, desc: "5 cards with 95+ OVR Rating" },
+    { name: "Synergy Flush", rank: 7, multiplier: 20, points: 5000, desc: "5 cards of the exact same Rarity" },
+    { name: "Rating Straight", rank: 6, multiplier: 15, points: 3500, desc: "5 consecutive card ratings" },
+    { name: "Full Team", rank: 5, multiplier: 12, points: 2500, desc: "3 cards of one Position + 2 of another" },
+    { name: "Position Flush", rank: 4.5, multiplier: 10, points: 2000, desc: "5 cards sharing the same Tactical Sector" },
+    { name: "Triple Threat", rank: 4, multiplier: 5, points: 1200, desc: "3 cards of same Rarity or Position" },
+    { name: "Dual Formation", rank: 3, multiplier: 3, points: 600, desc: "Two pairs of matching Rarities or Positions" },
+    { name: "Star Pair", rank: 2, multiplier: 1.5, points: 300, desc: "2 cards with matching Rarity or Rating" },
+    { name: "High OVR Card", rank: 1, multiplier: 1, points: 100, desc: "Highest individual card rating" }
+];
+
+const STAGE_CONFIG = [
+    { stage: 1, name: "Stage 1: Group Stage", opponent: "Tactician Novice AI", targetOvr: 82, rewardPts: 500 },
+    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "Continental Rivals AI", targetOvr: 88, rewardPts: 1200 },
+    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "World Titans AI", targetOvr: 93, rewardPts: 3000 },
+    { stage: 4, name: "Stage 4: Grand Final", opponent: "Grand Tactician Boss AI", targetOvr: 97, rewardPts: 8000 }
+];
+
+let activePokerBet = 100;
+let pokerDuelState = {
+    stage: 1,
+    phase: "idle", // "idle" | "dealt" | "showdown" | "ended"
+    ante: 100,
+    potCoins: 0,
+    potPoints: 0,
+    playerCards: [],
+    dealerCards: [],
+    selectedDiscards: new Set(),
+    isRaised: false,
+    playerCombo: null,
+    dealerCombo: null
+};
+
+function setPokerBet(amount) {
+    if (pokerDuelState.phase === "dealt") {
+        toast("Hand in progress! Complete this round first.");
+        return;
+    }
+    const currentCoins = Number(state.coins) || 0;
+    if (amount === "allin") {
+        activePokerBet = Math.max(100, Math.min(currentCoins, 500000));
+    } else {
+        activePokerBet = Number(amount) || 100;
+    }
+    
+    document.querySelectorAll(".poker-chip-btn").forEach(btn => {
+        const bVal = btn.getAttribute("data-bet");
+        btn.classList.toggle("active", (bVal === String(amount) || (amount === "allin" && bVal === "allin")));
+    });
+    
+    SoundFx.pop();
+    renderTournamentPoker();
+}
+
+function getAvailableDraftCards(count = 5) {
+    let pool = Array.isArray(state.cards) && state.cards.length >= 5 ? [...state.cards] : [];
+    if (pool.length < 5) {
+        // Fallback to drafting from global index cards if collection is small
+        pool = [];
+        if (typeof PACKS !== "undefined") {
+            Object.values(PACKS).forEach(p => {
+                if (p.cards) pool.push(...p.cards);
+            });
+        }
+    }
+    // Shuffle pool and take count
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count).map(c => ({
+        ...c,
+        rating: Number(c.rating || c.ovr || 80),
+        rarity: c.rarity || "Common",
+        pos: c.pos || c.position || "ST",
+        name: c.name || "Player"
+    }));
+}
+
+function evaluateFootballPokerHand(cards) {
+    if (!cards || cards.length < 5) return POKER_COMBOS[POKER_COMBOS.length - 1];
+    
+    const ratings = cards.map(c => Number(c.rating) || 80).sort((a,b) => a - b);
+    const highestRating = Math.max(...ratings);
+    const rarities = cards.map(c => c.rarity);
+    const positions = cards.map(c => c.pos);
+
+    // Count frequencies
+    const rarityCounts = {};
+    rarities.forEach(r => rarityCounts[r] = (rarityCounts[r] || 0) + 1);
+    const rarityFreqs = Object.values(rarityCounts).sort((a,b) => b - a);
+
+    const posCounts = {};
+    positions.forEach(p => posCounts[p] = (posCounts[p] || 0) + 1);
+    const posFreqs = Object.values(posCounts).sort((a,b) => b - a);
+
+    const ratingCounts = {};
+    ratings.forEach(r => ratingCounts[r] = (ratingCounts[r] || 0) + 1);
+    const ratingFreqs = Object.values(ratingCounts).sort((a,b) => b - a);
+
+    // 1. Royal Squad (5 cards with 95+ OVR)
+    const isRoyal = ratings.every(r => r >= 95);
+    if (isRoyal) return { ...POKER_COMBOS[0], scoreValue: 8000 + highestRating };
+
+    // 2. Synergy Flush (5 cards same rarity)
+    if (rarityFreqs[0] === 5) return { ...POKER_COMBOS[1], scoreValue: 7000 + highestRating };
+
+    // 3. Rating Straight (5 consecutive ratings)
+    let isStraight = true;
+    for (let i = 0; i < 4; i++) {
+        if (ratings[i+1] - ratings[i] !== 1) {
+            isStraight = false;
+            break;
+        }
+    }
+    if (isStraight) return { ...POKER_COMBOS[2], scoreValue: 6000 + highestRating };
+
+    // 4. Full Team (3 matching position + 2 matching position)
+    if (posFreqs[0] === 3 && posFreqs[1] === 2) return { ...POKER_COMBOS[3], scoreValue: 5000 + highestRating };
+
+    // 5. Position Flush (all 5 matching position)
+    if (posFreqs[0] === 5) return { ...POKER_COMBOS[4], scoreValue: 4500 + highestRating };
+
+    // 6. Triple Threat (3 same rarity or 3 same position or 3 same rating)
+    if (rarityFreqs[0] === 3 || posFreqs[0] === 3 || ratingFreqs[0] === 3) {
+        return { ...POKER_COMBOS[5], scoreValue: 4000 + highestRating };
+    }
+
+    // 7. Dual Formation (Two Pairs)
+    if (rarityFreqs[0] === 2 && rarityFreqs[1] === 2 || (posFreqs[0] === 2 && posFreqs[1] === 2) || (ratingFreqs[0] === 2 && ratingFreqs[1] === 2)) {
+        return { ...POKER_COMBOS[6], scoreValue: 3000 + highestRating };
+    }
+
+    // 8. Star Pair (One Pair)
+    if (rarityFreqs[0] === 2 || ratingFreqs[0] === 2 || posFreqs[0] === 2) {
+        return { ...POKER_COMBOS[7], scoreValue: 2000 + highestRating };
+    }
+
+    // 9. High OVR Card
+    return { ...POKER_COMBOS[8], scoreValue: 1000 + highestRating };
+}
+
+function executePokerDeal() {
+    const currentCoins = Number(state.coins) || 0;
+    const bet = Math.min(activePokerBet, currentCoins);
+    
+    if (currentCoins < bet && bet > 0) {
+        toast("Not enough gold coins to place this ante!");
+        return;
+    }
+
+    if (bet > 0) {
+        spendCoins(bet);
+    }
+
+    const currentStageIdx = Math.min(3, (state.tournamentStage || 1) - 1);
+    const stageConf = STAGE_CONFIG[currentStageIdx];
+
+    pokerDuelState.stage = currentStageIdx + 1;
+    pokerDuelState.phase = "dealt";
+    pokerDuelState.ante = bet;
+    pokerDuelState.potCoins = bet * 2;
+    pokerDuelState.potPoints = stageConf.rewardPts;
+    pokerDuelState.isRaised = false;
+    pokerDuelState.selectedDiscards.clear();
+
+    // Deal 5 cards for player and 5 for dealer
+    pokerDuelState.playerCards = getAvailableDraftCards(5);
+    pokerDuelState.dealerCards = getAvailableDraftCards(5);
+
+    pokerDuelState.playerCombo = evaluateFootballPokerHand(pokerDuelState.playerCards);
+    pokerDuelState.dealerCombo = evaluateFootballPokerHand(pokerDuelState.dealerCards);
+
+    SoundFx.pageFlip();
+    toast(`🎴 Dealt 5 cards! Select any cards to swap & redraw or Showdown!`);
+    renderTournamentPoker();
+}
+
+function togglePokerDiscardCard(index) {
+    if (pokerDuelState.phase !== "dealt") return;
+    
+    if (pokerDuelState.selectedDiscards.has(index)) {
+        pokerDuelState.selectedDiscards.delete(index);
+    } else {
+        if (pokerDuelState.selectedDiscards.size >= 3) {
+            toast("You can swap at most 3 cards per hand!");
+            return;
+        }
+        pokerDuelState.selectedDiscards.add(index);
+    }
+    SoundFx.pop();
+    renderTournamentPoker();
+}
+
+function executePokerSwap() {
+    if (pokerDuelState.phase !== "dealt") return;
+    if (pokerDuelState.selectedDiscards.size === 0) {
+        toast("Select at least 1 card on table to swap, or click Showdown!");
+        return;
+    }
+
+    const newCards = getAvailableDraftCards(pokerDuelState.selectedDiscards.size);
+    let swapIdx = 0;
+    pokerDuelState.selectedDiscards.forEach(idx => {
+        pokerDuelState.playerCards[idx] = newCards[swapIdx++];
+    });
+
+    pokerDuelState.selectedDiscards.clear();
+    pokerDuelState.playerCombo = evaluateFootballPokerHand(pokerDuelState.playerCards);
+    
+    SoundFx.packTear();
+    toast("🔄 Redrew tactical cards! Now initiate Showdown!");
+    renderTournamentPoker();
+}
+
+function executePokerRaise() {
+    if (pokerDuelState.phase !== "dealt") return;
+    if (pokerDuelState.isRaised) {
+        toast("Already raised this round!");
+        return;
+    }
+
+    const raiseAmt = pokerDuelState.ante;
+    const currentCoins = Number(state.coins) || 0;
+    if (currentCoins < raiseAmt && raiseAmt > 0) {
+        toast("Not enough coins to double down!");
+        return;
+    }
+
+    if (raiseAmt > 0) spendCoins(raiseAmt);
+    pokerDuelState.isRaised = true;
+    pokerDuelState.potCoins += raiseAmt * 2;
+    pokerDuelState.potPoints = Math.round(pokerDuelState.potPoints * 1.5);
+
+    SoundFx.coin();
+    toast(`💰 Raised! Pot increased to ${pokerDuelState.potCoins.toLocaleString()} 🪙!`);
+    renderTournamentPoker();
+}
+
+function executePokerShowdown() {
+    if (pokerDuelState.phase !== "dealt") return;
+    pokerDuelState.phase = "showdown";
+
+    SoundFx.packTear();
+    
+    // Evaluate winners
+    const pCombo = evaluateFootballPokerHand(pokerDuelState.playerCards);
+    const dCombo = evaluateFootballPokerHand(pokerDuelState.dealerCards);
+
+    const playerWon = (pCombo.rank > dCombo.rank) || (pCombo.rank === dCombo.rank && pCombo.scoreValue >= dCombo.scoreValue);
+
+    setTimeout(() => {
+        pokerDuelState.phase = "ended";
+        if (playerWon) {
+            const finalMultiplier = pCombo.multiplier * (pokerDuelState.isRaised ? 2 : 1);
+            const wonCoins = Math.max(pokerDuelState.potCoins, Math.round(pokerDuelState.ante * finalMultiplier));
+            const wonPts = Math.round(pCombo.points + pokerDuelState.potPoints);
+
+            addCoins(wonCoins);
+            state.tournamentScore = (Number(state.tournamentScore) || 0) + wonPts;
+            state.tournamentWins = (Number(state.tournamentWins) || 0) + 1;
+            
+            // Advance stage
+            if ((state.tournamentStage || 1) < 4) {
+                state.tournamentStage = (state.tournamentStage || 1) + 1;
+            } else {
+                state.tournamentStage = 1; // Champion loop
+                toast("🏆 CONGRATULATIONS! You conquered the Tournament Championship Bracket!");
+            }
+
+            SoundFx.success();
+            toast(`🎉 VICTORY! Your [${pCombo.name}] beat Dealer's [${dCombo.name}]! +${wonCoins.toLocaleString()} 🪙 & +${wonPts.toLocaleString()} 🏆 pts!`);
+        } else {
+            SoundFx.error();
+            toast(`💀 DEFEAT! Dealer's [${dCombo.name}] beat your [${pCombo.name}]!`);
+        }
+
+        saveGame();
+        renderTournamentPoker();
+        syncTournamentLeaderboardScore();
+    }, 1200);
+
+    renderTournamentPoker();
+}
+
+function renderPokerCardHTML(card, isFlipped, isDealer, index, isSelected) {
+    if (!card) return "";
+    const rarityClass = "rarity-" + (card.rarity || "Common").replace(/ /g, "-");
+    const photoUrl = getCardImage(card);
+
+    return `
+        <div class="poker-card-slot ${isFlipped ? 'flipped' : ''} ${isSelected ? 'selected-discard' : ''}" 
+             onclick="${!isDealer ? `togglePokerDiscardCard(${index})` : ''}">
+            <div class="poker-card-inner">
+                <div class="poker-card-back">
+                    <div class="poker-card-back-pattern">⚽</div>
+                </div>
+                <div class="poker-card-front ${rarityClass}">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(0,0,0,0.4);">
+                        <span style="font-size:10px;font-weight:900;color:var(--gold);">${card.rating}</span>
+                        <span style="font-size:9px;font-weight:800;color:#38bdf8;">${card.pos}</span>
+                    </div>
+                    <div style="flex:1;overflow:hidden;position:relative;">
+                        <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80';">
+                    </div>
+                    <div style="padding:4px;background:rgba(0,0,0,0.7);text-align:center;">
+                        <div style="font-size:10px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(card.name)}</div>
+                        <div style="font-size:8px;font-weight:800;color:var(--muted);">${card.rarity}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderTournamentPoker() {
+    // Stats Header
+    const tScoreDisp = document.getElementById("tScoreDisplay");
+    if (tScoreDisp) tScoreDisp.textContent = `${(Number(state.tournamentScore) || 0).toLocaleString()} pts`;
+
+    const currentStageIdx = Math.min(3, (state.tournamentStage || 1) - 1);
+    const stageConf = STAGE_CONFIG[currentStageIdx];
+
+    const tStageDisp = document.getElementById("tStageDisplay");
+    if (tStageDisp) tStageDisp.textContent = stageConf.name;
+
+    const tOppDisp = document.getElementById("tOpponentDisplay");
+    if (tOppDisp) tOppDisp.textContent = stageConf.opponent;
+
+    const tWinsDisp = document.getElementById("tWinsDisplay");
+    if (tWinsDisp) tWinsDisp.textContent = `${Number(state.tournamentWins) || 0} Wins`;
+
+    // Center Pot & Info
+    const tPotStageInfo = document.getElementById("tPotStageInfo");
+    if (tPotStageInfo) tPotStageInfo.textContent = `${stageConf.name.toUpperCase()} · OPPONENT: ${stageConf.opponent}`;
+
+    const tPotAmount = document.getElementById("tPotAmount");
+    if (tPotAmount) tPotAmount.textContent = `🪙 ${pokerDuelState.potCoins.toLocaleString()} + 🏆 ${pokerDuelState.potPoints.toLocaleString()} pts`;
+
+    const tDealerName = document.getElementById("tDealerName");
+    if (tDealerName) tDealerName.textContent = stageConf.opponent;
+
+    // Dealer Zone
+    const tDealerHandBadge = document.getElementById("tDealerHandBadge");
+    const tDealerRow = document.getElementById("tDealerHandRow");
+    
+    if (tDealerRow) {
+        if (pokerDuelState.dealerCards.length === 0) {
+            tDealerRow.innerHTML = Array(5).fill(0).map(() => `
+                <div class="poker-card-slot">
+                    <div class="poker-card-inner">
+                        <div class="poker-card-back"><div class="poker-card-back-pattern">⚽</div></div>
+                    </div>
+                </div>
+            `).join("");
+        } else {
+            const isShowdown = (pokerDuelState.phase === "showdown" || pokerDuelState.phase === "ended");
+            tDealerRow.innerHTML = pokerDuelState.dealerCards.map((card, idx) => 
+                renderPokerCardHTML(card, isShowdown, true, idx, false)
+            ).join("");
+
+            if (tDealerHandBadge) {
+                if (isShowdown && pokerDuelState.dealerCombo) {
+                    tDealerHandBadge.textContent = `${pokerDuelState.dealerCombo.name} (${pokerDuelState.dealerCombo.multiplier}x)`;
+                } else {
+                    tDealerHandBadge.textContent = "Hand Hidden 🎴";
+                }
+            }
+        }
+    }
+
+    // Player Zone
+    const tPlayerRow = document.getElementById("tPlayerHandRow");
+    const tPlayerComboName = document.getElementById("tPlayerComboName");
+    const tComboDisplay = document.getElementById("tComboDisplay");
+    const tComboMultiDisp = document.getElementById("tComboMultiplierDisplay");
+
+    if (tPlayerRow) {
+        if (pokerDuelState.playerCards.length === 0) {
+            tPlayerRow.innerHTML = Array(5).fill(0).map(() => `
+                <div class="poker-card-slot">
+                    <div class="poker-card-inner">
+                        <div class="poker-card-back"><div class="poker-card-back-pattern">⭐</div></div>
+                    </div>
+                </div>
+            `).join("");
+            if (tPlayerComboName) tPlayerComboName.textContent = "Ready to Deal";
+            if (tComboDisplay) tComboDisplay.textContent = "Ready";
+            if (tComboMultiDisp) tComboMultiDisp.textContent = "1x Multiplier";
+        } else {
+            tPlayerRow.innerHTML = pokerDuelState.playerCards.map((card, idx) => 
+                renderPokerCardHTML(card, true, false, idx, pokerDuelState.selectedDiscards.has(idx))
+            ).join("");
+
+            if (pokerDuelState.playerCombo) {
+                if (tPlayerComboName) tPlayerComboName.textContent = `${pokerDuelState.playerCombo.name} (${pokerDuelState.playerCombo.multiplier}x Multiplier)`;
+                if (tComboDisplay) tComboDisplay.textContent = pokerDuelState.playerCombo.name;
+                if (tComboMultiDisp) tComboMultiDisp.textContent = `${pokerDuelState.playerCombo.multiplier}x Payout Multiplier`;
+            }
+        }
+    }
+
+    // Action Buttons Visibility
+    const dealBtn = document.getElementById("pokerDealBtn");
+    const swapBtn = document.getElementById("pokerSwapBtn");
+    const raiseBtn = document.getElementById("pokerRaiseBtn");
+    const showdownBtn = document.getElementById("pokerShowdownBtn");
+    const msgDisp = document.getElementById("tPokerMessage");
+    const swapCountDisp = document.getElementById("tSwapCount");
+
+    if (swapCountDisp) swapCountDisp.textContent = pokerDuelState.selectedDiscards.size;
+
+    if (pokerDuelState.phase === "idle" || pokerDuelState.phase === "ended") {
+        if (dealBtn) dealBtn.style.display = "inline-flex";
+        if (swapBtn) swapBtn.style.display = "none";
+        if (raiseBtn) raiseBtn.style.display = "none";
+        if (showdownBtn) showdownBtn.style.display = "none";
+        if (msgDisp) msgDisp.textContent = "Select your ante & click DEAL HAND to start the clash!";
+    } else if (pokerDuelState.phase === "dealt") {
+        if (dealBtn) dealBtn.style.display = "none";
+        if (swapBtn) swapBtn.style.display = "inline-flex";
+        if (raiseBtn) {
+            raiseBtn.style.display = "inline-flex";
+            raiseBtn.disabled = pokerDuelState.isRaised;
+        }
+        if (showdownBtn) showdownBtn.style.display = "inline-flex";
+        if (msgDisp) msgDisp.textContent = "Click up to 3 cards to swap & redraw, or click SHOWDOWN to reveal winner!";
+    } else if (pokerDuelState.phase === "showdown") {
+        if (msgDisp) msgDisp.textContent = "Showdown! Revealing dealer's hand...";
+    }
+
+    renderTournamentLeaderboard();
+}
+
+async function syncTournamentLeaderboardScore() {
+    try {
+        if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
+            const userDoc = await GlobalCloudRest.fetchUser(state.accountUser);
+            if (userDoc) {
+                await GlobalCloudRest.pushUser(state.accountUser, {
+                    ...userDoc,
+                    tournamentScore: Number(state.tournamentScore) || 0,
+                    tournamentWins: Number(state.tournamentWins) || 0
+                });
+            }
+        }
+    } catch(e) {}
+}
+
+async function renderTournamentLeaderboard() {
+    const lbContainer = document.getElementById("tournamentLeaderboardList");
+    if (!lbContainer) return;
+
+    try {
+        const users = await GlobalCloudRest.fetchAllUsers();
+        let list = Object.values(users || {}).filter(u => u && u.username && !u.username.includes("[BOT]") && !u.isBot);
+
+        // Sort by tournamentScore descending
+        list.sort((a,b) => (Number(b.tournamentScore) || 0) - (Number(a.tournamentScore) || 0));
+        
+        if (list.length === 0) {
+            // Include current player if valid
+            const myUser = state.accountUser || state.name || "Player";
+            list = [{ username: myUser, tournamentScore: Number(state.tournamentScore) || 0, level: state.level || 1 }];
+        }
+
+        lbContainer.innerHTML = list.slice(0, 10).map((u, i) => {
+            const rankMedal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i+1}`;
+            const isMe = (state.accountUser && u.username.toLowerCase() === state.accountUser.toLowerCase());
+            return `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:10px;background:${isMe ? 'rgba(244,196,78,0.15)' : 'rgba(255,255,255,0.03)'};border:1px solid ${isMe ? 'var(--gold)' : 'rgba(255,255,255,0.08)'};">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-weight:900;font-size:14px;color:var(--gold);">${rankMedal}</span>
+                        <strong style="color:${isMe ? 'var(--gold)' : '#fff'};font-size:13px;">${escapeHTML(u.username)}</strong>
+                    </div>
+                    <span style="font-weight:900;font-size:13px;color:#38bdf8;">${(Number(u.tournamentScore) || 0).toLocaleString()} pts</span>
+                </div>
+            `;
+        }).join("");
+    } catch(e) {
+        lbContainer.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px;">Leaderboard syncing...</div>`;
+    }
+}
+
+function renderTournament() {
+    renderTournamentPoker();
+}
+
+const EXPORTED_ACTIONS = {
+        renderTournamentLeaderboard,
+        renderTournamentPoker,
+        executePokerShowdown,
+        executePokerRaise,
+        executePokerSwap,
+        togglePokerDiscardCard,
+        executePokerDeal,
+        setPokerBet,
         openPack,
         openPackOdds,
         closePackOddsModal,
