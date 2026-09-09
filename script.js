@@ -8,7 +8,7 @@ const safeStorage = {
     getItem(key) {
         try {
             if (typeof window !== "undefined" && window.localStorage) {
-                return window.safeStorage.getItem(key);
+                return window.localStorage.getItem(key);
             }
         } catch(e) {}
         return null;
@@ -16,14 +16,14 @@ const safeStorage = {
     setItem(key, val) {
         try {
             if (typeof window !== "undefined" && window.localStorage) {
-                window.safeStorage.setItem(key, val);
+                window.localStorage.setItem(key, val);
             }
         } catch(e) {}
     },
     removeItem(key) {
         try {
             if (typeof window !== "undefined" && window.localStorage) {
-                window.safeStorage.removeItem(key);
+                window.localStorage.removeItem(key);
             }
         } catch(e) {}
     }
@@ -1151,14 +1151,15 @@ function loadGame() {
                 fresh.accountUser = savedSessionUser;
                 fresh.name = savedSessionUser;
             }
+            try { safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(fresh)); } catch(e) {}
             return fresh;
         }
 
         const saved = JSON.parse(raw);
         const activeAccountUser = saved.accountUser || savedSessionUser || "";
-        let activeName = saved.name;
-        if (!activeName || activeName === "Football Player" || activeName === "Player") {
-            activeName = saved.accountUser || fresh.name;
+        let activeName = saved.name || activeAccountUser || fresh.name;
+        if (activeName === "Football Player" || activeName === "Player") {
+            activeName = activeAccountUser || fresh.name;
         }
 
         const isAdminUser = (saved.accountUser || "").toLowerCase() === "alucard" || (activeName || "").toLowerCase() === "alucard" || !!saved.isGrantedAdmin;
@@ -1230,6 +1231,8 @@ function loadGame() {
 }
 
 let state = loadGame();
+window.state = state;
+window.getState = () => state;
 AntiCheat.signState(state);
 let currentMissionType = "hourly";
 let playStarted = Date.now();
