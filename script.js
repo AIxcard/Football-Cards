@@ -4753,7 +4753,7 @@ function initiateTradeWithSearchedUser() {
    ========================================================= */
 
 /* =========================================================
-   ROBLOX RAP VALUE SYSTEM (RECENT AVERAGE PRICE / CARD VALUE)
+   MARKET VALUE & RAP SYSTEM (RECENT AVERAGE PRICE)
    ========================================================= */
 
 function calculateCardRAP(card) {
@@ -5133,7 +5133,7 @@ async function blockIncomingTradeSender() {
     renderTradeHub();
 }
 
-// ROBLOX-STYLE LIVE TRADING ROOM CONTROLLER
+// LIVE CLOUD TRADING ROOM CONTROLLER
 async function openLiveTradeRoom(tradeId, partnerName, isSender) {
     activeLiveTradeSession = {
         tradeId: tradeId,
@@ -7692,11 +7692,17 @@ function renderTournament() {
 
     const tLbList = document.getElementById("tournamentLeaderboardList");
     if (tLbList) {
-        const rows = [
-            { rank: 1, name: "Alucard", title: "Owner", score: Math.max(state.stats.tournamentScore || 0, 780), isSelf: isAlucard },
-            { rank: 2, name: "ChampionStriker", title: "Master", score: 460, isSelf: false },
-            { rank: 3, name: "ApexTactician", title: "Veteran", score: 320, isSelf: false }
-        ];
+        const selfScore = Number(state.stats?.tournamentScore || 0);
+        const rows = [];
+        if (selfScore > 0 || isAlucard) {
+            rows.push({
+                rank: 1,
+                name: state.accountUser || state.name || "Player",
+                title: state.equippedTitle || "Challenger",
+                score: Math.max(selfScore, isAlucard ? 780 : selfScore),
+                isSelf: true
+            });
+        }
         tLbList.innerHTML = rows.map(r => `
             <div style="background:rgba(255,255,255,0.03);border:1px solid ${r.isSelf ? 'rgba(244,196,78,0.4)' : 'rgba(255,255,255,0.06)'};border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:8px;">
@@ -9371,7 +9377,9 @@ setInterval(() => {
     }
 
     tradePollerCounter++;
-    const pollThreshold = activeLiveTradeSession ? 1 : 2;
+    // Performance optimization: only poll live trades when in an active trade session or on the trade page
+    const isTradePageActive = document.getElementById("trade") && document.getElementById("trade").classList.contains("active-page");
+    const pollThreshold = activeLiveTradeSession ? 2 : (isTradePageActive ? 6 : 20);
     if (tradePollerCounter >= pollThreshold) {
         tradePollerCounter = 0;
         pollLiveTradeRequests();
