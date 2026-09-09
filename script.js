@@ -9418,11 +9418,12 @@ document.addEventListener("dragstart", function(e) {
     // GLOBAL ACTION ATTACHMENT & WINDOW BRIDGE
     // =========================================================
     
+
 /* =========================================================
-   FOOTBALL CARD POKER DUEL ARENA ENGINE (BALATRO & POKER HYBRID)
+   FOOTBALL CARD CHAMPIONSHIP DUEL ARENA (15-MIN TIMED RUNS)
    ========================================================= */
 
-const POKER_COMBOS = [
+const CARD_SYNERGY_COMBOS = [
     { name: "Royal Squad", rank: 8, multiplier: 50, points: 10000, desc: "5 cards with 95+ OVR Rating" },
     { name: "Synergy Flush", rank: 7, multiplier: 20, points: 5000, desc: "5 cards of the exact same Rarity" },
     { name: "Rating Straight", rank: 6, multiplier: 15, points: 3500, desc: "5 consecutive card ratings" },
@@ -9435,14 +9436,20 @@ const POKER_COMBOS = [
 ];
 
 const STAGE_CONFIG = [
-    { stage: 1, name: "Stage 1: Group Stage", opponent: "Tactician Novice AI", targetOvr: 82, rewardPts: 500 },
-    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "Continental Rivals AI", targetOvr: 88, rewardPts: 1200 },
-    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "World Titans AI", targetOvr: 93, rewardPts: 3000 },
-    { stage: 4, name: "Stage 4: Grand Final", opponent: "Grand Tactician Boss AI", targetOvr: 97, rewardPts: 8000 }
+    { stage: 1, name: "Stage 1: Group Stage", opponent: "King Jeff", targetOvr: 82, rewardPts: 500 },
+    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200 },
+    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000 },
+    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 97, rewardPts: 8000 }
 ];
 
-let activePokerBet = 100;
-let pokerDuelState = {
+const TOURNAMENT_RUN_STORAGE_KEY = "football_tcg_active_tournament_run";
+
+let tournamentRunState = {
+    active: false,
+    remainingSeconds: 900, // 15 minutes = 900 seconds
+    currentRunScore: 0,
+    isPaused: false,
+    lastTickTime: 0,
     stage: 1,
     phase: "idle", // "idle" | "dealt" | "showdown" | "ended"
     ante: 100,
@@ -9456,16 +9463,238 @@ let pokerDuelState = {
     dealerCombo: null
 };
 
+let activeDuelBet = 100;
+let tournamentTimerInterval = null;
+
+// Tab-switch / Refresh guard
+window.addEventListener("beforeunload", (e) => {
+    if (tournamentRunState && tournamentRunState.active && !tournamentRunState.isPaused) {
+        saveTournamentRunSession();
+        e.preventDefault();
+        e.returnValue = "You have an active Tournament Run in progress. Are you sure you want to leave?";
+        return e.returnValue;
+    }
+});
+
+function saveTournamentRunSession() {
+    if (!tournamentRunState.active) {
+        safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+        return;
+    }
+    const serializable = {
+        active: tournamentRunState.active,
+        remainingSeconds: tournamentRunState.remainingSeconds,
+        currentRunScore: tournamentRunState.currentRunScore,
+        isPaused: tournamentRunState.isPaused,
+        lastTickTime: Date.now(),
+        stage: tournamentRunState.stage,
+        phase: tournamentRunState.phase,
+        ante: tournamentRunState.ante,
+        potCoins: tournamentRunState.potCoins,
+        potPoints: tournamentRunState.potPoints,
+        playerCards: tournamentRunState.playerCards,
+        dealerCards: tournamentRunState.dealerCards,
+        selectedDiscards: Array.from(tournamentRunState.selectedDiscards),
+        isRaised: tournamentRunState.isRaised,
+        playerCombo: tournamentRunState.playerCombo,
+        dealerCombo: tournamentRunState.dealerCombo
+    };
+    safeStorage.setItem(TOURNAMENT_RUN_STORAGE_KEY, JSON.stringify(serializable));
+}
+
+function restoreTournamentRunSession() {
+    try {
+        const raw = safeStorage.getItem(TOURNAMENT_RUN_STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (!data || !data.active) return;
+
+        let elapsed = 0;
+        if (!data.isPaused && data.lastTickTime) {
+            elapsed = Math.floor((Date.now() - data.lastTickTime) / 1000);
+        }
+
+        const remaining = Math.max(0, data.remainingSeconds - elapsed);
+        if (remaining <= 0) {
+            safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+            return;
+        }
+
+        tournamentRunState = {
+            ...data,
+            remainingSeconds: remaining,
+            selectedDiscards: new Set(data.selectedDiscards || [])
+        };
+
+        // Open fullscreen arena
+        const arena = document.getElementById("tFullscreenArena");
+        if (arena) arena.classList.remove("hidden");
+
+        startTournamentTimerLoop();
+        renderTournamentRun();
+    } catch(e) {}
+}
+
+function startTournamentRun() {
+    tournamentRunState = {
+        active: true,
+        remainingSeconds: 900, // 15:00
+        currentRunScore: 0,
+        isPaused: false,
+        lastTickTime: Date.now(),
+        stage: 1,
+        phase: "idle",
+        ante: activeDuelBet,
+        potCoins: 0,
+        potPoints: 0,
+        playerCards: [],
+        dealerCards: [],
+        selectedDiscards: new Set(),
+        isRaised: false,
+        playerCombo: null,
+        dealerCombo: null
+    };
+
+    saveTournamentRunSession();
+
+    const arena = document.getElementById("tFullscreenArena");
+    if (arena) arena.classList.remove("hidden");
+
+    startTournamentTimerLoop();
+    renderTournamentRun();
+    SoundFx.success();
+    toast("🏆 15-Minute Championship Run Started! Beat King Jeff to set a high score!");
+}
+
+function startTournamentTimerLoop() {
+    if (tournamentTimerInterval) clearInterval(tournamentTimerInterval);
+    tournamentTimerInterval = setInterval(() => {
+        if (!tournamentRunState.active || tournamentRunState.isPaused) return;
+
+        tournamentRunState.remainingSeconds--;
+        tournamentRunState.lastTickTime = Date.now();
+
+        if (tournamentRunState.remainingSeconds <= 0) {
+            tournamentRunState.remainingSeconds = 0;
+            endTournamentRunTimeUp();
+            return;
+        }
+
+        updateTournamentTimerDisplay();
+        
+        // Save periodically
+        if (tournamentRunState.remainingSeconds % 5 === 0) {
+            saveTournamentRunSession();
+        }
+    }, 1000);
+    updateTournamentTimerDisplay();
+}
+
+function updateTournamentTimerDisplay() {
+    const timerText = document.getElementById("tRunTimerText");
+    const timerBadge = document.getElementById("tRunTimerBadge");
+    if (!timerText) return;
+
+    const sec = Math.max(0, tournamentRunState.remainingSeconds);
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    timerText.textContent = formatted;
+
+    if (timerBadge) {
+        timerBadge.classList.toggle("urgent", sec <= 120); // pulse when <= 2 minutes
+    }
+}
+
+function toggleTournamentPause() {
+    if (!tournamentRunState.active) return;
+    tournamentRunState.isPaused = !tournamentRunState.isPaused;
+    saveTournamentRunSession();
+
+    const pauseOverlay = document.getElementById("tPauseOverlay");
+    const pauseBtn = document.getElementById("tPauseRunBtn");
+
+    if (tournamentRunState.isPaused) {
+        if (pauseOverlay) pauseOverlay.classList.remove("hidden");
+        if (pauseBtn) pauseBtn.textContent = "▶️ Resume";
+        SoundFx.pop();
+    } else {
+        if (pauseOverlay) pauseOverlay.classList.add("hidden");
+        if (pauseBtn) pauseBtn.textContent = "⏸️ Pause";
+        tournamentRunState.lastTickTime = Date.now();
+        SoundFx.pop();
+    }
+}
+
+function promptLeaveTournamentRun() {
+    const modal = document.getElementById("tLeaveConfirmModal");
+    if (modal) modal.classList.remove("hidden");
+}
+
+function closeLeaveConfirmationModal() {
+    const modal = document.getElementById("tLeaveConfirmModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function confirmLeaveTournamentRun() {
+    closeLeaveConfirmationModal();
+    const pauseOverlay = document.getElementById("tPauseOverlay");
+    if (pauseOverlay) pauseOverlay.classList.add("hidden");
+
+    tournamentRunState.active = false;
+    if (tournamentTimerInterval) clearInterval(tournamentTimerInterval);
+    safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+
+    const arena = document.getElementById("tFullscreenArena");
+    if (arena) arena.classList.add("hidden");
+
+    toast("Tournament run closed. All permanent collection & coins are safe!");
+    renderTournament();
+}
+
+function endTournamentRunTimeUp() {
+    if (tournamentTimerInterval) clearInterval(tournamentTimerInterval);
+    tournamentRunState.active = false;
+    safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+
+    const finalScore = Number(tournamentRunState.currentRunScore) || 0;
+    
+    // Check if this run beat personal best
+    if (finalScore > (Number(state.tournamentScore) || 0)) {
+        state.tournamentScore = finalScore;
+    }
+    saveGame();
+    syncTournamentLeaderboardScore();
+
+    const finalScoreTxt = document.getElementById("tFinalRunScoreText");
+    if (finalScoreTxt) finalScoreTxt.textContent = `${finalScore.toLocaleString()} pts`;
+
+    const completeModal = document.getElementById("tRunCompleteModal");
+    if (completeModal) completeModal.classList.remove("hidden");
+
+    SoundFx.levelUp();
+}
+
+function closeRunCompleteModal() {
+    const completeModal = document.getElementById("tRunCompleteModal");
+    if (completeModal) completeModal.classList.add("hidden");
+
+    const arena = document.getElementById("tFullscreenArena");
+    if (arena) arena.classList.add("hidden");
+
+    renderTournament();
+}
+
 function setPokerBet(amount) {
-    if (pokerDuelState.phase === "dealt") {
-        toast("Hand in progress! Complete this round first.");
+    if (tournamentRunState.phase === "dealt") {
+        toast("Hand in progress! Complete this clash first.");
         return;
     }
     const currentCoins = Number(state.coins) || 0;
     if (amount === "allin") {
-        activePokerBet = Math.max(100, Math.min(currentCoins, 500000));
+        activeDuelBet = Math.max(100, Math.min(currentCoins, 500000));
     } else {
-        activePokerBet = Number(amount) || 100;
+        activeDuelBet = Number(amount) || 100;
     }
     
     document.querySelectorAll(".poker-chip-btn").forEach(btn => {
@@ -9474,13 +9703,12 @@ function setPokerBet(amount) {
     });
     
     SoundFx.pop();
-    renderTournamentPoker();
+    renderTournamentRun();
 }
 
 function getAvailableDraftCards(count = 5) {
     let pool = Array.isArray(state.cards) && state.cards.length >= 5 ? [...state.cards] : [];
     if (pool.length < 5) {
-        // Fallback to drafting from global index cards if collection is small
         pool = [];
         if (typeof PACKS !== "undefined") {
             Object.values(PACKS).forEach(p => {
@@ -9488,7 +9716,6 @@ function getAvailableDraftCards(count = 5) {
             });
         }
     }
-    // Shuffle pool and take count
     const shuffled = pool.sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count).map(c => ({
         ...c,
@@ -9500,14 +9727,13 @@ function getAvailableDraftCards(count = 5) {
 }
 
 function evaluateFootballPokerHand(cards) {
-    if (!cards || cards.length < 5) return POKER_COMBOS[POKER_COMBOS.length - 1];
+    if (!cards || cards.length < 5) return CARD_SYNERGY_COMBOS[CARD_SYNERGY_COMBOS.length - 1];
     
     const ratings = cards.map(c => Number(c.rating) || 80).sort((a,b) => a - b);
     const highestRating = Math.max(...ratings);
     const rarities = cards.map(c => c.rarity);
     const positions = cards.map(c => c.pos);
 
-    // Count frequencies
     const rarityCounts = {};
     rarities.forEach(r => rarityCounts[r] = (rarityCounts[r] || 0) + 1);
     const rarityFreqs = Object.values(rarityCounts).sort((a,b) => b - a);
@@ -9522,10 +9748,10 @@ function evaluateFootballPokerHand(cards) {
 
     // 1. Royal Squad (5 cards with 95+ OVR)
     const isRoyal = ratings.every(r => r >= 95);
-    if (isRoyal) return { ...POKER_COMBOS[0], scoreValue: 8000 + highestRating };
+    if (isRoyal) return { ...CARD_SYNERGY_COMBOS[0], scoreValue: 8000 + highestRating };
 
     // 2. Synergy Flush (5 cards same rarity)
-    if (rarityFreqs[0] === 5) return { ...POKER_COMBOS[1], scoreValue: 7000 + highestRating };
+    if (rarityFreqs[0] === 5) return { ...CARD_SYNERGY_COMBOS[1], scoreValue: 7000 + highestRating };
 
     // 3. Rating Straight (5 consecutive ratings)
     let isStraight = true;
@@ -9535,114 +9761,113 @@ function evaluateFootballPokerHand(cards) {
             break;
         }
     }
-    if (isStraight) return { ...POKER_COMBOS[2], scoreValue: 6000 + highestRating };
+    if (isStraight) return { ...CARD_SYNERGY_COMBOS[2], scoreValue: 6000 + highestRating };
 
     // 4. Full Team (3 matching position + 2 matching position)
-    if (posFreqs[0] === 3 && posFreqs[1] === 2) return { ...POKER_COMBOS[3], scoreValue: 5000 + highestRating };
+    if (posFreqs[0] === 3 && posFreqs[1] === 2) return { ...CARD_SYNERGY_COMBOS[3], scoreValue: 5000 + highestRating };
 
     // 5. Position Flush (all 5 matching position)
-    if (posFreqs[0] === 5) return { ...POKER_COMBOS[4], scoreValue: 4500 + highestRating };
+    if (posFreqs[0] === 5) return { ...CARD_SYNERGY_COMBOS[4], scoreValue: 4500 + highestRating };
 
     // 6. Triple Threat (3 same rarity or 3 same position or 3 same rating)
     if (rarityFreqs[0] === 3 || posFreqs[0] === 3 || ratingFreqs[0] === 3) {
-        return { ...POKER_COMBOS[5], scoreValue: 4000 + highestRating };
+        return { ...CARD_SYNERGY_COMBOS[5], scoreValue: 4000 + highestRating };
     }
 
     // 7. Dual Formation (Two Pairs)
-    if (rarityFreqs[0] === 2 && rarityFreqs[1] === 2 || (posFreqs[0] === 2 && posFreqs[1] === 2) || (ratingFreqs[0] === 2 && ratingFreqs[1] === 2)) {
-        return { ...POKER_COMBOS[6], scoreValue: 3000 + highestRating };
+    if ((rarityFreqs[0] === 2 && rarityFreqs[1] === 2) || (posFreqs[0] === 2 && posFreqs[1] === 2) || (ratingFreqs[0] === 2 && ratingFreqs[1] === 2)) {
+        return { ...CARD_SYNERGY_COMBOS[6], scoreValue: 3000 + highestRating };
     }
 
     // 8. Star Pair (One Pair)
     if (rarityFreqs[0] === 2 || ratingFreqs[0] === 2 || posFreqs[0] === 2) {
-        return { ...POKER_COMBOS[7], scoreValue: 2000 + highestRating };
+        return { ...CARD_SYNERGY_COMBOS[7], scoreValue: 2000 + highestRating };
     }
 
     // 9. High OVR Card
-    return { ...POKER_COMBOS[8], scoreValue: 1000 + highestRating };
+    return { ...CARD_SYNERGY_COMBOS[8], scoreValue: 1000 + highestRating };
 }
 
 function executePokerDeal() {
     const currentCoins = Number(state.coins) || 0;
-    const bet = Math.min(activePokerBet, currentCoins);
+    const bet = Math.min(activeDuelBet, currentCoins);
     
     if (currentCoins < bet && bet > 0) {
         toast("Not enough gold coins to place this ante!");
         return;
     }
 
-    if (bet > 0) {
-        spendCoins(bet);
-    }
+    if (bet > 0) spendCoins(bet);
 
-    const currentStageIdx = Math.min(3, (state.tournamentStage || 1) - 1);
+    const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
     const stageConf = STAGE_CONFIG[currentStageIdx];
 
-    pokerDuelState.stage = currentStageIdx + 1;
-    pokerDuelState.phase = "dealt";
-    pokerDuelState.ante = bet;
-    pokerDuelState.potCoins = bet * 2;
-    pokerDuelState.potPoints = stageConf.rewardPts;
-    pokerDuelState.isRaised = false;
-    pokerDuelState.selectedDiscards.clear();
+    tournamentRunState.phase = "dealt";
+    tournamentRunState.ante = bet;
+    tournamentRunState.potCoins = bet * 2;
+    tournamentRunState.potPoints = stageConf.rewardPts;
+    tournamentRunState.isRaised = false;
+    tournamentRunState.selectedDiscards.clear();
 
-    // Deal 5 cards for player and 5 for dealer
-    pokerDuelState.playerCards = getAvailableDraftCards(5);
-    pokerDuelState.dealerCards = getAvailableDraftCards(5);
+    tournamentRunState.playerCards = getAvailableDraftCards(5);
+    tournamentRunState.dealerCards = getAvailableDraftCards(5);
 
-    pokerDuelState.playerCombo = evaluateFootballPokerHand(pokerDuelState.playerCards);
-    pokerDuelState.dealerCombo = evaluateFootballPokerHand(pokerDuelState.dealerCards);
+    tournamentRunState.playerCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
+    tournamentRunState.dealerCombo = evaluateFootballPokerHand(tournamentRunState.dealerCards);
 
     SoundFx.pageFlip();
     toast(`🎴 Dealt 5 cards! Select any cards to swap & redraw or Showdown!`);
-    renderTournamentPoker();
+    saveTournamentRunSession();
+    renderTournamentRun();
 }
 
 function togglePokerDiscardCard(index) {
-    if (pokerDuelState.phase !== "dealt") return;
+    if (tournamentRunState.phase !== "dealt") return;
     
-    if (pokerDuelState.selectedDiscards.has(index)) {
-        pokerDuelState.selectedDiscards.delete(index);
+    if (tournamentRunState.selectedDiscards.has(index)) {
+        tournamentRunState.selectedDiscards.delete(index);
     } else {
-        if (pokerDuelState.selectedDiscards.size >= 3) {
+        if (tournamentRunState.selectedDiscards.size >= 3) {
             toast("You can swap at most 3 cards per hand!");
             return;
         }
-        pokerDuelState.selectedDiscards.add(index);
+        tournamentRunState.selectedDiscards.add(index);
     }
     SoundFx.pop();
-    renderTournamentPoker();
+    saveTournamentRunSession();
+    renderTournamentRun();
 }
 
 function executePokerSwap() {
-    if (pokerDuelState.phase !== "dealt") return;
-    if (pokerDuelState.selectedDiscards.size === 0) {
+    if (tournamentRunState.phase !== "dealt") return;
+    if (tournamentRunState.selectedDiscards.size === 0) {
         toast("Select at least 1 card on table to swap, or click Showdown!");
         return;
     }
 
-    const newCards = getAvailableDraftCards(pokerDuelState.selectedDiscards.size);
+    const newCards = getAvailableDraftCards(tournamentRunState.selectedDiscards.size);
     let swapIdx = 0;
-    pokerDuelState.selectedDiscards.forEach(idx => {
-        pokerDuelState.playerCards[idx] = newCards[swapIdx++];
+    tournamentRunState.selectedDiscards.forEach(idx => {
+        tournamentRunState.playerCards[idx] = newCards[swapIdx++];
     });
 
-    pokerDuelState.selectedDiscards.clear();
-    pokerDuelState.playerCombo = evaluateFootballPokerHand(pokerDuelState.playerCards);
+    tournamentRunState.selectedDiscards.clear();
+    tournamentRunState.playerCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
     
     SoundFx.packTear();
     toast("🔄 Redrew tactical cards! Now initiate Showdown!");
-    renderTournamentPoker();
+    saveTournamentRunSession();
+    renderTournamentRun();
 }
 
 function executePokerRaise() {
-    if (pokerDuelState.phase !== "dealt") return;
-    if (pokerDuelState.isRaised) {
-        toast("Already raised this round!");
+    if (tournamentRunState.phase !== "dealt") return;
+    if (tournamentRunState.isRaised) {
+        toast("Already doubled down this hand!");
         return;
     }
 
-    const raiseAmt = pokerDuelState.ante;
+    const raiseAmt = tournamentRunState.ante;
     const currentCoins = Number(state.coins) || 0;
     if (currentCoins < raiseAmt && raiseAmt > 0) {
         toast("Not enough coins to double down!");
@@ -9650,59 +9875,58 @@ function executePokerRaise() {
     }
 
     if (raiseAmt > 0) spendCoins(raiseAmt);
-    pokerDuelState.isRaised = true;
-    pokerDuelState.potCoins += raiseAmt * 2;
-    pokerDuelState.potPoints = Math.round(pokerDuelState.potPoints * 1.5);
+    tournamentRunState.isRaised = true;
+    tournamentRunState.potCoins += raiseAmt * 2;
+    tournamentRunState.potPoints = Math.round(tournamentRunState.potPoints * 1.5);
 
     SoundFx.coin();
-    toast(`💰 Raised! Pot increased to ${pokerDuelState.potCoins.toLocaleString()} 🪙!`);
-    renderTournamentPoker();
+    toast(`💰 Raised! Pot increased to ${tournamentRunState.potCoins.toLocaleString()} 🪙!`);
+    saveTournamentRunSession();
+    renderTournamentRun();
 }
 
 function executePokerShowdown() {
-    if (pokerDuelState.phase !== "dealt") return;
-    pokerDuelState.phase = "showdown";
+    if (tournamentRunState.phase !== "dealt") return;
+    tournamentRunState.phase = "showdown";
 
     SoundFx.packTear();
     
-    // Evaluate winners
-    const pCombo = evaluateFootballPokerHand(pokerDuelState.playerCards);
-    const dCombo = evaluateFootballPokerHand(pokerDuelState.dealerCards);
+    const pCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
+    const dCombo = evaluateFootballPokerHand(tournamentRunState.dealerCards);
 
     const playerWon = (pCombo.rank > dCombo.rank) || (pCombo.rank === dCombo.rank && pCombo.scoreValue >= dCombo.scoreValue);
 
     setTimeout(() => {
-        pokerDuelState.phase = "ended";
+        tournamentRunState.phase = "ended";
         if (playerWon) {
-            const finalMultiplier = pCombo.multiplier * (pokerDuelState.isRaised ? 2 : 1);
-            const wonCoins = Math.max(pokerDuelState.potCoins, Math.round(pokerDuelState.ante * finalMultiplier));
-            const wonPts = Math.round(pCombo.points + pokerDuelState.potPoints);
+            const finalMultiplier = pCombo.multiplier * (tournamentRunState.isRaised ? 2 : 1);
+            const wonCoins = Math.max(tournamentRunState.potCoins, Math.round(tournamentRunState.ante * finalMultiplier));
+            const wonPts = Math.round(pCombo.points + tournamentRunState.potPoints);
 
             addCoins(wonCoins);
-            state.tournamentScore = (Number(state.tournamentScore) || 0) + wonPts;
+            tournamentRunState.currentRunScore = (Number(tournamentRunState.currentRunScore) || 0) + wonPts;
             state.tournamentWins = (Number(state.tournamentWins) || 0) + 1;
             
-            // Advance stage
-            if ((state.tournamentStage || 1) < 4) {
-                state.tournamentStage = (state.tournamentStage || 1) + 1;
+            // Advance stage streak
+            if ((tournamentRunState.stage || 1) < 4) {
+                tournamentRunState.stage = (tournamentRunState.stage || 1) + 1;
             } else {
-                state.tournamentStage = 1; // Champion loop
-                toast("🏆 CONGRATULATIONS! You conquered the Tournament Championship Bracket!");
+                tournamentRunState.stage = 1;
+                toast("🏆 CONGRATULATIONS! You conquered the Final Stage vs King Jeff!");
             }
 
             SoundFx.success();
-            toast(`🎉 VICTORY! Your [${pCombo.name}] beat Dealer's [${dCombo.name}]! +${wonCoins.toLocaleString()} 🪙 & +${wonPts.toLocaleString()} 🏆 pts!`);
+            toast(`🎉 VICTORY! Your [${pCombo.name}] beat King Jeff's [${dCombo.name}]! +${wonCoins.toLocaleString()} 🪙 & +${wonPts.toLocaleString()} 🏆 pts!`);
         } else {
             SoundFx.error();
-            toast(`💀 DEFEAT! Dealer's [${dCombo.name}] beat your [${pCombo.name}]!`);
+            toast(`💀 DEFEAT! King Jeff's [${dCombo.name}] beat your [${pCombo.name}]!`);
         }
 
-        saveGame();
-        renderTournamentPoker();
-        syncTournamentLeaderboardScore();
+        saveTournamentRunSession();
+        renderTournamentRun();
     }, 1200);
 
-    renderTournamentPoker();
+    renderTournamentRun();
 }
 
 function renderPokerCardHTML(card, isFlipped, isDealer, index, isSelected) {
@@ -9735,39 +9959,27 @@ function renderPokerCardHTML(card, isFlipped, isDealer, index, isSelected) {
     `;
 }
 
-function renderTournamentPoker() {
-    // Stats Header
-    const tScoreDisp = document.getElementById("tScoreDisplay");
-    if (tScoreDisp) tScoreDisp.textContent = `${(Number(state.tournamentScore) || 0).toLocaleString()} pts`;
+function renderTournamentRun() {
+    updateTournamentTimerDisplay();
 
-    const currentStageIdx = Math.min(3, (state.tournamentStage || 1) - 1);
+    const runScoreTxt = document.getElementById("tRunScoreText");
+    if (runScoreTxt) runScoreTxt.textContent = `${(Number(tournamentRunState.currentRunScore) || 0).toLocaleString()} pts`;
+
+    const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
     const stageConf = STAGE_CONFIG[currentStageIdx];
 
-    const tStageDisp = document.getElementById("tStageDisplay");
-    if (tStageDisp) tStageDisp.textContent = stageConf.name;
-
-    const tOppDisp = document.getElementById("tOpponentDisplay");
-    if (tOppDisp) tOppDisp.textContent = stageConf.opponent;
-
-    const tWinsDisp = document.getElementById("tWinsDisplay");
-    if (tWinsDisp) tWinsDisp.textContent = `${Number(state.tournamentWins) || 0} Wins`;
-
-    // Center Pot & Info
     const tPotStageInfo = document.getElementById("tPotStageInfo");
-    if (tPotStageInfo) tPotStageInfo.textContent = `${stageConf.name.toUpperCase()} · OPPONENT: ${stageConf.opponent}`;
+    if (tPotStageInfo) tPotStageInfo.textContent = `${stageConf.name.toUpperCase()} · OPPONENT: King Jeff`;
 
     const tPotAmount = document.getElementById("tPotAmount");
-    if (tPotAmount) tPotAmount.textContent = `🪙 ${pokerDuelState.potCoins.toLocaleString()} + 🏆 ${pokerDuelState.potPoints.toLocaleString()} pts`;
-
-    const tDealerName = document.getElementById("tDealerName");
-    if (tDealerName) tDealerName.textContent = stageConf.opponent;
+    if (tPotAmount) tPotAmount.textContent = `🪙 ${tournamentRunState.potCoins.toLocaleString()} + 🏆 ${tournamentRunState.potPoints.toLocaleString()} pts`;
 
     // Dealer Zone
     const tDealerHandBadge = document.getElementById("tDealerHandBadge");
     const tDealerRow = document.getElementById("tDealerHandRow");
     
     if (tDealerRow) {
-        if (pokerDuelState.dealerCards.length === 0) {
+        if (tournamentRunState.dealerCards.length === 0) {
             tDealerRow.innerHTML = Array(5).fill(0).map(() => `
                 <div class="poker-card-slot">
                     <div class="poker-card-inner">
@@ -9775,15 +9987,16 @@ function renderTournamentPoker() {
                     </div>
                 </div>
             `).join("");
+            if (tDealerHandBadge) tDealerHandBadge.textContent = "Hand Hidden 🎴";
         } else {
-            const isShowdown = (pokerDuelState.phase === "showdown" || pokerDuelState.phase === "ended");
-            tDealerRow.innerHTML = pokerDuelState.dealerCards.map((card, idx) => 
+            const isShowdown = (tournamentRunState.phase === "showdown" || tournamentRunState.phase === "ended");
+            tDealerRow.innerHTML = tournamentRunState.dealerCards.map((card, idx) => 
                 renderPokerCardHTML(card, isShowdown, true, idx, false)
             ).join("");
 
             if (tDealerHandBadge) {
-                if (isShowdown && pokerDuelState.dealerCombo) {
-                    tDealerHandBadge.textContent = `${pokerDuelState.dealerCombo.name} (${pokerDuelState.dealerCombo.multiplier}x)`;
+                if (isShowdown && tournamentRunState.dealerCombo) {
+                    tDealerHandBadge.textContent = `${tournamentRunState.dealerCombo.name} (${tournamentRunState.dealerCombo.multiplier}x)`;
                 } else {
                     tDealerHandBadge.textContent = "Hand Hidden 🎴";
                 }
@@ -9794,11 +10007,9 @@ function renderTournamentPoker() {
     // Player Zone
     const tPlayerRow = document.getElementById("tPlayerHandRow");
     const tPlayerComboName = document.getElementById("tPlayerComboName");
-    const tComboDisplay = document.getElementById("tComboDisplay");
-    const tComboMultiDisp = document.getElementById("tComboMultiplierDisplay");
 
     if (tPlayerRow) {
-        if (pokerDuelState.playerCards.length === 0) {
+        if (tournamentRunState.playerCards.length === 0) {
             tPlayerRow.innerHTML = Array(5).fill(0).map(() => `
                 <div class="poker-card-slot">
                     <div class="poker-card-inner">
@@ -9807,22 +10018,18 @@ function renderTournamentPoker() {
                 </div>
             `).join("");
             if (tPlayerComboName) tPlayerComboName.textContent = "Ready to Deal";
-            if (tComboDisplay) tComboDisplay.textContent = "Ready";
-            if (tComboMultiDisp) tComboMultiDisp.textContent = "1x Multiplier";
         } else {
-            tPlayerRow.innerHTML = pokerDuelState.playerCards.map((card, idx) => 
-                renderPokerCardHTML(card, true, false, idx, pokerDuelState.selectedDiscards.has(idx))
+            tPlayerRow.innerHTML = tournamentRunState.playerCards.map((card, idx) => 
+                renderPokerCardHTML(card, true, false, idx, tournamentRunState.selectedDiscards.has(idx))
             ).join("");
 
-            if (pokerDuelState.playerCombo) {
-                if (tPlayerComboName) tPlayerComboName.textContent = `${pokerDuelState.playerCombo.name} (${pokerDuelState.playerCombo.multiplier}x Multiplier)`;
-                if (tComboDisplay) tComboDisplay.textContent = pokerDuelState.playerCombo.name;
-                if (tComboMultiDisp) tComboMultiDisp.textContent = `${pokerDuelState.playerCombo.multiplier}x Payout Multiplier`;
+            if (tournamentRunState.playerCombo) {
+                if (tPlayerComboName) tPlayerComboName.textContent = `${tournamentRunState.playerCombo.name} (${tournamentRunState.playerCombo.multiplier}x Multiplier)`;
             }
         }
     }
 
-    // Action Buttons Visibility
+    // Action Buttons
     const dealBtn = document.getElementById("pokerDealBtn");
     const swapBtn = document.getElementById("pokerSwapBtn");
     const raiseBtn = document.getElementById("pokerRaiseBtn");
@@ -9830,26 +10037,34 @@ function renderTournamentPoker() {
     const msgDisp = document.getElementById("tPokerMessage");
     const swapCountDisp = document.getElementById("tSwapCount");
 
-    if (swapCountDisp) swapCountDisp.textContent = pokerDuelState.selectedDiscards.size;
+    if (swapCountDisp) swapCountDisp.textContent = tournamentRunState.selectedDiscards.size;
 
-    if (pokerDuelState.phase === "idle" || pokerDuelState.phase === "ended") {
+    if (tournamentRunState.phase === "idle" || tournamentRunState.phase === "ended") {
         if (dealBtn) dealBtn.style.display = "inline-flex";
         if (swapBtn) swapBtn.style.display = "none";
         if (raiseBtn) raiseBtn.style.display = "none";
         if (showdownBtn) showdownBtn.style.display = "none";
-        if (msgDisp) msgDisp.textContent = "Select your ante & click DEAL HAND to start the clash!";
-    } else if (pokerDuelState.phase === "dealt") {
+        if (msgDisp) msgDisp.textContent = "Select your ante & click DEAL CARDS to clash!";
+    } else if (tournamentRunState.phase === "dealt") {
         if (dealBtn) dealBtn.style.display = "none";
         if (swapBtn) swapBtn.style.display = "inline-flex";
         if (raiseBtn) {
             raiseBtn.style.display = "inline-flex";
-            raiseBtn.disabled = pokerDuelState.isRaised;
+            raiseBtn.disabled = tournamentRunState.isRaised;
         }
         if (showdownBtn) showdownBtn.style.display = "inline-flex";
         if (msgDisp) msgDisp.textContent = "Click up to 3 cards to swap & redraw, or click SHOWDOWN to reveal winner!";
-    } else if (pokerDuelState.phase === "showdown") {
-        if (msgDisp) msgDisp.textContent = "Showdown! Revealing dealer's hand...";
+    } else if (tournamentRunState.phase === "showdown") {
+        if (msgDisp) msgDisp.textContent = "Showdown! Revealing King Jeff's squad...";
     }
+}
+
+function renderTournament() {
+    const tScoreDisp = document.getElementById("tScoreDisplay");
+    if (tScoreDisp) tScoreDisp.textContent = `${(Number(state.tournamentScore) || 0).toLocaleString()} pts`;
+
+    const tWinsDisp = document.getElementById("tWinsDisplay");
+    if (tWinsDisp) tWinsDisp.textContent = `${Number(state.tournamentWins) || 0} Wins`;
 
     renderTournamentLeaderboard();
 }
@@ -9877,11 +10092,9 @@ async function renderTournamentLeaderboard() {
         const users = await GlobalCloudRest.fetchAllUsers();
         let list = Object.values(users || {}).filter(u => u && u.username && !u.username.includes("[BOT]") && !u.isBot);
 
-        // Sort by tournamentScore descending
         list.sort((a,b) => (Number(b.tournamentScore) || 0) - (Number(a.tournamentScore) || 0));
         
         if (list.length === 0) {
-            // Include current player if valid
             const myUser = state.accountUser || state.name || "Player";
             list = [{ username: myUser, tournamentScore: Number(state.tournamentScore) || 0, level: state.level || 1 }];
         }
@@ -9904,11 +10117,15 @@ async function renderTournamentLeaderboard() {
     }
 }
 
-function renderTournament() {
-    renderTournamentPoker();
-}
 
 const EXPORTED_ACTIONS = {
+        renderTournamentRun,
+        closeRunCompleteModal,
+        confirmLeaveTournamentRun,
+        closeLeaveConfirmationModal,
+        promptLeaveTournamentRun,
+        toggleTournamentPause,
+        startTournamentRun,
         renderTournamentLeaderboard,
         renderTournamentPoker,
         executePokerShowdown,
