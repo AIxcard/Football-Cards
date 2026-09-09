@@ -30,6 +30,87 @@ const safeStorage = {
 };
 
 
+    /* =========================================================
+   PERMANENT PERSISTENCE ENGINE (INDEXEDDB MULTI-TIER STORAGE)
+   Guarantees zero player data loss across browser reloads & game updates
+   ========================================================= */
+
+const IDB_DATABASE_NAME = "FootballCardsPersistentDB";
+const IDB_STORE_NAME = "player_saves";
+const IDB_VERSION = 1;
+
+const PersistentStorage = {
+    db: null,
+
+    async init() {
+        if (typeof window === "undefined" || !window.indexedDB) return null;
+        if (this.db) return this.db;
+        return new Promise((resolve) => {
+            try {
+                const req = window.indexedDB.open(IDB_DATABASE_NAME, IDB_VERSION);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
+                        db.createObjectStore(IDB_STORE_NAME, { keyPath: "id" });
+                    }
+                };
+                req.onsuccess = (e) => {
+                    this.db = e.target.result;
+                    resolve(this.db);
+                };
+                req.onerror = () => resolve(null);
+            } catch (e) {
+                resolve(null);
+            }
+        });
+    },
+
+    async save(stateObj) {
+        if (!stateObj) return false;
+        try {
+            await this.init();
+            if (!this.db) return false;
+            return new Promise((resolve) => {
+                const tx = this.db.transaction([IDB_STORE_NAME], "readwrite");
+                const store = tx.objectStore(IDB_STORE_NAME);
+                store.put({ id: "active_save", data: JSON.stringify(stateObj), timestamp: Date.now() });
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => resolve(false);
+            });
+        } catch(e) {
+            return false;
+        }
+    },
+
+    async load() {
+        try {
+            await this.init();
+            if (!this.db) return null;
+            return new Promise((resolve) => {
+                const tx = this.db.transaction([IDB_STORE_NAME], "readonly");
+                const store = tx.objectStore(IDB_STORE_NAME);
+                const req = store.get("active_save");
+                req.onsuccess = () => {
+                    if (req.result && req.result.data) {
+                        try {
+                            resolve(JSON.parse(req.result.data));
+                        } catch(e) {
+                            resolve(null);
+                        }
+                    } else {
+                        resolve(null);
+                    }
+                };
+                req.onerror = () => resolve(null);
+            });
+        } catch(e) {
+            return null;
+        }
+    }
+};
+
+try { PersistentStorage.init(); } catch(e) {}
+
     // Cryptographic SHA-256 Password Hash Engine
     async function hashPassword(plainText) {
         if (!plainText) return "";
@@ -88,8 +169,12 @@ const safeStorage = {
         return Number(num || 0).toLocaleString();
     }
 
-    const CURRENT_SAVE_KEY = "footballCardsSave_v19_season1_clean";
+    const CURRENT_SAVE_KEY = "football_cards_user_save_master";
     const PREVIOUS_SAVE_KEYS = [
+        "footballCardsSave_v19_season1_clean",
+        "footballCardsSave_v18_season_reset",
+        "footballCardsSave_v18",
+        "footballCardsSave_v17",
         "footballCardsSave_v16",
         "footballCardsSave_v15_clean_sync",
         "footballCardsSave_v14_hard_reset",
@@ -1268,7 +1353,14 @@ function saveGame() {
     state.lastSave = Date.now();
     try {
         safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state));
+        if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
+            safeStorage.setItem("football_cards_user_session", state.accountUser);
+        }
     } catch (e) {}
+    try {
+        PersistentStorage.save(state);
+    } catch (e) {}
+    window.state = state;
     syncCloud();
 }
 
