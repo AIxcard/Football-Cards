@@ -36,6 +36,20 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 
 ---
 
+### [ISSUE-055] [P1 - Critical] Cross-Device Save Synchronization, Conflict Resolution & Official Season 1 Clean Reset
+- **Description**:
+  1. Progress desynchronized across different devices (e.g. PC vs iPad vs iPhone) because `initGame()` merged stale local localStorage with `Math.max(localCoins, serverCoins)` and `...state` over `serverSave`, causing stale devices to clobber newer server progress.
+  2. Account login (`CloudSync.login`) allowed local state to partially override server data.
+  3. Rapid successive actions were unthrottled and lacked debounced cloud syncing.
+  4. Testing phase accounts and residual test data required a final clean reset for official launch.
+- **Fix**:
+  1. Replaced broken state merging with authoritative server-first synchronization (`syncFromServer`) comparing `lastSave` timestamps.
+  2. Implemented debounced cloud syncing (`CloudSync.sync`) preventing race conditions during rapid card pulls.
+  3. Added multi-device event hooks (`window focus`, `document visibilitychange`, and 20s background interval) to automatically pull latest cross-device progress.
+  4. Executed official Season 1 clean reset (`HARD_WIPE_VERSION = "v25_season1_launch_reset"`) restoring all official accounts and preserving Alucard's master state (270k coins, Level 7, UNIQUE title, 10 official cards).
+  5. Verified 0 syntax errors, 0 export errors, and 0 CDP runtime exceptions via automated QA testing.
+- **Status**: 🟢 Resolved
+
 ### [ISSUE-054] [P1 - Critical] Global Leaderboard Multi-Tab Sync, No Bots & Master Admin Console Command Suite
 - **Description**:
   1. Global leaderboard tab switching (`setLeaderboardTab`) was non-responsive and hardcoded to sorting by single collection value.
