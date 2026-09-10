@@ -149,7 +149,7 @@ let database = {
     leaderboard: {}
 };
 
-const HARD_WIPE_VERSION = "v18_season_reset";
+const HARD_WIPE_VERSION = "v25_season1_launch_reset";
 
 function saveDatabase() {
     try {
@@ -166,7 +166,7 @@ function loadDatabase() {
     try {
         if (fs.existsSync(DB_FILE)) {
             const raw = JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
-            if (raw && raw.users) {
+            if (raw && raw.wipeVersion === HARD_WIPE_VERSION && raw.users) {
                 database = raw;
                 database.users = database.users || {};
                 if (!database.users["alucard"]) {
@@ -179,9 +179,17 @@ function loadDatabase() {
         console.error("Error loading database:", e);
     }
 
-    database = database || { users: {}, trades: [], leaderboard: {} };
-    database.users = database.users || {};
-    database.users["alucard"] = ALUCARD_USER;
+    // Official Season 1 Clean Launch Reset
+    database = {
+        wipeVersion: HARD_WIPE_VERSION,
+        users: {
+            "alucard": JSON.parse(JSON.stringify(ALUCARD_USER))
+        },
+        trades: [],
+        auditLogs: {},
+        backups: {},
+        leaderboard: {}
+    };
     saveDatabase();
 }
 
