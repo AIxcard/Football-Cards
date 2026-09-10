@@ -14,6 +14,7 @@ This document manages all active tasks, assigned subagents, prioritized backlogs
 
 ## 📋 Active Sprint & Immediate Next Steps
 
+| `ACT-160` | `P0` | Rebuild cross-device sync engine, replace stale state merging with server-authoritative sync & execute Season 1 clean reset | `script.js`, `server.js`, `data/db.json` | `web_game_dev` | 🟢 Done |
 | `ACT-159` | `P0` | Implement 4-tab Global Leaderboard with real-time sort & build full interactive Master Admin Console command suite | `index.html`, `script.js`, `server.js` | `web_game_dev` | 🟢 Done |
 | `ACT-158` | `P0` | Permanently resolve startup freeze, unwrap IIFE to global scope, deploy safeStorage wrapper, calibrate Alucard balance to 270,000 coins | `script.js`, `index.html`, `server.js` | `web_game_dev` | 🟢 Done |
 | `ACT-153` | `P0` | Rebalance Exclusive pack price to 1,000 coins (1x/3x/5x = 1k/3k/5k) and Exclusive card sell price to flat 800 coins | `index.html`, `script.js` | `web_game_dev` | 🟢 Done |
