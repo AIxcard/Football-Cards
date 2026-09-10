@@ -36,6 +36,20 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 
 ---
 
+### [ISSUE-054] [P1 - Critical] Global Leaderboard Multi-Tab Sync, No Bots & Master Admin Console Command Suite
+- **Description**:
+  1. Global leaderboard tab switching (`setLeaderboardTab`) was non-responsive and hardcoded to sorting by single collection value.
+  2. Leaderboard displayed coins instead of active tab metric and lacked a dedicated Tournament Score tab.
+  3. Master Admin Console had DOM ID mismatch (`adminModal` vs `adminPanelModal`) preventing panel opening, and stubbed command functions.
+  4. Duplicate function declarations existed in `script.js` for tournament leaderboard sync.
+- **Fix**:
+  1. Implemented complete 4-tab global leaderboard (`💰 Most Gold`, `💎 Highest Card Value`, `⭐ Highest Level`, `⚔️ Tournament Score`) with real-time sort and live player metric updates.
+  2. Excluded all bot accounts (`!u.username.includes("[BOT]") && !u.isBot`) from leaderboard rankings.
+  3. Fixed Admin panel modal targeting (`adminPanelModal` / `adminModal`) and implemented the full master command suite: Gold grant (self/remote), Card Spawner with 1-of-10 Serial Holographic checkbox, 99 Developer Monkey King spawner, Set Level (self/remote), Grant Titles, One-click 8-Frame unlock, All Titles unlock, Complete Missions, Free Packs stock, Tournament reset/champion grant, Trade Ban/Unflag, Irreversible Delete Account with confirmation, Live All Accounts table, and Action Logs + 1-click Snapshot Restore.
+  4. Cleaned duplicate tournament leaderboard functions in `script.js`.
+  5. Verified 0 syntax errors, 0 export errors, and 0 CDP runtime exceptions via automated QA testing.
+- **Status**: 🟢 Resolved
+
 ### [ISSUE-053] [P0 - Blocker] Game Freeze On Startup, IIFE Scope Decoupling, SafeStorage Defense & Alucard 270k Balance
 - **Description**:
   1. Game froze upon startup with non-responsive navigation buttons and tabs.
