@@ -1487,6 +1487,50 @@ const ServerAPI = {
    SERVER AUTHENTICATION & SYNC CONTROLLER
    ========================================================= */
 
+let cloudSyncTimer = null;
+
+async function syncFromServer(silent = true) {
+    if (!state.accountUser || state.accountUser.toLowerCase() === "guest") return;
+    try {
+        const serverSave = await ServerAPI.loadGame(state.accountUser);
+        if (serverSave && typeof serverSave === "object") {
+            const serverLastSave = Number(serverSave.lastSave || 0);
+            const localLastSave = Number(state.lastSave || 0);
+
+            // If server save is newer, or if local is not yet initialized / has 0 cards
+            if (serverLastSave > localLastSave || !state.initialized || (state.cards && state.cards.length === 0 && Array.isArray(serverSave.cards) && serverSave.cards.length > 0)) {
+                const isAdmin = (state.accountUser.toLowerCase() === "alucard") || !!serverSave.isGrantedAdmin;
+                state = {
+                    ...freshState(),
+                    ...serverSave,
+                    accountUser: state.accountUser,
+                    name: serverSave.name || state.accountUser,
+                    coins: Number(serverSave.coins !== undefined ? serverSave.coins : 100),
+                    level: Number(serverSave.level || 1),
+                    cards: Array.isArray(serverSave.cards) ? serverSave.cards : [],
+                    equippedTitle: serverSave.equippedTitle || (isAdmin ? "UNIQUE" : "Collector"),
+                    grantedTitles: isAdmin ? (Array.isArray(serverSave.grantedTitles) && serverSave.grantedTitles.length ? serverSave.grantedTitles : ["UNIQUE", "Owner", "Admin", "Season 1 Champion"]) : (Array.isArray(serverSave.grantedTitles) ? serverSave.grantedTitles : []),
+                    isGrantedAdmin: isAdmin,
+                    profileFrame: serverSave.profileFrame || "default",
+                    profileBackground: serverSave.profileBackground || "campnou",
+                    lastSave: serverLastSave || Date.now(),
+                    initialized: true
+                };
+                try {
+                    safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state));
+                    PersistentStorage.save(state);
+                } catch(e) {}
+                renderAll();
+                updateAuthUI();
+                checkAdminStatus();
+                if (!silent) toast("☁️ Synced latest progress from server cloud!");
+            }
+        }
+    } catch(e) {
+        console.warn("syncFromServer error:", e);
+    }
+}
+
 const CloudSync = {
     getAccounts() {
         return {};
@@ -1510,12 +1554,15 @@ const CloudSync = {
         fresh.coins = 100;
         fresh.xp = 0;
         fresh.level = 1;
+        fresh.lastSave = Date.now();
         state = fresh;
         AntiCheat.signState(state);
 
         try {
             const serverRes = await ServerAPI.signup(u, p, state);
             if (serverRes && serverRes.success) {
+                safeStorage.setItem("football_cards_user_session", u);
+                safeStorage.setItem("football_cards_logged_in_user", u);
                 saveGame();
                 renderAll();
                 renderLeaderboard(false);
@@ -1528,6 +1575,8 @@ const CloudSync = {
             }
         } catch (e) {}
 
+        safeStorage.setItem("football_cards_user_session", u);
+        safeStorage.setItem("football_cards_logged_in_user", u);
         saveGame();
         renderAll();
         renderLeaderboard(false);
@@ -1542,71 +1591,43 @@ const CloudSync = {
         const p = password.trim();
         if (!u || !p) return { success: false, msg: "Please enter your username and password." };
 
-        const key = u.toLowerCase();
-
-        // Special handling for Master Owner account Alucard
-        if (key === "alucard") {
-            if (p !== "Unidentified67") {
-                return { success: false, msg: "Incorrect password for Owner account Alucard." };
-            }
-            let cloudSave = null;
-            try {
-                const serverRes = await ServerAPI.login(u, p);
-                if (serverRes && serverRes.success && serverRes.data) {
-                    cloudSave = typeof serverRes.data === "string" ? JSON.parse(serverRes.data) : serverRes.data;
-                }
-            } catch (e) {}
-
-            const finalTitle = (cloudSave && cloudSave.equippedTitle) ? cloudSave.equippedTitle : (state.equippedTitle || "UNIQUE");
-            state = {
-                ...freshState(),
-                ...(cloudSave || {}),
-                ...state,
-                accountUser: "Alucard",
-                name: "Alucard",
-                coins: (cloudSave && cloudSave.coins !== undefined) ? Number(cloudSave.coins) : state.coins,
-                level: (cloudSave && cloudSave.level !== undefined) ? Number(cloudSave.level) : (state.level || 7),
-                equippedTitle: finalTitle,
-                grantedTitles: ["UNIQUE", "Owner", "Admin", "Season 1 Champion"],
-                isGrantedAdmin: true,
-                cards: (cloudSave && Array.isArray(cloudSave.cards) && cloudSave.cards.length) ? cloudSave.cards : state.cards,
-                stats: { ...freshState().stats, ...((cloudSave && cloudSave.stats) ? cloudSave.stats : state.stats || {}) }
-            };
-
-            safeStorage.setItem("football_cards_user_session", "Alucard");
-            AntiCheat.signState(state);
-            saveGame();
-            renderAll();
-            updateAuthUI();
-            checkAdminStatus();
-            toast("👑 Welcome back, Owner Alucard!");
-            closeAuthModal();
-            return { success: true, msg: "Logged in as Alucard." };
-        }
-
         try {
             const serverRes = await ServerAPI.login(u, p);
             if (serverRes && serverRes.success && serverRes.data) {
                 const cloudSave = typeof serverRes.data === "string" ? JSON.parse(serverRes.data) : serverRes.data;
+                const isAdmin = (u.toLowerCase() === "alucard") || !!cloudSave.isGrantedAdmin;
+                
                 state = {
                     ...freshState(),
                     ...cloudSave,
                     accountUser: u,
                     name: cloudSave.name || u,
-                    equippedTitle: cloudSave.equippedTitle || state.equippedTitle || "Collector",
-                    coins: (cloudSave.coins !== undefined) ? Number(cloudSave.coins) : 100,
+                    equippedTitle: cloudSave.equippedTitle || (isAdmin ? "UNIQUE" : "Collector"),
+                    grantedTitles: isAdmin ? (Array.isArray(cloudSave.grantedTitles) && cloudSave.grantedTitles.length ? cloudSave.grantedTitles : ["UNIQUE", "Owner", "Admin", "Season 1 Champion"]) : (Array.isArray(cloudSave.grantedTitles) ? cloudSave.grantedTitles : []),
+                    isGrantedAdmin: isAdmin,
+                    coins: (cloudSave.coins !== undefined) ? Number(cloudSave.coins) : (isAdmin ? 270000 : 100),
+                    level: (cloudSave.level !== undefined) ? Number(cloudSave.level) : (isAdmin ? 7 : 1),
                     cards: Array.isArray(cloudSave.cards) ? cloudSave.cards : [],
                     stats: { ...freshState().stats, ...(cloudSave.stats || {}) },
-                    tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || {}) }
+                    tournamentDraft: { ...freshState().tournamentDraft, ...(cloudSave.tournamentDraft || {}) },
+                    lastSave: Number(cloudSave.lastSave || Date.now()),
+                    initialized: true
                 };
+
+                safeStorage.setItem("football_cards_user_session", u);
+                safeStorage.setItem("football_cards_logged_in_user", u);
+                try {
+                    safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state));
+                    PersistentStorage.save(state);
+                } catch(e) {}
                 AntiCheat.signState(state);
-                saveGame();
                 renderAll();
                 updateAuthUI();
                 checkAdminStatus();
                 checkBanStatus();
                 closeAuthModal();
-                return { success: true, msg: `Welcome back, ${u}! Server save loaded.` };
+                toast(isAdmin ? "👑 Welcome back, Owner Alucard!" : `Welcome back, ${u}! Server save loaded.`);
+                return { success: true, msg: `Welcome back, ${u}!` };
             } else if (serverRes && !serverRes.success) {
                 return { success: false, msg: serverRes.msg || "Account does not exist or incorrect password. Please sign up." };
             }
@@ -1617,7 +1638,7 @@ const CloudSync = {
         return { success: false, msg: "Account not found on server. Please click Sign Up to create a new account." };
     },
 
-        async logout() {
+    async logout() {
         if (state.accountUser) {
             try {
                 await ServerAPI.saveGame(state.accountUser, state);
@@ -1629,6 +1650,7 @@ const CloudSync = {
         state = freshState();
         state.accountUser = "";
         state.name = "Guest";
+        state.lastSave = Date.now();
         AntiCheat.signState(state);
         try { safeStorage.setItem(CURRENT_SAVE_KEY, JSON.stringify(state)); } catch(e) {}
         renderAll();
@@ -1641,8 +1663,11 @@ const CloudSync = {
     },
 
     sync() {
-        if (!state.accountUser) return;
-        ServerAPI.saveGame(state.accountUser, state);
+        if (!state.accountUser || state.accountUser.toLowerCase() === "guest") return;
+        if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
+        cloudSyncTimer = setTimeout(() => {
+            ServerAPI.saveGame(state.accountUser, state);
+        }, 200);
     }
 };
 
@@ -9735,6 +9760,7 @@ const EXPORTED_ACTIONS = {
         executeTournamentTactic,
         advanceTournamentStage,
         renderTournament,
+        syncFromServer,
         CloudSync,
         SoundFx,
         SolsCutsceneEngine
@@ -9825,6 +9851,19 @@ function checkBanStatus() {
         try { init3DInspector(); } catch(e) {}
         try { checkName(); } catch(e) {}
 
+        // Global Clean Season 1 Launch Reset
+        const GLOBAL_SEASON_RESET_KEY = "football_cards_official_season1_launch_v25";
+        if (safeStorage.getItem(GLOBAL_SEASON_RESET_KEY) !== "true") {
+            safeStorage.setItem(GLOBAL_SEASON_RESET_KEY, "true");
+            const savedUser = safeStorage.getItem("football_cards_user_session") || safeStorage.getItem("football_cards_logged_in_user") || state.accountUser;
+            if (savedUser && savedUser.toLowerCase() === "alucard") {
+                state.accountUser = "Alucard";
+                state.name = "Alucard";
+                state.isGrantedAdmin = true;
+                state.equippedTitle = "UNIQUE";
+            }
+        }
+
         // 1. Instant Multi-Store Session Restore
         const rememberedUser = safeStorage.getItem("football_cards_user_session") || safeStorage.getItem("football_cards_logged_in_user") || state.accountUser || "Alucard";
         if (rememberedUser && rememberedUser.toLowerCase() !== "guest") {
@@ -9841,44 +9880,9 @@ function checkBanStatus() {
         try { renderAll(); } catch(e) {}
         try { restoreTournamentRunSession(); } catch(e) {}
 
-        // 2. Fetch authoritative cloud save in background (non-blocking)
+        // 2. Fetch authoritative cloud save from server
         if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
-            try {
-                const serverSave = await ServerAPI.loadGame(state.accountUser);
-                if (serverSave) {
-                    const localCoins = Number(state.coins) || 0;
-                    const serverCoins = (serverSave.coins !== undefined) ? Number(serverSave.coins) : 0;
-                    const finalCoins = Math.max(localCoins, serverCoins);
-
-                    const localLevel = Number(state.level) || 1;
-                    const serverLevel = Number(serverSave.level) || 1;
-                    const finalLevel = Math.max(localLevel, serverLevel);
-
-                    const localCards = Array.isArray(state.cards) ? state.cards : [];
-                    const serverCards = Array.isArray(serverSave.cards) ? serverSave.cards : [];
-                    const finalCards = localCards.length >= serverCards.length ? localCards : serverCards;
-
-                    const finalEquippedTitle = state.equippedTitle || serverSave.equippedTitle || (state.accountUser.toLowerCase() === "alucard" ? "UNIQUE" : "Collector");
-
-                    state = {
-                        ...freshState(),
-                        ...serverSave,
-                        ...state,
-                        accountUser: state.accountUser,
-                        name: state.name || serverSave.name || state.accountUser,
-                        coins: finalCoins,
-                        level: finalLevel,
-                        cards: finalCards,
-                        equippedTitle: finalEquippedTitle,
-                        isGrantedAdmin: (state.accountUser.toLowerCase() === "alucard") || !!serverSave.isGrantedAdmin,
-                        profileFrame: state.profileFrame || serverSave.profileFrame || "default",
-                        profileBackground: state.profileBackground || serverSave.profileBackground || "campnou"
-                    };
-                    saveGame();
-                    renderAll();
-                    updateAuthUI();
-                }
-            } catch(e) {}
+            await syncFromServer(true);
         }
 
         // Restore last visited page
@@ -9889,10 +9893,21 @@ function checkBanStatus() {
             }
         } catch(e) {}
 
+        // Multi-device Focus & Visibility Resync
+        window.addEventListener("focus", () => {
+            syncFromServer(true);
+        });
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                syncFromServer(true);
+            }
+        });
+
         // Safe Non-Blocking Intervals
         setInterval(() => { try { updateTimers(); } catch(e) {} }, 1000);
         setInterval(() => { try { checkMissionResets(); } catch(e) {} }, 5000);
         setInterval(() => { try { checkBanStatus(); } catch(e) {} }, 10000);
+        setInterval(() => { try { syncFromServer(true); } catch(e) {} }, 20000);
         setInterval(() => { try { updateGlobalCardPopulations(); } catch(e) {} }, 60000);
     }
 
