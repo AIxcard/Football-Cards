@@ -639,19 +639,21 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 - **Fix**: (1) Completely redesigned the **Trading Hub** into a Roblox-style direct invitation hub: removed pre-selection dropdowns and note fields; added an active **Online Players Grid** with 1-click `"🤝 Trade"` buttons, a direct username request bar, and pulsing outgoing status banner; (2) implemented `LiveTradeNetwork` combining 0ms BroadcastChannel + dedicated cloud mailboxes with 429 rate limit backoff; (3) all card picking and chatting takes place in the live interactive Roblox trading room. Tested and deployed live at `v=245.0`.
 - **Status**: 🟢 Resolved
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+### [ISSUE-094] [P0 - Blocker] Dedicated Backend REST Trading API, Offline Player Visibility, Tournament HUD Clarifications & Main Leaderboard Cleanup
+- **Description**:
+  1. **Tournament Clarity & Mechanics**: 15-minute Championship Arena duel against King Jeff needed clear step-by-step guidance, intuitive card swap controls, and persistent run session handling on page close/refresh.
+  2. **Trading Broken Across Devices**: Trading previously attempted using `kvdb.io` (which threw 429 rate limit errors) and `BroadcastChannel` (which is restricted to single-browser tabs), failing cross-device and remote trading.
+  3. **Offline / Inactive Players Missing**: Trade Hub and Leaderboards did not render players whose tabs were closed.
+  4. **Leaderboard Cleanup**: Main Global Leaderboard incorrectly included a `⚔️ Tournament Score` tab (which belongs exclusively inside `#tournament`).
+  5. **Roblox Text**: Unwanted "roblox" mentions were present in trading UI descriptions.
+- **Fix**:
+  1. **Trading REST API**: Implemented full dedicated trading endpoints on `server.js` (`POST /api/trade/request`, `GET /api/trade/pending`, `POST /api/trade/respond`, `GET /api/trade/session`, `POST /api/trade/session/update`, `POST /api/trade/session/cancel`, `POST /api/trade/session/complete`).
+  2. **Real-time Client Trading**: Updated `script.js` `LiveTradeNetwork` to communicate via REST API with background polling (every 1.5s for pending trades, every 1s for active sessions) and atomic server-side card transfers.
+  3. **Offline Player Visibility**: Configured `renderTradeHub` to query `/api/users` from `database.users`, ensuring all registered accounts are visible for trade invitations regardless of tab activity.
+  4. **Tournament Step-by-Step Flow**: Added live HUD step indicators (`1. Select Ante & Deal` ➔ `2. Swap Cards (Max 3)` ➔ `3. Double Down` ➔ `4. Showdown vs King Jeff`) and connected `beforeunload` to persist tournament runs.
+  5. **Leaderboard Separation**: Removed `#lbTabTournament` from `#leaderboard`, preserving pure collection tabs (`gold`, `value`, `level`) and maintaining the dedicated Championship rankings inside `#tournamentLeaderboardList`.
+  6. **Text Scrubbing**: Removed all mentions of "roblox" across `index.html` and `script.js`.
+- **Status**: 🟢 Resolved
 
 
 
