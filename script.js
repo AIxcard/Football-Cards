@@ -706,6 +706,7 @@ const PLAYERS = [
 
 // --- TOURNAMENT REWARD ---
 { name: "Emanuel", rating: 99, pos: "CAM", rarity: "Tournament", image: "player_temp.png" },
+{ name: "Shiny Emanuel", rating: 99, pos: "CAM", rarity: "Tournament", shiny: true, image: "player_temp.png", hiddenFromIndex: true },
 
 // --- WORLD CLASS (GOATS) ---
 { name: "Lionel Messi", rating: 97, pos: "RW", rarity: "World Class", image: "player_temp.png" },
@@ -4012,26 +4013,29 @@ function open3DCard(identifier, isFromIndex = false) {
     }
 
     const rClass = rarityClassName(player.rarity);
-    let themeClass = "";
+    let themeClass = `theme-${rClass}`;
     const pName = player.player || player.name;
-    if (pName === "Lionel Messi") {
-        themeClass = "theme-messi";
-    } else if (pName === "Cristiano Ronaldo") {
-        themeClass = "theme-ronaldo";
-    } else if (pName === "Monkey King" || player.devCard) {
+    if (player.rarity === "World Class") {
+        if (pName === "Lionel Messi") themeClass = "theme-messi";
+        else if (pName === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
+        else themeClass = "theme-worldclass";
+    } else if (pName === "Monkey King" || player.devCard || player.rarity === "Developer") {
         themeClass = "theme-developer";
     } else if (player.rarity === "Tournament") {
         themeClass = "theme-tournament";
     }
 
     if (cardEl) {
-        if (!isFromIndex && cardObj && cardObj.serialGradient) {
-            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} is-serialized`;
+        const isSerializedCard = !isFromIndex && cardObj && (cardObj.serialNumber || cardObj.serialGradient);
+        const hasCustomGrad = !isFromIndex && cardObj && cardObj.serialGradient && !["Lionel Messi", "Cristiano Ronaldo", "Monkey King", "Emanuel", "Shiny Emanuel"].includes(pName);
+
+        if (hasCustomGrad) {
+            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass} ${isSerializedCard ? 'is-serialized' : ''}`;
             cardEl.style.background = cardObj.serialGradient;
             cardEl.style.backgroundSize = "200% 200%";
             cardEl.style.animation = "serializedHoloShift 4s ease-in-out infinite alternate";
         } else {
-            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass}`;
+            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass} ${isSerializedCard ? 'is-serialized' : ''}`;
             cardEl.style.background = "";
             cardEl.style.backgroundSize = "";
             cardEl.style.animation = "";
@@ -5977,7 +5981,7 @@ function renderProfile() {
 
         const wcTrophy = document.getElementById("profileWorldCupTrophyBadge");
         if (wcTrophy) {
-            const hasWc = (Number(state.tournamentScore) >= 500) || (state.stats && Number(state.stats.tournamentScore) >= 500) || (state.accountUser || "").toLowerCase() === "alucard" || (state.grantedTitles || []).includes("Season 1 Champion");
+            const hasWc = (Number(state.tournamentRank) === 1) || (state.stats && Number(state.stats.tournamentRank) === 1) || !!state.isTournamentChampion;
             wcTrophy.style.display = hasWc ? "inline-flex" : "none";
         }
 
@@ -7756,23 +7760,23 @@ function renderTournament() {
         if (isAlucard) {
             launchContainer.innerHTML = `
                 <div class="tournament-launch-card">
-                    <div style="font-size:42px;margin-bottom:4px;">⏱️ ⚽ 🏆</div>
-                    <h2 style="margin:0 0 6px;color:#fff;font-size:24px;">World Cup Penalty Shootout</h2>
-                    <p style="color:var(--muted);max-width:550px;margin:0 0 14px;font-size:13.5px;line-height:1.5;">
-                        15 minutes per run. Hit green reflex sweetspots to score clean goals and tap flashing zones to save King Jeff's strikes.
+                    <div style="font-size:42px;margin-bottom:6px;">⏱️ ⚽ 🏆</div>
+                    <h2 style="margin:0 0 8px;color:#fff;font-size:24px;font-weight:900;letter-spacing:0.5px;">World Cup</h2>
+                    <p style="color:var(--muted);max-width:560px;margin:0 auto 16px;font-size:14px;line-height:1.6;">
+                        15 minutes per run. Outsmart <b>King Jeff</b> across 4 knockout stages. Survive with <b>3 Hearts (❤️❤️❤️)</b>, draft powerful <b>Tactical Modifiers</b>, and claim the World Cup Trophy!
                     </p>
                     <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                        ⚽ PLAY WORLD CUP (${state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5}/5 ATTEMPTS) →
+                        🏆 PLAY WORLD CUP (${state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5}/5 ATTEMPTS) →
                     </button>
                 </div>
             `;
         } else {
             launchContainer.innerHTML = `
                 <div class="tournament-launch-card" style="border-color:rgba(255,255,255,0.15);background:rgba(15,23,42,0.8);">
-                    <div style="font-size:42px;">🔒</div>
-                    <h2 style="margin:0;color:#fff;font-size:22px;">World Cup Arena In Testing Phase</h2>
-                    <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                        The World Cup Arena is currently undergoing calibration for Season 1. Public kickoff will be available on Update 0.5!
+                    <div style="font-size:42px;margin-bottom:6px;">🔒</div>
+                    <h2 style="margin:0 0 8px;color:#fff;font-size:22px;font-weight:900;">World Cup (Coming Soon)</h2>
+                    <p style="color:var(--muted);max-width:560px;margin:0 auto 16px;font-size:14px;line-height:1.6;">
+                        The World Cup Arena is currently undergoing calibration. Public kickoff will be available on Update 0.5!
                     </p>
                     <button class="ghost-btn" style="padding:12px 28px;opacity:0.6;cursor:not-allowed;" disabled>
                         🔒 Testing In Progress (Update 0.5)
@@ -8506,6 +8510,7 @@ async function adminExecuteSpawnCard() {
     const sel = document.getElementById("adminCardSelect");
     const cardName = sel ? sel.value : "Lionel Messi";
     const isSerialized = !!(document.getElementById("adminCardSerialized") && document.getElementById("adminCardSerialized").checked);
+    const isShiny = !!(document.getElementById("adminCardShiny") && document.getElementById("adminCardShiny").checked);
 
     const baseTemplate = (typeof PLAYERS !== "undefined" ? PLAYERS : []).find(p => p.name === cardName) || {
         name: cardName, rating: 99, pos: "ST", rarity: "Secret", image: "player_temp.png"
@@ -8522,6 +8527,10 @@ async function adminExecuteSpawnCard() {
         locked: true
     };
 
+    if (isShiny || baseTemplate.shiny) {
+        newCard.shiny = true;
+    }
+
     if (isSerialized) {
         newCard.serialNumber = 1;
         newCard.maxSerial = 10;
@@ -8532,10 +8541,10 @@ async function adminExecuteSpawnCard() {
     if (!target || target.toLowerCase() === myName) {
         state.cards = state.cards || [];
         state.cards.unshift(newCard);
-        logPlayerAudit("ADMIN_SPAWN_CARD", { cardName: newCard.player, cardId: newCard.id, isSerialized });
+        logPlayerAudit("ADMIN_SPAWN_CARD", { cardName: newCard.player, cardId: newCard.id, isSerialized, isShiny });
         saveGame();
         renderAll();
-        toast(`👑 Spawned ${newCard.player} (${newCard.rating} OVR${isSerialized ? " · Serial #1/10" : ""})!`);
+        toast(`👑 Spawned ${newCard.player} (${newCard.rating} OVR${isSerialized ? " · Serial #1/10" : ""}${newCard.shiny ? " · Shiny" : ""})!`);
     } else {
         try {
             const userDoc = await GlobalCloudRest.fetchUser(target);
@@ -8552,6 +8561,50 @@ async function adminExecuteSpawnCard() {
             renderAdminAccountsList();
         } catch(e) {
             toast(`Failed to spawn card to remote user: ${e.message}`);
+        }
+    }
+}
+
+async function adminSpawnShinyEmanuel() {
+    if (!checkIsAdmin()) return;
+    const targetInput = document.getElementById("adminCardTarget");
+    const target = targetInput ? targetInput.value.trim() : "";
+    const emanuelCard = {
+        id: "shiny_emanuel_" + Date.now(),
+        player: "Shiny Emanuel",
+        position: "CAM",
+        rarity: "Tournament",
+        rating: 99,
+        shiny: true,
+        image: "player_temp.png",
+        obtained: Date.now(),
+        locked: true
+    };
+
+    const myName = (state.accountUser || state.name || "Alucard").toLowerCase();
+    if (!target || target.toLowerCase() === myName) {
+        state.cards = state.cards || [];
+        state.cards.unshift(emanuelCard);
+        logPlayerAudit("ADMIN_SPAWN_SHINY_EMANUEL", { cardId: emanuelCard.id });
+        saveGame();
+        renderAll();
+        toast("👑 Spawned 99 Tournament Shiny Emanuel into your collection!");
+    } else {
+        try {
+            const userDoc = await GlobalCloudRest.fetchUser(target);
+            if (!userDoc) {
+                toast(`User "${target}" not found on server.`);
+                return;
+            }
+            const sData = (typeof userDoc.saveData === "string") ? JSON.parse(userDoc.saveData) : (userDoc.saveData || {});
+            sData.cards = sData.cards || [];
+            sData.cards.unshift(emanuelCard);
+            await GlobalCloudRest.pushUser(target, { ...userDoc, saveData: sData });
+            logPlayerAudit("ADMIN_SPAWN_SHINY_EMANUEL_REMOTE", { targetUser: target });
+            toast(`👑 Delivered 99 Tournament Shiny Emanuel to ${target}!`);
+            renderAdminAccountsList();
+        } catch(e) {
+            toast(`Failed to deliver Shiny Emanuel to ${target}: ${e.message}`);
         }
     }
 }
@@ -9468,10 +9521,9 @@ const ZONE_OFFSETS = [
 
 function prepareNextTurn(turnType) {
     tournamentRunState.turn = turnType;
-    tournamentRunState.turnStartTime = Date.now();
     tournamentRunState.isKicking = false;
 
-    // Clear reflex visual indicators on all zone buttons
+    // Clear visual indicators on all zone buttons
     document.querySelectorAll(".goal-zone-btn").forEach(btn => {
         btn.classList.remove("reflex-active", "reflex-incoming");
     });
@@ -9480,13 +9532,6 @@ function prepareNextTurn(turnType) {
         // King Jeff picks target zone to strike
         const jeffShotZone = Math.floor(Math.random() * 6);
         tournamentRunState.incomingJeffZone = jeffShotZone;
-        tournamentRunState.jeffShotTime = Date.now();
-
-        // Highlight the target zone for reflex defense
-        const zoneBtns = document.querySelectorAll(".goal-zone-btn");
-        if (zoneBtns[jeffShotZone]) {
-            zoneBtns[jeffShotZone].classList.add("reflex-incoming");
-        }
     }
 
     saveTournamentRunSession();
@@ -9507,7 +9552,6 @@ function choosePenaltyZone(zoneIndex) {
         if (m.pointMult) netPointMult *= m.pointMult;
     });
 
-    const playerCard = getTournamentPlayerCard();
     const ball = document.getElementById("penaltyBall");
     const keeper = document.getElementById("arenaGoalkeeper");
     const splash = document.getElementById("penaltyOutcomeSplash");
@@ -9515,25 +9559,22 @@ function choosePenaltyZone(zoneIndex) {
     const splashSub = document.getElementById("splashSub");
 
     if (tournamentRunState.turn === "player_shoot") {
-        // 1. PLAYER SHOOTING TURN (SKILL-BASED REFLEX TIMING)
-        let reflexThreshold = stageConf.reflexMs || 350;
-        if (activeMods.some(m => m.reflexBonus)) reflexThreshold += 80;
-        if (activeMods.some(m => m.fastReflex)) reflexThreshold = 150;
-        if (activeMods.some(m => m.godlike)) reflexThreshold *= 2;
+        // 1. PLAYER SHOOTING TURN
+        let keeperSaveProb = 0.20 + (currentStageIdx * 0.10); // Stage 1: 20%, Stage 2: 30%, Stage 3: 40%, Stage 4: 50%
+        if (activeMods.some(m => m.goldenBoot)) keeperSaveProb = 0.05;
+        if (activeMods.some(m => m.godlike)) keeperSaveProb = 0;
 
-        const reactionTime = Date.now() - (tournamentRunState.turnStartTime || Date.now());
-        const isFastReflex = reactionTime <= reflexThreshold || activeMods.some(m => m.goldenBoot || m.godlike);
-
+        const isSaved = Math.random() < keeperSaveProb;
         const targetOffset = ZONE_OFFSETS[zoneIndex] || ZONE_OFFSETS[1];
         
         let jeffDiveZone;
-        if (isFastReflex) {
-            // Unstoppable top bins corner! King Jeff dives wrong way
+        if (isSaved) {
+            // King Jeff anticipates the corner and dives to player's zone
+            jeffDiveZone = zoneIndex;
+        } else {
+            // King Jeff dives to a wrong corner
             const wrongZones = [0,1,2,3,4,5].filter(z => z !== zoneIndex);
             jeffDiveZone = wrongZones[Math.floor(Math.random() * wrongZones.length)];
-        } else {
-            // Slower reaction: King Jeff reads the late shot and dives to block
-            jeffDiveZone = zoneIndex;
         }
         const keeperOffset = ZONE_OFFSETS[jeffDiveZone] || ZONE_OFFSETS[1];
 
@@ -9550,7 +9591,7 @@ function choosePenaltyZone(zoneIndex) {
         try { SoundFx.kickShot(); } catch(e) {}
 
         setTimeout(() => {
-            if (isFastReflex) {
+            if (!isSaved) {
                 try { SoundFx.goalCheer(); } catch(e) {}
                 tournamentRunState.playerScore++;
                 tournamentRunState.playerPills.push("goal");
@@ -9563,8 +9604,8 @@ function choosePenaltyZone(zoneIndex) {
                     addCoins(100);
                 }
 
-                if (splashText) splashText.textContent = "⚡ PERFECT TOP BINS! ⚽";
-                if (splashSub) splashSub.textContent = `Clean reflex strike (${reactionTime}ms)! (+${awarded.toLocaleString()} pts)`;
+                if (splashText) splashText.textContent = "⚡ GOAL! TOP BINS! ⚽";
+                if (splashSub) splashSub.textContent = `Brilliant shot placed in the corner! (+${awarded.toLocaleString()} pts)`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.add("goal");
@@ -9578,7 +9619,7 @@ function choosePenaltyZone(zoneIndex) {
                 }
 
                 if (splashText) splashText.textContent = "SAVED! 🧤🚫";
-                if (splashSub) splashSub.textContent = `Slow reaction (${reactionTime}ms / max ${reflexThreshold}ms) — King Jeff stopped the shot!`;
+                if (splashSub) splashSub.textContent = "King Jeff anticipated the strike and made a diving stop!";
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.remove("goal");
@@ -9620,15 +9661,9 @@ function choosePenaltyZone(zoneIndex) {
         }, 500);
 
     } else if (tournamentRunState.turn === "jeff_shoot") {
-        // 2. DEFENDING KING JEFF'S SHOT (ACTIVE GOALKEEPING REFLEX)
+        // 2. DEFENDING KING JEFF'S SHOT (TACTICAL GOALKEEPING DIVE)
         const targetZone = tournamentRunState.incomingJeffZone >= 0 ? tournamentRunState.incomingJeffZone : Math.floor(Math.random() * 6);
-        let gkThreshold = stageConf.gkReflexMs || 400;
-        if (activeMods.some(m => m.gkReflexBonus)) gkThreshold += 100;
-        if (activeMods.some(m => m.reflexBonus)) gkThreshold += 80;
-        if (activeMods.some(m => m.godlike)) gkThreshold *= 2;
-
-        const reactionTime = Date.now() - (tournamentRunState.jeffShotTime || Date.now());
-        const isSaved = (zoneIndex === targetZone) && (reactionTime <= gkThreshold || activeMods.some(m => m.godlike));
+        const isSaved = (zoneIndex === targetZone) || activeMods.some(m => m.godlike);
 
         const playerOffset = ZONE_OFFSETS[zoneIndex] || ZONE_OFFSETS[1];
         const targetOffset = ZONE_OFFSETS[targetZone] || ZONE_OFFSETS[1];
@@ -9653,7 +9688,7 @@ function choosePenaltyZone(zoneIndex) {
                 tournamentRunState.currentRunScore += awarded;
 
                 if (splashText) splashText.textContent = "🧤 WORLD CLASS SAVE!";
-                if (splashSub) splashSub.textContent = `Fast reflex save (${reactionTime}ms)! Denied King Jeff (+${awarded.toLocaleString()} pts)`;
+                if (splashSub) splashSub.textContent = `Denied King Jeff's shot in the corner! (+${awarded.toLocaleString()} pts)`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.add("goal");
@@ -9667,7 +9702,7 @@ function choosePenaltyZone(zoneIndex) {
                 tournamentRunState.lives = Math.max(0, tournamentRunState.lives - dmg);
 
                 if (splashText) splashText.textContent = "CONCEDED! ⚽💔";
-                if (splashSub) splashSub.textContent = (zoneIndex === targetZone) ? `Too slow (${reactionTime}ms / max ${gkThreshold}ms)! Lost 1 Heart ❤️!` : `Wrong zone! King Jeff scored! Lost 1 Heart ❤️!`;
+                if (splashSub) splashSub.textContent = `King Jeff scored in another zone! Lost 1 Heart ❤️!`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.remove("goal");
@@ -9916,56 +9951,8 @@ function renderTournamentRun() {
     });
 }
 
-function renderTournament() {
-    checkDailyTournamentReset();
-
-    const tScoreDisp = document.getElementById("tScoreDisplay");
-    if (tScoreDisp) tScoreDisp.textContent = `${(Number(state.tournamentScore) || 0).toLocaleString()} pts`;
-
-    const tWinsDisp = document.getElementById("tWinsDisplay");
-    if (tWinsDisp) tWinsDisp.textContent = `${Number(state.tournamentWins) || 0} Wins`;
-
-    const attemptsBadge = document.getElementById("tDailyAttemptsBadge");
-    if (attemptsBadge) attemptsBadge.textContent = `${Number(state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5)} / 5`;
-
-    const isAlucard = (state.accountUser || state.name || "").toLowerCase() === "alucard";
-    const launchContainer = document.getElementById("tLaunchCardContainer");
-    if (launchContainer) {
-        if (isAlucard) {
-            launchContainer.innerHTML = `
-                <div class="tournament-launch-card">
-                    <div style="font-size:42px;">⏱️ ⚽ 🏆</div>
-                    <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Penalty Cup Championship</h2>
-                    <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                        Score as many tournament points as possible in 15 minutes! Survive with <b>3 Hearts (❤️❤️❤️)</b>, draft <b>Roguelike tactical cards</b> every 2 rounds, and battle <b>King Jeff</b> to earn the <b>🌟 Shiny Emanuel 99</b>!
-                    </p>
-                    <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
-                        <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                            ⚽ PLAY PENALTY CUP (${state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5}/5 ATTEMPTS) →
-                        </button>
-                    </div>
-                </div>
-            `;
-        } else {
-            launchContainer.innerHTML = `
-                <div class="tournament-launch-card" style="border-color:rgba(255,255,255,0.15);background:rgba(15,23,42,0.8);">
-                    <div style="font-size:42px;">🔒</div>
-                    <h2 style="margin:0;color:#fff;font-size:22px;">Tournament Arena In Testing Phase</h2>
-                    <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                        The Championship Arena is currently undergoing internal testing and calibration. Public kickoff will be available soon!
-                    </p>
-                    <button class="ghost-btn" style="padding:12px 28px;opacity:0.6;cursor:not-allowed;" disabled>
-                        🔒 Testing In Progress (Coming Soon)
-                    </button>
-                </div>
-            `;
-        }
-    }
-
-    renderTournamentLeaderboard();
-}
-
 const EXPORTED_ACTIONS = {
+        adminSpawnShinyEmanuel,
         choosePenaltyZone,
         startNextShootoutMatch,
         renderTournamentRun,
