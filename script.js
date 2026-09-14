@@ -1375,6 +1375,11 @@ function saveGame() {
 
 window.addEventListener("beforeunload", () => {
     updatePlaytime();
+    try {
+        if (typeof tournamentRunState !== "undefined" && tournamentRunState && tournamentRunState.active) {
+            saveTournamentRunSession();
+        }
+    } catch(e) {}
     saveGame();
 });
 
@@ -4867,7 +4872,6 @@ let notifiedBlockedTrades = {};
 
 const LiveTradeNetwork = {
     channel: (typeof BroadcastChannel !== "undefined") ? new BroadcastChannel("football_tcg_live_trade") : null,
-    rateLimitedUntil: 0,
 
     init() {
         if (this.channel) {
@@ -4893,7 +4897,7 @@ const LiveTradeNetwork = {
             const req = msg.payload;
             if ((req.receiver || "").toLowerCase() === myName && req.status === "pending") {
                 if (state.blockedUsers && state.blockedUsers.includes((req.sender || "").toLowerCase())) {
-                    this.broadcast("TRADE_RESPONSE", { id: req.id, sender: req.sender, receiver: state.accountUser, status: "blocked" });
+                    this.respondTrade(req.id, state.accountUser, "block");
                 } else {
                     const modal = document.getElementById("incomingTradeModal");
                     if (modal && modal.classList.contains("hidden")) {
@@ -4945,7 +4949,7 @@ const LiveTradeNetwork = {
             return;
         }
 
-        const myKey = state.accountUser.toLowerCase();
+        const myKey = (state.accountUser || "").toLowerCase();
         const partnerKey = (activeLiveTradeSession.partner || "").toLowerCase();
 
         const partnerOffer = (data.offers && data.offers[partnerKey]) || [];
@@ -4969,37 +4973,101 @@ const LiveTradeNetwork = {
         }
     },
 
-    async pushCloud(key, data) {
-        if (Date.now() < this.rateLimitedUntil) return false;
+    async requestTrade(req) {
         try {
-            const res = await fetch(`https://kvdb.io/MmjyNhMePJggoofHrX9cjo/${key}`, {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/trade/request`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                body: JSON.stringify(req)
             });
-            if (res.status === 429) {
-                this.rateLimitedUntil = Date.now() + 3000;
-                return false;
+            if (res.ok) {
+                const data = await res.json();
+                this.broadcast("TRADE_REQUEST", req);
+                return data;
             }
-            return res.ok;
-        } catch(e) {
-            return false;
-        }
+        } catch(e) {}
+        return null;
     },
 
-    async fetchCloud(key) {
-        if (Date.now() < this.rateLimitedUntil) return null;
+    async getPendingTrades(username) {
         try {
-            const res = await fetch(`https://kvdb.io/MmjyNhMePJggoofHrX9cjo/${key}?t=${Date.now()}`);
-            if (res.status === 429) {
-                this.rateLimitedUntil = Date.now() + 3000;
-                return null;
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/trade/pending?username=${encodeURIComponent(username.trim())}&t=${Date.now()}`);
+            if (res.ok) {
+                const data = await res.json();
+                return (data && data.success && Array.isArray(data.trades)) ? data.trades : [];
             }
-            if (!res.ok) return null;
-            return await res.json();
-        } catch(e) {
-            return null;
-        }
+        } catch(e) {}
+        return [];
+    },
+
+    async respondTrade(id, username, action) {
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/trade/respond`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, username, action })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                this.broadcast("TRADE_RESPONSE", { id, action, username, status: data.status });
+                return data;
+            }
+        } catch(e) {}
+        return null;
+    },
+
+    async getSession(id) {
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/trade/session?id=${encodeURIComponent(id)}&t=${Date.now()}`);
+            if (res.ok) {
+                const data = await res.json();
+                return (data && data.success) ? data.session : null;
+            }
+        } catch(e) {}
+        return null;
+    },
+
+    async updateSession(id, username, updatePayload) {
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/trade/session/update`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, username, ...updatePayload })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.session) this.broadcast("TRADE_SESSION_UPDATE", data.session);
+                return data;
+            }
+        } catch(e) {}
+        return null;
+    },
+
+    async cancelSession(id, username) {
+        try {
+            await fetch(`${ServerAPI.BASE_URL}/api/trade/session/cancel`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, username })
+            });
+            this.broadcast("TRADE_SESSION_UPDATE", { id, status: "cancelled" });
+        } catch(e) {}
+    },
+
+    async completeSession(id, username) {
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/trade/session/complete`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, username })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                this.broadcast("TRADE_SESSION_UPDATE", { id, status: "completed" });
+                return data;
+            }
+        } catch(e) {}
+        return null;
     }
 };
 
@@ -5036,8 +5104,13 @@ async function sendTradeOffer(targetUsername) {
 
     let targetUser = await GlobalCloudRest.fetchUser(recipient);
     if (!targetUser) {
-        const accs = CloudSync.getAccounts();
-        targetUser = accs[recipient.toLowerCase()];
+        const allUsers = await GlobalCloudRest.fetchAllUsers();
+        for (const k in allUsers) {
+            if (k.toLowerCase() === recipient.toLowerCase() || (allUsers[k].username && allUsers[k].username.toLowerCase() === recipient.toLowerCase())) {
+                targetUser = allUsers[k];
+                break;
+            }
+        }
     }
 
     if (!targetUser) {
@@ -5066,8 +5139,11 @@ async function sendTradeOffer(targetUsername) {
         timestamp: Date.now()
     };
 
-    LiveTradeNetwork.broadcast("TRADE_REQUEST", tradeReqDoc);
-    LiveTradeNetwork.pushCloud(`trade_req_${recipient.toLowerCase()}`, tradeReqDoc);
+    const res = await LiveTradeNetwork.requestTrade(tradeReqDoc);
+    if (!res || !res.success) {
+        toast(`Could not connect trade request with server.`);
+        return;
+    }
 
     activeOutgoingTradeRequest = {
         tradeId: tradeId,
@@ -5090,7 +5166,7 @@ async function sendTradeOffer(targetUsername) {
 
 function cancelOutgoingTradeRequest() {
     if (activeOutgoingTradeRequest) {
-        LiveTradeNetwork.pushCloud(`trade_req_${activeOutgoingTradeRequest.recipient.toLowerCase()}`, { status: "cancelled" });
+        LiveTradeNetwork.cancelSession(activeOutgoingTradeRequest.tradeId, state.accountUser);
     }
     activeOutgoingTradeRequest = null;
     const banner = document.getElementById("tradeOutgoingStatusBanner");
@@ -5115,7 +5191,7 @@ function openIncomingTradeModal(trade) {
         </div>
         <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.06);text-align:center;">
             <strong style="color:var(--green);font-size:14px;">🤝 Wants to open a live trading session with you!</strong>
-            <p style="font-size:12px;color:var(--muted);margin:4px 0 0;">Accept to join the Live Roblox Trading Room where you can offer cards and chat.</p>
+            <p style="font-size:12px;color:var(--muted);margin:4px 0 0;">Accept to join the Live Trading Room where you can offer cards and chat.</p>
         </div>
     `;
 
@@ -5143,35 +5219,12 @@ async function acceptIncomingLiveTrade() {
         return;
     }
 
-    const myKey = state.accountUser.toLowerCase();
-    const partnerKey = (trade.sender || "").toLowerCase();
-
-    const initialSession = {
-        id: trade.id,
-        sender: trade.sender,
-        receiver: state.accountUser,
-        offers: {
-            [partnerKey]: [],
-            [myKey]: []
-        },
-        ready: {
-            [partnerKey]: false,
-            [myKey]: false
-        },
-        chat: [
-            { sender: "System", text: `Trade room connected! Add cards to your slots or chat on the right.`, time: Date.now() }
-        ],
-        status: "active",
-        updatedAt: Date.now()
-    };
-
-    LiveTradeNetwork.broadcast("TRADE_RESPONSE", { id: trade.id, sender: trade.sender, receiver: state.accountUser, status: "session_active" });
-    LiveTradeNetwork.broadcast("TRADE_SESSION_UPDATE", initialSession);
-    LiveTradeNetwork.pushCloud(`session_${trade.id}`, initialSession);
-    LiveTradeNetwork.pushCloud(`trade_req_${state.accountUser.toLowerCase()}`, { ...trade, status: "session_active" });
-    LiveTradeNetwork.pushCloud(`trade_req_${partnerKey}`, { id: trade.id, status: "session_active", sender: trade.sender, recipient: state.accountUser });
-
-    openLiveTradeRoom(trade.id, trade.sender, false);
+    const res = await LiveTradeNetwork.respondTrade(trade.id, state.accountUser, "accept");
+    if (res && res.success) {
+        openLiveTradeRoom(trade.id, trade.sender, false);
+    } else {
+        toast("Trade session could not be established.");
+    }
 }
 
 async function declineIncomingLiveTrade() {
@@ -5179,10 +5232,7 @@ async function declineIncomingLiveTrade() {
     const trade = currentIncomingTrade;
     closeIncomingTradeModal();
 
-    LiveTradeNetwork.broadcast("TRADE_RESPONSE", { id: trade.id, sender: trade.sender, receiver: state.accountUser, status: "declined" });
-    LiveTradeNetwork.pushCloud(`trade_req_${state.accountUser.toLowerCase()}`, { ...trade, status: "declined" });
-    LiveTradeNetwork.pushCloud(`session_${trade.id}`, { id: trade.id, status: "declined" });
-
+    await LiveTradeNetwork.respondTrade(trade.id, state.accountUser, "decline");
     SoundFx.click();
     toast(`Trade request from "${trade.sender}" declined.`);
     renderTradeHub();
@@ -5199,10 +5249,7 @@ async function blockIncomingTradeSender() {
         state.blockedUsers.push(blockedName.toLowerCase());
     }
 
-    LiveTradeNetwork.broadcast("TRADE_RESPONSE", { id: trade.id, sender: trade.sender, receiver: state.accountUser, status: "blocked" });
-    LiveTradeNetwork.pushCloud(`trade_req_${state.accountUser.toLowerCase()}`, { ...trade, status: "blocked" });
-    LiveTradeNetwork.pushCloud(`session_${trade.id}`, { id: trade.id, status: "blocked" });
-
+    await LiveTradeNetwork.respondTrade(trade.id, state.accountUser, "block");
     saveGame();
     SoundFx.click();
     toast(`🚫 Blocked "${blockedName}"! They can no longer trade with you.`);
@@ -5243,37 +5290,22 @@ async function openLiveTradeRoom(tradeId, partnerName, isSender) {
     await pushLiveTradeSession();
 }
 
-async function pushLiveTradeSession() {
+async function pushLiveTradeSession(chatMessage = null) {
     if (!activeLiveTradeSession) return;
-    const myKey = state.accountUser.toLowerCase();
-    const partnerKey = (activeLiveTradeSession.partner || "").toLowerCase();
-
     const payload = {
-        id: activeLiveTradeSession.tradeId,
-        sender: activeLiveTradeSession.isSender ? state.accountUser : activeLiveTradeSession.partner,
-        receiver: activeLiveTradeSession.isSender ? activeLiveTradeSession.partner : state.accountUser,
-        offers: {
-            [myKey]: activeLiveTradeSession.myOffer,
-            [partnerKey]: activeLiveTradeSession.theirOffer
-        },
-        ready: {
-            [myKey]: activeLiveTradeSession.myReady,
-            [partnerKey]: activeLiveTradeSession.theirReady
-        },
-        chat: activeLiveTradeSession.chat,
-        status: activeLiveTradeSession.status,
-        updatedAt: Date.now()
+        offer: activeLiveTradeSession.myOffer,
+        ready: activeLiveTradeSession.myReady,
+        chatMessage: chatMessage || undefined
     };
 
-    LiveTradeNetwork.broadcast("TRADE_SESSION_UPDATE", payload);
-    LiveTradeNetwork.pushCloud(`session_${activeLiveTradeSession.tradeId}`, payload);
+    await LiveTradeNetwork.updateSession(activeLiveTradeSession.tradeId, state.accountUser, payload);
 }
 
 async function pullLiveTradeSession() {
     if (!activeLiveTradeSession) return;
-    const data = await LiveTradeNetwork.fetchCloud(`session_${activeLiveTradeSession.tradeId}`);
-    if (data) {
-        LiveTradeNetwork.syncSessionData(data);
+    const session = await LiveTradeNetwork.getSession(activeLiveTradeSession.tradeId);
+    if (session) {
+        LiveTradeNetwork.syncSessionData(session);
     }
 }
 
@@ -5623,6 +5655,9 @@ function confirmFinalSwap() {
 async function executeTradeSwapAtomic() {
     if (!activeLiveTradeSession) return;
 
+    // Call server complete endpoint to perform atomic transfer on backend
+    await LiveTradeNetwork.completeSession(activeLiveTradeSession.tradeId, state.accountUser);
+
     const offeredIds = new Set(activeLiveTradeSession.myOffer.map(c => c.id));
     state.cards = state.cards.filter(c => !offeredIds.has(c.id));
 
@@ -5636,7 +5671,6 @@ async function executeTradeSwapAtomic() {
     });
 
     activeLiveTradeSession.status = "completed";
-    await pushLiveTradeSession();
 
     AntiCheat.signState(state);
     saveGame();
@@ -5681,7 +5715,7 @@ function handleFinalTradeExecution(remoteData) {
 async function cancelLiveTradeSession() {
     if (!activeLiveTradeSession) return;
     activeLiveTradeSession.status = "cancelled";
-    await pushLiveTradeSession();
+    await LiveTradeNetwork.cancelSession(activeLiveTradeSession.tradeId, state.accountUser);
     closeLiveTradeRoom();
     toast("Trade session cancelled.");
 }
@@ -5707,50 +5741,47 @@ async function pollLiveTradeRequests() {
 
         const myName = state.accountUser.toLowerCase();
 
-        // 1. Check Receiver Mailbox for Incoming Trade Requests
-        const incoming = await LiveTradeNetwork.fetchCloud(`trade_req_${myName}`);
-        if (incoming && incoming.status === "pending") {
-            const senderKey = (incoming.sender || "").toLowerCase();
-            if (state.blockedUsers && state.blockedUsers.includes(senderKey)) {
-                LiveTradeNetwork.pushCloud(`trade_req_${myName}`, { ...incoming, status: "blocked" });
-            } else {
-                const modal = document.getElementById("incomingTradeModal");
-                if (modal && modal.classList.contains("hidden")) {
-                    openIncomingTradeModal(incoming);
+        // 1. Check Pending Trades from Server
+        const pendingTrades = await LiveTradeNetwork.getPendingTrades(state.accountUser);
+        if (Array.isArray(pendingTrades)) {
+            // Check for incoming requests
+            const incoming = pendingTrades.find(t => (t.receiver || "").toLowerCase() === myName && t.status === "pending");
+            if (incoming) {
+                const senderKey = (incoming.sender || "").toLowerCase();
+                if (state.blockedUsers && state.blockedUsers.includes(senderKey)) {
+                    await LiveTradeNetwork.respondTrade(incoming.id, state.accountUser, "block");
+                } else {
+                    const modal = document.getElementById("incomingTradeModal");
+                    if (modal && modal.classList.contains("hidden")) {
+                        openIncomingTradeModal(incoming);
+                    }
                 }
             }
-        }
 
-        // 2. Check Sender State if we have an active outgoing request
-        if (activeOutgoingTradeRequest) {
-            const partnerName = activeOutgoingTradeRequest.recipient.toLowerCase();
-            let outDoc = await LiveTradeNetwork.fetchCloud(`trade_req_${partnerName}`);
-            if (!outDoc || outDoc.status !== "session_active") {
-                const myDoc = await LiveTradeNetwork.fetchCloud(`trade_req_${myName}`);
-                if (myDoc && (myDoc.status === "session_active" || myDoc.status === "blocked" || myDoc.status === "declined")) {
-                    outDoc = myDoc;
-                }
-            }
-            if (outDoc && (outDoc.id === activeOutgoingTradeRequest.tradeId || outDoc.status === "session_active")) {
-                if (outDoc.status === "blocked") {
-                    const banner = document.getElementById("tradeOutgoingStatusBanner");
-                    if (banner) banner.style.display = "none";
-                    toast(`🚫 "${activeOutgoingTradeRequest.recipient}" has blocked you from trading.`);
-                    SoundFx.click();
-                    activeOutgoingTradeRequest = null;
-                } else if (outDoc.status === "declined" || outDoc.status === "cancelled") {
-                    const banner = document.getElementById("tradeOutgoingStatusBanner");
-                    if (banner) banner.style.display = "none";
-                    toast(`"${activeOutgoingTradeRequest.recipient}" declined your trade request.`);
-                    SoundFx.click();
-                    activeOutgoingTradeRequest = null;
-                } else if (outDoc.status === "session_active") {
-                    const banner = document.getElementById("tradeOutgoingStatusBanner");
-                    if (banner) banner.style.display = "none";
-                    const tid = activeOutgoingTradeRequest.tradeId || outDoc.id;
-                    const rec = activeOutgoingTradeRequest.recipient;
-                    activeOutgoingTradeRequest = null;
-                    openLiveTradeRoom(tid, rec, true);
+            // Check if outgoing trade got accepted / declined / blocked
+            if (activeOutgoingTradeRequest) {
+                const outgoingMatch = pendingTrades.find(t => t.id === activeOutgoingTradeRequest.tradeId || ((t.sender || "").toLowerCase() === myName && (t.receiver || "").toLowerCase() === activeOutgoingTradeRequest.recipient.toLowerCase()));
+                if (outgoingMatch) {
+                    if (outgoingMatch.status === "blocked") {
+                        const banner = document.getElementById("tradeOutgoingStatusBanner");
+                        if (banner) banner.style.display = "none";
+                        toast(`🚫 "${activeOutgoingTradeRequest.recipient}" has blocked you from trading.`);
+                        SoundFx.click();
+                        activeOutgoingTradeRequest = null;
+                    } else if (outgoingMatch.status === "declined" || outgoingMatch.status === "cancelled") {
+                        const banner = document.getElementById("tradeOutgoingStatusBanner");
+                        if (banner) banner.style.display = "none";
+                        toast(`"${activeOutgoingTradeRequest.recipient}" declined your trade request.`);
+                        SoundFx.click();
+                        activeOutgoingTradeRequest = null;
+                    } else if (outgoingMatch.status === "session_active") {
+                        const banner = document.getElementById("tradeOutgoingStatusBanner");
+                        if (banner) banner.style.display = "none";
+                        const tid = outgoingMatch.id;
+                        const rec = activeOutgoingTradeRequest.recipient;
+                        activeOutgoingTradeRequest = null;
+                        openLiveTradeRoom(tid, rec, true);
+                    }
                 }
             }
         }
@@ -7726,18 +7757,36 @@ async function renderTournamentLeaderboard() {
 
     try {
         const users = await GlobalCloudRest.fetchAllUsers();
-        let list = Object.values(users || {}).filter(u => u && u.username && !u.username.includes("[BOT]") && !u.isBot);
+        let list = [];
+        for (const k in users) {
+            const u = users[k];
+            if (!u || !u.username || u.username.includes("[BOT]") || u.isBot) continue;
+            let pData = {};
+            try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+            const tScore = Number((pData.stats && pData.stats.tournamentScore) || pData.tournamentScore || u.tournamentScore || 0);
+            list.push({
+                username: u.username,
+                tournamentScore: tScore,
+                level: Number(pData.level || 1),
+                equippedTitle: pData.equippedTitle || "Collector"
+            });
+        }
+
+        // Always sync current player's latest score
+        const myUser = state.accountUser || state.name || "Player";
+        const myScore = Number((state.stats && state.stats.tournamentScore) || state.tournamentScore || 0);
+        const myIdx = list.findIndex(u => u.username.toLowerCase() === myUser.toLowerCase());
+        if (myIdx >= 0) {
+            list[myIdx].tournamentScore = Math.max(list[myIdx].tournamentScore, myScore);
+        } else {
+            list.push({ username: myUser, tournamentScore: myScore, level: state.level || 1, equippedTitle: state.equippedTitle || "Collector" });
+        }
 
         list.sort((a,b) => (Number(b.tournamentScore) || 0) - (Number(a.tournamentScore) || 0));
-        
-        if (list.length === 0) {
-            const myUser = state.accountUser || state.name || "Player";
-            list = [{ username: myUser, tournamentScore: Number(state.tournamentScore) || 0, level: state.level || 1 }];
-        }
 
         lbContainer.innerHTML = list.slice(0, 10).map((u, i) => {
             const rankMedal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i+1}`;
-            const isMe = (state.accountUser && u.username.toLowerCase() === state.accountUser.toLowerCase());
+            const isMe = (myUser && u.username.toLowerCase() === myUser.toLowerCase());
             return `
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:10px;background:${isMe ? 'rgba(244,196,78,0.15)' : 'rgba(255,255,255,0.03)'};border:1px solid ${isMe ? 'var(--gold)' : 'rgba(255,255,255,0.08)'};">
                     <div style="display:flex;align-items:center;gap:10px;">
@@ -7844,8 +7893,6 @@ async function renderLeaderboard(fetchCloud = true) {
             list.sort((a, b) => (b.value - a.value) || (b.level - a.level));
         } else if (currentLeaderboardTab === "level") {
             list.sort((a, b) => (b.level - a.level) || (b.gold - a.gold));
-        } else if (currentLeaderboardTab === "tournament") {
-            list.sort((a, b) => (b.tournamentScore - a.tournamentScore) || (b.level - a.level));
         } else {
             list.sort((a, b) => (b.gold - a.gold) || (b.level - a.level));
         }
@@ -7865,8 +7912,6 @@ async function renderLeaderboard(fetchCloud = true) {
                 metricHtml = `<span style="font-weight:900;font-size:14px;color:#38bdf8;">💎 ${(Number(u.value) || 0).toLocaleString()}</span>`;
             } else if (currentLeaderboardTab === "level") {
                 metricHtml = `<span style="font-weight:900;font-size:14px;color:#22c55e;">⭐ Level ${Number(u.level) || 1}</span>`;
-            } else if (currentLeaderboardTab === "tournament") {
-                metricHtml = `<span style="font-weight:900;font-size:14px;color:#ec4899;">🏆 ${(Number(u.tournamentScore) || 0).toLocaleString()} pts</span>`;
             } else {
                 metricHtml = `<span style="font-weight:900;font-size:14px;color:var(--gold);">🪙 ${(Number(u.gold) || 0).toLocaleString()} 🪙</span>`;
             }
@@ -8251,12 +8296,11 @@ function redeemCode() {
 }
 
 function setLeaderboardTab(tab) {
-    currentLeaderboardTab = tab || "gold";
+    currentLeaderboardTab = (tab === "value" || tab === "level") ? tab : "gold";
     const tabMap = {
         gold: "lbTabGold",
         value: "lbTabValue",
-        level: "lbTabLevel",
-        tournament: "lbTabTournament"
+        level: "lbTabLevel"
     };
     Object.keys(tabMap).forEach(key => {
         const btn = document.getElementById(tabMap[key]);
@@ -9497,12 +9541,33 @@ function renderTournamentRun() {
 
     if (swapCountDisp) swapCountDisp.textContent = tournamentRunState.selectedDiscards.size;
 
+    const s1 = document.getElementById("tStep1");
+    const s2 = document.getElementById("tStep2");
+    const s3 = document.getElementById("tStep3");
+    const s4 = document.getElementById("tStep4");
+
+    const highlightStep = (activeStep) => {
+        [s1, s2, s3, s4].forEach((el, idx) => {
+            if (!el) return;
+            if (idx + 1 === activeStep) {
+                el.style.color = "var(--gold)";
+                el.style.background = "rgba(244,196,78,0.2)";
+                el.style.border = "1px solid var(--gold)";
+            } else {
+                el.style.color = "var(--muted)";
+                el.style.background = "transparent";
+                el.style.border = "none";
+            }
+        });
+    };
+
     if (tournamentRunState.phase === "idle" || tournamentRunState.phase === "ended") {
         if (dealBtn) dealBtn.style.display = "inline-flex";
         if (swapBtn) swapBtn.style.display = "none";
         if (raiseBtn) raiseBtn.style.display = "none";
         if (showdownBtn) showdownBtn.style.display = "none";
         if (msgDisp) msgDisp.textContent = "Select your ante & click DEAL CARDS to clash!";
+        highlightStep(1);
     } else if (tournamentRunState.phase === "dealt") {
         if (dealBtn) dealBtn.style.display = "none";
         if (swapBtn) swapBtn.style.display = "inline-flex";
@@ -9512,8 +9577,10 @@ function renderTournamentRun() {
         }
         if (showdownBtn) showdownBtn.style.display = "inline-flex";
         if (msgDisp) msgDisp.textContent = "Click up to 3 cards to swap & redraw, or click SHOWDOWN to reveal winner!";
+        highlightStep(tournamentRunState.selectedDiscards.size > 0 ? 2 : (tournamentRunState.isRaised ? 4 : 2));
     } else if (tournamentRunState.phase === "showdown") {
         if (msgDisp) msgDisp.textContent = "Showdown! Revealing King Jeff's squad...";
+        highlightStep(4);
     }
 }
 
@@ -9905,6 +9972,7 @@ function checkBanStatus() {
 
         // Safe Non-Blocking Intervals
         setInterval(() => { try { updateTimers(); } catch(e) {} }, 1000);
+        setInterval(() => { try { pollLiveTradeRequests(); } catch(e) {} }, 1500);
         setInterval(() => { try { checkMissionResets(); } catch(e) {} }, 5000);
         setInterval(() => { try { checkBanStatus(); } catch(e) {} }, 10000);
         setInterval(() => { try { syncFromServer(true); } catch(e) {} }, 20000);
