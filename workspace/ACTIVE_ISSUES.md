@@ -36,6 +36,18 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 
 ---
 
+### [ISSUE-056] [P1 - Critical] Tournament Game Remake (Penalty Cup vs King Jeff), Exclusive Pack Expiry Live Countdown & Authoritative Cloud Sync
+- **Description**:
+  1. The tournament poker format was confusing to players and needed replacement with an intuitive, thrilling football game against King Jeff.
+  2. The Exclusive Pack in the shop needed a live countdown timer showing the remaining days, hours, minutes, and seconds until it expires next Monday 00:00:00 UTC.
+  3. Progress on PC and iPad for account `Alucard` diverged when local saves had conflicting timestamps, requiring server-authoritative enforcement.
+- **Fix**:
+  1. Rebuilt the tournament system from scratch as the **15-Minute Penalty Cup Championship Arena** (`#penaltyStadiumBox`) against **King Jeff**, featuring 6 interactive goal zones (Top Left, Top Center, Top Right, Bottom Left, Low Center, Bottom Right), dynamic goalkeeper diving animations, animated ball trajectories, live scoreboards, match stakes, and 4 escalating stages (Group Stage $\rightarrow$ Quarter-Final $\rightarrow$ Semi-Final $\rightarrow$ Grand Final).
+  2. Integrated dynamic UTC calculation in `updateTimers()` to power `#exclusivePackTimerText` with a real-time countdown to next Monday at 00:00:00 UTC.
+  3. Enhanced `syncFromServer()` to enforce authoritative cloud server state adoption, overwriting stale local saves and ensuring single-source-of-truth across PC, iPad, and mobile devices.
+  4. Verified 0 syntax errors, 0 export errors, and 0 headless CDP exceptions via automated QA testing.
+- **Status**: 🟢 Resolved
+
 ### [ISSUE-055] [P1 - Critical] Cross-Device Save Synchronization, Conflict Resolution & Official Season 1 Clean Reset
 - **Description**:
   1. Progress desynchronized across different devices (e.g. PC vs iPad vs iPhone) because `initGame()` merged stale local localStorage with `Math.max(localCoins, serverCoins)` and `...state` over `serverSave`, causing stale devices to clobber newer server progress.
