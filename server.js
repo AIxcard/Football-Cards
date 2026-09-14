@@ -604,25 +604,28 @@ const server = http.createServer((req, res) => {
     }
 
 const SERVER_CARD_VALUES = {
-    Common: 20,
-    Uncommon: 50,
-    Rare: 150,
-    Epic: 400,
-    Legendary: 1200,
-    Exclusive: 2500,
-    Mythic: 6000,
-    Secret: 15000,
-    Tournament: 30000,
-    "World Class": 75000,
-    Developer: 200000
+    Common: 10,
+    Uncommon: 25,
+    Rare: 75,
+    Epic: 200,
+    Legendary: 600,
+    Exclusive: 800,
+    Mythic: 2500,
+    Secret: 6000,
+    Tournament: 10000,
+    "World Class": 25000,
+    Developer: 50000
 };
 
 function calculateServerCollectionValue(cards) {
     if (!Array.isArray(cards)) return 0;
     return cards.reduce((sum, c) => {
         if (!c) return sum;
-        if (c.serialNumber) return sum + 500000;
-        return sum + (SERVER_CARD_VALUES[c.rarity] || 20);
+        if (c.serialNumber) {
+            const serialNum = Math.max(1, Math.min(10, Number(c.serialNumber) || 1));
+            return sum + (55000 - serialNum * 2500);
+        }
+        return sum + (SERVER_CARD_VALUES[c.rarity] || 10);
     }, 0);
 }
 
@@ -653,6 +656,8 @@ function calculateServerCollectionValue(cards) {
             const colVal = (pData.collectionValue !== undefined && Number(pData.collectionValue) > 0)
                 ? Number(pData.collectionValue)
                 : calculateServerCollectionValue(cardsArr);
+            const tScore = Number((pData.stats && pData.stats.tournamentScore) || pData.tournamentScore || 0);
+            const tWins = Number((pData.stats && pData.stats.tournamentWins) || pData.tournamentWins || 0);
             list.push({
                 username: u.username,
                 name: pData.name || u.username,
@@ -660,6 +665,8 @@ function calculateServerCollectionValue(cards) {
                 cards: cardsArr.length,
                 gold: Number(pData.coins || 100),
                 value: colVal,
+                tournamentScore: tScore,
+                tournamentWins: tWins,
                 equippedTitle: pData.equippedTitle || "Collector",
                 profileFrame: pData.profileFrame || "default",
                 avatar: pData.avatar || "player_temp.png",
