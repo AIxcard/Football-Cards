@@ -1217,9 +1217,9 @@
                 <div class="stat-sub">AI Goalkeeper & Striker</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">RUN ATTEMPTS</div>
-                <div class="stat-value" style="color:#ec4899;">Unlimited ♾️</div>
-                <div class="stat-sub">Free Infinite Runs</div>
+                <div class="stat-label">DAILY ATTEMPTS</div>
+                <div class="stat-value" id="tDailyAttemptsBadge" style="color:#ec4899;">5 / 5</div>
+                <div class="stat-sub" id="tDailyAttemptsResetSub">Resets Daily at 00:00 UTC</div>
             </div>
         </div>
 
@@ -1227,19 +1227,35 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;">
             <div class="panel" style="padding:18px;">
                 <h3 style="margin:0 0 12px;color:#fff;display:flex;align-items:center;gap:8px;">🏆 Championship Cup Leaderboard</h3>
-                <div id="tournamentLeaderboardList" style="display:flex;flex-direction:column;gap:8px;">
+                <div id="tournamentLeaderboardList" style="display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto;">
                     <!-- Real registered player scores -->
                 </div>
             </div>
 
-            <div class="panel" style="padding:18px;border-color:rgba(244,196,78,0.25);">
-                <h3 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:8px;">🎁 Tournament Rewards</h3>
-                <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
-                    <strong style="color:#fff;font-size:14px;">Season 1 Grand Champion Prize</strong>
-                    <p style="color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
-                        Climb the live Penalty Cup Leaderboard by racking up goals, saves, and stage victories in 15-minute runs!
-                    </p>
+            <div class="panel" style="padding:18px;border-color:rgba(244,196,78,0.25);display:flex;flex-direction:column;justify-content:space-between;">
+                <div>
+                    <h3 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:8px;">🎁 Season Tiered Rewards</h3>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <strong style="color:var(--gold);font-size:15px;">👑 Rank #1 (Grand Champion)</strong>
+                            <span class="badge" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-weight:900;">SHINY</span>
+                        </div>
+                        <p style="color:#cbd5e1;font-size:13px;margin:0;line-height:1.5;">
+                            ✨ <b>Shiny Animated Emanuel (99 CAM)</b> + 🏆 500 Trophies + 🪙 10,000 Gold
+                        </p>
+                    </div>
+
+                    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
+                        <div style="color:#38bdf8;font-size:13px;font-weight:800;">⭐ Top 5 · Top 10% · Top 25% · Top 50%</div>
+                        <p style="color:var(--muted);font-size:12px;margin:4px 0 0;">
+                            Climb the leaderboard to earn Emanuel (99 OVR), World Class Packs, and massive Trophies!
+                        </p>
+                    </div>
                 </div>
+
+                <button class="primary-btn" style="margin-top:14px;background:linear-gradient(135deg,var(--gold),#d97706);color:#000;font-weight:900;" onclick="openTournamentRewardsModal()">
+                    🏆 VIEW FULL REWARDS LADDER →
+                </button>
             </div>
         </div>
 
@@ -1254,6 +1270,10 @@
                 <span>⏳ TIME:</span> <b id="tRunTimerText">15:00</b>
             </div>
 
+            <div class="arena-lives-badge" id="tRunLivesBadge" style="display:flex;align-items:center;gap:6px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#ef4444;padding:8px 14px;border-radius:12px;font-weight:900;font-size:14px;">
+                <span>LIVES:</span> <b id="tHeartsText" style="letter-spacing:2px;">❤️❤️❤️</b>
+            </div>
+
             <div class="arena-score-badge">
                 <span>🏆 RUN SCORE:</span> <b id="tRunScoreText">0 pts</b>
             </div>
@@ -1266,6 +1286,11 @@
                 <button class="arena-pause-btn" id="tPauseRunBtn" onclick="toggleTournamentPause()">⏸️ Pause</button>
                 <button class="arena-leave-btn" onclick="promptLeaveTournamentRun()">🚪 Leave Arena</button>
             </div>
+        </div>
+
+        <!-- ACTIVE ROGUELIKE MODIFIERS CHIP BAR -->
+        <div id="tActiveModifiersBar" class="arena-modifiers-bar" style="display:flex;gap:8px;padding:6px 24px;justify-content:center;flex-wrap:wrap;">
+            <!-- Dynamically populated modifier tags -->
         </div>
 
         <!-- PENALTY SHOOTOUT STADIUM ARENA -->
@@ -1367,16 +1392,10 @@
                 </div>
             </div>
 
-            <!-- CONTROLS & STAKE STRIP -->
+            <!-- CONTROLS ACTION STRIP -->
             <div class="penalty-bottom-bar">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <span style="font-size:13px;font-weight:800;color:var(--muted);">MATCH STAKE:</span>
-                    <div class="poker-chips-row" id="pokerChipsRow">
-                        <button class="poker-chip-btn active" data-bet="100" onclick="setTournamentStake(100)">🪙 100</button>
-                        <button class="poker-chip-btn" data-bet="500" onclick="setTournamentStake(500)">🪙 500</button>
-                        <button class="poker-chip-btn" data-bet="2500" onclick="setTournamentStake(2500)">🪙 2.5K</button>
-                        <button class="poker-chip-btn" data-bet="10000" onclick="setTournamentStake(10000)">🪙 10K</button>
-                    </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:13px;font-weight:800;color:var(--muted);" id="tArenaMatchStatusText">🏆 Knockout Stage In Progress</span>
                 </div>
                 <div id="penaltyMatchActionArea">
                     <button class="primary-btn" id="nextShootoutMatchBtn" style="display:none;width:auto;padding:12px 28px;font-weight:900;background:linear-gradient(135deg,#10b981,#059669);" onclick="startNextShootoutMatch()">
@@ -1387,6 +1406,163 @@
 
         </div>
 
+    </div>
+
+    <!-- ROGUELIKE 3-CARD MODIFIER DRAFT MODAL -->
+    <div id="tCardDraftModal" class="arena-modal-backdrop hidden">
+        <div class="draft-modal-box">
+            <div style="text-align:center;margin-bottom:16px;">
+                <span class="badge" style="background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;font-size:11px;font-weight:900;padding:4px 12px;border-radius:20px;">ROGUELIKE TACTICAL DRAFT</span>
+                <h2 style="margin:8px 0 4px;color:#fff;font-size:24px;">Pick 1 Tactical Card</h2>
+                <p style="color:var(--muted);font-size:13px;margin:0;">Select a tactical buff or high-risk cursed card to empower your 15-minute run!</p>
+            </div>
+
+            <div class="draft-cards-row" id="draftCardsRow">
+                <!-- 3 Dynamic Draft Cards -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ANIME TD-STYLE TIERED REWARDS MODAL -->
+    <div id="tRewardsModal" class="arena-modal-backdrop hidden">
+        <div class="arena-modal-box" style="max-width:680px;width:92%;max-height:85vh;overflow-y:auto;text-align:left;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">
+                <div>
+                    <h2 style="margin:0;color:var(--gold);font-size:22px;display:flex;align-items:center;gap:8px;">🏆 Season Tiered Rewards Ladder</h2>
+                    <p style="color:var(--muted);font-size:13px;margin:4px 0 0;">Rewards distributed to top players based on highest 15-minute run high score!</p>
+                </div>
+                <button class="ghost-btn" style="padding:6px 12px;" onclick="closeTournamentRewardsModal()">✕</button>
+            </div>
+
+            <div class="rewards-tier-grid">
+                <!-- RANK #1 -->
+                <div class="reward-tier-card champion">
+                    <div class="tier-rank-badge">👑 RANK #1 (CHAMPION)</div>
+                    <div class="tier-content">
+                        <div class="tier-prize-item shiny-item">
+                            <span style="font-size:28px;">🌟</span>
+                            <div>
+                                <strong style="color:var(--gold);font-size:15px;">Shiny Animated Emanuel (99 OVR, CAM)</strong>
+                                <div style="font-size:12px;color:#fde047;">Exclusive Holographic Prismatic Shimmer Foil</div>
+                            </div>
+                        </div>
+                        <div class="tier-extra-rewards">
+                            <span class="extra-pill">🏆 500 Trophies</span>
+                            <span class="extra-pill">🪙 10,000 Gold</span>
+                            <span class="extra-pill">👑 Season 1 Champion Title</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOP 5 -->
+                <div class="reward-tier-card top5">
+                    <div class="tier-rank-badge" style="background:#38bdf8;color:#000;">⭐ TOP 5 (RANK 2 - 5)</div>
+                    <div class="tier-content">
+                        <div class="tier-prize-item">
+                            <span style="font-size:28px;">🎴</span>
+                            <div>
+                                <strong style="color:#fff;font-size:14px;">Emanuel (99 OVR, CAM)</strong>
+                                <div style="font-size:12px;color:var(--muted);">Master Tournament Striker Card</div>
+                            </div>
+                        </div>
+                        <div class="tier-extra-rewards">
+                            <span class="extra-pill">🏆 250 Trophies</span>
+                            <span class="extra-pill">🪙 7,500 Gold</span>
+                            <span class="extra-pill">⚔️ Tournament Top 10 Title</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOP 10% -->
+                <div class="reward-tier-card">
+                    <div class="tier-rank-badge">💎 TOP 10%</div>
+                    <div class="tier-content">
+                        <div class="tier-prize-item">
+                            <span style="font-size:28px;">📦</span>
+                            <div>
+                                <strong style="color:#fff;font-size:14px;">World Class Scout Pack x2</strong>
+                                <div style="font-size:12px;color:var(--muted);">Guaranteed high-tier player pulls</div>
+                            </div>
+                        </div>
+                        <div class="tier-extra-rewards">
+                            <span class="extra-pill">🏆 150 Trophies</span>
+                            <span class="extra-pill">🪙 5,000 Gold</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOP 25% -->
+                <div class="reward-tier-card">
+                    <div class="tier-rank-badge">🔥 TOP 25%</div>
+                    <div class="tier-content">
+                        <div class="tier-prize-item">
+                            <span style="font-size:28px;">📦</span>
+                            <div>
+                                <strong style="color:#fff;font-size:14px;">Champion Scout Pack x2</strong>
+                            </div>
+                        </div>
+                        <div class="tier-extra-rewards">
+                            <span class="extra-pill">🏆 75 Trophies</span>
+                            <span class="extra-pill">🪙 3,000 Gold</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOP 50% -->
+                <div class="reward-tier-card">
+                    <div class="tier-rank-badge">⚡ TOP 50%</div>
+                    <div class="tier-content">
+                        <div class="tier-prize-item">
+                            <span style="font-size:28px;">📦</span>
+                            <div>
+                                <strong style="color:#fff;font-size:14px;">Premium Scout Pack x2</strong>
+                            </div>
+                        </div>
+                        <div class="tier-extra-rewards">
+                            <span class="extra-pill">🏆 30 Trophies</span>
+                            <span class="extra-pill">🪙 1,500 Gold</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARTICIPATION -->
+                <div class="reward-tier-card">
+                    <div class="tier-rank-badge" style="background:#64748b;">⚽ PARTICIPATION (TOP 51%+)</div>
+                    <div class="tier-content">
+                        <div class="tier-prize-item">
+                            <span style="font-size:28px;">📦</span>
+                            <div>
+                                <strong style="color:#fff;font-size:14px;">Starter Scout Pack x1</strong>
+                            </div>
+                        </div>
+                        <div class="tier-extra-rewards">
+                            <span class="extra-pill">🏆 10 Trophies</span>
+                            <span class="extra-pill">🪙 500 Gold</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:20px;text-align:right;">
+                <button class="primary-btn" style="width:100%;" onclick="closeTournamentRewardsModal()">Got It, Let's Clash!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ELIMINATION / KNOCKOUT MODAL -->
+    <div id="tEliminationModal" class="arena-modal-backdrop hidden">
+        <div class="arena-modal-box" style="border-color:#ef4444;background:radial-gradient(circle at center, rgba(30,10,15,0.98), rgba(10,5,10,0.98));">
+            <div style="font-size:56px;margin-bottom:8px;animation:pulse 1s infinite alternate;">💀</div>
+            <h2 style="margin:0 0 8px;color:#ef4444;font-size:26px;font-weight:900;">KNOCKED OUT!</h2>
+            <p style="color:#cbd5e1;font-size:14px;margin-bottom:16px;">
+                You lost all 3 Hearts and were eliminated from this tournament run by King Jeff!
+            </p>
+            <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:14px;border-radius:14px;margin-bottom:20px;">
+                <div style="font-size:12px;color:#fca5a5;font-weight:800;">FINAL TOURNAMENT SCORE</div>
+                <div id="tEliminationScoreText" style="font-size:32px;font-weight:900;color:var(--gold);margin:4px 0;">0 pts</div>
+            </div>
+            <button class="danger-btn" style="width:100%;padding:14px;font-weight:900;" onclick="closeEliminationModal()">Claim Score & Return to Lobby →</button>
+        </div>
     </div>
 
     <!-- PAUSE MODAL OVERLAY -->
@@ -1410,8 +1586,8 @@
             <div style="font-size:48px;margin-bottom:10px;">⚠️</div>
             <h2 style="margin:0 0 10px;color:#fff;">Leave Tournament Run?</h2>
             <p style="color:#cbd5e1;font-size:14px;line-height:1.6;margin-bottom:20px;">
-                If you leave now, all current 15-minute run progress and active stage streak will be reset.<br><br>
-                <small style="color:var(--green);font-weight:700;">(Your permanent card collection, gold coins, and personal best high score are 100% safe! You can start infinite new runs anytime.)</small>
+                If you leave now, your current 15-minute run progress and active stage streak will end.<br><br>
+                <small style="color:var(--green);font-weight:700;">(Your permanent card collection, gold coins, and personal best high score are 100% safe!)</small>
             </p>
             <div style="display:flex;gap:12px;">
                 <button class="ghost-btn" style="flex:1;" onclick="closeLeaveConfirmationModal()">Cancel (Keep Playing)</button>
