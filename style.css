@@ -686,7 +686,10 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-messi,
 .card-3d-wrapper.theme-messi,
 .card-3d-front.theme-messi,
-.card-3d-item.theme-messi {
+.card-3d-item.theme-messi,
+.card.theme-messi.is-serialized,
+.card-3d-wrapper.theme-messi.is-serialized,
+.card-3d-front.theme-messi.is-serialized {
     background: linear-gradient(135deg, #451a03 0%, #f97316 35%, #fde047 70%, #38bdf8 100%) !important;
     background-size: 200% 200% !important;
     animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
@@ -698,7 +701,10 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-ronaldo,
 .card-3d-wrapper.theme-ronaldo,
 .card-3d-front.theme-ronaldo,
-.card-3d-item.theme-ronaldo {
+.card-3d-item.theme-ronaldo,
+.card.theme-ronaldo.is-serialized,
+.card-3d-wrapper.theme-ronaldo.is-serialized,
+.card-3d-front.theme-ronaldo.is-serialized {
     background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #c084fc 70%, #ffffff 100%) !important;
     background-size: 200% 200% !important;
     animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
@@ -710,7 +716,10 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-tournament,
 .card-3d-wrapper.theme-tournament,
 .card-3d-front.theme-tournament,
-.card-3d-item.theme-tournament {
+.card-3d-item.theme-tournament,
+.card.theme-tournament.is-serialized,
+.card-3d-wrapper.theme-tournament.is-serialized,
+.card-3d-front.theme-tournament.is-serialized {
     background: linear-gradient(135deg, #785206 0%, #ffd700 30%, #00f2fe 60%, #7928ca 85%, #785206 100%) !important;
     background-size: 250% 250% !important;
     animation: bgGradientShift 3.5s ease infinite !important;
@@ -722,7 +731,10 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-developer,
 .card-3d-wrapper.theme-developer,
 .card-3d-front.theme-developer,
-.card-3d-item.theme-developer {
+.card-3d-item.theme-developer,
+.card.theme-developer.is-serialized,
+.card-3d-wrapper.theme-developer.is-serialized,
+.card-3d-front.theme-developer.is-serialized {
     background: linear-gradient(135deg, #3d1400 0%, #d97706 25%, #ffd700 50%, #ff3b30 75%, #3d1400 100%) !important;
     background-size: 250% 250% !important;
     animation: bgGradientShift 3s ease infinite !important;
@@ -997,12 +1009,12 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
     border-color: rgba(250, 204, 21, 0.3) !important;
 }
 
-/* Holographic Serialized Animation */
+/* Holographic Serialized Animation (Generic Fallback) */
 .card.is-serialized,
 .card-3d-wrapper.is-serialized {
-    background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #ffd700 65%, #c084fc 85%, #ffffff 100%) !important;
-    background-size: 200% 200% !important;
-    animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
+    background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #ffd700 65%, #c084fc 85%, #ffffff 100%);
+    background-size: 200% 200%;
+    animation: serializedHoloShift 4s ease-in-out infinite alternate;
 }
 
 @keyframes serializedHoloShift {
