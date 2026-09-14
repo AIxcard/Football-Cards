@@ -49,7 +49,13 @@ Football-Cards/
 
 ---
 
-## 📝 Recent Technical Updates
+* **2026-09-14 (Phase 60 - World Cup Polish, Fair Penalty Shootouts, 3D Theme Matching & Admin Spawner)**:
+  - **Balanced Intuitive Penalty Shootout**: Removed strict millisecond reflex timing requirements and ms failure messages. Shooting uses tactical zone selection vs stage-based AI dive probabilities (Stage 1 = 20% to Stage 4 = 50%), while Goalkeeping rewards diving to King Jeff's shot zone with World Class saves.
+  - **Admin Spawner & Shiny Emanuel**: Added `Shiny Emanuel` (99 OVR CAM Tournament reward with animated rainbow foil) to `PLAYERS`, implemented `adminSpawnShinyEmanuel()` quick spawner, and added Shiny toggle support to `adminExecuteSpawnCard()`.
+  - **Synchronized 3D Card Inspector Themes**: Fixed CSS specificity bug where generic `.is-serialized` was overriding Messi, Ronaldo, and Tournament card themes in the 3D Inspector. 3D card front styling now strictly matches collection view 100%.
+  - **Rank #1 Profile Trophy Requirement**: Golden World Cup trophy badge on user profile is now strictly earned by achieving Rank #1 or Tournament Championship.
+  - **Clean Input Placeholders**: Stripped all `(e.g. ...)` placeholders across all search bars, inputs, modals, and trade pickers.
+  - **Empty Update Log Placeholder**: Emptied update log modal content with clean placeholder text for official release notes.
 * **2026-09-14 (Phase 59)**:
   - **Roguelike Tactical Draft System**: Populates an interactive 3-card draft modal (`#tCardDraftModal`) every 2 kicks and at stage transitions. Modifiers include buffs (Precision Stride, Iron Net, Golden Touch, Double Impact) and high-risk cursed cards (Sudden Death Pact, Blinding Smoke, Frenzy Overload, Titan Defense) offering up to +500% tournament score multipliers.
   - **3-Hearts Life Counter & Elimination Screen**: Replaced infinite attempts during runs with a high-stakes 3-Heart lives HUD (`❤️❤️❤️`). Conceding kicks, missing penalties, or losing matches subtracts hearts; losing all 3 hearts triggers `#tEliminationModal` with run score summary and leaderboard submission.
