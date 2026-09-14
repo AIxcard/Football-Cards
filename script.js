@@ -339,17 +339,17 @@ const DUPLICATE_VALUES = {
 };
 
 const CARD_VALUES = {
-    Common: 20,
-    Uncommon: 50,
-    Rare: 150,
-    Epic: 400,
-    Legendary: 1200,
+    Common: 10,
+    Uncommon: 25,
+    Rare: 75,
+    Epic: 200,
+    Legendary: 600,
     Exclusive: 800,
-    Mythic: 6000,
-    Secret: 15000,
-    Tournament: 30000,
-    "World Class": 75000,
-    Developer: 200000
+    Mythic: 2500,
+    Secret: 6000,
+    Tournament: 10000,
+    "World Class": 25000,
+    Developer: 50000
 };
 
 const FRAMES = [
@@ -364,17 +364,25 @@ const FRAMES = [
     { id: "dragon_warlord", name: "✨ Jade", css: "frame-dragon-warlord", cost: 30000, desc: "Carved from mystical imperial green jade stone, glowing with an ancient emerald radiance", previewBg: "linear-gradient(135deg, #059669, #10b981, #064e3b)" }
 ];
 
-function getCardValue(card) {
+function calculateCardRAP(card) {
     if (!card) return 0;
-    if (card.serialNumber || (card.rarity === "World Class" && (card.player === "Lionel Messi" || card.player === "Cristiano Ronaldo") && card.isSerialized)) {
-        return 500000;
+    if (card.serialNumber) {
+        const serialNum = Math.max(1, Math.min(10, Number(card.serialNumber) || 1));
+        return 55000 - serialNum * 2500;
     }
-    return CARD_VALUES[card.rarity] || 20;
+    const rarity = card.rarity || "Common";
+    const baseVal = CARD_VALUES[rarity] || 10;
+    const ratingBonus = Math.max(0, (Number(card.rating) || 75) - 75) * Math.max(1, Math.round(baseVal * 0.02));
+    return Math.round(baseVal + ratingBonus);
+}
+
+function getCardValue(card) {
+    return calculateCardRAP(card);
 }
 
 function calculateCollectionValue(cards) {
     if (!Array.isArray(cards)) return 0;
-    return cards.reduce((sum, c) => sum + getCardValue(c), 0);
+    return cards.reduce((sum, c) => sum + calculateCardRAP(c), 0);
 }
 
 const RONALDO_SERIALIZED_PALETTES = [
@@ -2677,6 +2685,18 @@ const AntiBotGuard = {
     }
 };
 
+function getExclusivePackExpiry() {
+    const now = new Date();
+    const dayOfWeek = now.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+    const daysUntilNextMon = ((8 - dayOfWeek) % 7) || 7;
+    return Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + daysUntilNextMon,
+        0, 0, 0
+    );
+}
+
 function openPack(type, count = 1, evt = null) {
     if (!AntiBotGuard.validateUserGesture(evt)) return;
     if (isOpeningPackInProgress) return;
@@ -2688,7 +2708,7 @@ function openPack(type, count = 1, evt = null) {
         return;
     }
 
-    if (type === "exclusive" && Date.now() >= EXCLUSIVE_PACK_EXPIRY) {
+    if (type === "exclusive" && Date.now() >= getExclusivePackExpiry()) {
         toast("The Exclusive Legends Pack has ended and is no longer available in the shop!");
         SoundFx.click();
         return;
@@ -5959,6 +5979,13 @@ function renderProfile() {
             titleBadge.textContent = titleObj.name;
             titleBadge.className = `equipped-title-badge ${titleObj.cssClass}`;
         }
+
+        const wcTrophy = document.getElementById("profileWorldCupTrophyBadge");
+        if (wcTrophy) {
+            const hasWc = (Number(state.tournamentScore) >= 500) || (state.stats && Number(state.stats.tournamentScore) >= 500) || (state.accountUser || "").toLowerCase() === "alucard" || (state.grantedTitles || []).includes("Season 1 Champion");
+            wcTrophy.style.display = hasWc ? "inline-flex" : "none";
+        }
+
         const bg = BACKGROUNDS.find(b => b.id === state.profileBackground) || BACKGROUNDS[0];
         const hero = document.getElementById("profileHero");
         if (bg && hero) hero.style.background = bg.css;
@@ -7717,11 +7744,16 @@ function advanceTournamentStage() {
 }
 
 function renderTournament() {
+    checkDailyTournamentReset();
+    const effectiveScore = Number((state.stats && state.stats.tournamentScore) || state.tournamentScore || 0);
     const tScoreDisp = document.getElementById("tScoreDisplay");
-    if (tScoreDisp) tScoreDisp.textContent = `${(Number(state.tournamentScore) || 0).toLocaleString()} pts`;
+    if (tScoreDisp) tScoreDisp.textContent = `${effectiveScore.toLocaleString()} pts`;
 
-    const tWinsDisp = document.getElementById("tWinsDisplay");
-    if (tWinsDisp) tWinsDisp.textContent = `${Number(state.tournamentWins) || 0} Wins`;
+    const tAttemptsBadge = document.getElementById("tDailyAttemptsBadge");
+    if (tAttemptsBadge) tAttemptsBadge.textContent = `${state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5} / 5`;
+
+    const tLaunchAttempts = document.getElementById("tLaunchAttemptsText");
+    if (tLaunchAttempts) tLaunchAttempts.textContent = `${state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5}/5 ATTEMPTS`;
 
     const isAlucard = (state.accountUser || state.name || "").toLowerCase() === "alucard";
     const launchContainer = document.getElementById("tLaunchCardContainer");
@@ -7729,13 +7761,13 @@ function renderTournament() {
         if (isAlucard) {
             launchContainer.innerHTML = `
                 <div class="tournament-launch-card">
-                    <div style="font-size:42px;">⏱️ ⚔️ 🏆</div>
-                    <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Championship Run</h2>
-                    <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                        Score as many points as possible before the 15-minute clock expires! Unlimited free attempts available. You can pause anytime.
+                    <div style="font-size:42px;margin-bottom:4px;">⏱️ ⚽ 🏆</div>
+                    <h2 style="margin:0 0 6px;color:#fff;font-size:24px;">World Cup Penalty Shootout</h2>
+                    <p style="color:var(--muted);max-width:550px;margin:0 0 14px;font-size:13.5px;line-height:1.5;">
+                        15 minutes per run. Hit green reflex sweetspots to score clean goals and tap flashing zones to save King Jeff's strikes.
                     </p>
                     <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                        ⚔️ PLAY TOURNAMENT RUN →
+                        ⚽ PLAY WORLD CUP (${state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5}/5 ATTEMPTS) →
                     </button>
                 </div>
             `;
@@ -7743,12 +7775,12 @@ function renderTournament() {
             launchContainer.innerHTML = `
                 <div class="tournament-launch-card" style="border-color:rgba(255,255,255,0.15);background:rgba(15,23,42,0.8);">
                     <div style="font-size:42px;">🔒</div>
-                    <h2 style="margin:0;color:#fff;font-size:22px;">Tournament Arena In Testing Phase</h2>
+                    <h2 style="margin:0;color:#fff;font-size:22px;">World Cup Arena In Testing Phase</h2>
                     <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                        The Championship Arena is currently undergoing internal testing and calibration. Public kickoff will be available soon!
+                        The World Cup Arena is currently undergoing calibration for Season 1. Public kickoff will be available on Update 0.5!
                     </p>
                     <button class="ghost-btn" style="padding:12px 28px;opacity:0.6;cursor:not-allowed;" disabled>
-                        🔒 Testing In Progress (Coming Soon)
+                        🔒 Testing In Progress (Update 0.5)
                     </button>
                 </div>
             `;
@@ -8357,6 +8389,26 @@ function setLeaderboardTab(tab) {
 
 function checkIsAdmin() {
     return (state.accountUser || state.name || "").toLowerCase() === "alucard" || !!state.isGrantedAdmin;
+}
+
+function checkAdminStatus() {
+    const isAdmin = checkIsAdmin();
+    const headerBtn = document.getElementById("adminHeaderBtn");
+    const sidebarBtn = document.getElementById("adminSidebarBtn");
+    if (headerBtn) headerBtn.style.display = isAdmin ? "inline-flex" : "none";
+    if (sidebarBtn) sidebarBtn.style.display = isAdmin ? "flex" : "none";
+}
+
+function openUpdateLogModal() {
+    const modal = document.getElementById("updateLogModal");
+    if (modal) modal.classList.remove("hidden");
+    try { SoundFx.click(); } catch(e) {}
+}
+
+function closeUpdateLogModal() {
+    const modal = document.getElementById("updateLogModal");
+    if (modal) modal.classList.add("hidden");
+    try { SoundFx.click(); } catch(e) {}
 }
 
 function openAdminPanel() {
@@ -8986,25 +9038,34 @@ function adminModifyTargetUser() {
    ========================================================= */
 
 const STAGE_CONFIG = [
-    { stage: 1, name: "Stage 1: Group Stage", opponent: "King Jeff", targetOvr: 82, rewardPts: 500, aiAccuracy: 0.20 },
-    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200, aiAccuracy: 0.35 },
-    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000, aiAccuracy: 0.50 },
-    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 98, rewardPts: 8000, aiAccuracy: 0.70 }
+    { stage: 1, name: "Stage 1: Group Match", opponent: "King Jeff", targetOvr: 82, rewardPts: 500, reflexMs: 400, gkReflexMs: 450 },
+    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200, reflexMs: 320, gkReflexMs: 350 },
+    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000, reflexMs: 240, gkReflexMs: 260 },
+    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 98, rewardPts: 8000, reflexMs: 160, gkReflexMs: 180 }
 ];
 
 const ROGUELIKE_MODIFIERS = [
-    { id: "rocket_shot", title: "⚡ Golden Rocket Shot", desc: "Your shots travel +40% faster with overwhelming power.", type: "buff", icon: "⚡", powerBonus: 0.35, pointMult: 1.2 },
-    { id: "spider_reflex", title: "🧤 Spider Reflexes", desc: "When diving as GK, your reflexes give +35% save radius.", type: "buff", icon: "🧤", gkBonus: 0.35, pointMult: 1.2 },
-    { id: "laser_sights", title: "🎯 Laser Sights", desc: "Corner net strikes (Zones 0, 2, 3, 5) gain +50% scoring precision.", type: "buff", icon: "🎯", cornerBonus: 0.5, pointMult: 1.25 },
-    { id: "heart_boost", title: "💖 Second Wind", desc: "Instantly restores +1 Heart ❤️ (up to max 3 hearts).", type: "buff", icon: "💖", heal: 1, pointMult: 1.0 },
-    { id: "time_extension", title: "⏱️ Stoppage Time", desc: "Adds +90 Seconds to your 15-minute championship clock!", type: "buff", icon: "⏱️", addTime: 90, pointMult: 1.1 },
-    { id: "iron_curtain", title: "🛡️ Iron Defense", desc: "King Jeff's shooting accuracy is reduced by 25%.", type: "buff", icon: "🛡️", jeffNerf: 0.25, pointMult: 1.15 },
-    
-    // Cursed / High Risk / High Reward
-    { id: "sudden_death_pact", title: "💀 Sudden Death Pact", desc: "Missing any shot instantly costs 1 Heart, but all goals award +250% Points!", type: "curse", icon: "💀", pointMult: 3.5, missPenalty: true },
-    { id: "blinding_smoke", title: "🌪️ Blinding Smoke", desc: "King Jeff GK dives 1.5x faster, but all goals and saves grant +300% Points!", type: "curse", icon: "🌪️", pointMult: 4.0, jeffBuff: 0.25 },
-    { id: "kings_challenge", title: "👑 King's Challenge", desc: "King Jeff OVR boosted to 99, but stage completion awards +5,000 Bonus Pts!", type: "curse", icon: "👑", pointMult: 2.5, kingOvrBoost: 5, stageBonus: 5000 },
-    { id: "glass_cannon", title: "🔥 Glass Cannon", desc: "Conceding a goal costs 2 Hearts, but every save awards +400% Points!", type: "curse", icon: "🔥", pointMult: 5.0, doubleDamage: true }
+    // Tactical Buffs
+    { id: "extra_time", title: "🎯 Quick Reflexes", desc: "+80ms extra reaction window on all shots & saves.", type: "buff", icon: "🎯", reflexBonus: 80, pointMult: 1.15 },
+    { id: "extra_heart", title: "💖 Extra Life", desc: "Instantly restores +1 Heart ❤️ (up to max 3 hearts).", type: "buff", icon: "💖", heal: 1, pointMult: 1.10 },
+    { id: "top_bins", title: "⚽ Top Bins Specialist", desc: "Corner goals grant +250 flat score bonus.", type: "buff", icon: "⚽", cornerBonus: 250, pointMult: 1.20 },
+    { id: "sticky_gloves", title: "🧤 Sticky Gloves", desc: "+100ms reaction window when saving King Jeff's strikes.", type: "buff", icon: "🧤", gkReflexBonus: 100, pointMult: 1.15 },
+    { id: "power_curve", title: "⚡ Power Curve", desc: "Your shots curl around King Jeff with +30% velocity.", type: "buff", icon: "⚡", powerBonus: 10, pointMult: 1.20 },
+    { id: "gold_rush", title: "🪙 Gold Rush", desc: "Every scored goal also awards +100 Gold Coins.", type: "buff", icon: "🪙", coinBonus: 100, pointMult: 1.25 },
+    { id: "hot_streak", title: "🔥 Hot Streak", desc: "Scoring goals back-to-back grants +300 bonus score.", type: "buff", icon: "🔥", pointMult: 1.20 },
+    { id: "iron_shield", title: "🛡️ Solid Defense", desc: "First mistake of the run is shielded (no heart loss).", type: "buff", icon: "🛡️", shield: 1, pointMult: 1.15 },
+
+    // Cursed / High Risk / High Point Multipliers
+    { id: "sudden_death", title: "💀 Sudden Death", desc: "Locked to 1 Heart only (1 mistake = Knockout), but grants 3.0x Points!", type: "curse", icon: "💀", pointMult: 3.0, suddenDeath: true },
+    { id: "rapid_fire", title: "⚡ Rapid Fire", desc: "Reaction window shrinks to 150ms, but grants 3.5x Points!", type: "curse", icon: "⚡", pointMult: 3.5, fastReflex: true },
+    { id: "flash_strike", title: "🌪️ Flash Strike", desc: "Target indicators disappear after 100ms, grants 2.5x Points!", type: "curse", icon: "🌪️", pointMult: 2.5 },
+    { id: "kings_wrath", title: "👑 King's Wrath", desc: "King Jeff shoots with maximum velocity, grants 2.8x Points!", type: "curse", icon: "👑", pointMult: 2.8, kingOvrBoost: 5 },
+    { id: "high_stakes", title: "🔥 High Stakes", desc: "Missing any penalty shot subtracts 1 Heart, grants 3.0x Points!", type: "curse", icon: "🔥", pointMult: 3.0, missPenalty: true },
+    { id: "overtime_drain", title: "⚠️ Rapid Clock", desc: "15-minute timer drains 25% faster, grants 2.2x Points!", type: "curse", icon: "⚠️", pointMult: 2.2 },
+
+    // Ultra-Rare 1% Godlike Cards
+    { id: "godlike_reflexes", title: "🌟 Godlike Instincts", desc: "1% ULTRA-RARE: Reaction windows doubled & +100% Total Tournament Score!", type: "buff", icon: "🌟", pointMult: 2.0, isGodlike: true, godlike: true },
+    { id: "golden_boot", title: "🏆 Golden Boot", desc: "1% ULTRA-RARE: All shots count as perfect top-bins & +100% Total Tournament Score!", type: "buff", icon: "🏆", pointMult: 2.0, isGodlike: true, goldenBoot: true }
 ];
 
 const TOURNAMENT_RUN_STORAGE_KEY = "football_tcg_active_tournament_run";
@@ -9019,6 +9080,9 @@ let tournamentRunState = {
     lives: 3,
     matchActive: true,
     turn: "player_shoot",
+    turnStartTime: 0,
+    incomingJeffZone: -1,
+    jeffShotTime: 0,
     round: 1,
     playerScore: 0,
     jeffScore: 0,
@@ -9065,6 +9129,9 @@ function saveTournamentRunSession() {
         lives: tournamentRunState.lives,
         matchActive: tournamentRunState.matchActive,
         turn: tournamentRunState.turn,
+        turnStartTime: tournamentRunState.turnStartTime || Date.now(),
+        incomingJeffZone: tournamentRunState.incomingJeffZone || -1,
+        jeffShotTime: tournamentRunState.jeffShotTime || Date.now(),
         round: tournamentRunState.round,
         playerScore: tournamentRunState.playerScore,
         jeffScore: tournamentRunState.jeffScore,
@@ -9098,6 +9165,7 @@ function restoreTournamentRunSession() {
         tournamentRunState = {
             ...data,
             remainingSeconds: remaining,
+            turnStartTime: Date.now(),
             isKicking: false
         };
 
@@ -9112,7 +9180,7 @@ function restoreTournamentRunSession() {
 function startTournamentRun() {
     const isAlucard = (state.accountUser || state.name || "").toLowerCase() === "alucard";
     if (!isAlucard) {
-        toast("Tournament Arena is currently in testing phase. Coming soon!");
+        toast("World Cup Arena is currently undergoing calibration for Season 1. Public kickoff on Update 0.5!");
         return;
     }
 
@@ -9135,6 +9203,9 @@ function startTournamentRun() {
         lives: 3,
         matchActive: true,
         turn: "player_shoot",
+        turnStartTime: Date.now(),
+        incomingJeffZone: -1,
+        jeffShotTime: 0,
         round: 1,
         playerScore: 0,
         jeffScore: 0,
@@ -9154,7 +9225,7 @@ function startTournamentRun() {
     renderTournamentRun();
     renderTournament();
     SoundFx.success();
-    toast(`🏆 15-Minute Penalty Cup Championship Started! Attempts remaining today: ${state.tournamentDailyRuns}/5`);
+    toast(`🏆 15-Minute World Cup Started! Attempts remaining today: ${state.tournamentDailyRuns}/5`);
 }
 
 function startTournamentTimerLoop() {
@@ -9212,6 +9283,7 @@ function toggleTournamentPause() {
         if (pauseOverlay) pauseOverlay.classList.add("hidden");
         if (pauseBtn) pauseBtn.textContent = "⏸️ Pause";
         tournamentRunState.lastTickTime = Date.now();
+        tournamentRunState.turnStartTime = Date.now();
         SoundFx.pop();
     }
 }
@@ -9238,7 +9310,7 @@ function confirmLeaveTournamentRun() {
     const arena = document.getElementById("tFullscreenArena");
     if (arena) arena.classList.add("hidden");
 
-    toast("Tournament run closed. All permanent collection & coins are safe!");
+    toast("World Cup run closed. All permanent cards & coins are safe!");
     renderTournament();
 }
 
@@ -9252,6 +9324,9 @@ function endTournamentRunTimeUp() {
     if (finalScore > (Number(state.tournamentScore) || 0)) {
         state.tournamentScore = finalScore;
     }
+    state.stats = state.stats || {};
+    state.stats.tournamentScore = Math.max(Number(state.stats.tournamentScore) || 0, finalScore);
+
     saveGame();
     syncTournamentLeaderboardScore();
 
@@ -9273,6 +9348,9 @@ function endTournamentEliminated() {
     if (finalScore > (Number(state.tournamentScore) || 0)) {
         state.tournamentScore = finalScore;
     }
+    state.stats = state.stats || {};
+    state.stats.tournamentScore = Math.max(Number(state.stats.tournamentScore) || 0, finalScore);
+
     saveGame();
     syncTournamentLeaderboardScore();
 
@@ -9317,7 +9395,7 @@ function closeTournamentRewardsModal() {
 }
 
 /* =========================================================
-   ROGUELIKE 3-CARD MODIFIER DRAFT SYSTEM
+   ROGUELIKE 3-CARD MODIFIER DRAFT SYSTEM (GUARANTEED BUFF + CURSE)
    ========================================================= */
 
 function triggerTacticalCardDraft() {
@@ -9326,18 +9404,33 @@ function triggerTacticalCardDraft() {
     const container = document.getElementById("draftCardsRow");
     if (!modal || !container) return;
 
-    const shuffled = [...ROGUELIKE_MODIFIERS].sort(() => 0.5 - Math.random());
-    const choices = shuffled.slice(0, 3);
+    const buffs = ROGUELIKE_MODIFIERS.filter(m => m.type === "buff" && !m.isGodlike);
+    const curses = ROGUELIKE_MODIFIERS.filter(m => m.type === "curse");
+    const godlikes = ROGUELIKE_MODIFIERS.filter(m => m.isGodlike);
+
+    // Guaranteed: 1 Buff, 1 Curse, 1 Random (with 1% godlike chance)
+    const card1 = buffs[Math.floor(Math.random() * buffs.length)];
+    const card2 = curses[Math.floor(Math.random() * curses.length)];
+    
+    let card3;
+    if (Math.random() < 0.01) {
+        card3 = godlikes[Math.floor(Math.random() * godlikes.length)];
+    } else {
+        const remaining = ROGUELIKE_MODIFIERS.filter(m => m.id !== card1.id && m.id !== card2.id && !m.isGodlike);
+        card3 = remaining[Math.floor(Math.random() * remaining.length)];
+    }
+
+    const choices = [card1, card2, card3].sort(() => 0.5 - Math.random());
 
     container.innerHTML = choices.map(c => `
-        <div class="draft-card-box ${c.type}" onclick="selectDraftModifier('${c.id}')">
+        <div class="draft-card-box ${c.type} ${c.isGodlike ? 'godlike-draft-card' : ''}" onclick="selectDraftModifier('${c.id}')">
             <div>
                 <div class="draft-card-icon">${c.icon}</div>
                 <div class="draft-card-title">${escapeHTML(c.title)}</div>
                 <div class="draft-card-desc">${escapeHTML(c.desc)}</div>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
-                <span class="draft-card-badge ${c.type}">${c.type === 'buff' ? 'TACTICAL BUFF' : 'CURSED MODIFIER'}</span>
+                <span class="draft-card-badge ${c.type}">${c.isGodlike ? '⭐ 1% ULTRA-RARE' : (c.type === 'buff' ? 'TACTICAL BUFF' : 'CURSED MODIFIER')}</span>
                 <span style="font-size:12px;font-weight:900;color:var(--gold);">${c.pointMult ? `${c.pointMult}x PTS` : ''}</span>
             </div>
         </div>
@@ -9357,8 +9450,8 @@ function selectDraftModifier(modId) {
     if (mod.heal) {
         tournamentRunState.lives = Math.min(3, tournamentRunState.lives + mod.heal);
     }
-    if (mod.addTime) {
-        tournamentRunState.remainingSeconds += mod.addTime;
+    if (mod.suddenDeath) {
+        tournamentRunState.lives = 1;
     }
 
     const modal = document.getElementById("tCardDraftModal");
@@ -9371,7 +9464,7 @@ function selectDraftModifier(modId) {
     renderTournamentRun();
 }
 
-// Penalty Shootout 6-Zone Coordinates for visual ball shot & keeper dive animations
+// Penalty Shootout 6-Zone Coordinates
 const ZONE_OFFSETS = [
     { x: -140, y: -70 },  // 0: Top Left
     { x: 0,    y: -80 },  // 1: Top Center
@@ -9380,6 +9473,33 @@ const ZONE_OFFSETS = [
     { x: 0,    y: 40 },   // 4: Low Center
     { x: 140,  y: 40 }    // 5: Bottom Right
 ];
+
+function prepareNextTurn(turnType) {
+    tournamentRunState.turn = turnType;
+    tournamentRunState.turnStartTime = Date.now();
+    tournamentRunState.isKicking = false;
+
+    // Clear reflex visual indicators on all zone buttons
+    document.querySelectorAll(".goal-zone-btn").forEach(btn => {
+        btn.classList.remove("reflex-active", "reflex-incoming");
+    });
+
+    if (turnType === "jeff_shoot") {
+        // King Jeff picks target zone to strike
+        const jeffShotZone = Math.floor(Math.random() * 6);
+        tournamentRunState.incomingJeffZone = jeffShotZone;
+        tournamentRunState.jeffShotTime = Date.now();
+
+        // Highlight the target zone for reflex defense
+        const zoneBtns = document.querySelectorAll(".goal-zone-btn");
+        if (zoneBtns[jeffShotZone]) {
+            zoneBtns[jeffShotZone].classList.add("reflex-incoming");
+        }
+    }
+
+    saveTournamentRunSession();
+    renderTournamentRun();
+}
 
 function choosePenaltyZone(zoneIndex) {
     if (!tournamentRunState.active || tournamentRunState.isPaused) return;
@@ -9396,12 +9516,6 @@ function choosePenaltyZone(zoneIndex) {
     });
 
     const playerCard = getTournamentPlayerCard();
-    let playerRating = Number(playerCard.rating || playerCard.ovr || 90);
-    let jeffRating = Number(stageConf.targetOvr || 85);
-
-    if (activeMods.some(m => m.kingOvrBoost)) jeffRating += 5;
-    if (activeMods.some(m => m.powerBonus)) playerRating += 10;
-
     const ball = document.getElementById("penaltyBall");
     const keeper = document.getElementById("arenaGoalkeeper");
     const splash = document.getElementById("penaltyOutcomeSplash");
@@ -9409,61 +9523,56 @@ function choosePenaltyZone(zoneIndex) {
     const splashSub = document.getElementById("splashSub");
 
     if (tournamentRunState.turn === "player_shoot") {
-        // PLAYER IS SHOOTING AT KING JEFF
+        // 1. PLAYER SHOOTING TURN (SKILL-BASED REFLEX TIMING)
+        let reflexThreshold = stageConf.reflexMs || 350;
+        if (activeMods.some(m => m.reflexBonus)) reflexThreshold += 80;
+        if (activeMods.some(m => m.fastReflex)) reflexThreshold = 150;
+        if (activeMods.some(m => m.godlike)) reflexThreshold *= 2;
+
+        const reactionTime = Date.now() - (tournamentRunState.turnStartTime || Date.now());
+        const isFastReflex = reactionTime <= reflexThreshold || activeMods.some(m => m.goldenBoot || m.godlike);
+
         const targetOffset = ZONE_OFFSETS[zoneIndex] || ZONE_OFFSETS[1];
         
-        // AI Goalkeeper dive prediction
-        let jeffAccuracy = stageConf.aiAccuracy || 0.25;
-        if (activeMods.some(m => m.jeffBuff)) jeffAccuracy += 0.20;
-        if (activeMods.some(m => m.jeffNerf)) jeffAccuracy -= 0.15;
-        jeffAccuracy = Math.max(0.10, Math.min(0.85, jeffAccuracy));
-
         let jeffDiveZone;
-        if (Math.random() < jeffAccuracy) {
-            jeffDiveZone = zoneIndex; // King Jeff guessed correctly
-        } else {
+        if (isFastReflex) {
+            // Unstoppable top bins corner! King Jeff dives wrong way
             const wrongZones = [0,1,2,3,4,5].filter(z => z !== zoneIndex);
             jeffDiveZone = wrongZones[Math.floor(Math.random() * wrongZones.length)];
+        } else {
+            // Slower reaction: King Jeff reads the late shot and dives to block
+            jeffDiveZone = zoneIndex;
         }
         const keeperOffset = ZONE_OFFSETS[jeffDiveZone] || ZONE_OFFSETS[1];
 
-        // Animate Ball
+        // Animate Ball & Keeper
         if (ball) {
-            ball.style.transition = "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)";
+            ball.style.transition = "transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)";
             ball.style.transform = `translate(${targetOffset.x}px, ${targetOffset.y - 100}px) scale(0.65)`;
         }
-
-        // Animate Goalkeeper Dive
         if (keeper) {
-            keeper.style.transition = "transform 0.5s ease-out";
+            keeper.style.transition = "transform 0.45s ease-out";
             keeper.style.transform = `translate(${keeperOffset.x}px, ${keeperOffset.y}px)`;
         }
 
         try { SoundFx.kickShot(); } catch(e) {}
 
         setTimeout(() => {
-            let isGoal = false;
-            if (jeffDiveZone !== zoneIndex) {
-                isGoal = true;
-            } else {
-                let powerChance = Math.max(0.1, (playerRating - jeffRating) * 0.03);
-                if (activeMods.some(m => m.cornerBonus) && [0, 2, 3, 5].includes(zoneIndex)) {
-                    powerChance += 0.50; // Laser corner sights bonus
-                }
-                if (Math.random() < powerChance) {
-                    isGoal = true;
-                }
-            }
-
-            if (isGoal) {
+            if (isFastReflex) {
                 try { SoundFx.goalCheer(); } catch(e) {}
                 tournamentRunState.playerScore++;
                 tournamentRunState.playerPills.push("goal");
-                const awarded = Math.round(150 * netPointMult);
+                let goalScore = 150;
+                if (activeMods.some(m => m.cornerBonus) && [0, 2, 3, 5].includes(zoneIndex)) goalScore += 250;
+                const awarded = Math.round(goalScore * netPointMult);
                 tournamentRunState.currentRunScore += awarded;
 
-                if (splashText) splashText.textContent = "GOAL! ⚽🔥";
-                if (splashSub) splashSub.textContent = `Bullet strike by ${playerCard.name}! (+${awarded.toLocaleString()} pts)`;
+                if (activeMods.some(m => m.coinBonus)) {
+                    addCoins(100);
+                }
+
+                if (splashText) splashText.textContent = "⚡ PERFECT TOP BINS! ⚽";
+                if (splashSub) splashSub.textContent = `Clean reflex strike (${reactionTime}ms)! (+${awarded.toLocaleString()} pts)`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.add("goal");
@@ -9477,7 +9586,7 @@ function choosePenaltyZone(zoneIndex) {
                 }
 
                 if (splashText) splashText.textContent = "SAVED! 🧤🚫";
-                if (splashSub) splashSub.textContent = activeMods.some(m => m.missPenalty) ? "King Jeff saved! Sudden Death Pact cost 1 Heart ❤️!" : "King Jeff makes a diving stop!";
+                if (splashSub) splashSub.textContent = `Slow reaction (${reactionTime}ms / max ${reflexThreshold}ms) — King Jeff stopped the shot!`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.remove("goal");
@@ -9487,7 +9596,7 @@ function choosePenaltyZone(zoneIndex) {
                     setTimeout(() => {
                         if (splash) splash.classList.add("hidden");
                         endTournamentEliminated();
-                    }, 1200);
+                    }, 1100);
                     return;
                 }
             }
@@ -9513,52 +9622,46 @@ function choosePenaltyZone(zoneIndex) {
                     triggerTacticalCardDraft();
                 }
 
-                tournamentRunState.turn = "jeff_shoot";
-                tournamentRunState.isKicking = false;
-                saveTournamentRunSession();
-                renderTournamentRun();
-            }, 1200);
+                prepareNextTurn("jeff_shoot");
+            }, 1100);
 
-        }, 550);
+        }, 500);
 
     } else if (tournamentRunState.turn === "jeff_shoot") {
-        // KING JEFF IS SHOOTING AT PLAYER (PLAYER IS GOALKEEPER)
-        const playerDiveZone = zoneIndex;
-        const playerOffset = ZONE_OFFSETS[playerDiveZone] || ZONE_OFFSETS[1];
+        // 2. DEFENDING KING JEFF'S SHOT (ACTIVE GOALKEEPING REFLEX)
+        const targetZone = tournamentRunState.incomingJeffZone >= 0 ? tournamentRunState.incomingJeffZone : Math.floor(Math.random() * 6);
+        let gkThreshold = stageConf.gkReflexMs || 400;
+        if (activeMods.some(m => m.gkReflexBonus)) gkThreshold += 100;
+        if (activeMods.some(m => m.reflexBonus)) gkThreshold += 80;
+        if (activeMods.some(m => m.godlike)) gkThreshold *= 2;
 
-        const jeffShotZone = Math.floor(Math.random() * 6);
-        const targetOffset = ZONE_OFFSETS[jeffShotZone] || ZONE_OFFSETS[1];
+        const reactionTime = Date.now() - (tournamentRunState.jeffShotTime || Date.now());
+        const isSaved = (zoneIndex === targetZone) && (reactionTime <= gkThreshold || activeMods.some(m => m.godlike));
 
-        // Animate Ball
+        const playerOffset = ZONE_OFFSETS[zoneIndex] || ZONE_OFFSETS[1];
+        const targetOffset = ZONE_OFFSETS[targetZone] || ZONE_OFFSETS[1];
+
+        // Animate Ball & Keeper
         if (ball) {
-            ball.style.transition = "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)";
+            ball.style.transition = "transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)";
             ball.style.transform = `translate(${targetOffset.x}px, ${targetOffset.y - 100}px) scale(0.65)`;
         }
-
-        // Animate Goalkeeper
         if (keeper) {
-            keeper.style.transition = "transform 0.5s ease-out";
+            keeper.style.transition = "transform 0.45s ease-out";
             keeper.style.transform = `translate(${playerOffset.x}px, ${playerOffset.y}px)`;
         }
 
         try { SoundFx.kickShot(); } catch(e) {}
 
         setTimeout(() => {
-            let isSaved = false;
-            if (playerDiveZone === jeffShotZone) {
-                isSaved = true;
-            } else if (activeMods.some(m => m.gkBonus) && Math.random() < 0.35) {
-                isSaved = true;
-            }
-
             if (isSaved) {
                 try { SoundFx.ballSave(); } catch(e) {}
                 tournamentRunState.jeffPills.push("miss");
                 const awarded = Math.round(200 * netPointMult);
                 tournamentRunState.currentRunScore += awarded;
 
-                if (splashText) splashText.textContent = "GREAT SAVE! 🧤🛡️";
-                if (splashSub) splashSub.textContent = `You read King Jeff's strike! (+${awarded.toLocaleString()} pts)`;
+                if (splashText) splashText.textContent = "🧤 WORLD CLASS SAVE!";
+                if (splashSub) splashSub.textContent = `Fast reflex save (${reactionTime}ms)! Denied King Jeff (+${awarded.toLocaleString()} pts)`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.add("goal");
@@ -9568,11 +9671,11 @@ function choosePenaltyZone(zoneIndex) {
                 tournamentRunState.jeffScore++;
                 tournamentRunState.jeffPills.push("goal");
 
-                const dmg = activeMods.some(m => m.doubleDamage) ? 2 : 1;
+                const dmg = 1;
                 tournamentRunState.lives = Math.max(0, tournamentRunState.lives - dmg);
 
                 if (splashText) splashText.textContent = "CONCEDED! ⚽💔";
-                if (splashSub) splashSub.textContent = `King Jeff scored! Lost ${dmg} Heart ❤️!`;
+                if (splashSub) splashSub.textContent = (zoneIndex === targetZone) ? `Too slow (${reactionTime}ms / max ${gkThreshold}ms)! Lost 1 Heart ❤️!` : `Wrong zone! King Jeff scored! Lost 1 Heart ❤️!`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.remove("goal");
@@ -9582,14 +9685,14 @@ function choosePenaltyZone(zoneIndex) {
                     setTimeout(() => {
                         if (splash) splash.classList.add("hidden");
                         endTournamentEliminated();
-                    }, 1200);
+                    }, 1100);
                     return;
                 }
             }
 
             renderTournamentRun();
 
-            // End of Round: Check match result
+            // End of Kick: Check match result
             setTimeout(() => {
                 if (splash) splash.classList.add("hidden");
                 if (ball) {
@@ -9635,7 +9738,6 @@ function choosePenaltyZone(zoneIndex) {
 
                     if (playerWon) {
                         let stageBonusPts = stageConf.rewardPts;
-                        if (activeMods.some(m => m.stageBonus)) stageBonusPts += 5000;
                         const awardedStagePts = Math.round(stageBonusPts * netPointMult);
                         tournamentRunState.currentRunScore += awardedStagePts;
                         state.tournamentWins = (Number(state.tournamentWins) || 0) + 1;
@@ -9648,39 +9750,35 @@ function choosePenaltyZone(zoneIndex) {
                             triggerTacticalCardDraft();
                         } else {
                             tournamentRunState.currentRunScore += Math.round(10000 * netPointMult);
-                            toast(`👑 GRAND FINAL CHAMPION! You conquered King Jeff in the Grand Final! +10,000 Trophy Pts!`);
-                            tournamentRunState.stage = 1;
-                            triggerTacticalCardDraft();
+                            toast(`👑 WORLD CUP CHAMPION! Defeated King Jeff in the Grand Final! Total Score: ${tournamentRunState.currentRunScore.toLocaleString()} pts!`);
+                            if (!(state.grantedTitles || []).includes("Season 1 Champion")) {
+                                state.grantedTitles = state.grantedTitles || [];
+                                state.grantedTitles.push("Season 1 Champion");
+                            }
                         }
                     } else {
+                        try { SoundFx.error(); } catch(e) {}
                         tournamentRunState.lives = Math.max(0, tournamentRunState.lives - 1);
+                        toast(`💔 Defeated by King Jeff ${jScore}-${pScore}! Lost 1 Heart ❤️!`);
                         if (tournamentRunState.lives <= 0) {
                             endTournamentEliminated();
                             return;
                         }
-                        try { SoundFx.error(); } catch(e) {}
-                        toast(`💀 DEFEAT! King Jeff won the shootout ${jScore}-${pScore}. Lost 1 Heart ❤️! Stage reset to Group Match.`);
-                        tournamentRunState.stage = 1;
                     }
 
                     saveTournamentRunSession();
-                    saveGame();
-                    syncTournamentLeaderboardScore();
+                    renderTournamentRun();
                 } else {
-                    tournamentRunState.turn = "player_shoot";
-                    saveTournamentRunSession();
+                    prepareNextTurn("player_shoot");
                 }
+            }, 1100);
 
-                renderTournamentRun();
-            }, 1200);
-
-        }, 550);
+        }, 500);
     }
 }
 
 function startNextShootoutMatch() {
     tournamentRunState.matchActive = true;
-    tournamentRunState.turn = "player_shoot";
     tournamentRunState.round = 1;
     tournamentRunState.playerScore = 0;
     tournamentRunState.jeffScore = 0;
@@ -9690,8 +9788,8 @@ function startNextShootoutMatch() {
     tournamentRunState.draftShownRounds = [];
 
     saveTournamentRunSession();
+    prepareNextTurn("player_shoot");
     renderTournamentRun();
-    try { SoundFx.pop(); } catch(e) {}
 }
 
 function renderTournamentRun() {
