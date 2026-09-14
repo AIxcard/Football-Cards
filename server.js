@@ -320,9 +320,30 @@ const server = http.createServer((req, res) => {
             if (err || !body.username || !body.saveData) return sendJSON(400, { success: false, error: "Invalid data" });
             const key = body.username.trim().toLowerCase();
             database.backups = database.backups || {};
+            
+            let incoming = body.saveData;
+            if (typeof incoming === "string") {
+                try { incoming = JSON.parse(incoming); } catch(e) {}
+            }
+
             if (!database.users[key]) {
-                database.users[key] = { username: body.username.trim(), password: "", saveData: body.saveData, lastActive: Date.now() };
+                database.users[key] = { username: body.username.trim(), password: "", saveData: incoming, lastActive: Date.now() };
             } else {
+                const existing = database.users[key].saveData || {};
+                
+                // If incoming save has 0 cards but server has master cards, protect server cards from blank device saves
+                if (key === "alucard") {
+                    incoming.isGrantedAdmin = true;
+                    incoming.equippedTitle = incoming.equippedTitle || existing.equippedTitle || "UNIQUE";
+                    incoming.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion"];
+                    if ((!incoming.cards || incoming.cards.length === 0) && Array.isArray(existing.cards) && existing.cards.length > 0) {
+                        incoming.cards = existing.cards;
+                    }
+                    if ((!incoming.coins || Number(incoming.coins) < 1000) && Number(existing.coins) >= 1000) {
+                        incoming.coins = existing.coins;
+                    }
+                }
+
                 if (database.users[key].saveData) {
                     database.backups[key] = database.backups[key] || [];
                     database.backups[key].unshift({
@@ -331,7 +352,8 @@ const server = http.createServer((req, res) => {
                     });
                     if (database.backups[key].length > 15) database.backups[key].pop();
                 }
-                database.users[key].saveData = body.saveData;
+                incoming.lastSave = Date.now();
+                database.users[key].saveData = incoming;
                 database.users[key].lastActive = Date.now();
             }
             saveDatabase();
