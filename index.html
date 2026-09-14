@@ -10,7 +10,7 @@
         window.location.replace("https://football-cards-yrry.onrender.com" + window.location.search);
     }
 </script>
-<link rel="stylesheet" href="style.css?v=1000.0">
+<link rel="stylesheet" href="style.css?v=1001.0">
 </head>
 
 <body>
@@ -622,7 +622,7 @@
         </div>
 
         <div class="collection-controls-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <input id="cardSearchInput" type="text" placeholder="🔍 Search cards (e.g. Messi, ST, 95)..." style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#09131d;color:white;font-size:13px;min-width:200px;flex:1;" oninput="renderCards()">
+            <input id="cardSearchInput" type="text" placeholder="🔍 Search cards..." style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#09131d;color:white;font-size:13px;min-width:200px;flex:1;" oninput="renderCards()">
 
             <select id="cardFilter" onchange="renderCards()">
                 <option value="all">All Rarities</option>
@@ -762,7 +762,7 @@
             </div>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
-                <input id="tradeRecipientInput" placeholder="Enter username (e.g. Alucard, AdminAccount)..." style="flex:1;min-width:220px;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:14px;">
+                <input id="tradeRecipientInput" placeholder="Enter username..." style="flex:1;min-width:220px;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:14px;">
                 <button class="primary-btn" style="width:auto;padding:12px 24px;font-weight:900;background:linear-gradient(135deg,#00f2fe,#4facfe);" onclick="sendTradeOffer()">🚀 Send Live Trade Request</button>
             </div>
 
@@ -1049,7 +1049,7 @@
         <h2>🔍 Search Player Profile</h2>
         <p>Look up any collector's account to inspect their stats & 6-slot card showcase.</p>
         <div style="display:flex;gap:10px;margin-top:12px;">
-            <input id="playerSearchInput" placeholder="Enter username (e.g. Alucard, chita, Dih)" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;">
+            <input id="playerSearchInput" placeholder="Enter username..." style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;">
             <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="searchPlayerProfile()">Search</button>
         </div>
         <!-- INLINE SEARCHED PROFILE SECTION -->
@@ -1186,24 +1186,23 @@
             <div style="display:flex;justify-content:center;gap:10px;margin-bottom:8px;">
                 <span class="badge" style="background:rgba(56,189,248,0.18);border:1px solid #38bdf8;color:#38bdf8;font-size:12px;font-weight:800;padding:4px 12px;border-radius:12px;">⏱️ 15 Minutes / Match</span>
                 <span class="badge" style="background:rgba(239,68,68,0.18);border:1px solid #ef4444;color:#ef4444;font-size:12px;font-weight:800;padding:4px 12px;border-radius:12px;">❤️❤️❤️ 3 Lives</span>
-                <span class="badge" style="background:rgba(244,196,78,0.18);border:1px solid var(--gold);color:var(--gold);font-size:12px;font-weight:800;padding:4px 12px;border-radius:12px;">⚡ Reflex Timing (350ms - 150ms)</span>
             </div>
             <h1 style="margin:6px 0 10px;font-size:34px;">🏆 World Cup</h1>
-            <p style="color:var(--muted);max-width:680px;margin:0 auto 16px;line-height:1.5;font-size:14px;">
-                Test your reflexes in a fast-paced penalty shootout against King Jeff. Pick tactical cards every 2 rounds, score top bins, make clutch saves, and climb the global ladder before your 3 hearts or 15-minute timer run out!
+            <p style="color:var(--muted);max-width:620px;margin:0 auto 16px;line-height:1.6;font-size:14px;">
+                Climb the global ladder before your 3 hearts or 15-minute match timer run out. Choose tactical drafting perks every 2 rounds and battle King Jeff for the championship!
             </p>
         </div>
 
         <!-- START RUN LAUNCH CARD -->
         <div id="tLaunchCardContainer">
             <div class="tournament-launch-card">
-                <div style="font-size:42px;margin-bottom:4px;">⏱️ ⚽ 🏆</div>
-                <h2 style="margin:0 0 6px;color:#fff;font-size:24px;">World Cup Penalty Shootout</h2>
-                <p style="color:var(--muted);max-width:550px;margin:0 0 14px;font-size:13.5px;line-height:1.5;">
-                    15 minutes per run. Hit green reflex sweetspots to score clean goals and tap flashing zones to save King Jeff's strikes.
+                <div style="font-size:46px;margin-bottom:8px;">🏆</div>
+                <h2 style="margin:0 0 8px;color:#fff;font-size:26px;font-weight:900;letter-spacing:0.5px;">World Cup</h2>
+                <p style="color:#94a3b8;max-width:520px;margin:0 auto 18px;font-size:14px;line-height:1.6;">
+                    Compete in 15-minute penalty shootout matches against King Jeff. Pick tactical cards every 2 rounds, score goals, and climb the leaderboard to win Season Rewards.
                 </p>
                 <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                    ⚽ PLAY WORLD CUP (<span id="tLaunchAttemptsText">5/5 ATTEMPTS</span>) →
+                    🏆 PLAY WORLD CUP (<span id="tLaunchAttemptsText">5/5 ATTEMPTS</span>) →
                 </button>
             </div>
         </div>
@@ -1798,7 +1797,7 @@
         <h2>🎁 Redeem Promo Codes</h2>
         <p>Enter promo codes to receive free rewards &amp; unlock features!</p>
         <div style="display:flex;gap:10px;margin-top:12px;">
-            <input id="codeInput" placeholder="Enter code (e.g. RELEASE)" style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;text-transform:uppercase;">
+            <input id="codeInput" placeholder="Enter promo code..." style="flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;text-transform:uppercase;">
             <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="redeemCode()">Redeem</button>
         </div>
     </div>
@@ -1868,7 +1867,7 @@
             <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;">
                 <div style="flex:1;min-width:200px;">
                     <label>Target Player Username</label>
-                    <input type="text" id="adminAuditTargetInput" placeholder="Enter username (e.g. Alucard, hex)..." style="width:100%;">
+                    <input type="text" id="adminAuditTargetInput" placeholder="Enter username..." style="width:100%;">
                 </div>
                 <button class="primary-btn" style="padding:10px 18px;font-weight:900;" onclick="adminInspectPlayerAudit()">🔍 Inspect Player</button>
             </div>
@@ -1883,7 +1882,7 @@
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Add gold coins to your account or grant directly to any online player.</p>
             
             <label>Target Username (Leave blank for yourself)</label>
-            <input id="adminGoldTarget" placeholder="e.g. Alucard, Timekung2835" style="width:100%;margin-bottom:10px;">
+            <input id="adminGoldTarget" placeholder="Enter username..." style="width:100%;margin-bottom:10px;">
             
             <label>Select Preset Amount or Enter Custom Value</label>
             <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
@@ -1893,7 +1892,7 @@
                 <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=50000000">+50M</button>
                 <button class="ghost-btn" onclick="document.getElementById('adminGoldAmount').value=999999999">Max (999M)</button>
             </div>
-            <input id="adminGoldAmount" type="number" placeholder="Enter custom amount (e.g. 1000000)" value="1000000" style="width:100%;margin-bottom:14px;">
+            <input id="adminGoldAmount" type="number" placeholder="Enter amount..." value="1000000" style="width:100%;margin-bottom:14px;">
             
             <button class="primary-btn" onclick="adminExecuteGiveGold()">⚡ Grant Gold</button>
         </div>
@@ -1903,23 +1902,26 @@
             <h3>🎴 Master Card Spawner &amp; Secret Vault</h3>
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Spawn any card directly into your collection or send to another player.</p>
 
-            <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:14px;padding:12px;margin-bottom:14px;">
-                <div style="font-weight:900;color:var(--gold);font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-                    <span>🐵</span> Exclusive Developer Admin Card
-                </div>
-                <p style="font-size:12px;color:#e2e8f0;margin:0 0 10px;">Hidden from the Card Index album. 99 OVR ST Developer rarity with custom Godly Sols cutscene.</p>
-                <button class="primary-btn" style="background:linear-gradient(135deg,#ffd700,#ff6b00);color:#000;font-weight:900;" onclick="adminSpawnMonkeyCard()">🐵 Spawn Developer Monkey King Card (99 OVR)</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                <button class="primary-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-weight:900;" onclick="adminSpawnShinyEmanuel()">🌟 Quick Spawn Shiny Emanuel (99 OVR)</button>
+                <button class="primary-btn" style="background:linear-gradient(135deg,#ffd700,#ff6b00);color:#000;font-weight:900;" onclick="adminSpawnMonkeyCard()">🐵 Quick Spawn Monkey King (99 OVR)</button>
             </div>
             
             <label>Target Username (Leave blank for yourself)</label>
-            <input id="adminCardTarget" placeholder="e.g. Alucard" style="width:100%;margin-bottom:10px;">
+            <input id="adminCardTarget" placeholder="Enter target username..." style="width:100%;margin-bottom:10px;">
             
             <label>Select Player Card</label>
             <select id="adminCardSelect" style="width:100%;margin-bottom:12px;"></select>
             
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:rgba(255,215,0,0.06);padding:10px;border-radius:10px;border:1px solid rgba(255,215,0,0.3);">
-                <input type="checkbox" id="adminCardSerialized" style="width:20px;height:20px;accent-color:var(--gold);">
-                <label for="adminCardSerialized" style="margin:0;cursor:pointer;color:var(--gold);font-weight:900;">★ Make Serialized (1 of 10 Procedural Holographic Gradient)</label>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;background:rgba(255,215,0,0.06);padding:10px;border-radius:10px;border:1px solid rgba(255,215,0,0.3);">
+                    <input type="checkbox" id="adminCardSerialized" style="width:20px;height:20px;accent-color:var(--gold);">
+                    <label for="adminCardSerialized" style="margin:0;cursor:pointer;color:var(--gold);font-weight:900;">★ Make Serialized (1 of 10 Procedural Holographic Gradient)</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:rgba(234,179,8,0.06);padding:10px;border-radius:10px;border:1px solid rgba(234,179,8,0.3);">
+                    <input type="checkbox" id="adminCardShiny" style="width:20px;height:20px;accent-color:var(--gold);">
+                    <label for="adminCardShiny" style="margin:0;cursor:pointer;color:var(--gold);font-weight:900;">✨ Make Shiny Foil (Prismatic Animated Shimmer)</label>
+                </div>
             </div>
             
             <div style="display:flex;gap:10px;">
@@ -1934,7 +1936,7 @@
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Instant power tools to unlock cosmetics and progression.</p>
             
             <label>Target Username (Leave blank for yourself)</label>
-            <input id="adminLevelTarget" placeholder="Target Username" style="width:100%;margin-bottom:10px;">
+            <input id="adminLevelTarget" placeholder="Target username..." style="width:100%;margin-bottom:10px;">
             
             <label>Set Level (1 - 999)</label>
             <input id="adminLevelInput" type="number" value="99" min="1" max="999" style="width:100%;margin-bottom:14px;">
@@ -1958,7 +1960,7 @@
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Grant any official in-game title directly to yourself or any player.</p>
             
             <label>Target Account Username (Leave blank for yourself)</label>
-            <input id="adminTitleTarget" placeholder="Target Username (e.g. Timekung2835)" style="width:100%;margin-bottom:10px;">
+            <input id="adminTitleTarget" placeholder="Target username..." style="width:100%;margin-bottom:10px;">
             
             <label>Select In-Game Title</label>
             <select id="adminTitleSelect" style="width:100%;margin-bottom:14px;"></select>
@@ -1986,7 +1988,7 @@
             <input id="adminModTarget" placeholder="Username to Trade Ban / Lift Ban" style="width:100%;margin-bottom:10px;">
             
             <label>Reason for Flag / Trade Ban</label>
-            <input id="adminModReason" placeholder="e.g. Unauthorized Script / Balance Injection" value="Unauthorized Script / Client Modification" style="width:100%;margin-bottom:14px;">
+            <input id="adminModReason" placeholder="Reason for moderation..." value="Unauthorized Script / Client Modification" style="width:100%;margin-bottom:14px;">
             
             <div style="display:flex;gap:10px;">
                 <button class="danger-btn" style="flex:1;" onclick="adminExecuteTradeBan()">⚠️ Apply Trade Ban (Flag)</button>
@@ -2004,7 +2006,7 @@
 
             <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);border-radius:14px;padding:14px;margin-bottom:14px;">
                 <label>Target Username to Delete</label>
-                <input id="adminDeleteTarget" placeholder="Username to permanently delete (e.g. Timekung2835)" style="width:100%;margin-bottom:12px;">
+                <input id="adminDeleteTarget" placeholder="Username to permanently delete..." style="width:100%;margin-bottom:12px;">
 
                 <label style="font-size:12px;color:var(--muted);">Admin Confirmation (type DELETE to confirm)</label>
                 <input id="adminDeleteConfirm" placeholder='Type DELETE to confirm' style="width:100%;margin-bottom:14px;border-color:rgba(239,68,68,0.4);">
@@ -2186,7 +2188,7 @@
 
         <!-- SEARCH & FILTER TOOLBAR -->
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-            <input id="tradeCardSearchInput" type="text" placeholder="🔍 Search by player name (e.g. Messi, Haaland, Mbappé)..." style="flex:1;min-width:200px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:13px;" oninput="filterTradeCardPicker()">
+            <input id="tradeCardSearchInput" type="text" placeholder="🔍 Search by player name..." style="flex:1;min-width:200px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:13px;" oninput="filterTradeCardPicker()">
             <select id="tradeCardRarityFilter" style="padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0c1722;color:white;font-size:13px;" onchange="filterTradeCardPicker()">
                 <option value="ALL">All Rarities</option>
                 <option value="World Class">World Class</option>
@@ -2289,72 +2291,12 @@
             <button class="modal-close-x" onclick="closeUpdateLogModal()">✕</button>
         </div>
 
-        <div class="update-log-scroll" style="overflow-y:auto;flex:1;padding-right:6px;display:flex;flex-direction:column;gap:16px;">
-            <!-- UPDATE 0.5 -->
-            <div class="update-card" style="background:rgba(255,255,255,0.03);border:1px solid rgba(244,196,78,0.25);border-radius:14px;padding:16px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <strong style="color:var(--gold);font-size:16px;">🏆 Update 0.5 — World Cup &amp; Reflex Arena</strong>
-                    <span class="badge" style="background:rgba(244,196,78,0.2);color:var(--gold);font-weight:900;font-size:11px;">LATEST</span>
-                </div>
-                <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:13px;line-height:1.6;">
-                    <li><b>World Cup Penalty Tournament</b>: 15-minute high-stakes tournament against King Jeff.</li>
-                    <li><b>Reflex Timing Engine</b>: Pure skill-based penalties (350ms down to 150ms reaction windows).</li>
-                    <li><b>Tactical Card Drafting</b>: 16 dynamic cards + ultra-rare 1% Godlike cards every 2 rounds.</li>
-                    <li><b>3-Hearts Life System</b>: Missed kicks &amp; conceded goals cost hearts; knockout on 0 lives.</li>
-                    <li><b>Season Rewards</b>: #1 Shiny Animated Emanuel 99 CAM, Season 1 World Cup Profile Trophy.</li>
-                    <li><b>Balanced RAP Economy</b>: Fair Recent Average Price valuations &amp; cloud sync.</li>
-                </ul>
-            </div>
-
-            <!-- UPDATE 0.4 -->
-            <div class="update-card" style="background:rgba(255,255,255,0.02);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:16px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <strong style="color:#38bdf8;font-size:15px;">☁️ Update 0.4 — Cloud Sync &amp; Live Trading Hub</strong>
-                    <span style="color:var(--muted);font-size:11.5px;">Sept 2026</span>
-                </div>
-                <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:13px;line-height:1.6;">
-                    <li><b>Authoritative Cloud Sync</b>: Seamless real-time progress syncing across PC, iPad, and mobile.</li>
-                    <li><b>Live Trading Rooms</b>: 2-way real-time player trading with HUGE card picker &amp; chat.</li>
-                    <li><b>Exclusive Legends Pack</b>: High-value booster pack with live Monday expiration timer.</li>
-                    <li><b>Anti-Bot Guard</b>: Protection against rapid autoclickers and injection tools.</li>
-                </ul>
-            </div>
-
-            <!-- UPDATE 0.3 -->
-            <div class="update-card" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <strong style="color:#fff;font-size:15px;">📖 Update 0.3 — Player Index &amp; 3D Card Inspector</strong>
-                    <span style="color:var(--muted);font-size:11.5px;">Aug 2026</span>
-                </div>
-                <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:13px;line-height:1.6;">
-                    <li><b>89-Player Catalog</b>: Complete discovery album with unlockable gold rewards.</li>
-                    <li><b>3D Card Inspector</b>: Full 360° card rotation with holographic foil shaders &amp; card backs.</li>
-                    <li><b>Serialized Cards</b>: 1-of-10 limited serialized editions with unique animated gradients.</li>
-                </ul>
-            </div>
-
-            <!-- UPDATE 0.2 -->
-            <div class="update-card" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <strong style="color:#fff;font-size:15px;">🌌 Update 0.2 — Sol's RNG Cinematic Cutscenes</strong>
-                    <span style="color:var(--muted);font-size:11.5px;">Aug 2026</span>
-                </div>
-                <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:13px;line-height:1.6;">
-                    <li><b>GOAT Cutscenes</b>: Fullscreen blackout and vortex bursts for Lionel Messi &amp; Cristiano Ronaldo.</li>
-                    <li><b>Magma &amp; Starlight Overlays</b>: Dedicated cinematic cutscenes for Mythic &amp; Secret pulls.</li>
-                </ul>
-            </div>
-
-            <!-- UPDATE 0.1 -->
-            <div class="update-card" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <strong style="color:#fff;font-size:15px;">⚽ Update 0.1 — Initial Game Release</strong>
-                    <span style="color:var(--muted);font-size:11.5px;">Aug 2026</span>
-                </div>
-                <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:13px;line-height:1.6;">
-                    <li>Official game release with Booster Packs, Collection management, Bulk Selling &amp; Audio Synthesizer.</li>
-                </ul>
-            </div>
+        <div class="update-log-scroll" style="overflow-y:auto;flex:1;padding:36px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+            <div style="font-size:48px;margin-bottom:12px;">📜</div>
+            <h3 style="color:#fff;margin:0 0 6px;font-size:18px;">No New Updates</h3>
+            <p style="color:var(--muted);font-size:13.5px;max-width:380px;margin:0;line-height:1.5;">
+                There are currently no new patch notes. All upcoming balance changes and game updates will be posted here!
+            </p>
         </div>
 
         <button class="primary-btn" style="margin-top:14px;width:100%;" onclick="closeUpdateLogModal()">Close Update Log</button>
@@ -2368,6 +2310,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=1000.0"></script>
+<script src="script.js?v=1001.0"></script>
 </body>
 </html>
