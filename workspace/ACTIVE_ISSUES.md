@@ -36,6 +36,25 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 
 ---
 
+### [ISSUE-057] [P0 - Critical] Roguelike Card Draft, 3-Heart Lives Loss Condition, 5 Daily Runs, Anime TD Season Rewards & Roblox Text Purge
+- **Description**:
+  1. Players needed actual lose conditions in the 15-minute tournament run so matches carry real stakes and tension.
+  2. Tournament run attempts needed to be updated to 5 attempts per day (with daily reset).
+  3. Boredom prevention: Needed roguelike dynamic drafting system every 2 rounds with buffs and cursed cards (high risk, higher point reward multipliers).
+  4. Match stake betting removed completely.
+  5. Season rewards ladder needed restructuring into Anime TD-style tiered rewards: Rank #1 gets **Shiny Animated Emanuel (99 OVR, CAM)** with animated rainbow foil shader, 500 Trophies, 10k Gold; Top 5 gets Emanuel (99 OVR, CAM), 250 Trophies, 7.5k Gold; plus tiered rewards for Top 10%, Top 25%, Top 50%, and Participation.
+  6. Removed all "Roblox" text mentions across trading and throughout the entire game.
+  7. Leaderboard on tournament page re-verified for real-time cloud sync.
+- **Fix**:
+  1. Implemented a 3-Heart life counter (`❤️❤️❤️`) in the tournament HUD; losing all lives triggers the Knockout / Elimination screen (`#tEliminationModal`) with run summary and final score submission.
+  2. Configured `state.tournamentDailyRuns` to 5 runs per day, resetting at 00:00:00 UTC, with a live countdown timer in `updateTimers()`.
+  3. Built `ROGUELIKE_MODIFIERS` (10 tactical buff and cursed cards offering up to +500% point multipliers) and interactive 3-card draft modal (`#tCardDraftModal`) triggered dynamically every 2 kicks and between tournament stages.
+  4. Removed all stake betting UI (`#pokerChipsRow`) and stake logic from tournament matches.
+  5. Implemented the Anime TD-style tiered rewards modal (`#tRewardsModal`) and CSS holographic foil shader (`.shiny-emanuel-effect`).
+  6. Cleaned and purged all "Roblox" strings from trading and game UI.
+  7. Verified 0 syntax errors, 0 export errors, and 0 CDP runtime exceptions via automated QA testing.
+- **Status**: 🟢 Resolved
+
 ### [ISSUE-056] [P1 - Critical] Tournament Game Remake (Penalty Cup vs King Jeff), Exclusive Pack Expiry Live Countdown & Authoritative Cloud Sync
 - **Description**:
   1. The tournament poker format was confusing to players and needed replacement with an intuitive, thrilling football game against King Jeff.
