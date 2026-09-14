@@ -750,7 +750,7 @@
                 <span style="font-size:32px;">🤝</span>
                 <div>
                     <h2 style="margin:0;font-size:20px;color:#fff;">Start Live Trade</h2>
-                    <p style="margin:2px 0 0;font-size:12px;color:var(--muted);">Send a live trade invite to any online player. When they accept, you'll both join the Live Roblox Trading Room!</p>
+                    <p style="margin:2px 0 0;font-size:12px;color:var(--muted);">Send a live trade invite to any player. When they accept, you'll both join the Live Trading Room!</p>
                 </div>
             </div>
 
@@ -1153,7 +1153,6 @@
         <button id="lbTabGold" class="mission-tab active" onclick="setLeaderboardTab('gold')">💰 Most Gold</button>
         <button id="lbTabValue" class="mission-tab" onclick="setLeaderboardTab('value')">💎 Highest Card Value</button>
         <button id="lbTabLevel" class="mission-tab" onclick="setLeaderboardTab('level')">⭐ Highest Level</button>
-        <button id="lbTabTournament" class="mission-tab" onclick="setLeaderboardTab('tournament')">⚔️ Tournament Score</button>
     </div>
 
     <div id="leaderboardAuthWarning" class="panel" style="display:none;border-color:var(--gold);text-align:center;">
@@ -1275,6 +1274,14 @@
                 <button class="arena-pause-btn" id="tPauseRunBtn" onclick="toggleTournamentPause()">⏸️ Pause</button>
                 <button class="arena-leave-btn" onclick="promptLeaveTournamentRun()">🚪 Leave Arena</button>
             </div>
+        </div>
+
+        <!-- STEP GUIDANCE BAR -->
+        <div class="tournament-step-guide" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:8px 16px;background:rgba(15,23,42,0.85);border:1px solid rgba(244,196,78,0.25);border-radius:12px;margin:0 16px 12px;font-size:12px;font-weight:800;color:var(--muted);flex-wrap:wrap;">
+            <span id="tStep1" style="color:var(--gold);background:rgba(244,196,78,0.15);padding:2px 8px;border-radius:6px;">1. Select Ante & Deal</span> ➔ 
+            <span id="tStep2" style="padding:2px 8px;border-radius:6px;">2. Swap Cards (Max 3)</span> ➔ 
+            <span id="tStep3" style="padding:2px 8px;border-radius:6px;">3. Double Down (Optional)</span> ➔ 
+            <span id="tStep4" style="padding:2px 8px;border-radius:6px;">4. Showdown vs King Jeff</span>
         </div>
 
         <!-- FELT TABLE GAME ARENA -->
