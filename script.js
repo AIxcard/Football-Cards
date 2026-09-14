@@ -4543,7 +4543,12 @@ function renderCards() {
         return 0;
     });
 
+    const totalCollectionRAP = calculateCollectionValue(state.cards || []);
     setText("collectionCount", `${state.cards.length} cards collected${query ? ` (${cards.length} matching search)` : ''}`);
+    const colRAPBadge = document.getElementById("collectionRAPValue");
+    if (colRAPBadge) {
+        colRAPBadge.textContent = `💎 Total Collection: ${totalCollectionRAP.toLocaleString()} RAP`;
+    }
 
     if (!cards.length) {
         grid.innerHTML = `<div class="empty-state">No cards found matching your search/filters.<br>Open scouting packs to add cards to your collection.</div>`;
@@ -4556,16 +4561,19 @@ function renderCards() {
         const rap = calculateCardRAP(card);
         const cardImg = getCardImage(card);
 
-        let themeClass = card.serialNumber ? "" : `theme-${rarityClassName(card.rarity)}`;
-        if (!card.serialNumber) {
-            if (card.rarity === "World Class") {
-                if (card.player === "Lionel Messi") themeClass = "theme-messi";
-                else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
-            } else if (card.rarity === "Tournament") {
-                themeClass = "theme-tournament";
-            } else if (card.rarity === "Developer" || card.player === "Monkey King") {
-                themeClass = "theme-developer";
-            }
+        if (card.serialNumber && !card.serialGradient) {
+            card.serialGradient = generateRandomSerializedGradient(card.serialNumber, card.player);
+        }
+
+        let themeClass = `theme-${rarityClassName(card.rarity)}`;
+        if (card.rarity === "World Class") {
+            if (card.player === "Lionel Messi") themeClass = "theme-messi";
+            else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
+            else themeClass = "theme-worldclass";
+        } else if (card.rarity === "Tournament") {
+            themeClass = "theme-tournament";
+        } else if (card.rarity === "Developer" || card.player === "Monkey King") {
+            themeClass = "theme-developer";
         }
 
         const isLocked = !!card.locked;
@@ -4878,25 +4886,12 @@ function initiateTradeWithSearchedUser() {
 /* =========================================================
    MARKET VALUE & RAP SYSTEM (RECENT AVERAGE PRICE)
    ========================================================= */
-
-function calculateCardRAP(card) {
-    if (!card) return 0;
-    
-    // Serialized cards are priceless (N/A value, ranked highest for sorting)
-    if (card.serialNumber) {
-        return 999000000 - Number(card.serialNumber);
-    }
-
-    const rarity = card.rarity || "Common";
-    const baseVal = CARD_VALUES[rarity] || 20;
-    const ratingBonus = Math.max(0, (Number(card.rating) || 75) - 75) * Math.max(1, Math.round(baseVal * 0.015));
-    return Math.round(baseVal + ratingBonus);
-}
-
 function formatRAP(val, card) {
-    if (card && card.serialNumber) return "N/A";
-    if (val === "N/A" || val === null || val === undefined) return "N/A";
-    const num = Number(val) || 0;
+    let num = Number(val);
+    if (isNaN(num) || num === 0) {
+        if (card) num = calculateCardRAP(card);
+        else return "0";
+    }
     if (num >= 1000000) return (num / 1000000).toFixed(2) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toLocaleString();
@@ -7793,14 +7788,11 @@ function renderTournament() {
 async function syncTournamentLeaderboardScore() {
     try {
         if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
-            const userDoc = await GlobalCloudRest.fetchUser(state.accountUser);
-            if (userDoc) {
-                await GlobalCloudRest.pushUser(state.accountUser, {
-                    ...userDoc,
-                    tournamentScore: Number(state.tournamentScore) || 0,
-                    tournamentWins: Number(state.tournamentWins) || 0
-                });
-            }
+            state.stats = state.stats || {};
+            state.stats.tournamentScore = Math.max(Number(state.stats.tournamentScore) || 0, Number(state.tournamentScore) || 0);
+            state.stats.tournamentWins = Math.max(Number(state.stats.tournamentWins) || 0, Number(state.tournamentWins) || 0);
+            await ServerAPI.saveGame(state.accountUser, state);
+            await renderTournamentLeaderboard();
         }
     } catch(e) {}
 }
