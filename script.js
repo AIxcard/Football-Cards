@@ -7778,26 +7778,43 @@ async function renderTournamentLeaderboard() {
     if (!lbContainer) return;
 
     try {
-        const users = await GlobalCloudRest.fetchAllUsers();
         let list = [];
-        for (const k in users) {
-            const u = users[k];
-            if (!u || !u.username || u.username.includes("[BOT]") || u.isBot) continue;
-            let pData = {};
-            try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
-            const tScore = Number((pData.stats && pData.stats.tournamentScore) || pData.tournamentScore || u.tournamentScore || 0);
-            list.push({
-                username: u.username,
-                tournamentScore: tScore,
-                level: Number(pData.level || 1),
-                equippedTitle: pData.equippedTitle || "Collector"
-            });
+        try {
+            const res = await fetch(`${ServerAPI.BASE_URL}/api/leaderboard`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.success && Array.isArray(data.leaderboard)) {
+                    list = data.leaderboard.map(u => ({
+                        username: u.username,
+                        tournamentScore: Number(u.tournamentScore || 0),
+                        level: Number(u.level || 1),
+                        equippedTitle: u.equippedTitle || "Collector"
+                    }));
+                }
+            }
+        } catch(e) {}
+
+        if (list.length === 0) {
+            const users = await GlobalCloudRest.fetchAllUsers();
+            for (const k in users) {
+                const u = users[k];
+                if (!u || !u.username || u.username.includes("[BOT]") || u.isBot) continue;
+                let pData = {};
+                try { pData = typeof u.saveData === "string" ? JSON.parse(u.saveData) : (u.saveData || {}); } catch(e) {}
+                const tScore = Number((pData.stats && pData.stats.tournamentScore) || pData.tournamentScore || u.tournamentScore || 0);
+                list.push({
+                    username: u.username,
+                    tournamentScore: tScore,
+                    level: Number(pData.level || 1),
+                    equippedTitle: pData.equippedTitle || "Collector"
+                });
+            }
         }
 
         // Always sync current player's latest score
         const myUser = state.accountUser || state.name || "Player";
         const myScore = Number((state.stats && state.stats.tournamentScore) || state.tournamentScore || 0);
-        const myIdx = list.findIndex(u => u.username.toLowerCase() === myUser.toLowerCase());
+        const myIdx = list.findIndex(u => u.username && u.username.toLowerCase() === myUser.toLowerCase());
         if (myIdx >= 0) {
             list[myIdx].tournamentScore = Math.max(list[myIdx].tournamentScore, myScore);
         } else {
@@ -8965,14 +8982,29 @@ function adminModifyTargetUser() {
 }
 
 /* =========================================================
-   TOURNAMENT / FOOTBALL SQUAD DUEL ENGINE
+   TOURNAMENT / ROGUELIKE PENALTY CUP CHAMPIONSHIP ENGINE
    ========================================================= */
 
 const STAGE_CONFIG = [
-    { stage: 1, name: "Stage 1: Group Stage", opponent: "King Jeff", targetOvr: 82, rewardPts: 500, coinMult: 2.0 },
-    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200, coinMult: 2.5 },
-    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000, coinMult: 3.0 },
-    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 97, rewardPts: 8000, coinMult: 5.0 }
+    { stage: 1, name: "Stage 1: Group Stage", opponent: "King Jeff", targetOvr: 82, rewardPts: 500, aiAccuracy: 0.20 },
+    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200, aiAccuracy: 0.35 },
+    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000, aiAccuracy: 0.50 },
+    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 98, rewardPts: 8000, aiAccuracy: 0.70 }
+];
+
+const ROGUELIKE_MODIFIERS = [
+    { id: "rocket_shot", title: "⚡ Golden Rocket Shot", desc: "Your shots travel +40% faster with overwhelming power.", type: "buff", icon: "⚡", powerBonus: 0.35, pointMult: 1.2 },
+    { id: "spider_reflex", title: "🧤 Spider Reflexes", desc: "When diving as GK, your reflexes give +35% save radius.", type: "buff", icon: "🧤", gkBonus: 0.35, pointMult: 1.2 },
+    { id: "laser_sights", title: "🎯 Laser Sights", desc: "Corner net strikes (Zones 0, 2, 3, 5) gain +50% scoring precision.", type: "buff", icon: "🎯", cornerBonus: 0.5, pointMult: 1.25 },
+    { id: "heart_boost", title: "💖 Second Wind", desc: "Instantly restores +1 Heart ❤️ (up to max 3 hearts).", type: "buff", icon: "💖", heal: 1, pointMult: 1.0 },
+    { id: "time_extension", title: "⏱️ Stoppage Time", desc: "Adds +90 Seconds to your 15-minute championship clock!", type: "buff", icon: "⏱️", addTime: 90, pointMult: 1.1 },
+    { id: "iron_curtain", title: "🛡️ Iron Defense", desc: "King Jeff's shooting accuracy is reduced by 25%.", type: "buff", icon: "🛡️", jeffNerf: 0.25, pointMult: 1.15 },
+    
+    // Cursed / High Risk / High Reward
+    { id: "sudden_death_pact", title: "💀 Sudden Death Pact", desc: "Missing any shot instantly costs 1 Heart, but all goals award +250% Points!", type: "curse", icon: "💀", pointMult: 3.5, missPenalty: true },
+    { id: "blinding_smoke", title: "🌪️ Blinding Smoke", desc: "King Jeff GK dives 1.5x faster, but all goals and saves grant +300% Points!", type: "curse", icon: "🌪️", pointMult: 4.0, jeffBuff: 0.25 },
+    { id: "kings_challenge", title: "👑 King's Challenge", desc: "King Jeff OVR boosted to 99, but stage completion awards +5,000 Bonus Pts!", type: "curse", icon: "👑", pointMult: 2.5, kingOvrBoost: 5, stageBonus: 5000 },
+    { id: "glass_cannon", title: "🔥 Glass Cannon", desc: "Conceding a goal costs 2 Hearts, but every save awards +400% Points!", type: "curse", icon: "🔥", pointMult: 5.0, doubleDamage: true }
 ];
 
 const TOURNAMENT_RUN_STORAGE_KEY = "football_tcg_active_tournament_run";
@@ -8984,7 +9016,7 @@ let tournamentRunState = {
     isPaused: false,
     lastTickTime: 0,
     stage: 1,
-    stake: 100,
+    lives: 3,
     matchActive: true,
     turn: "player_shoot",
     round: 1,
@@ -8992,11 +9024,23 @@ let tournamentRunState = {
     jeffScore: 0,
     playerPills: [],
     jeffPills: [],
-    isKicking: false
+    isKicking: false,
+    activeModifiers: [],
+    draftShownRounds: []
 };
 
-let activeDuelBet = 100;
 let tournamentTimerInterval = null;
+
+function checkDailyTournamentReset() {
+    if (!state) return;
+    const now = Date.now();
+    if (!state.tournamentDailyReset || now >= state.tournamentDailyReset) {
+        state.tournamentDailyRuns = 5;
+        const d = new Date();
+        state.tournamentDailyReset = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0);
+    }
+    if (state.tournamentDailyRuns === undefined) state.tournamentDailyRuns = 5;
+}
 
 function getTournamentPlayerCard() {
     if (state && Array.isArray(state.cards) && state.cards.length > 0) {
@@ -9018,7 +9062,7 @@ function saveTournamentRunSession() {
         isPaused: tournamentRunState.isPaused,
         lastTickTime: Date.now(),
         stage: tournamentRunState.stage,
-        stake: tournamentRunState.stake,
+        lives: tournamentRunState.lives,
         matchActive: tournamentRunState.matchActive,
         turn: tournamentRunState.turn,
         round: tournamentRunState.round,
@@ -9026,7 +9070,9 @@ function saveTournamentRunSession() {
         jeffScore: tournamentRunState.jeffScore,
         playerPills: tournamentRunState.playerPills,
         jeffPills: tournamentRunState.jeffPills,
-        isKicking: false
+        isKicking: false,
+        activeModifiers: tournamentRunState.activeModifiers || [],
+        draftShownRounds: tournamentRunState.draftShownRounds || []
     };
     safeStorage.setItem(TOURNAMENT_RUN_STORAGE_KEY, JSON.stringify(serializable));
 }
@@ -9070,11 +9116,14 @@ function startTournamentRun() {
         return;
     }
 
-    const currentCoins = Number(state.coins) || 0;
-    const initialStake = Math.min(activeDuelBet || 100, currentCoins);
-    if (initialStake > 0) {
-        spendCoins(initialStake);
+    checkDailyTournamentReset();
+    if ((Number(state.tournamentDailyRuns) || 0) <= 0) {
+        toast("No tournament attempts remaining today! Daily attempts reset at 00:00 UTC.");
+        return;
     }
+
+    state.tournamentDailyRuns = Math.max(0, (Number(state.tournamentDailyRuns) || 5) - 1);
+    saveGame();
 
     tournamentRunState = {
         active: true,
@@ -9083,7 +9132,7 @@ function startTournamentRun() {
         isPaused: false,
         lastTickTime: Date.now(),
         stage: 1,
-        stake: initialStake || 100,
+        lives: 3,
         matchActive: true,
         turn: "player_shoot",
         round: 1,
@@ -9091,7 +9140,9 @@ function startTournamentRun() {
         jeffScore: 0,
         playerPills: [],
         jeffPills: [],
-        isKicking: false
+        isKicking: false,
+        activeModifiers: [],
+        draftShownRounds: []
     };
 
     saveTournamentRunSession();
@@ -9101,8 +9152,9 @@ function startTournamentRun() {
 
     startTournamentTimerLoop();
     renderTournamentRun();
+    renderTournament();
     SoundFx.success();
-    toast("🏆 15-Minute Penalty Cup Championship Started! Beat King Jeff to reach the Grand Final!");
+    toast(`🏆 15-Minute Penalty Cup Championship Started! Attempts remaining today: ${state.tournamentDailyRuns}/5`);
 }
 
 function startTournamentTimerLoop() {
@@ -9212,6 +9264,37 @@ function endTournamentRunTimeUp() {
     SoundFx.levelUp();
 }
 
+function endTournamentEliminated() {
+    if (tournamentTimerInterval) clearInterval(tournamentTimerInterval);
+    tournamentRunState.active = false;
+    safeStorage.removeItem(TOURNAMENT_RUN_STORAGE_KEY);
+
+    const finalScore = Number(tournamentRunState.currentRunScore) || 0;
+    if (finalScore > (Number(state.tournamentScore) || 0)) {
+        state.tournamentScore = finalScore;
+    }
+    saveGame();
+    syncTournamentLeaderboardScore();
+
+    const elimScoreTxt = document.getElementById("tEliminationScoreText");
+    if (elimScoreTxt) elimScoreTxt.textContent = `${finalScore.toLocaleString()} pts`;
+
+    const elimModal = document.getElementById("tEliminationModal");
+    if (elimModal) elimModal.classList.remove("hidden");
+
+    try { SoundFx.error(); } catch(e) {}
+}
+
+function closeEliminationModal() {
+    const elimModal = document.getElementById("tEliminationModal");
+    if (elimModal) elimModal.classList.add("hidden");
+
+    const arena = document.getElementById("tFullscreenArena");
+    if (arena) arena.classList.add("hidden");
+
+    renderTournament();
+}
+
 function closeRunCompleteModal() {
     const completeModal = document.getElementById("tRunCompleteModal");
     if (completeModal) completeModal.classList.add("hidden");
@@ -9222,22 +9305,69 @@ function closeRunCompleteModal() {
     renderTournament();
 }
 
-function setTournamentStake(amount) {
-    if (tournamentRunState.matchActive && tournamentRunState.turn !== "match_over" && tournamentRunState.playerPills.length > 0) {
-        toast("Shootout in progress! Finish this match first.");
-        return;
-    }
-    const currentCoins = Number(state.coins) || 0;
-    const bet = Number(amount) || 100;
-    activeDuelBet = bet;
-    tournamentRunState.stake = bet;
-    
-    document.querySelectorAll(".poker-chip-btn").forEach(btn => {
-        const bVal = btn.getAttribute("data-bet");
-        btn.classList.toggle("active", (bVal === String(amount)));
-    });
-    
+function openTournamentRewardsModal() {
+    const modal = document.getElementById("tRewardsModal");
+    if (modal) modal.classList.remove("hidden");
     SoundFx.pop();
+}
+
+function closeTournamentRewardsModal() {
+    const modal = document.getElementById("tRewardsModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+/* =========================================================
+   ROGUELIKE 3-CARD MODIFIER DRAFT SYSTEM
+   ========================================================= */
+
+function triggerTacticalCardDraft() {
+    if (!tournamentRunState.active) return;
+    const modal = document.getElementById("tCardDraftModal");
+    const container = document.getElementById("draftCardsRow");
+    if (!modal || !container) return;
+
+    const shuffled = [...ROGUELIKE_MODIFIERS].sort(() => 0.5 - Math.random());
+    const choices = shuffled.slice(0, 3);
+
+    container.innerHTML = choices.map(c => `
+        <div class="draft-card-box ${c.type}" onclick="selectDraftModifier('${c.id}')">
+            <div>
+                <div class="draft-card-icon">${c.icon}</div>
+                <div class="draft-card-title">${escapeHTML(c.title)}</div>
+                <div class="draft-card-desc">${escapeHTML(c.desc)}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                <span class="draft-card-badge ${c.type}">${c.type === 'buff' ? 'TACTICAL BUFF' : 'CURSED MODIFIER'}</span>
+                <span style="font-size:12px;font-weight:900;color:var(--gold);">${c.pointMult ? `${c.pointMult}x PTS` : ''}</span>
+            </div>
+        </div>
+    `).join("");
+
+    modal.classList.remove("hidden");
+    try { SoundFx.packTear(); } catch(e) {}
+}
+
+function selectDraftModifier(modId) {
+    const mod = ROGUELIKE_MODIFIERS.find(m => m.id === modId);
+    if (!mod) return;
+
+    tournamentRunState.activeModifiers = tournamentRunState.activeModifiers || [];
+    tournamentRunState.activeModifiers.push(mod);
+
+    if (mod.heal) {
+        tournamentRunState.lives = Math.min(3, tournamentRunState.lives + mod.heal);
+    }
+    if (mod.addTime) {
+        tournamentRunState.remainingSeconds += mod.addTime;
+    }
+
+    const modal = document.getElementById("tCardDraftModal");
+    if (modal) modal.classList.add("hidden");
+
+    try { SoundFx.levelUp(); } catch(e) {}
+    toast(`🃏 Equipped [${mod.title}]! Effect active for the rest of this run!`);
+
+    saveTournamentRunSession();
     renderTournamentRun();
 }
 
@@ -9259,9 +9389,18 @@ function choosePenaltyZone(zoneIndex) {
     const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
     const stageConf = STAGE_CONFIG[currentStageIdx];
 
+    const activeMods = tournamentRunState.activeModifiers || [];
+    let netPointMult = 1.0;
+    activeMods.forEach(m => {
+        if (m.pointMult) netPointMult *= m.pointMult;
+    });
+
     const playerCard = getTournamentPlayerCard();
-    const playerRating = Number(playerCard.rating || playerCard.ovr || 90);
-    const jeffRating = Number(stageConf.targetOvr || 85);
+    let playerRating = Number(playerCard.rating || playerCard.ovr || 90);
+    let jeffRating = Number(stageConf.targetOvr || 85);
+
+    if (activeMods.some(m => m.kingOvrBoost)) jeffRating += 5;
+    if (activeMods.some(m => m.powerBonus)) playerRating += 10;
 
     const ball = document.getElementById("penaltyBall");
     const keeper = document.getElementById("arenaGoalkeeper");
@@ -9274,10 +9413,14 @@ function choosePenaltyZone(zoneIndex) {
         const targetOffset = ZONE_OFFSETS[zoneIndex] || ZONE_OFFSETS[1];
         
         // AI Goalkeeper dive prediction
-        const jeffAccuracy = 0.20 + (currentStageIdx * 0.10); // 20% stage 1 -> 50% stage 4
+        let jeffAccuracy = stageConf.aiAccuracy || 0.25;
+        if (activeMods.some(m => m.jeffBuff)) jeffAccuracy += 0.20;
+        if (activeMods.some(m => m.jeffNerf)) jeffAccuracy -= 0.15;
+        jeffAccuracy = Math.max(0.10, Math.min(0.85, jeffAccuracy));
+
         let jeffDiveZone;
         if (Math.random() < jeffAccuracy) {
-            jeffDiveZone = zoneIndex; // King Jeff correctly guessed
+            jeffDiveZone = zoneIndex; // King Jeff guessed correctly
         } else {
             const wrongZones = [0,1,2,3,4,5].filter(z => z !== zoneIndex);
             jeffDiveZone = wrongZones[Math.floor(Math.random() * wrongZones.length)];
@@ -9303,7 +9446,10 @@ function choosePenaltyZone(zoneIndex) {
             if (jeffDiveZone !== zoneIndex) {
                 isGoal = true;
             } else {
-                const powerChance = Math.max(0.1, (playerRating - jeffRating) * 0.03);
+                let powerChance = Math.max(0.1, (playerRating - jeffRating) * 0.03);
+                if (activeMods.some(m => m.cornerBonus) && [0, 2, 3, 5].includes(zoneIndex)) {
+                    powerChance += 0.50; // Laser corner sights bonus
+                }
                 if (Math.random() < powerChance) {
                     isGoal = true;
                 }
@@ -9313,10 +9459,11 @@ function choosePenaltyZone(zoneIndex) {
                 try { SoundFx.goalCheer(); } catch(e) {}
                 tournamentRunState.playerScore++;
                 tournamentRunState.playerPills.push("goal");
-                tournamentRunState.currentRunScore += 150;
+                const awarded = Math.round(150 * netPointMult);
+                tournamentRunState.currentRunScore += awarded;
 
                 if (splashText) splashText.textContent = "GOAL! ⚽🔥";
-                if (splashSub) splashSub.textContent = `Bullet strike by ${playerCard.name}! (+150 pts)`;
+                if (splashSub) splashSub.textContent = `Bullet strike by ${playerCard.name}! (+${awarded.toLocaleString()} pts)`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.add("goal");
@@ -9325,11 +9472,23 @@ function choosePenaltyZone(zoneIndex) {
                 try { SoundFx.ballSave(); } catch(e) {}
                 tournamentRunState.playerPills.push("miss");
 
+                if (activeMods.some(m => m.missPenalty)) {
+                    tournamentRunState.lives = Math.max(0, tournamentRunState.lives - 1);
+                }
+
                 if (splashText) splashText.textContent = "SAVED! 🧤🚫";
-                if (splashSub) splashSub.textContent = "King Jeff makes a brilliant diving stop!";
+                if (splashSub) splashSub.textContent = activeMods.some(m => m.missPenalty) ? "King Jeff saved! Sudden Death Pact cost 1 Heart ❤️!" : "King Jeff makes a diving stop!";
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.remove("goal");
+                }
+
+                if (tournamentRunState.lives <= 0) {
+                    setTimeout(() => {
+                        if (splash) splash.classList.add("hidden");
+                        endTournamentEliminated();
+                    }, 1200);
+                    return;
                 }
             }
 
@@ -9345,6 +9504,13 @@ function choosePenaltyZone(zoneIndex) {
                 if (keeper) {
                     keeper.style.transition = "none";
                     keeper.style.transform = "translate(0px, 0px)";
+                }
+
+                const kickIndex = tournamentRunState.playerPills.length;
+                if ((kickIndex === 2 || kickIndex === 4) && !(tournamentRunState.draftShownRounds || []).includes(kickIndex)) {
+                    tournamentRunState.draftShownRounds = tournamentRunState.draftShownRounds || [];
+                    tournamentRunState.draftShownRounds.push(kickIndex);
+                    triggerTacticalCardDraft();
                 }
 
                 tournamentRunState.turn = "jeff_shoot";
@@ -9381,15 +9547,18 @@ function choosePenaltyZone(zoneIndex) {
             let isSaved = false;
             if (playerDiveZone === jeffShotZone) {
                 isSaved = true;
+            } else if (activeMods.some(m => m.gkBonus) && Math.random() < 0.35) {
+                isSaved = true;
             }
 
             if (isSaved) {
                 try { SoundFx.ballSave(); } catch(e) {}
                 tournamentRunState.jeffPills.push("miss");
-                tournamentRunState.currentRunScore += 200;
+                const awarded = Math.round(200 * netPointMult);
+                tournamentRunState.currentRunScore += awarded;
 
                 if (splashText) splashText.textContent = "GREAT SAVE! 🧤🛡️";
-                if (splashSub) splashSub.textContent = "You read King Jeff's shot perfectly! (+200 pts)";
+                if (splashSub) splashSub.textContent = `You read King Jeff's strike! (+${awarded.toLocaleString()} pts)`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.add("goal");
@@ -9399,11 +9568,22 @@ function choosePenaltyZone(zoneIndex) {
                 tournamentRunState.jeffScore++;
                 tournamentRunState.jeffPills.push("goal");
 
-                if (splashText) splashText.textContent = "CONCEDED! ⚽";
-                if (splashSub) splashSub.textContent = "King Jeff found the back of the net!";
+                const dmg = activeMods.some(m => m.doubleDamage) ? 2 : 1;
+                tournamentRunState.lives = Math.max(0, tournamentRunState.lives - dmg);
+
+                if (splashText) splashText.textContent = "CONCEDED! ⚽💔";
+                if (splashSub) splashSub.textContent = `King Jeff scored! Lost ${dmg} Heart ❤️!`;
                 if (splash) {
                     splash.classList.remove("hidden");
                     splash.classList.remove("goal");
+                }
+
+                if (tournamentRunState.lives <= 0) {
+                    setTimeout(() => {
+                        if (splash) splash.classList.add("hidden");
+                        endTournamentEliminated();
+                    }, 1200);
+                    return;
                 }
             }
 
@@ -9454,25 +9634,32 @@ function choosePenaltyZone(zoneIndex) {
                     tournamentRunState.turn = "match_over";
 
                     if (playerWon) {
-                        const winCoins = Math.round(tournamentRunState.stake * (stageConf.coinMult || 2));
-                        addCoins(winCoins);
-                        tournamentRunState.currentRunScore += stageConf.rewardPts;
+                        let stageBonusPts = stageConf.rewardPts;
+                        if (activeMods.some(m => m.stageBonus)) stageBonusPts += 5000;
+                        const awardedStagePts = Math.round(stageBonusPts * netPointMult);
+                        tournamentRunState.currentRunScore += awardedStagePts;
                         state.tournamentWins = (Number(state.tournamentWins) || 0) + 1;
 
                         try { SoundFx.success(); } catch(e) {}
 
                         if (tournamentRunState.stage < 4) {
-                            toast(`🏆 MATCH VICTORY! You defeated King Jeff ${pScore}-${jScore}! Earned +${winCoins.toLocaleString()} 🪙 & +${stageConf.rewardPts.toLocaleString()} pts! Advance to next stage!`);
+                            toast(`🏆 MATCH VICTORY! You defeated King Jeff ${pScore}-${jScore}! Earned +${awardedStagePts.toLocaleString()} pts! Advance to next stage!`);
                             tournamentRunState.stage++;
+                            triggerTacticalCardDraft();
                         } else {
-                            tournamentRunState.currentRunScore += 10000;
-                            addCoins(25000);
-                            toast(`👑 GRAND FINAL CHAMPION! You conquered King Jeff in the Grand Final! +25,000 🪙 & +10,000 Trophy Pts!`);
+                            tournamentRunState.currentRunScore += Math.round(10000 * netPointMult);
+                            toast(`👑 GRAND FINAL CHAMPION! You conquered King Jeff in the Grand Final! +10,000 Trophy Pts!`);
                             tournamentRunState.stage = 1;
+                            triggerTacticalCardDraft();
                         }
                     } else {
+                        tournamentRunState.lives = Math.max(0, tournamentRunState.lives - 1);
+                        if (tournamentRunState.lives <= 0) {
+                            endTournamentEliminated();
+                            return;
+                        }
                         try { SoundFx.error(); } catch(e) {}
-                        toast(`💀 DEFEAT! King Jeff won the shootout ${jScore}-${pScore}. Stage reset to Group Match.`);
+                        toast(`💀 DEFEAT! King Jeff won the shootout ${jScore}-${pScore}. Lost 1 Heart ❤️! Stage reset to Group Match.`);
                         tournamentRunState.stage = 1;
                     }
 
@@ -9492,13 +9679,6 @@ function choosePenaltyZone(zoneIndex) {
 }
 
 function startNextShootoutMatch() {
-    const currentCoins = Number(state.coins) || 0;
-    const bet = Math.min(tournamentRunState.stake || 100, currentCoins);
-    if (bet > 0) {
-        spendCoins(bet);
-        tournamentRunState.stake = bet;
-    }
-
     tournamentRunState.matchActive = true;
     tournamentRunState.turn = "player_shoot";
     tournamentRunState.round = 1;
@@ -9507,6 +9687,7 @@ function startNextShootoutMatch() {
     tournamentRunState.playerPills = [];
     tournamentRunState.jeffPills = [];
     tournamentRunState.isKicking = false;
+    tournamentRunState.draftShownRounds = [];
 
     saveTournamentRunSession();
     renderTournamentRun();
@@ -9518,6 +9699,26 @@ function renderTournamentRun() {
 
     const runScoreTxt = document.getElementById("tRunScoreText");
     if (runScoreTxt) runScoreTxt.textContent = `${(Number(tournamentRunState.currentRunScore) || 0).toLocaleString()} pts`;
+
+    const heartsBadge = document.getElementById("tHeartsText");
+    if (heartsBadge) {
+        const l = Math.max(0, tournamentRunState.lives !== undefined ? tournamentRunState.lives : 3);
+        heartsBadge.textContent = "❤️".repeat(l) + "🖤".repeat(3 - l);
+    }
+
+    const modBar = document.getElementById("tActiveModifiersBar");
+    if (modBar) {
+        const mods = tournamentRunState.activeModifiers || [];
+        if (mods.length === 0) {
+            modBar.innerHTML = `<span style="font-size:12px;color:var(--muted);font-weight:700;">Tactical Modifiers: None (Drafts trigger every 2 rounds)</span>`;
+        } else {
+            modBar.innerHTML = mods.map(m => `
+                <span class="active-mod-pill ${m.type}">
+                    <span>${m.icon}</span> <span>${escapeHTML(m.title)}</span>
+                </span>
+            `).join("");
+        }
+    }
 
     const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
     const stageConf = STAGE_CONFIG[currentStageIdx];
@@ -9583,6 +9784,11 @@ function renderTournamentRun() {
     const nextMatchBtn = document.getElementById("nextShootoutMatchBtn");
     const keeperTag = document.getElementById("keeperTag");
     const keeperIcon = document.getElementById("keeperIcon");
+    const matchStatusText = document.getElementById("tArenaMatchStatusText");
+
+    if (matchStatusText) {
+        matchStatusText.textContent = `${stageConf.name} · Hearts: ${tournamentRunState.lives}/3`;
+    }
 
     if (tournamentRunState.turn === "player_shoot") {
         if (turnActionIcon) turnActionIcon.textContent = "⚽";
@@ -9621,11 +9827,16 @@ function renderTournamentRun() {
 }
 
 function renderTournament() {
+    checkDailyTournamentReset();
+
     const tScoreDisp = document.getElementById("tScoreDisplay");
     if (tScoreDisp) tScoreDisp.textContent = `${(Number(state.tournamentScore) || 0).toLocaleString()} pts`;
 
     const tWinsDisp = document.getElementById("tWinsDisplay");
     if (tWinsDisp) tWinsDisp.textContent = `${Number(state.tournamentWins) || 0} Wins`;
+
+    const attemptsBadge = document.getElementById("tDailyAttemptsBadge");
+    if (attemptsBadge) attemptsBadge.textContent = `${Number(state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5)} / 5`;
 
     const isAlucard = (state.accountUser || state.name || "").toLowerCase() === "alucard";
     const launchContainer = document.getElementById("tLaunchCardContainer");
@@ -9636,11 +9847,13 @@ function renderTournament() {
                     <div style="font-size:42px;">⏱️ ⚽ 🏆</div>
                     <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Penalty Cup Championship</h2>
                     <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                        Score as many tournament points as possible in 15 minutes! Clash in penalty shootouts against <b>King Jeff</b> across 4 escalating tournament stages (Group ➔ Quarter ➔ Semi ➔ Grand Final). Unlimited runs with pause support!
+                        Score as many tournament points as possible in 15 minutes! Survive with <b>3 Hearts (❤️❤️❤️)</b>, draft <b>Roguelike tactical cards</b> every 2 rounds, and battle <b>King Jeff</b> to earn the <b>🌟 Shiny Emanuel 99</b>!
                     </p>
-                    <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                        ⚽ PLAY PENALTY CUP →
-                    </button>
+                    <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
+                        <button class="tournament-launch-btn" onclick="startTournamentRun()">
+                            ⚽ PLAY PENALTY CUP (${state.tournamentDailyRuns !== undefined ? state.tournamentDailyRuns : 5}/5 ATTEMPTS) →
+                        </button>
+                    </div>
                 </div>
             `;
         } else {
@@ -9658,11 +9871,12 @@ function renderTournament() {
             `;
         }
     }
+
+    renderTournamentLeaderboard();
 }
 
 const EXPORTED_ACTIONS = {
         choosePenaltyZone,
-        setTournamentStake,
         startNextShootoutMatch,
         renderTournamentRun,
         closeRunCompleteModal,
@@ -9672,6 +9886,10 @@ const EXPORTED_ACTIONS = {
         toggleTournamentPause,
         startTournamentRun,
         renderTournamentLeaderboard,
+        openTournamentRewardsModal,
+        closeTournamentRewardsModal,
+        closeEliminationModal,
+        selectDraftModifier,
         openPack,
         openPackOdds,
         closePackOddsModal,
@@ -9932,6 +10150,24 @@ function updateTimers() {
             const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((diffMs % (1000 * 60)) / 1000);
             exclusiveTimerEl.textContent = `${d}d ${h}h ${m}m ${s}s`;
+        }
+
+        // Tournament Daily Attempts reset countdown (resets at 00:00:00 UTC)
+        const tDailyResetSub = document.getElementById("tDailyAttemptsResetSub");
+        if (tDailyResetSub) {
+            const now = new Date();
+            const nowUtc = now.getTime();
+            const tomorrowUtc = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate() + 1,
+                0, 0, 0
+            ));
+            const diffMs = Math.max(0, tomorrowUtc.getTime() - nowUtc);
+            const h = Math.floor(diffMs / (1000 * 60 * 60));
+            const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diffMs % (1000 * 60)) / 1000);
+            tDailyResetSub.textContent = `Resets in ${h}h ${m}m ${s}s (00:00 UTC)`;
         }
     } catch(e) {}
 }
