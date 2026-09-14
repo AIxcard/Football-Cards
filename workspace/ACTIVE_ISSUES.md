@@ -32,7 +32,34 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 - **Actual Behavior**: What actually happened.
 - **Root Cause & Fix Recommendation**: (If known)
 - **Status**: 🔴 Open / 🟡 Investigating / 🟢 Resolved
-```
+### [ISSUE-058] [P0 - Critical] Admin Panel for Alucard, Tournament Leaderboard Sync, Season Rewards Rebalance, RAP Alignment & Update Log
+- **Description**:
+  1. Admin Panel button was not appearing for account "Alucard" due to missing `checkAdminStatus()` function.
+  2. Tournament leaderboard failed to update personal high score properly (displayed 850 instead of 1900).
+  3. "PENALTY MATCH WINS" stat card needed to be removed from tournament page stats grid.
+  4. % Rewards in tournament ladder were giving booster packs that shouldn't be obtainable; needed rebalancing to only grant Trophies and Gold.
+  5. RAP values were inflated (e.g. 999M) and collection RAP didn't match leaderboard RAP.
+  6. Season rewards banner needed renaming to "Season Rewards" with "Ends: Update 0.5".
+  7. Needed a dedicated Update Log modal popup with release notes from Update 0.1 to Update 0.5.
+  8. World Class cards had visual rendering issues showing colors and holographic shaders.
+  9. iPad / tablet responsive optimization: card artworks (Ronaldo, Monkey King) squished on non-PC screens.
+  10. Exclusive pack opening error caused by undeclared `EXCLUSIVE_PACK_EXPIRY` variable.
+  11. Tournament required fast-reflex skill timing (350ms down to 150ms) and balanced roguelike drafts.
+- **Fix**:
+  1. Implemented `checkAdminStatus()` unhiding `#adminHeaderBtn` and `#adminSidebarBtn` for "Alucard".
+  2. Added `tournamentScore` and `tournamentWins` to `/api/leaderboard` in `server.js` and updated `renderTournamentLeaderboard()` to display live synced scores.
+  3. Removed "PENALTY MATCH WINS" box from tournament page stats grid.
+  4. Updated `#tRewardsModal` ladder so Top 10%, Top 25%, Top 50%, and Participation award only Trophies and Gold (no packs).
+  5. Rebalanced RAP values across all rarities (Common 10, Uncommon 25, Rare 75, Epic 200, Legendary 600, Exclusive 800, Mythic 2500, Secret 6000, Tournament 10000, World Class 25000, Developer 50000, Serialized 55k-30k) and synchronized collection RAP formula between client and server.
+  6. Updated tournament panel to "Season Rewards" with `Ends: Update 0.5` badge.
+  7. Added `#updateLogBtn` in topbar and built `#updateLogModal` with release notes for Updates 0.1 through 0.5.
+  8. Added `.card.theme-worldclass` and `.card.theme-world-class` holographic animations and shaders.
+  9. Optimized iPad/tablet responsive layout (`aspect-ratio: 1/1 !important`, `object-fit: cover !important`) preventing squishing.
+  10. Added `getExclusivePackExpiry()` and fixed `openPack("exclusive")`.
+  11. Added golden World Cup trophy (`🏆`) to profile with `World Cup (Season 1)` hover tooltip.
+  12. Overhauled `ROGUELIKE_MODIFIERS` (16 cards + 1% Godlikes) and fast reflex timing penalty shootout (350ms - 150ms).
+  13. Verified 0 syntax errors, 0 missing exports, and 0 CDP runtime exceptions via automated QA testing.
+- **Status**: 🟢 Resolved
 
 ---
 
