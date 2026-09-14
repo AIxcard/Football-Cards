@@ -1000,6 +1000,7 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 /* Holographic Serialized Animation */
 .card.is-serialized,
 .card-3d-wrapper.is-serialized {
+    background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #ffd700 65%, #c084fc 85%, #ffffff 100%) !important;
     background-size: 200% 200% !important;
     animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
 }
@@ -2337,24 +2338,29 @@ select,input{
    ========================================================= */
 
 .card-image-wrap {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    min-height: 150px;
-    max-height: 240px;
-    display: grid;
-    place-items: center;
-    position: relative;
-    overflow: hidden;
-    border-radius: 12px;
-    margin: 6px 0 8px;
-    background: radial-gradient(circle, rgba(33,70,93,0.25), rgba(10,20,29,0.5) 80%);
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    margin: 6px 0 8px !important;
+    background: radial-gradient(circle, rgba(33,70,93,0.25), rgba(10,20,29,0.5) 80%) !important;
 }
 
 .card-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+    border-radius: 10px !important;
     transition: transform 0.3s ease;
 }
 
@@ -7375,7 +7381,8 @@ html, body {
         width: 100% !important;
         aspect-ratio: 1 / 1 !important;
         height: auto !important;
-        max-height: 220px !important;
+        max-height: none !important;
+        min-height: 0 !important;
         border-radius: 12px !important;
         overflow: hidden !important;
         display: flex !important;
@@ -7386,6 +7393,8 @@ html, body {
     .card-photo {
         width: 100% !important;
         height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
         object-fit: cover !important;
         object-position: center top !important;
         border-radius: 10px !important;
