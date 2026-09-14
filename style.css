@@ -7281,3 +7281,146 @@ html, body {
     100% { background-position: 150% 0%; }
 }
 
+/* =========================================================
+   WORLD CUP TROPHY PROFILE SHOWCASE BADGE & TOOLTIP
+   ========================================================= */
+.world-cup-trophy-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: 2px solid #fde047;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.65), 0 0 30px rgba(253, 224, 71, 0.4);
+    cursor: pointer;
+    position: relative;
+    animation: wcTrophyPulse 2.5s infinite ease-in-out;
+    margin-left: 6px;
+}
+
+.wc-trophy-icon {
+    font-size: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.wc-trophy-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 11.5px;
+    font-weight: 900;
+    padding: 6px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 15px rgba(244, 196, 78, 0.35);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.wc-trophy-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--gold) transparent transparent transparent;
+}
+
+.world-cup-trophy-badge:hover .wc-trophy-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+@keyframes wcTrophyPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 16px rgba(245, 158, 11, 0.65); }
+    50% { transform: scale(1.08); box-shadow: 0 0 26px rgba(253, 224, 71, 0.9); }
+}
+
+/* =========================================================
+   WORLD CLASS & SERIALIZED CARD THEMES GUARANTEED
+   ========================================================= */
+.card.theme-worldclass,
+.card.theme-world-class,
+.card-3d-wrapper.theme-worldclass,
+.card-3d-front.theme-worldclass,
+.card-3d-item.theme-worldclass {
+    background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #c084fc 70%, #ffffff 100%) !important;
+    background-size: 200% 200% !important;
+    animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.6) !important;
+}
+
+/* =========================================================
+   IPAD & TABLET IMAGE / TEXT PROPORTIONS OPTIMIZATION
+   ========================================================= */
+@media (min-width: 600px) and (max-width: 1100px) {
+    .card {
+        padding: 14px 12px !important;
+        min-height: 360px !important;
+    }
+    .card-image-wrap {
+        width: 100% !important;
+        aspect-ratio: 1 / 1 !important;
+        height: auto !important;
+        max-height: 220px !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #09131d !important;
+    }
+    .card-photo {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center top !important;
+        border-radius: 10px !important;
+    }
+    .card h3 {
+        font-size: 14.5px !important;
+        font-weight: 800 !important;
+        margin: 4px 0 2px !important;
+    }
+}
+
+/* =========================================================
+   SKILL-BASED PENALTY REFLEX ZONES & TIMING RING
+   ========================================================= */
+.goal-zone-btn.reflex-active {
+    background: rgba(34, 197, 94, 0.35) !important;
+    border-color: #22c55e !important;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.8), inset 0 0 15px rgba(34, 197, 94, 0.5) !important;
+    animation: reflexFlashGreen 0.4s infinite alternate ease-in-out !important;
+}
+
+.goal-zone-btn.reflex-incoming {
+    background: rgba(239, 68, 68, 0.4) !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 35px rgba(239, 68, 68, 0.9), inset 0 0 20px rgba(239, 68, 68, 0.6) !important;
+    animation: reflexFlashRed 0.3s infinite alternate ease-in-out !important;
+}
+
+@keyframes reflexFlashGreen {
+    0% { transform: scale(1); border-color: #22c55e; }
+    100% { transform: scale(1.04); border-color: #86efac; }
+}
+
+@keyframes reflexFlashRed {
+    0% { transform: scale(1); border-color: #ef4444; }
+    100% { transform: scale(1.05); border-color: #fca5a5; }
+}
+
