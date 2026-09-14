@@ -10,7 +10,7 @@
         window.location.replace("https://football-cards-yrry.onrender.com" + window.location.search);
     }
 </script>
-<link rel="stylesheet" href="style.css?v=900.0">
+<link rel="stylesheet" href="style.css?v=1000.0">
 </head>
 
 <body>
@@ -615,7 +615,10 @@
         <div>
             <p class="eyebrow">COLLECTION</p>
             <h1>My Cards</h1>
-            <p id="collectionCount">0 cards collected</p>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;">
+                <p id="collectionCount" style="margin:0;">0 cards collected</p>
+                <span id="collectionRAPValue" class="badge" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid #38bdf8;font-size:12px;font-weight:900;padding:3px 10px;border-radius:12px;">💎 Total Collection: 0 RAP</span>
+            </div>
         </div>
 
         <div class="collection-controls-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
@@ -2365,6 +2368,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=900.0"></script>
+<script src="script.js?v=1000.0"></script>
 </body>
 </html>
