@@ -12,6 +12,7 @@ This document manages all active tasks, assigned subagents, prioritized backlogs
 
 ---
 
+| `ACT-163` | `P0` | Admin Panel for Alucard, Tournament Leaderboard Sync & Live Personal Best Score, Remove Penalty Match Wins, Season Rewards % Tier Rebalance, RAP Alignment, Update Log 0.1-0.5 Modal, World Class Effects & iPad Responsiveness | `index.html`, `style.css`, `script.js`, `server.js` | `web_game_dev` | 🟢 Done |
 | `ACT-162` | `P0` | Roguelike Card Draft System, 3-Hearts Life Counter Loss Condition, 5 Daily Runs, Anime TD Season Rewards Ladder with Shiny Animated Emanuel, and complete Roblox text purge | `index.html`, `style.css`, `script.js` | `web_game_dev` | 🟢 Done |
 | `ACT-161` | `P0` | Remake Tournament Game into Penalty Shootout Cup vs King Jeff, add Exclusive Pack live timer to next Monday, enforce authoritative cloud sync | `index.html`, `style.css`, `script.js`, `server.js` | `web_game_dev` | 🟢 Done |
 | `ACT-160` | `P0` | Rebuild cross-device sync engine, replace stale state merging with server-authoritative sync & execute Season 1 clean reset | `script.js`, `server.js`, `data/db.json` | `web_game_dev` | 🟢 Done |
