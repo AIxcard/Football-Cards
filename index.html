@@ -545,7 +545,10 @@
             <div class="pack-ball">👑</div>
             <p class="rarity exclusive">EXCLUSIVE</p>
             <h2>Exclusive Legends</h2>
-            <p>Historic icons available for 1 week only (Pelé, Maradona, R9, Zidane, Ronaldinho).</p>
+            <div id="exclusivePackLiveTimer" class="exclusive-live-timer" style="margin:4px 0 8px;background:rgba(244,196,78,0.15);border:1px solid var(--gold);padding:6px 12px;border-radius:10px;font-size:12px;font-weight:900;color:var(--gold);display:flex;align-items:center;justify-content:center;gap:6px;">
+                <span>⏳ LEAVING IN:</span> <b id="exclusivePackTimerText">6d 06h 14m 58s</b>
+            </div>
+            <p>Historic icons available for 1 week only (Pelé, Maradona, R9, Zidane, Ronaldinho). Gone by next Monday!</p>
             <div class="pack-rate">100% Exclusive Legends</div>
             <div class="pack-multibuttons">
                 <button onclick="openPack('exclusive', 1)">1x · 1,000 🪙</button>
@@ -1165,33 +1168,33 @@
 </section>
 
 
-<!-- ==================== TOURNAMENT (SEASON 1 ARENA) ==================== -->
+<!-- ==================== TOURNAMENT (SEASON 1 PENALTY CUP ARENA) ==================== -->
 <section id="tournament" class="page">
 
     <!-- TOURNAMENT LOBBY VIEW (DEFAULT) -->
     <div id="tournamentLobbyView" class="tournament-lobby-box">
         
         <div class="tournament-hero">
-            <p class="eyebrow" style="color:var(--gold);font-weight:900;letter-spacing:1.5px;">CHAMPIONSHIP SQUAD DUEL ARENA</p>
-            <h1 style="margin:6px 0 10px;font-size:32px;">World Football Championship Arena</h1>
+            <p class="eyebrow" style="color:var(--gold);font-weight:900;letter-spacing:1.5px;">WORLD FOOTBALL CUP ARENA</p>
+            <h1 style="margin:6px 0 10px;font-size:32px;">Penalty Shootout Championship</h1>
             <p style="color:var(--muted);max-width:700px;margin:0 0 16px;line-height:1.6;">
-                Deploy your football cards against <b>King Jeff</b> in timed 15-minute Championship runs! Form high-ranking squad synergies, discard and redraw tactical cards, raise the stakes, and climb the global leaderboard.
+                Take on <b>King Jeff</b> in fast-paced 15-minute Penalty Shootout runs! Aim your shots into the corners of the goal net, make clutch goalkeeper saves, advance through Knockout stages, and set the highest Championship score!
             </p>
             <div id="tournamentStatusBadge" class="tournament-timer-badge" style="background:rgba(244, 196, 78, 0.15);color:var(--gold);border:1px solid var(--gold);font-weight:900;display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;">
-                🏆 SEASON 1 TOURNAMENT · BETA TESTING ARENA
+                🏆 SEASON 1 PENALTY CUP · BETA TESTING ARENA
             </div>
         </div>
 
         <!-- START RUN LAUNCH CARD -->
         <div id="tLaunchCardContainer">
             <div class="tournament-launch-card">
-                <div style="font-size:42px;">⏱️ ⚔️ 🏆</div>
-                <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Championship Run</h2>
+                <div style="font-size:42px;">⏱️ ⚽ 🏆</div>
+                <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Penalty Cup Run</h2>
                 <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                    Score as many points as possible before the 15-minute clock expires! Unlimited free attempts available. You can pause anytime.
+                    Score goals and make saves against King Jeff to rack up maximum tournament points before the 15-minute timer expires! Unlimited free attempts.
                 </p>
                 <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                    ⚔️ PLAY TOURNAMENT RUN →
+                    ⚽ PLAY PENALTY CUP RUN →
                 </button>
             </div>
         </div>
@@ -1204,14 +1207,14 @@
                 <div class="stat-sub">Highest 15-Min Run Record</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">TOTAL ARENA WINS</div>
+                <div class="stat-label">PENALTY MATCH WINS</div>
                 <div class="stat-value" id="tWinsDisplay" style="color:#22c55e;">0 Wins</div>
-                <div class="stat-sub">Lifetime Clashes Won</div>
+                <div class="stat-sub">Lifetime Shootouts Won</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">CHAMPIONSHIP TARGET</div>
-                <div class="stat-value" style="color:#38bdf8;">King Jeff</div>
-                <div class="stat-sub">Supreme AI Opponent</div>
+                <div class="stat-label">SUPREME RIVAL</div>
+                <div class="stat-value" style="color:#38bdf8;">King Jeff 👑</div>
+                <div class="stat-sub">AI Goalkeeper & Striker</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">RUN ATTEMPTS</div>
@@ -1220,25 +1223,10 @@
             </div>
         </div>
 
-        <!-- HAND COMBOS CHEAT SHEET GUIDE -->
-        <div class="panel" style="padding:18px;">
-            <h3 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:8px;">📜 Football Squad Synergies & Multipliers</h3>
-            <div class="poker-combos-guide">
-                <div class="combo-guide-item"><span class="combo-guide-name">👑 Royal Squad (5x 95+ OVR)</span><span class="combo-guide-multi">50x Multiplier</span></div>
-                <div class="combo-guide-item"><span class="combo-guide-name">🌟 Synergy Flush (5 Same Rarity)</span><span class="combo-guide-multi">20x Multiplier</span></div>
-                <div class="combo-guide-item"><span class="combo-guide-name">⚡ Rating Straight (5 Consecutive OVR)</span><span class="combo-guide-multi">15x Multiplier</span></div>
-                <div class="combo-guide-item"><span class="combo-guide-name">⚽ Full Team (3x Pos + 2x Pos)</span><span class="combo-guide-multi">12x Multiplier</span></div>
-                <div class="combo-guide-item"><span class="combo-guide-name">🏆 Triple Threat (3 Same Rarity/Pos)</span><span class="combo-guide-multi">5x Multiplier</span></div>
-                <div class="combo-guide-item"><span class="combo-guide-name">⚔️ Dual Formation (Two Pair)</span><span class="combo-guide-multi">3x Multiplier</span></div>
-                <div class="combo-guide-item"><span class="combo-guide-name">💎 Star Pair (One Pair)</span><span class="combo-guide-multi">1.5x Multiplier</span></div>
-                <div class="combo-guide-item"><span class="combo-guide-name">🛡️ High OVR Card</span><span class="combo-guide-multi">1x Multiplier</span></div>
-            </div>
-        </div>
-
         <!-- TOURNAMENT LEADERBOARD & REWARDS -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;">
             <div class="panel" style="padding:18px;">
-                <h3 style="margin:0 0 12px;color:#fff;display:flex;align-items:center;gap:8px;">🏆 Tournament Championship Leaderboard</h3>
+                <h3 style="margin:0 0 12px;color:#fff;display:flex;align-items:center;gap:8px;">🏆 Championship Cup Leaderboard</h3>
                 <div id="tournamentLeaderboardList" style="display:flex;flex-direction:column;gap:8px;">
                     <!-- Real registered player scores -->
                 </div>
@@ -1249,7 +1237,7 @@
                 <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
                     <strong style="color:#fff;font-size:14px;">Season 1 Grand Champion Prize</strong>
                     <p style="color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
-                        Score high points in your 15-minute runs against King Jeff to secure your position at the top of the global leaderboard!
+                        Climb the live Penalty Cup Leaderboard by racking up goals, saves, and stage victories in 15-minute runs!
                     </p>
                 </div>
             </div>
@@ -1270,75 +1258,133 @@
                 <span>🏆 RUN SCORE:</span> <b id="tRunScoreText">0 pts</b>
             </div>
 
+            <div class="arena-stage-badge" id="tStageBadge" style="background:rgba(56,189,248,0.15);border:1px solid #38bdf8;color:#38bdf8;padding:8px 16px;border-radius:12px;font-weight:900;font-size:13px;">
+                STAGE 1/4 · GROUP MATCH
+            </div>
+
             <div class="arena-hud-actions">
                 <button class="arena-pause-btn" id="tPauseRunBtn" onclick="toggleTournamentPause()">⏸️ Pause</button>
                 <button class="arena-leave-btn" onclick="promptLeaveTournamentRun()">🚪 Leave Arena</button>
             </div>
         </div>
 
-        <!-- STEP GUIDANCE BAR -->
-        <div class="tournament-step-guide" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:8px 16px;background:rgba(15,23,42,0.85);border:1px solid rgba(244,196,78,0.25);border-radius:12px;margin:0 16px 12px;font-size:12px;font-weight:800;color:var(--muted);flex-wrap:wrap;">
-            <span id="tStep1" style="color:var(--gold);background:rgba(244,196,78,0.15);padding:2px 8px;border-radius:6px;">1. Select Ante & Deal</span> ➔ 
-            <span id="tStep2" style="padding:2px 8px;border-radius:6px;">2. Swap Cards (Max 3)</span> ➔ 
-            <span id="tStep3" style="padding:2px 8px;border-radius:6px;">3. Double Down (Optional)</span> ➔ 
-            <span id="tStep4" style="padding:2px 8px;border-radius:6px;">4. Showdown vs King Jeff</span>
-        </div>
-
-        <!-- FELT TABLE GAME ARENA -->
-        <div class="poker-felt-table" id="pokerFeltTable">
+        <!-- PENALTY SHOOTOUT STADIUM ARENA -->
+        <div class="penalty-stadium-box" id="penaltyStadiumBox">
             
-            <!-- DEALER ZONE (TOP) -->
-            <div class="poker-dealer-zone">
-                <div class="dealer-header">
-                    <span class="dealer-avatar">👑</span>
-                    <span class="dealer-title" id="tDealerName">King Jeff</span>
-                    <span class="dealer-hand-badge" id="tDealerHandBadge">Hand Hidden 🎴</span>
-                </div>
-                
-                <div class="poker-hand-row" id="tDealerHandRow">
-                    <!-- 5 Dealer Card Slots -->
-                </div>
-            </div>
-
-            <!-- CENTER TABLE POT & STATUS -->
-            <div class="poker-center-pot">
-                <div class="pot-stage-info" id="tPotStageInfo">STAGE 1/4 · GROUP MATCH</div>
-                <div class="pot-amount" id="tPotAmount">🪙 0 + 🏆 0 pts</div>
-                <div class="poker-banner-message" id="tPokerMessage">Select your ante and click DEAL CARDS to clash!</div>
-            </div>
-
-            <!-- PLAYER ZONE (BOTTOM) -->
-            <div class="poker-player-zone">
-                <div class="player-combo-badge" id="tPlayerComboBadge">
-                    <span>⭐ SQUAD:</span> <b id="tPlayerComboName">Ready to Deal</b>
+            <!-- LIVE MATCH SCOREBOARD -->
+            <div class="penalty-scoreboard">
+                <div class="team-score-card you">
+                    <div class="team-meta">
+                        <span class="team-avatar">⭐</span>
+                        <div>
+                            <strong class="team-name" id="tPlayerCardName">Your Striker</strong>
+                            <div class="team-ovr" id="tPlayerOvrBadge">OVR 99</div>
+                        </div>
+                    </div>
+                    <div class="score-pills" id="tPlayerScorePills">
+                        <span class="pill">⚪</span><span class="pill">⚪</span><span class="pill">⚪</span><span class="pill">⚪</span><span class="pill">⚪</span>
+                    </div>
+                    <div class="score-total" id="tPlayerTotalScore">0</div>
                 </div>
 
-                <div class="poker-hand-row" id="tPlayerHandRow">
-                    <!-- 5 Player Card Slots -->
+                <div class="match-vs-badge">
+                    <span style="font-size:12px;color:var(--muted);font-weight:800;" id="tRoundIndicator">KICK 1 OF 5</span>
+                    <b style="font-size:18px;color:var(--gold);">VS</b>
                 </div>
-            </div>
 
-        </div>
-
-        <!-- CONTROLS & CHIPS DECK -->
-        <div class="poker-controls-deck">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-                <div style="font-size:13px;font-weight:800;color:#94a3b8;">ANTE / BET COINS:</div>
-                <div class="poker-chips-row" id="pokerChipsRow">
-                    <button class="poker-chip-btn active" data-bet="100" onclick="setPokerBet(100)">🪙 100</button>
-                    <button class="poker-chip-btn" data-bet="500" onclick="setPokerBet(500)">🪙 500</button>
-                    <button class="poker-chip-btn" data-bet="2500" onclick="setPokerBet(2500)">🪙 2,500</button>
-                    <button class="poker-chip-btn" data-bet="10000" onclick="setPokerBet(10000)">🪙 10K</button>
-                    <button class="poker-chip-btn" data-bet="allin" onclick="setPokerBet('allin')">🔥 ALL IN</button>
+                <div class="team-score-card jeff">
+                    <div class="team-meta">
+                        <span class="team-avatar">👑</span>
+                        <div>
+                            <strong class="team-name">King Jeff</strong>
+                            <div class="team-ovr" id="tJeffOvrBadge" style="color:#f43f5e;">OVR 95</div>
+                        </div>
+                    </div>
+                    <div class="score-pills" id="tJeffScorePills">
+                        <span class="pill">⚪</span><span class="pill">⚪</span><span class="pill">⚪</span><span class="pill">⚪</span><span class="pill">⚪</span>
+                    </div>
+                    <div class="score-total" id="tJeffTotalScore">0</div>
                 </div>
             </div>
 
-            <div class="poker-actions-row">
-                <button id="pokerDealBtn" class="poker-act-btn deal" onclick="executePokerDeal()">🎴 DEAL CARDS</button>
-                <button id="pokerSwapBtn" class="poker-act-btn swap" style="display:none;" onclick="executePokerSwap()">🔄 SWAP SELECTED (<span id="tSwapCount">0</span>)</button>
-                <button id="pokerRaiseBtn" class="poker-act-btn raise" style="display:none;" onclick="executePokerRaise()">💰 DOUBLE DOWN</button>
-                <button id="pokerShowdownBtn" class="poker-act-btn showdown" style="display:none;" onclick="executePokerShowdown()">⚔️ SHOWDOWN</button>
+            <!-- TURN PROMPT BANNER -->
+            <div class="penalty-turn-banner" id="penaltyTurnBanner">
+                <span id="turnActionIcon">⚽</span> <b id="turnActionText">YOUR TURN TO SHOOT: Click any corner of the goal net to fire your shot!</b>
             </div>
+
+            <!-- 3D GOAL POST ARENA & INTERACTIVE TARGET NET -->
+            <div class="goal-stadium-view" id="goalStadiumView">
+                <div class="goal-crossbar-frame">
+                    <!-- 6 INTERACTIVE GOAL ZONES (3 Columns x 2 Rows) -->
+                    <div class="goal-target-grid" id="goalTargetGrid">
+                        <button class="goal-zone-btn top-left" onclick="choosePenaltyZone(0)">
+                            <span class="zone-crosshair">↖️</span>
+                            <span class="zone-label">TOP LEFT</span>
+                        </button>
+                        <button class="goal-zone-btn top-center" onclick="choosePenaltyZone(1)">
+                            <span class="zone-crosshair">⬆️</span>
+                            <span class="zone-label">TOP CENTER</span>
+                        </button>
+                        <button class="goal-zone-btn top-right" onclick="choosePenaltyZone(2)">
+                            <span class="zone-crosshair">↗️</span>
+                            <span class="zone-label">TOP RIGHT</span>
+                        </button>
+                        <button class="goal-zone-btn bottom-left" onclick="choosePenaltyZone(3)">
+                            <span class="zone-crosshair">↙️</span>
+                            <span class="zone-label">BOTTOM LEFT</span>
+                        </button>
+                        <button class="goal-zone-btn bottom-center" onclick="choosePenaltyZone(4)">
+                            <span class="zone-crosshair">⬇️</span>
+                            <span class="zone-label">LOW CENTER</span>
+                        </button>
+                        <button class="goal-zone-btn bottom-right" onclick="choosePenaltyZone(5)">
+                            <span class="zone-crosshair">↘️</span>
+                            <span class="zone-label">BOTTOM RIGHT</span>
+                        </button>
+                    </div>
+
+                    <!-- ANIMATED GOALKEEPER AVATAR -->
+                    <div class="arena-goalkeeper" id="arenaGoalkeeper">
+                        <div class="keeper-body" id="keeperBody">
+                            <span class="keeper-icon" id="keeperIcon">🧤</span>
+                            <span class="keeper-name-tag" id="keeperTag">King Jeff</span>
+                        </div>
+                    </div>
+
+                    <!-- ANIMATED FOOTBALL -->
+                    <div class="penalty-ball" id="penaltyBall">⚽</div>
+                </div>
+
+                <!-- PITCH PENALTY SPOT -->
+                <div class="penalty-pitch-grass">
+                    <div class="penalty-spot-circle"></div>
+                </div>
+
+                <!-- OVERLAY OUTCOME SPLASH -->
+                <div class="penalty-outcome-splash hidden" id="penaltyOutcomeSplash">
+                    <div class="splash-text" id="splashText">GOAL! ⚽</div>
+                    <div class="splash-sub" id="splashSub">+150 pts</div>
+                </div>
+            </div>
+
+            <!-- CONTROLS & STAKE STRIP -->
+            <div class="penalty-bottom-bar">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span style="font-size:13px;font-weight:800;color:var(--muted);">MATCH STAKE:</span>
+                    <div class="poker-chips-row" id="pokerChipsRow">
+                        <button class="poker-chip-btn active" data-bet="100" onclick="setTournamentStake(100)">🪙 100</button>
+                        <button class="poker-chip-btn" data-bet="500" onclick="setTournamentStake(500)">🪙 500</button>
+                        <button class="poker-chip-btn" data-bet="2500" onclick="setTournamentStake(2500)">🪙 2.5K</button>
+                        <button class="poker-chip-btn" data-bet="10000" onclick="setTournamentStake(10000)">🪙 10K</button>
+                    </div>
+                </div>
+                <div id="penaltyMatchActionArea">
+                    <button class="primary-btn" id="nextShootoutMatchBtn" style="display:none;width:auto;padding:12px 28px;font-weight:900;background:linear-gradient(135deg,#10b981,#059669);" onclick="startNextShootoutMatch()">
+                        ⚽ START NEXT MATCH ➔
+                    </button>
+                </div>
+            </div>
+
         </div>
 
     </div>
