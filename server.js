@@ -134,7 +134,8 @@ const ALUCARD_USER = {
             cardsSold: 20,
             coinsEarned: 270000,
             coinsSpent: 10000,
-            tournamentScore: 850
+            tournamentScore: 1900,
+            tournamentWins: 5
         }
     },
     createdAt: Date.now(),
