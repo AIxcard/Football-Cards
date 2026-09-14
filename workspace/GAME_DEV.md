@@ -50,6 +50,16 @@ Football-Cards/
 ---
 
 ## 📝 Recent Technical Updates
+* **2026-09-14 (Phase 59)**:
+  - **Roguelike Tactical Draft System**: Populates an interactive 3-card draft modal (`#tCardDraftModal`) every 2 kicks and at stage transitions. Modifiers include buffs (Precision Stride, Iron Net, Golden Touch, Double Impact) and high-risk cursed cards (Sudden Death Pact, Blinding Smoke, Frenzy Overload, Titan Defense) offering up to +500% tournament score multipliers.
+  - **3-Hearts Life Counter & Elimination Screen**: Replaced infinite attempts during runs with a high-stakes 3-Heart lives HUD (`❤️❤️❤️`). Conceding kicks, missing penalties, or losing matches subtracts hearts; losing all 3 hearts triggers `#tEliminationModal` with run score summary and leaderboard submission.
+  - **Daily Attempts Calibration (5 / Day)**: Updated tournament runs to 5 daily attempts (`state.tournamentDailyRuns`) with UTC midnight reset and live timer countdown in `updateTimers()`.
+  - **Anime TD-Style Tiered Season Rewards**:
+    - Rank #1 (Grand Champion): **Shiny Animated Emanuel (99 OVR, CAM)** with rainbow foil shimmer shader (`.shiny-emanuel-effect`), 500 Trophies, 10,000 Gold.
+    - Top 5: Emanuel (99 OVR, CAM), 250 Trophies, 7,500 Gold.
+    - Top 10%, Top 25%, Top 50%, Participation: Scaled packs, trophies, and gold.
+  - **Roblox Text Purge**: Completely purged all occurrences of "Roblox" from trading UI, RAP value calculations, descriptions, and comments.
+
 * **2026-09-14 (Phase 58)**:
   - **Penalty Shootout Cup Championship Arena Remake**: Rebuilt the tournament format from the ground up as a high-octane 15-minute Penalty Shootout Championship against **King Jeff** (`#penaltyStadiumBox`), featuring 6 clickable goal corners (Top Left, Top Center, Top Right, Bottom Left, Low Center, Bottom Right), animated goalkeeper dives, dynamic ball flight animations, match scoreboards, stake selectors, and 4 escalating tournament tiers (Group Stage $\rightarrow$ Quarter-Final $\rightarrow$ Semi-Final $\rightarrow$ Grand Final).
   - **Exclusive Pack Live Expiry Timer**: Integrated pulsing countdown timer on `#packCardExclusive` (`#exclusivePackTimerText`) targeting next Monday 00:00:00 UTC with real-time days, hours, minutes, and seconds.
