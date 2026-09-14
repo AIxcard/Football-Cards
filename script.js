@@ -495,6 +495,19 @@ const SoundFx = {
     },
 
     click() { this.playTone(400, "triangle", 0.05, 0.05); },
+    kickShot() {
+        this.playTone(180, "sine", 0.08, 0.25, 0);
+        this.playTone(90, "triangle", 0.15, 0.3, 0.02);
+    },
+    ballSave() {
+        this.playTone(300, "sawtooth", 0.1, 0.2, 0);
+        this.playTone(150, "sine", 0.2, 0.25, 0.05);
+    },
+    goalCheer() {
+        [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => {
+            this.playTone(f, "triangle", 0.35, 0.12, i * 0.06);
+        });
+    },
     coin() {
         this.playTone(987.77, "sine", 0.08, 0.1, 0);
         this.playTone(1318.51, "sine", 0.15, 0.1, 0.06);
@@ -1494,17 +1507,26 @@ const ServerAPI = {
 
 let cloudSyncTimer = null;
 
-async function syncFromServer(silent = true) {
+async function syncFromServer(silent = true, force = false) {
     if (!state.accountUser || state.accountUser.toLowerCase() === "guest") return;
     try {
         const serverSave = await ServerAPI.loadGame(state.accountUser);
         if (serverSave && typeof serverSave === "object") {
             const serverLastSave = Number(serverSave.lastSave || 0);
             const localLastSave = Number(state.lastSave || 0);
+            const isAlucard = state.accountUser.toLowerCase() === "alucard";
+            const serverCardsCount = Array.isArray(serverSave.cards) ? serverSave.cards.length : 0;
+            const localCardsCount = Array.isArray(state.cards) ? state.cards.length : 0;
 
-            // If server save is newer, or if local is not yet initialized / has 0 cards
-            if (serverLastSave > localLastSave || !state.initialized || (state.cards && state.cards.length === 0 && Array.isArray(serverSave.cards) && serverSave.cards.length > 0)) {
-                const isAdmin = (state.accountUser.toLowerCase() === "alucard") || !!serverSave.isGrantedAdmin;
+            const shouldAdoptServer = force || 
+                isAlucard || 
+                serverLastSave >= localLastSave || 
+                !state.initialized || 
+                (serverCardsCount > 0 && localCardsCount === 0) ||
+                (serverCardsCount >= localCardsCount && Number(serverSave.coins || 0) >= Number(state.coins || 0));
+
+            if (shouldAdoptServer) {
+                const isAdmin = isAlucard || !!serverSave.isGrantedAdmin;
                 state = {
                     ...freshState(),
                     ...serverSave,
@@ -1518,7 +1540,7 @@ async function syncFromServer(silent = true) {
                     isGrantedAdmin: isAdmin,
                     profileFrame: serverSave.profileFrame || "default",
                     profileBackground: serverSave.profileBackground || "campnou",
-                    lastSave: serverLastSave || Date.now(),
+                    lastSave: Math.max(serverLastSave, localLastSave, Date.now()),
                     initialized: true
                 };
                 try {
@@ -8946,23 +8968,11 @@ function adminModifyTargetUser() {
    TOURNAMENT / FOOTBALL SQUAD DUEL ENGINE
    ========================================================= */
 
-const CARD_SYNERGY_COMBOS = [
-    { name: "Royal Squad", rank: 8, multiplier: 50, points: 10000, desc: "5 cards with 95+ OVR Rating" },
-    { name: "Synergy Flush", rank: 7, multiplier: 20, points: 5000, desc: "5 cards of the exact same Rarity" },
-    { name: "Rating Straight", rank: 6, multiplier: 15, points: 3500, desc: "5 consecutive card ratings" },
-    { name: "Full Team", rank: 5, multiplier: 12, points: 2500, desc: "3 cards of one Position + 2 of another" },
-    { name: "Position Flush", rank: 4.5, multiplier: 10, points: 2000, desc: "5 cards sharing the same Tactical Sector" },
-    { name: "Triple Threat", rank: 4, multiplier: 5, points: 1200, desc: "3 cards of same Rarity or Position" },
-    { name: "Dual Formation", rank: 3, multiplier: 3, points: 600, desc: "Two pairs of matching Rarities or Positions" },
-    { name: "Star Pair", rank: 2, multiplier: 1.5, points: 300, desc: "2 cards with matching Rarity or Rating" },
-    { name: "High OVR Card", rank: 1, multiplier: 1, points: 100, desc: "Highest individual card rating" }
-];
-
 const STAGE_CONFIG = [
-    { stage: 1, name: "Stage 1: Group Stage", opponent: "King Jeff", targetOvr: 82, rewardPts: 500 },
-    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200 },
-    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000 },
-    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 97, rewardPts: 8000 }
+    { stage: 1, name: "Stage 1: Group Stage", opponent: "King Jeff", targetOvr: 82, rewardPts: 500, coinMult: 2.0 },
+    { stage: 2, name: "Stage 2: Quarter-Finals", opponent: "King Jeff", targetOvr: 88, rewardPts: 1200, coinMult: 2.5 },
+    { stage: 3, name: "Stage 3: Semi-Finals", opponent: "King Jeff", targetOvr: 93, rewardPts: 3000, coinMult: 3.0 },
+    { stage: 4, name: "Stage 4: Grand Final", opponent: "King Jeff", targetOvr: 97, rewardPts: 8000, coinMult: 5.0 }
 ];
 
 const TOURNAMENT_RUN_STORAGE_KEY = "football_tcg_active_tournament_run";
@@ -8974,20 +8984,27 @@ let tournamentRunState = {
     isPaused: false,
     lastTickTime: 0,
     stage: 1,
-    phase: "idle",
-    ante: 100,
-    potCoins: 0,
-    potPoints: 0,
-    playerCards: [],
-    dealerCards: [],
-    selectedDiscards: new Set(),
-    isRaised: false,
-    playerCombo: null,
-    dealerCombo: null
+    stake: 100,
+    matchActive: true,
+    turn: "player_shoot",
+    round: 1,
+    playerScore: 0,
+    jeffScore: 0,
+    playerPills: [],
+    jeffPills: [],
+    isKicking: false
 };
 
 let activeDuelBet = 100;
 let tournamentTimerInterval = null;
+
+function getTournamentPlayerCard() {
+    if (state && Array.isArray(state.cards) && state.cards.length > 0) {
+        const sorted = [...state.cards].sort((a,b) => (Number(b.rating || b.ovr || 0)) - (Number(a.rating || a.ovr || 0)));
+        return sorted[0];
+    }
+    return { name: "Alucard Striker", rating: 99, rarity: "Mythic", pos: "ST" };
+}
 
 function saveTournamentRunSession() {
     if (!tournamentRunState.active) {
@@ -9001,16 +9018,15 @@ function saveTournamentRunSession() {
         isPaused: tournamentRunState.isPaused,
         lastTickTime: Date.now(),
         stage: tournamentRunState.stage,
-        phase: tournamentRunState.phase,
-        ante: tournamentRunState.ante,
-        potCoins: tournamentRunState.potCoins,
-        potPoints: tournamentRunState.potPoints,
-        playerCards: tournamentRunState.playerCards,
-        dealerCards: tournamentRunState.dealerCards,
-        selectedDiscards: Array.from(tournamentRunState.selectedDiscards),
-        isRaised: tournamentRunState.isRaised,
-        playerCombo: tournamentRunState.playerCombo,
-        dealerCombo: tournamentRunState.dealerCombo
+        stake: tournamentRunState.stake,
+        matchActive: tournamentRunState.matchActive,
+        turn: tournamentRunState.turn,
+        round: tournamentRunState.round,
+        playerScore: tournamentRunState.playerScore,
+        jeffScore: tournamentRunState.jeffScore,
+        playerPills: tournamentRunState.playerPills,
+        jeffPills: tournamentRunState.jeffPills,
+        isKicking: false
     };
     safeStorage.setItem(TOURNAMENT_RUN_STORAGE_KEY, JSON.stringify(serializable));
 }
@@ -9036,7 +9052,7 @@ function restoreTournamentRunSession() {
         tournamentRunState = {
             ...data,
             remainingSeconds: remaining,
-            selectedDiscards: new Set(data.selectedDiscards || [])
+            isKicking: false
         };
 
         const arena = document.getElementById("tFullscreenArena");
@@ -9054,6 +9070,12 @@ function startTournamentRun() {
         return;
     }
 
+    const currentCoins = Number(state.coins) || 0;
+    const initialStake = Math.min(activeDuelBet || 100, currentCoins);
+    if (initialStake > 0) {
+        spendCoins(initialStake);
+    }
+
     tournamentRunState = {
         active: true,
         remainingSeconds: 900,
@@ -9061,16 +9083,15 @@ function startTournamentRun() {
         isPaused: false,
         lastTickTime: Date.now(),
         stage: 1,
-        phase: "idle",
-        ante: activeDuelBet,
-        potCoins: 0,
-        potPoints: 0,
-        playerCards: [],
-        dealerCards: [],
-        selectedDiscards: new Set(),
-        isRaised: false,
-        playerCombo: null,
-        dealerCombo: null
+        stake: initialStake || 100,
+        matchActive: true,
+        turn: "player_shoot",
+        round: 1,
+        playerScore: 0,
+        jeffScore: 0,
+        playerPills: [],
+        jeffPills: [],
+        isKicking: false
     };
 
     saveTournamentRunSession();
@@ -9081,7 +9102,7 @@ function startTournamentRun() {
     startTournamentTimerLoop();
     renderTournamentRun();
     SoundFx.success();
-    toast("🏆 15-Minute Championship Run Started! Beat King Jeff to set a high score!");
+    toast("🏆 15-Minute Penalty Cup Championship Started! Beat King Jeff to reach the Grand Final!");
 }
 
 function startTournamentTimerLoop() {
@@ -9201,267 +9222,295 @@ function closeRunCompleteModal() {
     renderTournament();
 }
 
-function setPokerBet(amount) {
-    if (tournamentRunState.phase === "dealt") {
-        toast("Hand in progress! Complete this clash first.");
+function setTournamentStake(amount) {
+    if (tournamentRunState.matchActive && tournamentRunState.turn !== "match_over" && tournamentRunState.playerPills.length > 0) {
+        toast("Shootout in progress! Finish this match first.");
         return;
     }
     const currentCoins = Number(state.coins) || 0;
-    if (amount === "allin") {
-        activeDuelBet = Math.max(100, Math.min(currentCoins, 500000));
-    } else {
-        activeDuelBet = Number(amount) || 100;
-    }
+    const bet = Number(amount) || 100;
+    activeDuelBet = bet;
+    tournamentRunState.stake = bet;
     
     document.querySelectorAll(".poker-chip-btn").forEach(btn => {
         const bVal = btn.getAttribute("data-bet");
-        btn.classList.toggle("active", (bVal === String(amount) || (amount === "allin" && bVal === "allin")));
+        btn.classList.toggle("active", (bVal === String(amount)));
     });
     
     SoundFx.pop();
     renderTournamentRun();
 }
 
-function getAvailableDraftCards(count = 5) {
-    let pool = Array.isArray(state.cards) && state.cards.length >= 5 ? [...state.cards] : [];
-    if (pool.length < 5) {
-        pool = [];
-        if (typeof PACKS !== "undefined") {
-            Object.values(PACKS).forEach(p => {
-                if (p.cards) pool.push(...p.cards);
-            });
-        }
-    }
-    const shuffled = pool.sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count).map(c => ({
-        ...c,
-        rating: Number(c.rating || c.ovr || 80),
-        rarity: c.rarity || "Common",
-        pos: c.pos || c.position || "ST",
-        name: c.name || "Player"
-    }));
-}
+// Penalty Shootout 6-Zone Coordinates for visual ball shot & keeper dive animations
+const ZONE_OFFSETS = [
+    { x: -140, y: -70 },  // 0: Top Left
+    { x: 0,    y: -80 },  // 1: Top Center
+    { x: 140,  y: -70 },  // 2: Top Right
+    { x: -140, y: 40 },   // 3: Bottom Left
+    { x: 0,    y: 40 },   // 4: Low Center
+    { x: 140,  y: 40 }    // 5: Bottom Right
+];
 
-function evaluateFootballPokerHand(cards) {
-    if (!cards || cards.length < 5) return CARD_SYNERGY_COMBOS[CARD_SYNERGY_COMBOS.length - 1];
-    
-    const ratings = cards.map(c => Number(c.rating) || 80).sort((a,b) => a - b);
-    const highestRating = Math.max(...ratings);
-    const rarities = cards.map(c => c.rarity);
-    const positions = cards.map(c => c.pos);
+function choosePenaltyZone(zoneIndex) {
+    if (!tournamentRunState.active || tournamentRunState.isPaused) return;
+    if (tournamentRunState.isKicking || !tournamentRunState.matchActive || tournamentRunState.turn === "match_over") return;
 
-    const rarityCounts = {};
-    rarities.forEach(r => rarityCounts[r] = (rarityCounts[r] || 0) + 1);
-    const rarityFreqs = Object.values(rarityCounts).sort((a,b) => b - a);
-
-    const posCounts = {};
-    positions.forEach(p => posCounts[p] = (posCounts[p] || 0) + 1);
-    const posFreqs = Object.values(posCounts).sort((a,b) => b - a);
-
-    const ratingCounts = {};
-    ratings.forEach(r => ratingCounts[r] = (ratingCounts[r] || 0) + 1);
-    const ratingFreqs = Object.values(ratingCounts).sort((a,b) => b - a);
-
-    const isRoyal = ratings.every(r => r >= 95);
-    if (isRoyal) return { ...CARD_SYNERGY_COMBOS[0], scoreValue: 8000 + highestRating };
-
-    if (rarityFreqs[0] === 5) return { ...CARD_SYNERGY_COMBOS[1], scoreValue: 7000 + highestRating };
-
-    let isStraight = true;
-    for (let i = 0; i < 4; i++) {
-        if (ratings[i+1] - ratings[i] !== 1) {
-            isStraight = false;
-            break;
-        }
-    }
-    if (isStraight) return { ...CARD_SYNERGY_COMBOS[2], scoreValue: 6000 + highestRating };
-
-    if (posFreqs[0] === 3 && posFreqs[1] === 2) return { ...CARD_SYNERGY_COMBOS[3], scoreValue: 5000 + highestRating };
-    if (posFreqs[0] === 5) return { ...CARD_SYNERGY_COMBOS[4], scoreValue: 4500 + highestRating };
-
-    if (rarityFreqs[0] === 3 || posFreqs[0] === 3 || ratingFreqs[0] === 3) {
-        return { ...CARD_SYNERGY_COMBOS[5], scoreValue: 4000 + highestRating };
-    }
-
-    if ((rarityFreqs[0] === 2 && rarityFreqs[1] === 2) || (posFreqs[0] === 2 && posFreqs[1] === 2) || (ratingFreqs[0] === 2 && ratingFreqs[1] === 2)) {
-        return { ...CARD_SYNERGY_COMBOS[6], scoreValue: 3000 + highestRating };
-    }
-
-    if (rarityFreqs[0] === 2 || ratingFreqs[0] === 2 || posFreqs[0] === 2) {
-        return { ...CARD_SYNERGY_COMBOS[7], scoreValue: 2000 + highestRating };
-    }
-
-    return { ...CARD_SYNERGY_COMBOS[8], scoreValue: 1000 + highestRating };
-}
-
-function executePokerDeal() {
-    const currentCoins = Number(state.coins) || 0;
-    const bet = Math.min(activeDuelBet, currentCoins);
-    
-    if (currentCoins < bet && bet > 0) {
-        toast("Not enough gold coins to place this ante!");
-        return;
-    }
-
-    if (bet > 0) spendCoins(bet);
-
+    tournamentRunState.isKicking = true;
     const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
     const stageConf = STAGE_CONFIG[currentStageIdx];
 
-    tournamentRunState.phase = "dealt";
-    tournamentRunState.ante = bet;
-    tournamentRunState.potCoins = bet * 2;
-    tournamentRunState.potPoints = stageConf.rewardPts;
-    tournamentRunState.isRaised = false;
-    tournamentRunState.selectedDiscards.clear();
+    const playerCard = getTournamentPlayerCard();
+    const playerRating = Number(playerCard.rating || playerCard.ovr || 90);
+    const jeffRating = Number(stageConf.targetOvr || 85);
 
-    tournamentRunState.playerCards = getAvailableDraftCards(5);
-    tournamentRunState.dealerCards = getAvailableDraftCards(5);
+    const ball = document.getElementById("penaltyBall");
+    const keeper = document.getElementById("arenaGoalkeeper");
+    const splash = document.getElementById("penaltyOutcomeSplash");
+    const splashText = document.getElementById("splashText");
+    const splashSub = document.getElementById("splashSub");
 
-    tournamentRunState.playerCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
-    tournamentRunState.dealerCombo = evaluateFootballPokerHand(tournamentRunState.dealerCards);
-
-    SoundFx.pageFlip();
-    toast(`🎴 Dealt 5 cards! Select any cards to swap & redraw or Showdown!`);
-    saveTournamentRunSession();
-    renderTournamentRun();
-}
-
-function togglePokerDiscardCard(index) {
-    if (tournamentRunState.phase !== "dealt") return;
-    
-    if (tournamentRunState.selectedDiscards.has(index)) {
-        tournamentRunState.selectedDiscards.delete(index);
-    } else {
-        if (tournamentRunState.selectedDiscards.size >= 3) {
-            toast("You can swap at most 3 cards per hand!");
-            return;
+    if (tournamentRunState.turn === "player_shoot") {
+        // PLAYER IS SHOOTING AT KING JEFF
+        const targetOffset = ZONE_OFFSETS[zoneIndex] || ZONE_OFFSETS[1];
+        
+        // AI Goalkeeper dive prediction
+        const jeffAccuracy = 0.20 + (currentStageIdx * 0.10); // 20% stage 1 -> 50% stage 4
+        let jeffDiveZone;
+        if (Math.random() < jeffAccuracy) {
+            jeffDiveZone = zoneIndex; // King Jeff correctly guessed
+        } else {
+            const wrongZones = [0,1,2,3,4,5].filter(z => z !== zoneIndex);
+            jeffDiveZone = wrongZones[Math.floor(Math.random() * wrongZones.length)];
         }
-        tournamentRunState.selectedDiscards.add(index);
-    }
-    SoundFx.pop();
-    saveTournamentRunSession();
-    renderTournamentRun();
-}
+        const keeperOffset = ZONE_OFFSETS[jeffDiveZone] || ZONE_OFFSETS[1];
 
-function executePokerSwap() {
-    if (tournamentRunState.phase !== "dealt") return;
-    if (tournamentRunState.selectedDiscards.size === 0) {
-        toast("Select at least 1 card on table to swap, or click Showdown!");
-        return;
-    }
+        // Animate Ball
+        if (ball) {
+            ball.style.transition = "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)";
+            ball.style.transform = `translate(${targetOffset.x}px, ${targetOffset.y - 100}px) scale(0.65)`;
+        }
 
-    const newCards = getAvailableDraftCards(tournamentRunState.selectedDiscards.size);
-    let swapIdx = 0;
-    tournamentRunState.selectedDiscards.forEach(idx => {
-        tournamentRunState.playerCards[idx] = newCards[swapIdx++];
-    });
+        // Animate Goalkeeper Dive
+        if (keeper) {
+            keeper.style.transition = "transform 0.5s ease-out";
+            keeper.style.transform = `translate(${keeperOffset.x}px, ${keeperOffset.y}px)`;
+        }
 
-    tournamentRunState.selectedDiscards.clear();
-    tournamentRunState.playerCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
-    
-    SoundFx.packTear();
-    toast("🔄 Redrew tactical cards! Now initiate Showdown!");
-    saveTournamentRunSession();
-    renderTournamentRun();
-}
+        try { SoundFx.kickShot(); } catch(e) {}
 
-function executePokerRaise() {
-    if (tournamentRunState.phase !== "dealt") return;
-    if (tournamentRunState.isRaised) {
-        toast("Already doubled down this hand!");
-        return;
-    }
-
-    const raiseAmt = tournamentRunState.ante;
-    const currentCoins = Number(state.coins) || 0;
-    if (currentCoins < raiseAmt && raiseAmt > 0) {
-        toast("Not enough coins to double down!");
-        return;
-    }
-
-    if (raiseAmt > 0) spendCoins(raiseAmt);
-    tournamentRunState.isRaised = true;
-    tournamentRunState.potCoins += raiseAmt * 2;
-    tournamentRunState.potPoints = Math.round(tournamentRunState.potPoints * 1.5);
-
-    SoundFx.coin();
-    toast(`💰 Raised! Pot increased to ${tournamentRunState.potCoins.toLocaleString()} 🪙!`);
-    saveTournamentRunSession();
-    renderTournamentRun();
-}
-
-function executePokerShowdown() {
-    if (tournamentRunState.phase !== "dealt") return;
-    tournamentRunState.phase = "showdown";
-
-    SoundFx.packTear();
-    
-    const pCombo = evaluateFootballPokerHand(tournamentRunState.playerCards);
-    const dCombo = evaluateFootballPokerHand(tournamentRunState.dealerCards);
-
-    const playerWon = (pCombo.rank > dCombo.rank) || (pCombo.rank === dCombo.rank && pCombo.scoreValue >= dCombo.scoreValue);
-
-    setTimeout(() => {
-        tournamentRunState.phase = "ended";
-        if (playerWon) {
-            const finalMultiplier = pCombo.multiplier * (tournamentRunState.isRaised ? 2 : 1);
-            const wonCoins = Math.max(tournamentRunState.potCoins, Math.round(tournamentRunState.ante * finalMultiplier));
-            const wonPts = Math.round(pCombo.points + tournamentRunState.potPoints);
-
-            addCoins(wonCoins);
-            tournamentRunState.currentRunScore = (Number(tournamentRunState.currentRunScore) || 0) + wonPts;
-            state.tournamentWins = (Number(state.tournamentWins) || 0) + 1;
-            
-            if ((tournamentRunState.stage || 1) < 4) {
-                tournamentRunState.stage = (tournamentRunState.stage || 1) + 1;
+        setTimeout(() => {
+            let isGoal = false;
+            if (jeffDiveZone !== zoneIndex) {
+                isGoal = true;
             } else {
-                tournamentRunState.stage = 1;
-                toast("🏆 CONGRATULATIONS! You conquered the Final Stage vs King Jeff!");
+                const powerChance = Math.max(0.1, (playerRating - jeffRating) * 0.03);
+                if (Math.random() < powerChance) {
+                    isGoal = true;
+                }
             }
 
-            SoundFx.success();
-            toast(`🎉 VICTORY! Your [${pCombo.name}] beat King Jeff's [${dCombo.name}]! +${wonCoins.toLocaleString()} 🪙 & +${wonPts.toLocaleString()} 🏆 pts!`);
-        } else {
-            SoundFx.error();
-            toast(`💀 DEFEAT! King Jeff's [${dCombo.name}] beat your [${pCombo.name}]!`);
+            if (isGoal) {
+                try { SoundFx.goalCheer(); } catch(e) {}
+                tournamentRunState.playerScore++;
+                tournamentRunState.playerPills.push("goal");
+                tournamentRunState.currentRunScore += 150;
+
+                if (splashText) splashText.textContent = "GOAL! ⚽🔥";
+                if (splashSub) splashSub.textContent = `Bullet strike by ${playerCard.name}! (+150 pts)`;
+                if (splash) {
+                    splash.classList.remove("hidden");
+                    splash.classList.add("goal");
+                }
+            } else {
+                try { SoundFx.ballSave(); } catch(e) {}
+                tournamentRunState.playerPills.push("miss");
+
+                if (splashText) splashText.textContent = "SAVED! 🧤🚫";
+                if (splashSub) splashSub.textContent = "King Jeff makes a brilliant diving stop!";
+                if (splash) {
+                    splash.classList.remove("hidden");
+                    splash.classList.remove("goal");
+                }
+            }
+
+            renderTournamentRun();
+
+            // Next sub-turn: King Jeff Shoots
+            setTimeout(() => {
+                if (splash) splash.classList.add("hidden");
+                if (ball) {
+                    ball.style.transition = "none";
+                    ball.style.transform = "translate(0px, 0px) scale(1)";
+                }
+                if (keeper) {
+                    keeper.style.transition = "none";
+                    keeper.style.transform = "translate(0px, 0px)";
+                }
+
+                tournamentRunState.turn = "jeff_shoot";
+                tournamentRunState.isKicking = false;
+                saveTournamentRunSession();
+                renderTournamentRun();
+            }, 1200);
+
+        }, 550);
+
+    } else if (tournamentRunState.turn === "jeff_shoot") {
+        // KING JEFF IS SHOOTING AT PLAYER (PLAYER IS GOALKEEPER)
+        const playerDiveZone = zoneIndex;
+        const playerOffset = ZONE_OFFSETS[playerDiveZone] || ZONE_OFFSETS[1];
+
+        const jeffShotZone = Math.floor(Math.random() * 6);
+        const targetOffset = ZONE_OFFSETS[jeffShotZone] || ZONE_OFFSETS[1];
+
+        // Animate Ball
+        if (ball) {
+            ball.style.transition = "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)";
+            ball.style.transform = `translate(${targetOffset.x}px, ${targetOffset.y - 100}px) scale(0.65)`;
         }
 
-        saveTournamentRunSession();
-        renderTournamentRun();
-    }, 1200);
+        // Animate Goalkeeper
+        if (keeper) {
+            keeper.style.transition = "transform 0.5s ease-out";
+            keeper.style.transform = `translate(${playerOffset.x}px, ${playerOffset.y}px)`;
+        }
 
-    renderTournamentRun();
+        try { SoundFx.kickShot(); } catch(e) {}
+
+        setTimeout(() => {
+            let isSaved = false;
+            if (playerDiveZone === jeffShotZone) {
+                isSaved = true;
+            }
+
+            if (isSaved) {
+                try { SoundFx.ballSave(); } catch(e) {}
+                tournamentRunState.jeffPills.push("miss");
+                tournamentRunState.currentRunScore += 200;
+
+                if (splashText) splashText.textContent = "GREAT SAVE! 🧤🛡️";
+                if (splashSub) splashSub.textContent = "You read King Jeff's shot perfectly! (+200 pts)";
+                if (splash) {
+                    splash.classList.remove("hidden");
+                    splash.classList.add("goal");
+                }
+            } else {
+                try { SoundFx.pop(); } catch(e) {}
+                tournamentRunState.jeffScore++;
+                tournamentRunState.jeffPills.push("goal");
+
+                if (splashText) splashText.textContent = "CONCEDED! ⚽";
+                if (splashSub) splashSub.textContent = "King Jeff found the back of the net!";
+                if (splash) {
+                    splash.classList.remove("hidden");
+                    splash.classList.remove("goal");
+                }
+            }
+
+            renderTournamentRun();
+
+            // End of Round: Check match result
+            setTimeout(() => {
+                if (splash) splash.classList.add("hidden");
+                if (ball) {
+                    ball.style.transition = "none";
+                    ball.style.transform = "translate(0px, 0px) scale(1)";
+                }
+                if (keeper) {
+                    keeper.style.transition = "none";
+                    keeper.style.transform = "translate(0px, 0px)";
+                }
+
+                tournamentRunState.round++;
+                tournamentRunState.isKicking = false;
+
+                const pScore = tournamentRunState.playerScore;
+                const jScore = tournamentRunState.jeffScore;
+                const pKicksTaken = tournamentRunState.playerPills.length;
+                const jKicksTaken = tournamentRunState.jeffPills.length;
+
+                let matchDecided = false;
+                let playerWon = false;
+
+                if (pKicksTaken >= 5 && jKicksTaken >= 5) {
+                    if (pScore !== jScore) {
+                        matchDecided = true;
+                        playerWon = pScore > jScore;
+                    }
+                } else if (pKicksTaken <= 5 && jKicksTaken <= 5) {
+                    const pRemaining = 5 - pKicksTaken;
+                    const jRemaining = 5 - jKicksTaken;
+                    if (pScore > jScore + jRemaining) {
+                        matchDecided = true;
+                        playerWon = true;
+                    } else if (jScore > pScore + pRemaining) {
+                        matchDecided = true;
+                        playerWon = false;
+                    }
+                }
+
+                if (matchDecided) {
+                    tournamentRunState.matchActive = false;
+                    tournamentRunState.turn = "match_over";
+
+                    if (playerWon) {
+                        const winCoins = Math.round(tournamentRunState.stake * (stageConf.coinMult || 2));
+                        addCoins(winCoins);
+                        tournamentRunState.currentRunScore += stageConf.rewardPts;
+                        state.tournamentWins = (Number(state.tournamentWins) || 0) + 1;
+
+                        try { SoundFx.success(); } catch(e) {}
+
+                        if (tournamentRunState.stage < 4) {
+                            toast(`🏆 MATCH VICTORY! You defeated King Jeff ${pScore}-${jScore}! Earned +${winCoins.toLocaleString()} 🪙 & +${stageConf.rewardPts.toLocaleString()} pts! Advance to next stage!`);
+                            tournamentRunState.stage++;
+                        } else {
+                            tournamentRunState.currentRunScore += 10000;
+                            addCoins(25000);
+                            toast(`👑 GRAND FINAL CHAMPION! You conquered King Jeff in the Grand Final! +25,000 🪙 & +10,000 Trophy Pts!`);
+                            tournamentRunState.stage = 1;
+                        }
+                    } else {
+                        try { SoundFx.error(); } catch(e) {}
+                        toast(`💀 DEFEAT! King Jeff won the shootout ${jScore}-${pScore}. Stage reset to Group Match.`);
+                        tournamentRunState.stage = 1;
+                    }
+
+                    saveTournamentRunSession();
+                    saveGame();
+                    syncTournamentLeaderboardScore();
+                } else {
+                    tournamentRunState.turn = "player_shoot";
+                    saveTournamentRunSession();
+                }
+
+                renderTournamentRun();
+            }, 1200);
+
+        }, 550);
+    }
 }
 
-function renderPokerCardHTML(card, isFlipped, isDealer, index, isSelected) {
-    if (!card) return "";
-    const rarityClass = "rarity-" + (card.rarity || "Common").replace(/ /g, "-");
-    const photoUrl = getCardImage(card);
+function startNextShootoutMatch() {
+    const currentCoins = Number(state.coins) || 0;
+    const bet = Math.min(tournamentRunState.stake || 100, currentCoins);
+    if (bet > 0) {
+        spendCoins(bet);
+        tournamentRunState.stake = bet;
+    }
 
-    return `
-        <div class="poker-card-slot ${isFlipped ? 'flipped' : ''} ${isSelected ? 'selected-discard' : ''}" 
-             onclick="${!isDealer ? `togglePokerDiscardCard(${index})` : ''}">
-            <div class="poker-card-inner">
-                <div class="poker-card-back">
-                    <div class="poker-card-back-pattern">⚽</div>
-                </div>
-                <div class="poker-card-front ${rarityClass}">
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;background:rgba(0,0,0,0.4);">
-                        <span style="font-size:10px;font-weight:900;color:var(--gold);">${card.rating}</span>
-                        <span style="font-size:9px;font-weight:800;color:#38bdf8;">${card.pos}</span>
-                    </div>
-                    <div style="flex:1;overflow:hidden;position:relative;">
-                        <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150&auto=format&fit=crop&q=80';">
-                    </div>
-                    <div style="padding:4px;background:rgba(0,0,0,0.7);text-align:center;">
-                        <div style="font-size:10px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(card.name)}</div>
-                        <div style="font-size:8px;font-weight:800;color:var(--muted);">${card.rarity}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    tournamentRunState.matchActive = true;
+    tournamentRunState.turn = "player_shoot";
+    tournamentRunState.round = 1;
+    tournamentRunState.playerScore = 0;
+    tournamentRunState.jeffScore = 0;
+    tournamentRunState.playerPills = [];
+    tournamentRunState.jeffPills = [];
+    tournamentRunState.isKicking = false;
+
+    saveTournamentRunSession();
+    renderTournamentRun();
+    try { SoundFx.pop(); } catch(e) {}
 }
 
 function renderTournamentRun() {
@@ -9473,115 +9522,102 @@ function renderTournamentRun() {
     const currentStageIdx = Math.min(3, (tournamentRunState.stage || 1) - 1);
     const stageConf = STAGE_CONFIG[currentStageIdx];
 
-    const tPotStageInfo = document.getElementById("tPotStageInfo");
-    if (tPotStageInfo) tPotStageInfo.textContent = `${stageConf.name.toUpperCase()} · OPPONENT: King Jeff`;
-
-    const tPotAmount = document.getElementById("tPotAmount");
-    if (tPotAmount) tPotAmount.textContent = `🪙 ${tournamentRunState.potCoins.toLocaleString()} + 🏆 ${tournamentRunState.potPoints.toLocaleString()} pts`;
-
-    const tDealerHandBadge = document.getElementById("tDealerHandBadge");
-    const tDealerRow = document.getElementById("tDealerHandRow");
-    
-    if (tDealerRow) {
-        if (tournamentRunState.dealerCards.length === 0) {
-            tDealerRow.innerHTML = Array(5).fill(0).map(() => `
-                <div class="poker-card-slot">
-                    <div class="poker-card-inner">
-                        <div class="poker-card-back"><div class="poker-card-back-pattern">⚽</div></div>
-                    </div>
-                </div>
-            `).join("");
-            if (tDealerHandBadge) tDealerHandBadge.textContent = "Hand Hidden 🎴";
-        } else {
-            const isShowdown = (tournamentRunState.phase === "showdown" || tournamentRunState.phase === "ended");
-            tDealerRow.innerHTML = tournamentRunState.dealerCards.map((card, idx) => 
-                renderPokerCardHTML(card, isShowdown, true, idx, false)
-            ).join("");
-
-            if (tDealerHandBadge) {
-                if (isShowdown && tournamentRunState.dealerCombo) {
-                    tDealerHandBadge.textContent = `${tournamentRunState.dealerCombo.name} (${tournamentRunState.dealerCombo.multiplier}x)`;
-                } else {
-                    tDealerHandBadge.textContent = "Hand Hidden 🎴";
-                }
-            }
-        }
+    const stageBadge = document.getElementById("tStageBadge");
+    if (stageBadge) {
+        stageBadge.textContent = `${stageConf.name.toUpperCase()} · OVR ${stageConf.targetOvr}`;
     }
 
-    const tPlayerRow = document.getElementById("tPlayerHandRow");
-    const tPlayerComboName = document.getElementById("tPlayerComboName");
+    const playerCard = getTournamentPlayerCard();
+    const pCardName = document.getElementById("tPlayerCardName");
+    const pOvrBadge = document.getElementById("tPlayerOvrBadge");
+    if (pCardName) pCardName.textContent = playerCard.name;
+    if (pOvrBadge) pOvrBadge.textContent = `OVR ${playerCard.rating || playerCard.ovr || 99}`;
 
-    if (tPlayerRow) {
-        if (tournamentRunState.playerCards.length === 0) {
-            tPlayerRow.innerHTML = Array(5).fill(0).map(() => `
-                <div class="poker-card-slot">
-                    <div class="poker-card-inner">
-                        <div class="poker-card-back"><div class="poker-card-back-pattern">⭐</div></div>
-                    </div>
-                </div>
-            `).join("");
-            if (tPlayerComboName) tPlayerComboName.textContent = "Ready to Deal";
-        } else {
-            tPlayerRow.innerHTML = tournamentRunState.playerCards.map((card, idx) => 
-                renderPokerCardHTML(card, true, false, idx, tournamentRunState.selectedDiscards.has(idx))
-            ).join("");
+    const jOvrBadge = document.getElementById("tJeffOvrBadge");
+    if (jOvrBadge) jOvrBadge.textContent = `OVR ${stageConf.targetOvr}`;
 
-            if (tournamentRunState.playerCombo) {
-                if (tPlayerComboName) tPlayerComboName.textContent = `${tournamentRunState.playerCombo.name} (${tournamentRunState.playerCombo.multiplier}x Multiplier)`;
-            }
+    // Score totals
+    const pTotal = document.getElementById("tPlayerTotalScore");
+    const jTotal = document.getElementById("tJeffTotalScore");
+    if (pTotal) pTotal.textContent = tournamentRunState.playerScore;
+    if (jTotal) jTotal.textContent = tournamentRunState.jeffScore;
+
+    // Render Pills
+    const pPillsContainer = document.getElementById("tPlayerScorePills");
+    const jPillsContainer = document.getElementById("tJeffScorePills");
+    const maxKicks = Math.max(5, tournamentRunState.playerPills.length, tournamentRunState.jeffPills.length);
+
+    if (pPillsContainer) {
+        let html = "";
+        for (let i = 0; i < maxKicks; i++) {
+            const status = tournamentRunState.playerPills[i];
+            if (status === "goal") html += `<span class="pill" style="color:#10b981;font-size:16px;">🟢</span>`;
+            else if (status === "miss") html += `<span class="pill" style="color:#ef4444;font-size:16px;">🔴</span>`;
+            else html += `<span class="pill" style="opacity:0.3;font-size:16px;">⚪</span>`;
         }
+        pPillsContainer.innerHTML = html;
     }
 
-    const dealBtn = document.getElementById("pokerDealBtn");
-    const swapBtn = document.getElementById("pokerSwapBtn");
-    const raiseBtn = document.getElementById("pokerRaiseBtn");
-    const showdownBtn = document.getElementById("pokerShowdownBtn");
-    const msgDisp = document.getElementById("tPokerMessage");
-    const swapCountDisp = document.getElementById("tSwapCount");
-
-    if (swapCountDisp) swapCountDisp.textContent = tournamentRunState.selectedDiscards.size;
-
-    const s1 = document.getElementById("tStep1");
-    const s2 = document.getElementById("tStep2");
-    const s3 = document.getElementById("tStep3");
-    const s4 = document.getElementById("tStep4");
-
-    const highlightStep = (activeStep) => {
-        [s1, s2, s3, s4].forEach((el, idx) => {
-            if (!el) return;
-            if (idx + 1 === activeStep) {
-                el.style.color = "var(--gold)";
-                el.style.background = "rgba(244,196,78,0.2)";
-                el.style.border = "1px solid var(--gold)";
-            } else {
-                el.style.color = "var(--muted)";
-                el.style.background = "transparent";
-                el.style.border = "none";
-            }
-        });
-    };
-
-    if (tournamentRunState.phase === "idle" || tournamentRunState.phase === "ended") {
-        if (dealBtn) dealBtn.style.display = "inline-flex";
-        if (swapBtn) swapBtn.style.display = "none";
-        if (raiseBtn) raiseBtn.style.display = "none";
-        if (showdownBtn) showdownBtn.style.display = "none";
-        if (msgDisp) msgDisp.textContent = "Select your ante & click DEAL CARDS to clash!";
-        highlightStep(1);
-    } else if (tournamentRunState.phase === "dealt") {
-        if (dealBtn) dealBtn.style.display = "none";
-        if (swapBtn) swapBtn.style.display = "inline-flex";
-        if (raiseBtn) {
-            raiseBtn.style.display = "inline-flex";
-            raiseBtn.disabled = tournamentRunState.isRaised;
+    if (jPillsContainer) {
+        let html = "";
+        for (let i = 0; i < maxKicks; i++) {
+            const status = tournamentRunState.jeffPills[i];
+            if (status === "goal") html += `<span class="pill" style="color:#10b981;font-size:16px;">🟢</span>`;
+            else if (status === "miss") html += `<span class="pill" style="color:#ef4444;font-size:16px;">🔴</span>`;
+            else html += `<span class="pill" style="opacity:0.3;font-size:16px;">⚪</span>`;
         }
-        if (showdownBtn) showdownBtn.style.display = "inline-flex";
-        if (msgDisp) msgDisp.textContent = "Click up to 3 cards to swap & redraw, or click SHOWDOWN to reveal winner!";
-        highlightStep(tournamentRunState.selectedDiscards.size > 0 ? 2 : (tournamentRunState.isRaised ? 4 : 2));
-    } else if (tournamentRunState.phase === "showdown") {
-        if (msgDisp) msgDisp.textContent = "Showdown! Revealing King Jeff's squad...";
-        highlightStep(4);
+        jPillsContainer.innerHTML = html;
     }
+
+    // Round indicator
+    const roundInd = document.getElementById("tRoundIndicator");
+    if (roundInd) {
+        const roundNum = Math.min(maxKicks, Math.max(tournamentRunState.playerPills.length, tournamentRunState.jeffPills.length) + 1);
+        roundInd.textContent = `KICK ${roundNum} OF ${maxKicks}`;
+    }
+
+    // Turn banner
+    const turnActionIcon = document.getElementById("turnActionIcon");
+    const turnActionText = document.getElementById("turnActionText");
+    const turnBanner = document.getElementById("penaltyTurnBanner");
+    const nextMatchBtn = document.getElementById("nextShootoutMatchBtn");
+    const keeperTag = document.getElementById("keeperTag");
+    const keeperIcon = document.getElementById("keeperIcon");
+
+    if (tournamentRunState.turn === "player_shoot") {
+        if (turnActionIcon) turnActionIcon.textContent = "⚽";
+        if (turnActionText) turnActionText.textContent = `YOUR TURN TO SHOOT: Aim at 1 of the 6 goal target corners to beat King Jeff!`;
+        if (turnBanner) {
+            turnBanner.style.background = "linear-gradient(90deg, rgba(56,189,248,0.2), rgba(16,185,129,0.2))";
+            turnBanner.style.borderColor = "#38bdf8";
+        }
+        if (keeperTag) keeperTag.textContent = "King Jeff";
+        if (keeperIcon) keeperIcon.textContent = "🧤";
+        if (nextMatchBtn) nextMatchBtn.style.display = "none";
+    } else if (tournamentRunState.turn === "jeff_shoot") {
+        if (turnActionIcon) turnActionIcon.textContent = "👑";
+        if (turnActionText) turnActionText.textContent = `KING JEFF IS SHOOTING: Dive to any corner of the net to make a massive save!`;
+        if (turnBanner) {
+            turnBanner.style.background = "linear-gradient(90deg, rgba(239,68,68,0.2), rgba(244,196,78,0.2))";
+            turnBanner.style.borderColor = "#f43f5e";
+        }
+        if (keeperTag) keeperTag.textContent = "Your Keeper";
+        if (keeperIcon) keeperIcon.textContent = "🛡️";
+        if (nextMatchBtn) nextMatchBtn.style.display = "none";
+    } else if (tournamentRunState.turn === "match_over") {
+        const pWon = tournamentRunState.playerScore > tournamentRunState.jeffScore;
+        if (turnActionIcon) turnActionIcon.textContent = pWon ? "🏆" : "💀";
+        if (turnActionText) turnActionText.textContent = pWon ? `MATCH WON! ${tournamentRunState.playerScore} - ${tournamentRunState.jeffScore}. Click START NEXT MATCH to advance!` : `MATCH LOST! ${tournamentRunState.playerScore} - ${tournamentRunState.jeffScore}. Click START NEXT MATCH to try again!`;
+        if (turnBanner) {
+            turnBanner.style.background = pWon ? "rgba(16,185,129,0.25)" : "rgba(239,68,68,0.25)";
+            turnBanner.style.borderColor = pWon ? "#10b981" : "#ef4444";
+        }
+        if (nextMatchBtn) nextMatchBtn.style.display = "inline-flex";
+    }
+
+    document.querySelectorAll(".goal-zone-btn").forEach(btn => {
+        btn.disabled = Boolean(tournamentRunState.isKicking || tournamentRunState.turn === "match_over" || tournamentRunState.isPaused);
+    });
 }
 
 function renderTournament() {
@@ -9597,13 +9633,13 @@ function renderTournament() {
         if (isAlucard) {
             launchContainer.innerHTML = `
                 <div class="tournament-launch-card">
-                    <div style="font-size:42px;">⏱️ ⚔️ 🏆</div>
-                    <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Championship Run</h2>
+                    <div style="font-size:42px;">⏱️ ⚽ 🏆</div>
+                    <h2 style="margin:0;color:#fff;font-size:24px;">15-Minute Penalty Cup Championship</h2>
                     <p style="color:var(--muted);max-width:550px;margin:0;font-size:14px;line-height:1.6;">
-                        Score as many points as possible before the 15-minute clock expires! Unlimited free attempts available. You can pause anytime.
+                        Score as many tournament points as possible in 15 minutes! Clash in penalty shootouts against <b>King Jeff</b> across 4 escalating tournament stages (Group ➔ Quarter ➔ Semi ➔ Grand Final). Unlimited runs with pause support!
                     </p>
                     <button class="tournament-launch-btn" onclick="startTournamentRun()">
-                        ⚔️ PLAY TOURNAMENT RUN →
+                        ⚽ PLAY PENALTY CUP →
                     </button>
                 </div>
             `;
@@ -9622,11 +9658,12 @@ function renderTournament() {
             `;
         }
     }
-
 }
 
-
 const EXPORTED_ACTIONS = {
+        choosePenaltyZone,
+        setTournamentStake,
+        startNextShootoutMatch,
         renderTournamentRun,
         closeRunCompleteModal,
         confirmLeaveTournamentRun,
@@ -9635,13 +9672,6 @@ const EXPORTED_ACTIONS = {
         toggleTournamentPause,
         startTournamentRun,
         renderTournamentLeaderboard,
-        renderTournamentPoker,
-        executePokerShowdown,
-        executePokerRaise,
-        executePokerSwap,
-        togglePokerDiscardCard,
-        executePokerDeal,
-        setPokerBet,
         openPack,
         openPackOdds,
         closePackOddsModal,
@@ -9881,6 +9911,27 @@ function updateTimers() {
                 dailyBtn.disabled = true;
                 dailyBtn.classList.add("claimed");
             }
+        }
+        // Exclusive Pack countdown timer (target next Monday 00:00:00 UTC)
+        const exclusiveTimerEl = document.getElementById("exclusivePackTimerText");
+        if (exclusiveTimerEl) {
+            const now = new Date();
+            const nowUtc = now.getTime();
+            // Calculate next Monday 00:00:00 UTC
+            const dayOfWeek = now.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+            const daysUntilNextMon = ((8 - dayOfWeek) % 7) || 7;
+            const targetMon = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate() + daysUntilNextMon,
+                0, 0, 0
+            ));
+            const diffMs = Math.max(0, targetMon.getTime() - nowUtc);
+            const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diffMs % (1000 * 60)) / 1000);
+            exclusiveTimerEl.textContent = `${d}d ${h}h ${m}m ${s}s`;
         }
     } catch(e) {}
 }
