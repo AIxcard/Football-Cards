@@ -117,7 +117,7 @@ This document manages all active tasks, assigned subagents, prioritized backlogs
 | `ACT-059` | `P0` | Deterministic username-keyed two-way state sync between PC & iPad | `script.js` | `web_game_dev` | 🟢 Done |
 | `ACT-051` | `P0` | Realistic 3D booster pack model with cap severing and paper/foil tear audio | `index.html`, `style.css`, `script.js` | `web_game_dev` | 🟢 Done |
 | `ACT-052` | `P0` | Dedicated Mythic magma cutscene and enhanced Secret celestial starlight cutscene | `index.html`, `style.css`, `script.js` | `web_game_dev` | 🟢 Done |
-| `ACT-053` | `P1` | Removed all instant reveal buttons and skip animation settings | `index.html`, `script.js` | `web_game_dev` | 🟢 Done |
+| `ACT-068` | `P0` | Trading REST API, offline trader directory, tournament HUD step guide, leaderboard cleanup | `server.js`, `index.html`, `script.js` | `web_game_dev` | 🟢 Done |
 | `ACT-005` | `P3` | Implement Interactive Penalty Shootout Mini-Game using Collected Cards | `index.html` & `script.js` | `web_game_dev` | ⚪ Queued |
 | `ACT-006` | `P3` | Implement Starting XI Squad Builder & Chemistry System | `index.html` & `script.js` | `web_game_dev` | ⚪ Queued |
 
