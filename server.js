@@ -169,6 +169,10 @@ function loadDatabase() {
             if (raw && raw.wipeVersion === HARD_WIPE_VERSION && raw.users) {
                 database = raw;
                 database.users = database.users || {};
+                database.trades = database.trades || [];
+                database.tradeSessions = database.tradeSessions || {};
+                database.auditLogs = database.auditLogs || {};
+                database.backups = database.backups || {};
                 if (!database.users["alucard"]) {
                     database.users["alucard"] = ALUCARD_USER;
                 }
@@ -186,6 +190,7 @@ function loadDatabase() {
             "alucard": JSON.parse(JSON.stringify(ALUCARD_USER))
         },
         trades: [],
+        tradeSessions: {},
         auditLogs: {},
         backups: {},
         leaderboard: {}
@@ -364,6 +369,216 @@ const server = http.createServer((req, res) => {
             summary[k] = { username: u.username, lastActive: u.lastActive, saveData: u.saveData };
         }
         return sendJSON(200, { success: true, users: summary });
+    }
+
+    // ==================== TRADING REST API ====================
+    if (pathname === "/api/trade/request" && req.method === "POST") {
+        return getBody((err, body) => {
+            if (err || !body.sender || !body.receiver) return sendJSON(400, { success: false, error: "Invalid trade request" });
+            const sKey = String(body.sender).trim().toLowerCase();
+            const rKey = String(body.receiver).trim().toLowerCase();
+            if (sKey === rKey) return sendJSON(400, { success: false, error: "Cannot trade with yourself" });
+            if (!database.users[rKey]) return sendJSON(404, { success: false, error: "Recipient user not found on server" });
+
+            const tradeId = body.id || ("tr_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7));
+            const tradeReq = {
+                id: tradeId,
+                sender: database.users[sKey] ? database.users[sKey].username : body.sender,
+                receiver: database.users[rKey].username,
+                senderTitle: body.senderTitle || "Collector",
+                senderLevel: Number(body.senderLevel || 1),
+                status: "pending",
+                timestamp: Date.now()
+            };
+
+            database.trades = database.trades || [];
+            // Remove expired or duplicate requests
+            database.trades = database.trades.filter(t => t.id !== tradeId && (Date.now() - t.timestamp < 300000));
+            database.trades.push(tradeReq);
+            saveDatabase();
+            return sendJSON(200, { success: true, trade: tradeReq });
+        });
+    }
+
+    if (pathname === "/api/trade/pending" && req.method === "GET") {
+        const username = parsedUrl.query.username;
+        if (!username) return sendJSON(400, { success: false, error: "Username required" });
+        const key = String(username).trim().toLowerCase();
+        database.trades = database.trades || [];
+        // Filter pending trades for this user created in the last 5 minutes
+        const pending = database.trades.filter(t => 
+            (t.receiver.toLowerCase() === key || t.sender.toLowerCase() === key) && 
+            (Date.now() - t.timestamp < 300000)
+        );
+        return sendJSON(200, { success: true, trades: pending });
+    }
+
+    if (pathname === "/api/trade/respond" && req.method === "POST") {
+        return getBody((err, body) => {
+            if (err || !body.id || !body.action) return sendJSON(400, { success: false, error: "Invalid trade response" });
+            database.trades = database.trades || [];
+            database.tradeSessions = database.tradeSessions || {};
+            const trade = database.trades.find(t => t.id === body.id);
+            if (!trade) return sendJSON(404, { success: false, error: "Trade request expired or not found" });
+
+            const action = body.action.toLowerCase();
+            if (action === "accept") {
+                trade.status = "session_active";
+                const p1 = trade.sender.toLowerCase();
+                const p2 = trade.receiver.toLowerCase();
+                database.tradeSessions[trade.id] = {
+                    id: trade.id,
+                    sender: trade.sender,
+                    receiver: trade.receiver,
+                    offers: { [p1]: [], [p2]: [] },
+                    ready: { [p1]: false, [p2]: false },
+                    chat: [
+                        { sender: "System", text: `Trade room connected! Add cards to your slots or chat.`, time: Date.now() }
+                    ],
+                    status: "active",
+                    updatedAt: Date.now()
+                };
+                saveDatabase();
+                return sendJSON(200, { success: true, status: "session_active", session: database.tradeSessions[trade.id] });
+            } else if (action === "decline") {
+                trade.status = "declined";
+                if (database.tradeSessions[trade.id]) database.tradeSessions[trade.id].status = "declined";
+                saveDatabase();
+                return sendJSON(200, { success: true, status: "declined" });
+            } else if (action === "block") {
+                trade.status = "blocked";
+                if (database.tradeSessions[trade.id]) database.tradeSessions[trade.id].status = "blocked";
+                saveDatabase();
+                return sendJSON(200, { success: true, status: "blocked" });
+            }
+            return sendJSON(400, { success: false, error: "Unknown action" });
+        });
+    }
+
+    if (pathname === "/api/trade/session" && req.method === "GET") {
+        const id = parsedUrl.query.id;
+        if (!id) return sendJSON(400, { success: false, error: "Session ID required" });
+        database.tradeSessions = database.tradeSessions || {};
+        const session = database.tradeSessions[id];
+        if (!session) return sendJSON(404, { success: false, error: "Session not found" });
+        return sendJSON(200, { success: true, session });
+    }
+
+    if (pathname === "/api/trade/session/update" && req.method === "POST") {
+        return getBody((err, body) => {
+            if (err || !body.id || !body.username) return sendJSON(400, { success: false, error: "Invalid update" });
+            database.tradeSessions = database.tradeSessions || {};
+            const session = database.tradeSessions[body.id];
+            if (!session) return sendJSON(404, { success: false, error: "Session not found" });
+
+            const uKey = String(body.username).trim().toLowerCase();
+            session.offers = session.offers || {};
+            session.ready = session.ready || {};
+
+            if (Array.isArray(body.offer)) {
+                session.offers[uKey] = body.offer;
+                // If offer changed, reset both users' ready states for safety
+                session.ready = { [session.sender.toLowerCase()]: false, [session.receiver.toLowerCase()]: false };
+            }
+            if (body.ready !== undefined) {
+                session.ready[uKey] = !!body.ready;
+            }
+            if (body.chatMessage && typeof body.chatMessage === "string" && body.chatMessage.trim()) {
+                session.chat = session.chat || [];
+                session.chat.push({
+                    sender: body.username,
+                    text: body.chatMessage.trim(),
+                    time: Date.now()
+                });
+                if (session.chat.length > 50) session.chat = session.chat.slice(-50);
+            }
+
+            session.updatedAt = Date.now();
+            saveDatabase();
+            return sendJSON(200, { success: true, session });
+        });
+    }
+
+    if (pathname === "/api/trade/session/cancel" && req.method === "POST") {
+        return getBody((err, body) => {
+            if (err || !body.id) return sendJSON(400, { success: false, error: "Session ID required" });
+            database.tradeSessions = database.tradeSessions || {};
+            const session = database.tradeSessions[body.id];
+            if (session) {
+                session.status = "cancelled";
+                session.updatedAt = Date.now();
+            }
+            database.trades = database.trades || [];
+            const trade = database.trades.find(t => t.id === body.id);
+            if (trade) trade.status = "cancelled";
+            saveDatabase();
+            return sendJSON(200, { success: true });
+        });
+    }
+
+    if (pathname === "/api/trade/session/complete" && req.method === "POST") {
+        return getBody((err, body) => {
+            if (err || !body.id) return sendJSON(400, { success: false, error: "Session ID required" });
+            database.tradeSessions = database.tradeSessions || {};
+            const session = database.tradeSessions[body.id];
+            if (!session) return sendJSON(404, { success: false, error: "Session not found" });
+            if (session.status === "completed") {
+                return sendJSON(200, { success: true, alreadyCompleted: true, session });
+            }
+
+            const u1Key = session.sender.toLowerCase();
+            const u2Key = session.receiver.toLowerCase();
+            const u1 = database.users[u1Key];
+            const u2 = database.users[u2Key];
+
+            if (u1 && u2 && session.offers) {
+                const u1Offer = Array.isArray(session.offers[u1Key]) ? session.offers[u1Key] : [];
+                const u2Offer = Array.isArray(session.offers[u2Key]) ? session.offers[u2Key] : [];
+
+                let sData1 = typeof u1.saveData === "string" ? JSON.parse(u1.saveData) : (u1.saveData || {});
+                let sData2 = typeof u2.saveData === "string" ? JSON.parse(u2.saveData) : (u2.saveData || {});
+                sData1.cards = Array.isArray(sData1.cards) ? sData1.cards : [];
+                sData2.cards = Array.isArray(sData2.cards) ? sData2.cards : [];
+
+                const u1OfferedIds = new Set(u1Offer.map(c => c.id));
+                const u2OfferedIds = new Set(u2Offer.map(c => c.id));
+
+                // Remove offered cards
+                sData1.cards = sData1.cards.filter(c => !u1OfferedIds.has(c.id));
+                sData2.cards = sData2.cards.filter(c => !u2OfferedIds.has(c.id));
+
+                // Add received cards with fresh IDs and obtained timestamp
+                u2Offer.forEach(c => {
+                    sData1.cards.push({ ...c, id: "card_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7), obtained: Date.now() });
+                });
+                u1Offer.forEach(c => {
+                    sData2.cards.push({ ...c, id: "card_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7), obtained: Date.now() });
+                });
+
+                u1.saveData = sData1;
+                u2.saveData = sData2;
+
+                // Log audit for both users
+                database.auditLogs = database.auditLogs || {};
+                database.auditLogs[u1Key] = database.auditLogs[u1Key] || [];
+                database.auditLogs[u1Key].unshift({
+                    timestamp: Date.now(),
+                    action: "TRADE_COMPLETED",
+                    details: { partner: session.receiver, given: u1Offer.length, received: u2Offer.length }
+                });
+                database.auditLogs[u2Key] = database.auditLogs[u2Key] || [];
+                database.auditLogs[u2Key].unshift({
+                    timestamp: Date.now(),
+                    action: "TRADE_COMPLETED",
+                    details: { partner: session.sender, given: u2Offer.length, received: u1Offer.length }
+                });
+            }
+
+            session.status = "completed";
+            session.updatedAt = Date.now();
+            saveDatabase();
+            return sendJSON(200, { success: true, session });
+        });
     }
 
 const SERVER_CARD_VALUES = {
