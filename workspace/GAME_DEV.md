@@ -50,6 +50,11 @@ Football-Cards/
 ---
 
 ## 📝 Recent Technical Updates
+* **2026-09-14 (Phase 58)**:
+  - **Penalty Shootout Cup Championship Arena Remake**: Rebuilt the tournament format from the ground up as a high-octane 15-minute Penalty Shootout Championship against **King Jeff** (`#penaltyStadiumBox`), featuring 6 clickable goal corners (Top Left, Top Center, Top Right, Bottom Left, Low Center, Bottom Right), animated goalkeeper dives, dynamic ball flight animations, match scoreboards, stake selectors, and 4 escalating tournament tiers (Group Stage $\rightarrow$ Quarter-Final $\rightarrow$ Semi-Final $\rightarrow$ Grand Final).
+  - **Exclusive Pack Live Expiry Timer**: Integrated pulsing countdown timer on `#packCardExclusive` (`#exclusivePackTimerText`) targeting next Monday 00:00:00 UTC with real-time days, hours, minutes, and seconds.
+  - **Cross-Device Authoritative Cloud State Adoption**: Enhanced `syncFromServer()` to enforce authoritative cloud server saves on both PC and iPad, eliminating divergent state or stale local overwrites for account `Alucard` and all players.
+
 * **2026-09-04 (Phase 20)**:
   - **Exclusive Economy Calibration (1,000 Coins / 800 Sell Value)**: Configured Exclusive pack cost to 1,000 coins (1x=1,000, 3x=3,000, 5x=5,000) and card duplicate/manual sell price to a flat 800 coins across all Exclusive players.
   - **Anti-Bot & Anti-Autoclicker Guard (`AntiBotGuard`)**: Installed active bot detection on pack rip and opening triggers, verifying `e.isTrusted` flag, mouse event coordinates, and sliding-window event interval variance (< 15ms variance flag) to terminate bookmarklet scripts and macro tools.
