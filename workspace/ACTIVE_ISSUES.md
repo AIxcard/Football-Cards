@@ -32,6 +32,25 @@ This document tracks all active defects, performance drops, edge cases, and QA v
 - **Actual Behavior**: What actually happened.
 - **Root Cause & Fix Recommendation**: (If known)
 - **Status**: 🔴 Open / 🟡 Investigating / 🟢 Resolved
+### [ISSUE-059] [P1 - Critical] Tournament Shootout Balance, 3D Theme Sync, Admin Card Spawner & Profile World Cup Trophy Condition
+- **Description**:
+  1. Tournament penalty shootout had strict millisecond reaction timing that made matches frustrating and unbeatable.
+  2. 3D Card Inspector had a color mismatch (Messi card front appeared purple/blue instead of signature gold/orange because `.card.is-serialized` was overriding `theme-messi`).
+  3. Admin Console needed to spawn ANY card, specifically adding quick spawn and spawner list support for `Shiny Emanuel (99 OVR CAM)`.
+  4. Update Log modal needed to be emptied with a clean placeholder.
+  5. Profile World Cup trophy (`🏆`) was showing for accounts without Rank #1 or Championship status.
+  6. Placeholders across search inputs and trade picker still had `(e.g. ...)` text.
+  7. Tournament launch card had old "15-Minute Penalty Cup Championship" text due to a duplicate `renderTournament()` definition at line 9919.
+- **Fix**:
+  1. Removed ms reflex timer mechanics and ms failure messages from `choosePenaltyZone` and `prepareNextTurn`. Shootout is now strategic: player picks target zone vs stage-based AI dive probabilities (20%-50%), and Goalkeeping rewards diving to King Jeff's shot zone with World Class saves.
+  2. Updated CSS specificity in `style.css` so `.theme-messi.is-serialized`, `.theme-ronaldo.is-serialized`, `.theme-tournament.is-serialized`, and `.theme-developer.is-serialized` take precedence over generic serialized styles. Updated `open3DCard` in `script.js` to strictly match collection card themes.
+  3. Added `Shiny Emanuel` (99 OVR CAM Tournament) to `PLAYERS`, added `adminSpawnShinyEmanuel()` quick spawn button, and added Shiny toggle support to `adminExecuteSpawnCard()`.
+  4. Emptied `#updateLogModal` with a clean "No New Updates" placeholder.
+  5. Enforced Rank #1 condition in `renderProfile()`: trophy badge is strictly displayed if `state.tournamentRank === 1` or `state.isTournamentChampion`.
+  6. Cleaned all `(e.g. ...)` placeholder strings across all inputs in `index.html` and `script.js`.
+  7. Deleted duplicate `renderTournament()` at line 9919 and polished the primary World Cup launch card with clean text, proportions, and action button.
+- **Status**: 🟢 Resolved
+
 ### [ISSUE-058] [P0 - Critical] Admin Panel for Alucard, Tournament Leaderboard Sync, Season Rewards Rebalance, RAP Alignment & Update Log
 - **Description**:
   1. Admin Panel button was not appearing for account "Alucard" due to missing `checkAdminStatus()` function.
