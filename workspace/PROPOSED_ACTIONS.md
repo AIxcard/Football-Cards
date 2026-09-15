@@ -12,6 +12,7 @@ This document manages all active tasks, assigned subagents, prioritized backlogs
 
 ---
 
+| `ACT-165` | `P0` | Full Glowing Holographic Rarity Shaders (Rare Blue, Epic Purple, Legendary Gold, Exclusive Cyan, Mythic Ruby, Secret Nebula, World Class & Messi/Ronaldo), Faceless Ronaldo Silhouette, v26 Clean Global Reset & Master Admin Potions/Buffs Suite | `index.html`, `style.css`, `script.js`, `data/db.json` | `web_game_dev` | 🟢 Done |
 | `ACT-164` | `P0` | Tournament Penalty Shootout Balance (Remove ms reflex mechanics), Admin Shiny Emanuel & All-Card Spawner, 3D Inspector Theme Front Matching, Profile World Cup Trophy Rank #1 Requirement, Clean Input Placeholders & World Cup Launch Card Polish | `index.html`, `style.css`, `script.js` | `web_game_dev` | 🟢 Done |
 | `ACT-163` | `P0` | Admin Panel for Alucard, Tournament Leaderboard Sync & Live Personal Best Score, Remove Penalty Match Wins, Season Rewards % Tier Rebalance, RAP Alignment, Update Log 0.1-0.5 Modal, World Class Effects & iPad Responsiveness | `index.html`, `style.css`, `script.js`, `server.js` | `web_game_dev` | 🟢 Done |
 | `ACT-162` | `P0` | Roguelike Card Draft System, 3-Hearts Life Counter Loss Condition, 5 Daily Runs, Anime TD Season Rewards Ladder with Shiny Animated Emanuel, and complete Roblox text purge | `index.html`, `style.css`, `script.js` | `web_game_dev` | 🟢 Done |
