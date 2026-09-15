@@ -8367,3 +8367,99 @@ html, body {
     font-size: 11.5px !important;
     font-weight: 900 !important;
 }
+
+
+/* REVEAL & INSPECT MODAL CENTERING & ROBUST VISIBILITY */
+#cardRevealOverlay, #pinRevealModal, #packOddsModal, #multiCardRevealOverlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999999 !important;
+    background: rgba(2, 6, 14, 0.88) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#cardRevealOverlay.hidden, #pinRevealModal.hidden, #packOddsModal.hidden, #multiCardRevealOverlay.hidden {
+    display: none !important;
+}
+
+.pin-reveal-modal-box {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+    border: 2px solid var(--gold) !important;
+    border-radius: 24px !important;
+    padding: 24px 28px !important;
+    max-width: min(880px, 94vw) !important;
+    width: auto !important;
+    margin: auto !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 0 50px rgba(245, 158, 11, 0.4), 0 25px 70px rgba(0,0,0,0.95) !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
+
+.pin-reveal-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 16px !important;
+    margin: 16px auto !important;
+    width: 100% !important;
+}
+
+.reveal-card-box {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 14px !important;
+    width: min(300px, 88vw) !important;
+    max-width: 300px !important;
+    margin: auto !important;
+    animation: revealEntry 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    z-index: 10 !important;
+}
+
+#revealCard, .reveal-card-body {
+    width: 280px !important;
+    max-width: 88vw !important;
+    min-height: 380px !important;
+    border-radius: 18px !important;
+    padding: 16px 14px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 45px rgba(50, 149, 255, 0.35) !important;
+    animation: card3DFlip 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards !important;
+}
+
+#revealCard .card-image-wrap, .reveal-card-body .card-image-wrap {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    max-height: 220px !important;
+    min-height: 180px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 4px auto 8px !important;
+    background: transparent !important;
+}
+
+#revealCard .card-photo, .reveal-card-body .card-photo {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+    border-radius: 10px !important;
+}
+
