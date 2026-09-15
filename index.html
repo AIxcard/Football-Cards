@@ -10,7 +10,7 @@
         window.location.replace("https://football-cards-yrry.onrender.com" + window.location.search);
     }
 </script>
-<link rel="stylesheet" href="style.css?v=1002.0">
+<link rel="stylesheet" href="style.css?v=2001.0">
 </head>
 
 <body>
@@ -1850,6 +1850,16 @@
         <div class="admin-tabs-row">
             <button id="adminTabBtnCurrency" class="admin-tab active" onclick="setAdminTab('currency')">🪙 Economy</button>
             <button id="adminTabBtnCards" class="admin-tab" onclick="setAdminTab('cards')">🎴 Card Spawner</button>
+            <button id="adminTabBtnPotions" class="admin-tab" onclick="setAdminTab('potions')" style="border-color:rgba(182,108,255,0.5);color:#d8b4fe;">🧪 Potions &amp; Buffs</button>
+            <button id="adminTabBtnLevel" class="admin-tab" onclick="setAdminTab('level')">⭐ Unlocks &amp; XP</button>
+            <button id="adminTabBtnTitles" class="admin-tab" onclick="setAdminTab('titles')">🎖️ Grant Titles</button>
+            <button id="adminTabBtnTournament" class="admin-tab" onclick="setAdminTab('tournament')">🏆 Tournament</button>
+            <button id="adminTabBtnModeration" class="admin-tab" onclick="setAdminTab('moderation')">🛡️ Moderation</button>
+            <button id="adminTabBtnAccounts" class="admin-tab" onclick="setAdminTab('accounts')">📋 All Accounts</button>
+            <button id="adminTabBtnAudit" class="admin-tab" onclick="setAdminTab('audit')" style="border-color:rgba(0,242,254,0.4);color:var(--cyan);">📜 Action Logs &amp; Restore</button>
+            <button id="adminTabBtnDelete" class="admin-tab" onclick="setAdminTab('delete')" style="border-color:rgba(239,68,68,0.5);color:var(--red);">🗑️ Delete Account</button>
+            <button id="adminTabBtnCurrency" class="admin-tab active" onclick="setAdminTab('currency')">🪙 Economy</button>
+            <button id="adminTabBtnCards" class="admin-tab" onclick="setAdminTab('cards')">🎴 Card Spawner</button>
             <button id="adminTabBtnLevel" class="admin-tab" onclick="setAdminTab('level')">⭐ Unlocks &amp; XP</button>
             <button id="adminTabBtnTitles" class="admin-tab" onclick="setAdminTab('titles')">🎖️ Grant Titles</button>
             <button id="adminTabBtnTournament" class="admin-tab" onclick="setAdminTab('tournament')">🏆 Tournament</button>
@@ -1877,6 +1887,43 @@
         </div>
 
         <!-- 1. ECONOMY TAB -->
+        <!-- POTIONS & BUFFS TAB -->
+        <div id="adminTabPotions" class="admin-tab-content" style="display:none;">
+            <h3>🧪 Potions, Buffs &amp; God-Mode Multipliers</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Grant potion items, trigger instant XP/Gold rushes, or activate unlimited god-mode luck buffs for yourself or any target player.</p>
+            
+            <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:200px;">
+                    <label>Target Player Username (Leave blank for Self)</label>
+                    <input type="text" id="adminPotionTarget" placeholder="Enter username or leave blank for self..." style="width:100%;">
+                </div>
+                <div style="width:140px;">
+                    <label>Duration</label>
+                    <select id="adminPotionDuration" style="width:100%;">
+                        <option value="600">10 Minutes</option>
+                        <option value="1800">30 Minutes</option>
+                        <option value="3600">1 Hour</option>
+                        <option value="86400">24 Hours</option>
+                        <option value="permanent" selected>Permanent / God-Mode</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:10px;margin-bottom:16px;">
+                <button class="action-btn" style="background:linear-gradient(135deg,#1e1b4b,#4338ca);color:#c7d2fe;padding:12px;" onclick="adminGrantPotion('luck')">🧪 3x Luck Surge Potion</button>
+                <button class="action-btn" style="background:linear-gradient(135deg,#14532d,#15803d);color:#bbf7d0;padding:12px;" onclick="adminGrantPotion('gold')">💰 2x Gold Rush Potion</button>
+                <button class="action-btn" style="background:linear-gradient(135deg,#0e7490,#0284c7);color:#bae6fd;padding:12px;" onclick="adminGrantPotion('speed')">⚡ Speed Tear Potion</button>
+                <button class="action-btn" style="background:linear-gradient(135deg,#701a75,#a21caf);color:#f5d0fe;padding:12px;" onclick="adminGrantPotion('xp')">⭐ +5,000 XP Surge</button>
+                <button class="action-btn" style="background:linear-gradient(135deg,#831843,#be185d);color:#fbcfe8;padding:12px;" onclick="adminGrantPotion('godluck')">👑 100% God-Mode Luck</button>
+                <button class="action-btn" style="background:linear-gradient(135deg,#78350f,#d97706);color:#fef3c7;padding:12px;" onclick="adminGrantPotion('packs')">♾️ Infinite Free Packs</button>
+            </div>
+            
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="primary-btn" style="padding:10px 18px;font-weight:900;" onclick="adminActivateAllGodBuffs()">✨ Activate All God-Mode Buffs (1-Click)</button>
+                <button class="secondary-btn" style="padding:10px 18px;" onclick="adminClearAllBuffs()">🧹 Clear Active Buffs</button>
+            </div>
+        </div>
+
         <div id="adminTabCurrency" class="admin-tab-content">
             <h3>🪙 Gold Economy &amp; Currency</h3>
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Add gold coins to your account or grant directly to any online player.</p>
@@ -2310,6 +2357,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=1002.0"></script>
+<script src="script.js?v=2001.0"></script>
 </body>
 </html>
