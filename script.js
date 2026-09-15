@@ -4145,33 +4145,54 @@ function close3DCardModal() {
 function renderIndex() {
     const grid = document.getElementById("indexGrid");
     const filter = document.getElementById("indexFilter");
-    const claimAllBtn = document.getElementById("indexClaimAllBtn");
+    const claimAllWrap = document.getElementById("indexClaimAllWrap");
     if (!grid) return;
 
     state.claimedIndexRewards = state.claimedIndexRewards || [];
 
     if (currentIndexTab === "medals") {
         if (filter) filter.style.display = "none";
-        if (claimAllBtn) claimAllBtn.style.display = "none";
+        if (claimAllWrap) claimAllWrap.style.display = "none";
 
         const discoveredPins = (state.ownedPins || []).length;
         const totalPins = PINS_DEF.length;
         const pct = Math.round((discoveredPins / totalPins) * 100);
 
-        setText("indexProgressText", `${discoveredPins} / ${totalPins} Medals Discovered (${pct}%)`);
+        setText("indexProgressText", `${discoveredPins} / ${totalPins} Medals & Pins Discovered (${pct}%)`);
         const pBar = document.getElementById("indexProgressBar");
         if (pBar) pBar.style.width = `${pct}%`;
 
         grid.innerHTML = PINS_DEF.map(pin => {
             const isOwned = (state.ownedPins || []).includes(pin.id);
+            if (!isOwned) {
+                return `
+                <article class="card index-card locked" onclick="inspectPin('${pin.id}')">
+                    <div class="card-image-wrap" style="display:flex;align-items:center;justify-content:center;padding:12px;opacity:0.25;filter:grayscale(1);">
+                        <div style="width:70px;height:70px;">${pin.badgeSvg}</div>
+                    </div>
+                    <div class="card-rating">🏅</div>
+                    <div class="card-position">PIN</div>
+                    <h3>???</h3>
+                    <small>🔒 Locked Medal</small>
+                </article>
+                `;
+            }
+
             return `
-                <div class="card index-card ${isOwned ? 'discovered' : 'undiscovered'}" style="padding:16px;text-align:center;cursor:pointer;border:1.5px solid ${isOwned ? '#ffd700' : 'rgba(255,255,255,0.1)'};border-radius:12px;background:${isOwned ? 'rgba(255,215,0,0.06)' : 'rgba(255,255,255,0.02)'};" onclick="inspectPin('${pin.id}')">
-                    <div style="width:65px;height:65px;margin:8px auto;filter:${isOwned ? 'drop-shadow(0 0 10px rgba(255,215,0,0.6))' : 'grayscale(1) opacity(0.3)'};">${pin.badgeSvg}</div>
-                    <div class="card-rarity-badge specialized" style="display:inline-block;background:linear-gradient(90deg,#ffd700,#ff9900);color:#000;font-weight:900;padding:2px 8px;border-radius:4px;font-size:10px;margin-bottom:6px;">SPECIALIZED</div>
-                    <h3 style="margin:4px 0;font-size:14px;color:#fff;">${isOwned ? pin.name : '??? Locked Medal'}</h3>
-                    <p style="font-size:11px;color:var(--muted);margin:4px 0 8px;min-height:30px;">${isOwned ? pin.desc : 'Unbox Pins & Medals Capsule in Store to unlock'}</p>
-                    <div style="font-size:11px;color:${isOwned ? 'var(--gold)' : 'var(--muted)'};font-weight:800;">${isOwned ? '✓ DISCOVERED' : '🔒 UNDISCOVERED'}</div>
+            <article class="card index-card glow-specialized" onclick="inspectPin('${pin.id}')" style="border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,0.25);">
+                <div class="card-image-wrap" style="display:flex;align-items:center;justify-content:center;padding:12px;">
+                    <div style="width:70px;height:70px;filter:drop-shadow(0 0 8px rgba(255,215,0,0.5));">${pin.badgeSvg}</div>
                 </div>
+                <div class="card-rating" style="color:#ffd700;">★</div>
+                <div class="card-position" style="color:#ffd700;">MEDAL</div>
+                <h3 style="color:#ffd700;">${escapeHTML(pin.name)}</h3>
+                <div style="margin-top:4px;">
+                    <span style="color:var(--green);font-weight:800;font-size:11px;">✓ Discovered</span>
+                </div>
+                <div style="margin-top:6px;">
+                    <button class="ghost-btn" style="padding:4px 10px;font-size:10px;border-color:rgba(255,215,0,0.4);color:#ffd700;" onclick="event.stopPropagation();inspectPin('${pin.id}')">🔍 Inspect</button>
+                </div>
+            </article>
             `;
         }).join("");
         return;
@@ -4179,7 +4200,7 @@ function renderIndex() {
 
     if (currentIndexTab === "soundtracks") {
         if (filter) filter.style.display = "none";
-        if (claimAllBtn) claimAllBtn.style.display = "none";
+        if (claimAllWrap) claimAllWrap.style.display = "none";
 
         const ownedTrackDiscs = new Set((state.soundtracks || []).map(t => t.discId));
         const totalTracks = SOUNDTRACK_DISCS.length;
@@ -4191,30 +4212,54 @@ function renderIndex() {
 
         grid.innerHTML = SOUNDTRACK_DISCS.map(disc => {
             const isOwned = ownedTrackDiscs.has(disc.discId);
+            const rClass = rarityClassName(disc.rarity);
             const rap = (SOUNDTRACK_VALUES[disc.rarity] || {}).rap || 500;
-            return `
-                <div class="card index-card soundtrack-disc-card theme-${disc.rarity.toLowerCase()} ${isOwned ? 'discovered' : 'undiscovered'}" style="padding:16px;text-align:center;border:1.5px solid ${isOwned ? disc.color : 'rgba(255,255,255,0.1)'};border-radius:12px;background:${isOwned ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.01)'};">
-                    <div class="soundtrack-disc-wrap" style="margin:10px auto;">
-                        <div class="soundtrack-vinyl-disc ${isOwned ? 'spinning' : ''} theme-${disc.rarity.toLowerCase()}" style="filter:${isOwned ? 'none' : 'grayscale(1) opacity(0.3)'};">
+
+            if (!isOwned) {
+                return `
+                <article class="card index-card locked">
+                    <div class="card-image-wrap" style="display:flex;align-items:center;justify-content:center;padding:14px;opacity:0.25;filter:grayscale(1);">
+                        <div class="soundtrack-vinyl-disc theme-${disc.rarity.toLowerCase()}" style="width:65px;height:65px;">
                             <div class="disc-spindle-outer"></div>
                             <div class="disc-spindle-inner"></div>
                             <div class="disc-label-center"><span class="disc-icon">💿</span></div>
                         </div>
                     </div>
-                    <div class="card-rarity-badge ${disc.rarity.toLowerCase()}" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;margin-bottom:6px;font-weight:900;">${disc.rarity.toUpperCase()} (${disc.rate})</div>
-                    <h3 style="margin:4px 0;font-size:14px;color:#fff;">${isOwned ? disc.name : '??? Hidden Soundtrack'}</h3>
-                    <div style="font-size:11px;color:var(--cyan);margin-bottom:4px;font-weight:800;">💎 ${rap.toLocaleString()} RAP</div>
-                    <p style="font-size:11px;color:var(--muted);margin:4px 0 8px;min-height:30px;">${isOwned ? disc.desc : 'Unbox Soundtrack Pack in Store to unlock'}</p>
-                    <div style="font-size:11px;color:${isOwned ? 'var(--green)' : 'var(--muted)'};font-weight:800;">${isOwned ? '✓ IN VAULT' : '🔒 LOCKED'}</div>
+                    <div class="card-rating">🎵</div>
+                    <div class="card-position">OST</div>
+                    <h3>???</h3>
+                    <small>🔒 Locked (${disc.rate})</small>
+                </article>
+                `;
+            }
+
+            return `
+            <article class="card index-card glow-${rClass}" style="border-color:${disc.color};">
+                <div class="card-image-wrap" style="display:flex;align-items:center;justify-content:center;padding:14px;">
+                    <div class="soundtrack-vinyl-disc spinning theme-${disc.rarity.toLowerCase()}" style="width:65px;height:65px;">
+                        <div class="disc-spindle-outer"></div>
+                        <div class="disc-spindle-inner"></div>
+                        <div class="disc-label-center"><span class="disc-icon">💿</span></div>
+                    </div>
                 </div>
+                <div class="card-rating" style="font-size:10px;padding:2px 4px;">${disc.rate}</div>
+                <div class="card-position">OST</div>
+                <h3 title="${escapeHTML(disc.name)}">${escapeHTML(disc.name)}</h3>
+                <div style="margin-top:4px;">
+                    <span style="color:var(--cyan);font-weight:800;font-size:11px;">💎 ${rap.toLocaleString()} RAP</span>
+                </div>
+                <div style="margin-top:6px;">
+                    <button class="primary-btn" style="padding:4px 10px;font-size:10px;" onclick="event.stopPropagation();showPage('cards');switchCollectionTab('soundtracks');">▶ Open Vault</button>
+                </div>
+            </article>
             `;
         }).join("");
         return;
     }
 
-    // Default: Players Index
+    // Default: Beautiful Player Cards Index
     if (filter) filter.style.display = "block";
-    if (claimAllBtn) claimAllBtn.style.display = "inline-flex";
+    if (claimAllWrap) claimAllWrap.style.display = "flex";
 
     const basePlayers = PLAYERS.filter(p => !p.hiddenFromIndex);
     let list = [...basePlayers];
@@ -4235,71 +4280,60 @@ function renderIndex() {
     const unclaimedPlayers = discoveredPlayers.filter(p => !state.claimedIndexRewards.includes(p.name));
     const totalUnclaimedCoins = unclaimedPlayers.reduce((sum, p) => sum + (DISCOVERY_BONUS[p.rarity] || 10), 0);
 
+    const claimAllBtn = document.getElementById("indexClaimAllBtn");
     if (claimAllBtn) {
         if (totalUnclaimedCoins > 0) {
             claimAllBtn.disabled = false;
             claimAllBtn.style.opacity = "1";
             claimAllBtn.style.cursor = "pointer";
-            claimAllBtn.innerHTML = `🎁 Claim All Discovered (+${totalUnclaimedCoins.toLocaleString()} 🪙)`;
+            claimAllBtn.textContent = `✨ Claim All Rewards (+${totalUnclaimedCoins.toLocaleString()} 🪙)`;
+            claimAllBtn.style.background = "linear-gradient(135deg, #00f2fe, #4facfe)";
         } else {
             claimAllBtn.disabled = true;
-            claimAllBtn.style.opacity = "0.5";
-            claimAllBtn.style.cursor = "not-allowed";
-            claimAllBtn.innerHTML = `✓ All Claimed`;
+            claimAllBtn.style.opacity = "0.6";
+            claimAllBtn.style.cursor = "default";
+            claimAllBtn.textContent = `✓ All Discovery Rewards Claimed`;
+            claimAllBtn.style.background = "rgba(255,255,255,0.08)";
         }
     }
 
     grid.innerHTML = list.map(player => {
-        const isDiscovered = state.unlockedCardNames.includes(player.name) || state.cards.some(c => c.player === player.name);
-        const hasClaimed = state.claimedIndexRewards.includes(player.name);
-        const bonusCoins = DISCOVERY_BONUS[player.rarity] || 10;
-        const rarityClass = player.rarity.toLowerCase().replace(/\s+/g, '-');
+        const isUnlocked = state.unlockedCardNames.includes(player.name) || state.cards.some(c => c.player === player.name);
+        const rClass = rarityClassName(player.rarity);
+        const bonus = DISCOVERY_BONUS[player.rarity] || 10;
+        const isClaimed = state.claimedIndexRewards.includes(player.name);
 
-        if (!isDiscovered) {
+        if (!isUnlocked) {
             return `
-                <div class="card index-card undiscovered">
-                    <div class="card-inner">
-                        <div class="card-glow"></div>
-                        <div class="card-badge">???</div>
-                        <div class="card-rating">?</div>
-                        <div class="card-position">?</div>
-                        <div class="card-photo-wrap silhouette-wrap">
-                            <div class="silhouette-icon">⚽</div>
-                        </div>
-                        <h3 class="card-player-name">???</h3>
-                        <p class="card-club">Undiscovered Player</p>
-                        <div class="index-card-footer">
-                            <span class="index-status">🔒 Locked</span>
-                        </div>
-                    </div>
+            <article class="card index-card locked">
+                <div class="card-image-wrap">
+                    <img class="card-photo" draggable="false" src="${player.image}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
                 </div>
+                <div class="card-rating">??</div>
+                <div class="card-position">${escapeHTML(player.pos)}</div>
+                <h3>???</h3>
+                <small>🔒 Locked</small>
+            </article>
             `;
         }
 
         return `
-            <div class="card index-card discovered theme-${rarityClass} ${hasClaimed ? 'reward-claimed' : 'reward-ready'}" onclick="open3DCard('${player.name.replace(/'/g, "\\'")}', '${player.rarity}')">
-                <div class="card-inner">
-                    <div class="card-glow"></div>
-                    <div class="card-badge ${rarityClass}">${player.rarity}</div>
-                    <div class="card-rating">${player.rating}</div>
-                    <div class="card-position">${player.position}</div>
-                    <div class="card-photo-wrap">
-                        <img class="card-photo" src="${player.image}" alt="${player.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=350&auto=format&fit=crop&q=80';">
-                    </div>
-                    <h3 class="card-player-name">${player.name}</h3>
-                    <p class="card-club">${player.club}</p>
-                    
-                    <div class="index-card-footer" onclick="event.stopPropagation();">
-                        ${!hasClaimed ? `
-                            <button class="index-claim-btn" onclick="claimIndexReward('${player.name.replace(/'/g, "\\'")}')">
-                                🎁 Claim +${bonusCoins} 🪙
-                            </button>
-                        ` : `
-                            <span class="index-status claimed-badge">✓ Collected</span>
-                        `}
-                    </div>
-                </div>
+        <article class="card index-card glow-${rClass}" onclick="open3DCard('${escapeHTML(player.name)}', true)">
+            <div class="card-image-wrap">
+                <img class="card-photo" src="${player.image}" alt="${escapeHTML(player.name)}">
             </div>
+            <div class="card-rating">${player.rating}</div>
+            <div class="card-position">${escapeHTML(player.pos)}</div>
+            <h3>${escapeHTML(player.name)}</h3>
+            <div style="margin-top:4px;">
+                ${isClaimed 
+                    ? `<span style="color:var(--green);font-weight:800;font-size:11px;">✓ Claimed (+${bonus} 🪙)</span>` 
+                    : `<button class="primary-btn" style="padding:4px 8px;font-size:11px;background:linear-gradient(135deg,#00f2fe,#4facfe);font-weight:900;" onclick="event.stopPropagation();claimIndexReward('${escapeHTML(player.name)}')">✨ Claim +${bonus} 🪙</button>`}
+            </div>
+            <div style="margin-top:6px;">
+                <button class="ghost-btn" style="padding:4px 10px;font-size:10px;" onclick="event.stopPropagation(); open3DCard('${escapeHTML(player.name)}')">🔍 3D View</button>
+            </div>
+        </article>
         `;
     }).join("");
 }
@@ -11451,7 +11485,8 @@ function switchCollectionTab(tab) {
     currentCollectionTab = tab;
     const cardsGrid = document.getElementById("cardsGrid");
     const ostGrid = document.getElementById("soundtracksGrid");
-    const cardsFilterWrap = document.getElementById("cardsFilterWrap");
+    const cardsHead = document.getElementById("cardsSectionHead");
+    const cardsToolbar = document.querySelector(".collection-action-toolbar");
     const ostFilterWrap = document.getElementById("soundtracksFilterWrap");
     const tabCards = document.getElementById("tabBtnCards");
     const tabOst = document.getElementById("tabBtnSoundtracks");
@@ -11459,7 +11494,8 @@ function switchCollectionTab(tab) {
     if (tab === "cards") {
         if (cardsGrid) cardsGrid.style.display = "grid";
         if (ostGrid) ostGrid.style.display = "none";
-        if (cardsFilterWrap) cardsFilterWrap.style.display = "flex";
+        if (cardsHead) cardsHead.style.display = "flex";
+        if (cardsToolbar) cardsToolbar.style.display = "flex";
         if (ostFilterWrap) ostFilterWrap.style.display = "none";
         if (tabCards) tabCards.classList.add("active");
         if (tabOst) tabOst.classList.remove("active");
@@ -11467,7 +11503,8 @@ function switchCollectionTab(tab) {
     } else {
         if (cardsGrid) cardsGrid.style.display = "none";
         if (ostGrid) ostGrid.style.display = "grid";
-        if (cardsFilterWrap) cardsFilterWrap.style.display = "none";
+        if (cardsHead) cardsHead.style.display = "none";
+        if (cardsToolbar) cardsToolbar.style.display = "none";
         if (ostFilterWrap) ostFilterWrap.style.display = "flex";
         if (tabCards) tabCards.classList.remove("active");
         if (tabOst) tabOst.classList.add("active");
@@ -11504,36 +11541,33 @@ function renderCollectionSoundtracks() {
         const isEquipped = state.equippedSoundtrack === t.id;
         const rap = (SOUNDTRACK_VALUES[t.rarity] || {}).rap || 500;
         const sellPrice = (SOUNDTRACK_VALUES[t.rarity] || {}).sell || 150;
+        const rClass = rarityClassName(t.rarity);
         const dateStr = new Date(t.obtained || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
         const existCount = (state.soundtracks || []).filter(item => item.discId === t.discId).length;
 
         return `
-            <div class="card soundtrack-disc-card theme-${t.rarity.toLowerCase()} glow-${t.rarity.toLowerCase()} ${t.locked ? 'is-locked' : ''}">
-                <div class="soundtrack-disc-wrap">
-                    <div class="soundtrack-vinyl-disc ${isPlaying ? 'spinning' : ''} theme-${t.rarity.toLowerCase()}">
+            <article class="card glow-${rClass} soundtrack-disc-card ${t.locked ? 'is-locked' : ''}" style="border-color:${t.color};">
+                <div class="card-image-wrap" style="display:flex;align-items:center;justify-content:center;padding:14px;">
+                    <div class="soundtrack-vinyl-disc ${isPlaying ? 'spinning' : ''} theme-${t.rarity.toLowerCase()}" style="width:75px;height:75px;">
                         <div class="disc-spindle-outer"></div>
                         <div class="disc-spindle-inner"></div>
-                        <div class="disc-label-center">
-                            <span class="disc-icon">💿</span>
-                        </div>
+                        <div class="disc-label-center"><span class="disc-icon">💿</span></div>
                     </div>
                 </div>
-                <div class="card-rarity-badge ${t.rarity.toLowerCase()}">${t.rarity.toUpperCase()}</div>
-                <h3 class="card-player-name" style="font-size:15px;margin:8px 0 2px;">${t.name}</h3>
-                <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Artist: ${t.uploader}</div>
-                
-                <div class="card-meta-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;margin-bottom:10px;">
-                    <div style="background:rgba(255,255,255,0.04);padding:4px 6px;border-radius:6px;">📅 ${dateStr}</div>
-                    <div style="background:rgba(255,255,255,0.04);padding:4px 6px;border-radius:6px;">⚡ ${existCount} Exist</div>
-                    <div style="background:rgba(255,255,255,0.04);padding:4px 6px;border-radius:6px;color:var(--cyan);grid-column:1/-1;">💎 ${rap.toLocaleString()} RAP · 💰 Sell: +${sellPrice.toLocaleString()} 🪙</div>
-                </div>
+                <div class="card-rating" style="font-size:10px;padding:2px 4px;">${t.rate}</div>
+                <div class="card-position">OST</div>
+                <h3 style="font-size:14px;margin:6px 0 2px;">${escapeHTML(t.name)}</h3>
+                <small style="color:var(--muted);font-size:11px;">By ${escapeHTML(t.uploader)}</small>
 
-                <div style="display:flex;gap:6px;width:100%;">
-                    <button class="primary-btn" style="padding:8px;font-size:11px;flex:1;" onclick="playSoundtrackInstance('${t.id}')">${isPlaying ? '🔊 Playing' : isEquipped ? '★ Equipped' : '▶ Play / Equip'}</button>
-                    <button class="ghost-btn" style="padding:8px;font-size:11px;width:38px;" onclick="toggleLockSoundtrack('${t.id}')" title="${t.locked ? 'Unlock' : 'Lock'}">${t.locked ? '🔒' : '🔓'}</button>
-                    <button class="danger-btn" style="padding:8px;font-size:11px;width:auto;" onclick="sellSoundtrack('${t.id}')" title="Sell Disc">💰 Sell</button>
+                <div style="font-size:11px;color:var(--cyan);margin:6px 0 2px;font-weight:800;">💎 ${rap.toLocaleString()} RAP · 💰 +${sellPrice.toLocaleString()} 🪙</div>
+                <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px;">⚡ ${existCount} Exist · 📅 ${dateStr}</div>
+
+                <div style="display:flex;gap:4px;width:100%;margin-top:auto;">
+                    <button class="primary-btn" style="padding:6px;font-size:11px;flex:1;" onclick="playSoundtrackInstance('${t.id}')">${isPlaying ? '🔊 Playing' : isEquipped ? '★ Equipped' : '▶ Play'}</button>
+                    <button class="ghost-btn" style="padding:6px;font-size:11px;width:32px;" onclick="toggleLockSoundtrack('${t.id}')" title="${t.locked ? 'Unlock' : 'Lock'}">${t.locked ? '🔒' : '🔓'}</button>
+                    <button class="danger-btn" style="padding:6px 8px;font-size:11px;width:auto;" onclick="sellSoundtrack('${t.id}')" title="Sell Disc">💰 Sell</button>
                 </div>
-            </div>
+            </article>
         `;
     }).join("");
 }
