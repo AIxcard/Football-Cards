@@ -1,45 +1,9 @@
 {
-  "wipeVersion": "v26_complete_overhaul_reset",
-  "users": {
-    "alucard": {
-      "username": "Alucard",
-      "password": "Unidentified67",
-      "saveData": {
-        "name": "Alucard",
-        "accountUser": "Alucard",
-        "coins": 100,
-        "xp": 0,
-        "level": 1,
-        "equippedTitle": "UNIQUE",
-        "grantedTitles": [
-          "UNIQUE",
-          "Owner",
-          "Admin"
-        ],
-        "isGrantedAdmin": true,
-        "cards": [],
-        "serializedCounts": {
-          "Lionel Messi": 0,
-          "Cristiano Ronaldo": 0
-        },
-        "stats": {
-          "playtime": 0,
-          "packsOpened": 0,
-          "cardsPulled": 0,
-          "duplicates": 0,
-          "cardsSold": 0,
-          "coinsEarned": 100,
-          "coinsSpent": 0,
-          "tournamentScore": 0
-        },
-        "tournamentScore": 0,
-        "lastSave": 1788500000000
-      },
-      "createdAt": 1788500000000,
-      "lastActive": 1788500000000
-    }
-  },
+  "wipeVersion": "v27_clean_slate_reset",
+  "users": {},
   "trades": [],
-  "leaderboard": {},
-  "backups": {}
+  "tradeSessions": {},
+  "auditLogs": {},
+  "backups": {},
+  "leaderboard": {}
 }
