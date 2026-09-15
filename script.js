@@ -3896,16 +3896,9 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
     const overlay = document.getElementById("cardRevealOverlay");
     const revealCard = document.getElementById("revealCard");
     const revealBadge = document.getElementById("revealBadge");
-    const revealRarity = document.getElementById("revealRarity");
-    const revealPhoto = document.getElementById("revealPhoto");
-    const revealRating = document.getElementById("revealRating");
-    const revealPos = document.getElementById("revealPos");
-    const revealName = document.getElementById("revealName");
-    const revealRaritySub = document.getElementById("revealRaritySub");
     const collectBtn = document.getElementById("revealCollectBtn");
 
     if (overlay && revealCard) {
-        // Build exact matching theme class like Collection view
         let themeClass = `theme-${rarityClassName(card.rarity)}`;
         const isShiny = !!card.shiny || card.player === "Shiny Emanuel" || (card.name === "Shiny Emanuel");
         if (isShiny) {
@@ -3922,8 +3915,21 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
 
         const rClass = rarityClassName(card.rarity);
         const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
+        const rap = calculateCardRAP(card);
+        const cardImg = getCardImage(card);
+        const cardPos = card.pos || card.position || (PLAYERS.find(p => p.name === card.player)?.pos) || "ST";
+        const existCount = getCardExistCount(card);
+        const popTag = `⚡ ${existCount} Exist`;
+        const obtainedDate = (card.obtained || card.obtainedAt) ? new Date(card.obtained || card.obtainedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-        revealCard.className = `card reveal-card-body ${themeClass} ${frame.css} glow-${rClass}`;
+        let serialOrShinySlot = `<span class="serial-placeholder"></span>`;
+        if (card.serialNumber) {
+            serialOrShinySlot = `<span class="serial-badge">★ SERIAL #${card.serialNumber}/10 ★</span>`;
+        } else if (isShiny) {
+            serialOrShinySlot = `<span class="shiny-badge">✨ SHINY ✨</span>`;
+        }
+
+        revealCard.className = `card reveal-card-body ${themeClass} ${frame.css} ${card.serialNumber ? 'is-serialized' : ''} ${isShiny ? 'is-shiny' : ''} glow-${rClass}`;
 
         if (card.serialGradient) {
             revealCard.style.background = `${card.serialGradient} !important`;
@@ -3937,23 +3943,28 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
 
         if (revealBadge) {
             revealBadge.textContent = card.serialNumber ? `★ SERIALIZED #${card.serialNumber}/10 ★` : isShiny ? "✨ SHINY SPECIAL EDITION ✨" : duplicate ? "DUPLICATE CARD" : "NEW CARD";
-            revealBadge.classList.toggle("duplicate", !!duplicate && !card.serialNumber && !isShiny);
+            revealBadge.className = "reveal-badge" + (duplicate && !card.serialNumber && !isShiny ? " duplicate" : "");
         }
 
-        if (revealRarity) {
-            revealRarity.textContent = card.rarity.toUpperCase();
-            revealRarity.className = `rarity ${rClass}`;
-        }
-
-        if (revealPhoto) {
-            revealPhoto.src = getCardImage(card);
-            revealPhoto.setAttribute("draggable", "false");
-        }
-
-        if (revealRating) revealRating.textContent = card.rating;
-        if (revealPos) revealPos.textContent = card.pos;
-        if (revealName) revealName.textContent = card.player;
-        if (revealRaritySub) revealRaritySub.textContent = card.rarity;
+        revealCard.innerHTML = `
+            <div class="card-top-row" style="min-height:24px;">
+                ${serialOrShinySlot}
+            </div>
+            <div class="card-image-wrap">
+                <img class="card-photo" draggable="false" src="${cardImg}" alt="${escapeHTML(card.player)}" onerror="this.onerror=null;this.src='player_temp.png';">
+            </div>
+            <div class="card-rating">${card.rating}</div>
+            <div class="card-position">${escapeHTML(cardPos)}</div>
+            <h3>${escapeHTML(card.player)}</h3>
+            <div class="card-meta-row">
+                <span class="card-rarity-badge rarity-${rClass}">${escapeHTML(card.rarity)}</span>
+                <span class="card-rap-badge">💎 ${formatRAP(rap, card)}</span>
+            </div>
+            <div class="card-date-pop-row">
+                <span class="card-date-tag">📅 ${obtainedDate}</span>
+                <span class="card-pop-tag">${popTag}</span>
+            </div>
+        `;
 
         if (collectBtn) {
             if (totalPacks > 1) {
@@ -11777,7 +11788,8 @@ try {
 
 
 function setSoundtrackVolume(val) {
-    const num = Math.max(0, Math.min(1, parseFloat(val) || 0.45));
+    const parsed = parseFloat(val);
+    const num = isNaN(parsed) ? 0.50 : Math.max(0, Math.min(1, parsed));
     bgmVolume = num;
     if (globalAudioPlayer) {
         globalAudioPlayer.volume = num;
@@ -11785,6 +11797,10 @@ function setSoundtrackVolume(val) {
     const textEl = document.getElementById("soundtrackVolumeText");
     if (textEl) {
         textEl.textContent = `${Math.round(num * 100)}%`;
+    }
+    const sliderEl = document.getElementById("soundtrackVolumeSlider");
+    if (sliderEl && Math.abs(parseFloat(sliderEl.value) - num) > 0.001) {
+        sliderEl.value = num;
     }
     try {
         safeStorage.setItem("football_tcg_bgm_volume", num.toString());
