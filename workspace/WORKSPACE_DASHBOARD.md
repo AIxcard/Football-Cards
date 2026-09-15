@@ -1,7 +1,7 @@
 # 🚀 Centralized Project Dashboard
 
 **Project Name**: *Football Cards* (`AIxcard/Football-Cards`)  
-**Current Sprint / Phase**: Phase 63 — Full Glowing Holographic Rarity Shaders (Rare, Epic, Legendary, Exclusive, Mythic, Secret, World Class, Messi, Ronaldo), Faceless Ronaldo Silhouette, v26 Clean Global Reset & Master Admin Potions/Buffs Suite  
+**Current Sprint / Phase**: Phase 64 — Startup Freeze Permanent Fix (Non-Blocking Sync), Complete Account Wipe & Free Username Recycling, Full Settings Account Management (Change User & Change Pass), Luxury Daily Reward UI & Skill-Based Telegraphed Tournament (Zero RNG)  
 **Lead Orchestrator**: `game_orchestrator`  
 **Last Updated**: 2026-09-15  
 
@@ -11,8 +11,8 @@
 
 ```
 [=============================================> 100% Complete =]
-Phase 1 to 62: Penalty Shootout, 3D Theme Matching, Admin Spawner, Rank #1 Trophy & Classic Missions (🟢 Complete)
-Phase 63: Full Glowing Rarity Shaders, Faceless Ronaldo, v26 Clean Global Reset & Admin Potions Suite (🟢 Complete)
+Phase 1 to 63: Glowing Holographic Rarity Shaders, Faceless Ronaldo, Admin Potions Suite (🟢 Complete)
+Phase 64: Non-Blocking Startup, Username Recycling, Settings User/Pass, Luxury Daily Reward & Skill-Based Tournament (🟢 Complete)
 ```
 
 ---
@@ -21,10 +21,10 @@ Phase 63: Full Glowing Rarity Shaders, Faceless Ronaldo, v26 Clean Global Reset 
 
 | Pillar | File Link | Active Count | Current Status Summary |
 | :--- | :--- | :---: | :--- |
-| **1. Gaming Dev** | [`GAME_DEV.md`](file:///d:/My%20Project/workspace/GAME_DEV.md) | 1 Engine Active | Upgraded with glowing animated holographic shaders across every card rarity (blue, purple, gold, cyan, magma ruby, nebula starlight, Albiceleste, CR7), faceless Ronaldo silhouette, v26 global clean reset, and master admin potions/god-mode suite. (0 errors, 100% QA pass). |
-| **2. Active Issues** | [`ACTIVE_ISSUES.md`](file:///d:/My%20Project/workspace/ACTIVE_ISSUES.md) | 0 Open Bugs | All user requests resolved & verified (ISSUE-060 marked resolved). |
+| **1. Gaming Dev** | [`GAME_DEV.md`](file:///d:/My%20Project/workspace/GAME_DEV.md) | 1 Engine Active | Upgraded with non-blocking startup loop, authoritative username/password change system, instant username recycling, luxury daily reward card, and 100% skill-based penalty shootout with keeper telegraph cues. (0 errors, 100% QA pass). |
+| **2. Active Issues** | [`ACTIVE_ISSUES.md`](file:///d:/My%20Project/workspace/ACTIVE_ISSUES.md) | 0 Open Bugs | All user requests resolved & verified (ISSUE-061 marked resolved). |
 | **3. Brainstorming** | [`BRAINSTORMING.md`](file:///d:/My%20Project/workspace/BRAINSTORMING.md) | 4 Proposals Queued | Balatro-style card power-ups, Sol's RNG cosmic cutscenes, live PvP duels, and visual audit logs. |
-| **4. Proposed Actions** | [`PROPOSED_ACTIONS.md`](file:///d:/My%20Project/workspace/PROPOSED_ACTIONS.md) | 0 Pending Tasks | ACT-165 complete, verified, and deployed live to GitHub. |
+| **4. Proposed Actions** | [`PROPOSED_ACTIONS.md`](file:///d:/My%20Project/workspace/PROPOSED_ACTIONS.md) | 0 Pending Tasks | ACT-166 complete, verified, and deployed live to GitHub. |
 
 ---
 
