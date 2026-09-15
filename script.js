@@ -3257,12 +3257,13 @@ function openPackOdds(packType) {
         if (costEl) costEl.textContent = "Cost: 1,000 🪙 (Duplicate refund: +500 🪙)";
         if (ratesList) {
             ratesList.innerHTML = `
-                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-                    <span class="rarity specialized-gold" style="font-weight:900;color:#ffd700;">SPECIALIZED (All 12 Medals)</span>
-                    <b style="color:#ffd700;">100% (8.33% Each)</b>
+                <div class="odds-rate-row" style="padding:12px 18px;border-radius:12px;background:rgba(255,215,0,0.06);border:1.5px solid rgba(255,215,0,0.3);display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-weight:900;background:linear-gradient(90deg,#ffd700,#ffae00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:14px;letter-spacing:1px;">SPECIALIZED</span>
+                    <b style="color:#ffd700;font-size:14px;font-weight:900;">100% (8.33% Each)</b>
                 </div>
-                <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;">
-                    Contains: World Cup 2026 Gold Medal, Treble Winner, Ballon d'Or Crest, Diamond Loyalty, Puskás Wonder-Goal, World Class Maestro, Champions League Star, Golden Glove, Golden Boot, Premier League Crown, Club Captain, and Iron Defense.
+                <div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6;background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;">
+                    <b>🏆 12 Collectible Pins &amp; Medals in Pool:</b><br>
+                    Golden Whistle, Treble Winner, Ballon d'Or Crest, Diamond Loyalty, Puskás Wonder-Goal, World Class Maestro, Champions League Star, Golden Glove, Golden Boot, Premier League Crown, Club Captain, and Iron Defense.
                 </div>
             `;
         }
@@ -3272,28 +3273,28 @@ function openPackOdds(packType) {
     }
 
     if (packType === "soundtrack_pack") {
-        if (titleEl) titleEl.textContent = "Soundtracks Pack Probabilities";
+        if (titleEl) titleEl.textContent = "Soundtrack Pack Probabilities";
         if (costEl) costEl.textContent = "Cost: 500 🪙";
         if (ratesList) {
             ratesList.innerHTML = `
-                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-                    <span class="rarity secret" style="font-weight:900;">SECRET (Wall of Resolve)</span>
+                <div class="odds-rate-row">
+                    <span class="rarity secret">SECRET</span>
                     <b style="color:var(--cyan);">0.10% (1 in 1,000)</b>
                 </div>
-                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-                    <span class="rarity mythic" style="font-weight:900;">MYTHIC (Crown of the Sun)</span>
+                <div class="odds-rate-row">
+                    <span class="rarity mythic">MYTHIC</span>
                     <b style="color:var(--purple);">0.50% (1 in 200)</b>
                 </div>
-                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-                    <span class="rarity legendary" style="font-weight:900;">LEGENDARY (Petals Beneath the Ice)</span>
+                <div class="odds-rate-row">
+                    <span class="rarity legendary">LEGENDARY</span>
                     <b style="color:var(--gold);">5.00% (1 in 20)</b>
                 </div>
-                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-                    <span class="rarity epic" style="font-weight:900;">EPIC (False Heaven)</span>
+                <div class="odds-rate-row">
+                    <span class="rarity epic">EPIC</span>
                     <b style="color:#a855f7;">24.40%</b>
                 </div>
-                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;">
-                    <span class="rarity rare" style="font-weight:900;">RARE (Nah I'd Win)</span>
+                <div class="odds-rate-row">
+                    <span class="rarity rare">RARE</span>
                     <b style="color:var(--blue);">70.00%</b>
                 </div>
             `;
@@ -3313,8 +3314,8 @@ function openPackOdds(packType) {
         ratesList.innerHTML = Object.entries(pack.rates).map(([rarity, rate]) => {
             const rClass = rarityClassName(rarity);
             return `
-                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-                    <span class="rarity ${rClass}" style="font-weight:800;">${rarity.toUpperCase()}</span>
+                <div class="odds-rate-row">
+                    <span class="rarity ${rClass}">${rarity.toUpperCase()}</span>
                     <b>${rate}%</b>
                 </div>
             `;
@@ -8238,13 +8239,19 @@ function progressMission(type, amt = 1) {
     });
 }
 
-function claimMission(index, missionType = currentMissionType) {
+function claimMission(arg1, arg2) {
+    let missionType = typeof arg1 === "string" ? arg1 : (typeof arg2 === "string" ? arg2 : (currentMissionType || "daily"));
+    let index = typeof arg1 === "number" ? arg1 : (typeof arg2 === "number" ? arg2 : 0);
+
     const defs = MISSION_TEMPLATES[missionType] || [];
     const mission = defs[index];
     if (!mission) return;
 
-    state.missionProgress[missionType] = state.missionProgress[missionType] || [];
-    state.missionClaimed[missionType] = state.missionClaimed[missionType] || [];
+    if (!state.missionProgress) state.missionProgress = { hourly: [0,0,0], daily: [0,0,0], weekly: [0,0,0], monthly: [0,0,0] };
+    if (!state.missionClaimed) state.missionClaimed = { hourly: [false,false,false], daily: [false,false,false], weekly: [false,false,false], monthly: [false,false,false] };
+
+    state.missionProgress[missionType] = state.missionProgress[missionType] || [0, 0, 0];
+    state.missionClaimed[missionType] = state.missionClaimed[missionType] || [false, false, false];
 
     const currentProg = Number(state.missionProgress[missionType][index]) || 0;
     const target = mission[1];
@@ -8253,12 +8260,17 @@ function claimMission(index, missionType = currentMissionType) {
 
     if (currentProg >= target && !isClaimed) {
         state.missionClaimed[missionType][index] = true;
-        addCoins(reward);
+        addCoins(reward, _INTERNAL_TX_KEY);
         logPlayerAudit("MISSION_CLAIM", { missionType, reward, desc: mission[0] });
-        SoundFx.coin();
-        toast(`🎁 Claimed Mission: +${reward.toLocaleString()} 🪙!`);
-        renderMissions();
+        if (window.SoundFx && SoundFx.coin) SoundFx.coin();
         saveGame();
+        renderMissions();
+        updateNotificationBadges();
+        toast(`🎁 Mission Completed! Claimed +${reward.toLocaleString()} 🪙!`);
+    } else if (isClaimed) {
+        toast("Mission reward already claimed!");
+    } else {
+        toast(`Mission in progress (${currentProg}/${target})`);
     }
 }
 
@@ -11363,7 +11375,7 @@ const SOUNDTRACK_DISCS = [
 let globalAudioPlayer = null;
 let activePlayingTrackId = null;
 let isBgmPlaying = false;
-let bgmVolume = 0.45;
+let bgmVolume = 0.50;
 let currentCollectionTab = "cards"; // "cards" or "soundtracks"
 let currentIndexTab = "players"; // "players", "medals", "soundtracks"
 let currentTradeTab = "all"; // "all", "cards", "soundtracks"
