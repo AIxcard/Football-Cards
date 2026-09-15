@@ -1135,7 +1135,7 @@ function freshState() {
         
         name: defaultName,
         coins: 100,
-        xp: 25,
+        xp: 0,
         level: 1,
 
         cards: [],
@@ -10644,3 +10644,529 @@ function checkBanStatus() {
     } else {
         initGame();
     }
+
+
+
+/* =========================================================
+   CS2-STYLE PROFILE MEDALS & PINS CAPSULE SYSTEM
+   ========================================================= */
+
+const PINS_DEF = [
+    {
+        id: "pin_star_service",
+        name: "Service Star Medal",
+        rarity: "Legendary",
+        color: "#ffd700",
+        icon: "⭐",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fff8db"/><stop offset="50%" stop-color="#ffd700"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="url(#pinGoldGrad)" stroke="#ffffff" stroke-width="2.5"/><circle cx="50" cy="50" r="22" fill="#0c1a2e" stroke="#ffd700" stroke-width="3"/><text x="50" y="57" font-size="18" font-weight="900" text-anchor="middle" fill="#ffd700">★</text></svg>`,
+        desc: "Awarded for exceptional dedication and veteran prestige across countless competitive match seasons."
+    },
+    {
+        id: "pin_hydra",
+        name: "Operation Hydra Pin",
+        rarity: "Epic",
+        color: "#22c55e",
+        icon: "🐉",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#86efac"/><stop offset="50%" stop-color="#22c55e"/><stop offset="100%" stop-color="#052e16"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinGreenGrad)" stroke="#86efac" stroke-width="3"/><path d="M28,68 Q50,16 72,68 Q50,48 28,68 Z" fill="#052e16" stroke="#4ade80" stroke-width="2.5"/><circle cx="50" cy="42" r="6" fill="#86efac"/><text x="50" y="84" font-size="10.5" font-weight="900" text-anchor="middle" fill="#4ade80" letter-spacing="1">HYDRA</text></svg>`,
+        desc: "Commemorates legendary tactical operations and venomous finishing strikes on the pitch."
+    },
+    {
+        id: "pin_csgo_veteran",
+        name: "5-Year Veteran Coin",
+        rarity: "Legendary",
+        color: "#38bdf8",
+        icon: "🛡️",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinSilverGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="50%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#334155"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinSilverGrad)" stroke="#38bdf8" stroke-width="4"/><circle cx="50" cy="50" r="34" fill="#0f172a" stroke="#60a5fa" stroke-width="2.5"/><text x="50" y="46" font-size="13" font-weight="900" text-anchor="middle" fill="#38bdf8" letter-spacing="0.5">CS:GO</text><text x="50" y="65" font-size="11" font-weight="900" text-anchor="middle" fill="#ffd700">5 YR</text></svg>`,
+        desc: "Prestigious coin recognizing five continuous years of dedicated membership in elite football ranks."
+    },
+    {
+        id: "pin_worldcup_gold",
+        name: "World Cup 2026 Gold Medal",
+        rarity: "Secret",
+        color: "#f59e0b",
+        icon: "🏆",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinGoldGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a"/><stop offset="40%" stop-color="#eab308"/><stop offset="100%" stop-color="#713f12"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad2)" stroke="#ffffff" stroke-width="4"/><circle cx="50" cy="50" r="36" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2.5"/><text x="50" y="46" font-size="18" text-anchor="middle">🏆</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">WORLD CUP</text></svg>`,
+        desc: "The ultimate crown of global football dominance. Awarded only to world champions."
+    },
+    {
+        id: "pin_ballondor",
+        name: "Ballon d'Or Crest Pin",
+        rarity: "Mythic",
+        color: "#ec4899",
+        icon: "✨",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinRubyGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fbcfe8"/><stop offset="40%" stop-color="#ec4899"/><stop offset="100%" stop-color="#831843"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinRubyGrad)" stroke="#f472b6" stroke-width="3"/><circle cx="50" cy="50" r="32" fill="#4a044e" stroke="#fbbf24" stroke-width="2.5"/><text x="50" y="48" font-size="16" text-anchor="middle">⚽</text><text x="50" y="66" font-size="7.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">BALLON D'OR</text></svg>`,
+        desc: "Shining ruby-gold medallion celebrating generational individual brilliance and mastery."
+    },
+    {
+        id: "pin_champions_star",
+        name: "Champions Star Pin",
+        rarity: "Epic",
+        color: "#a855f7",
+        icon: "🌟",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinPurpleGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e9d5ff"/><stop offset="50%" stop-color="#a855f7"/><stop offset="100%" stop-color="#3b0764"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinPurpleGrad)" stroke="#c084fc" stroke-width="3"/><polygon points="50,20 58,38 78,38 62,50 68,68 50,56 32,68 38,50 22,38 42,38" fill="#ffd700" stroke="#ffffff" stroke-width="1.2"/><text x="50" y="82" font-size="8" font-weight="900" text-anchor="middle" fill="#e9d5ff" letter-spacing="1">CHAMPIONS</text></svg>`,
+        desc: "Inspired by legendary European championship nights under dazzling stadium lights."
+    },
+    {
+        id: "pin_golden_boot",
+        name: "Golden Boot Pin",
+        rarity: "Rare",
+        color: "#3b82f6",
+        icon: "👟",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad)" stroke="#60a5fa" stroke-width="3"/><text x="50" y="50" font-size="22" text-anchor="middle">👟</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#93c5fd" letter-spacing="0.5">TOP SCORER</text></svg>`,
+        desc: "Bestowed upon clinical tournament strikers with flawless finishing accuracy."
+    },
+    {
+        id: "pin_premier_lion",
+        name: "Premier Lion Crest",
+        rarity: "Rare",
+        color: "#3b82f6",
+        icon: "🦁",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinBlueGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#bfdbfe"/><stop offset="50%" stop-color="#2563eb"/><stop offset="100%" stop-color="#172554"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad2)" stroke="#93c5fd" stroke-width="3"/><text x="50" y="48" font-size="22" text-anchor="middle">🦁</text><text x="50" y="72" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffffff" letter-spacing="0.5">PREMIER</text></svg>`,
+        desc: "The crowned lion badge representing relentless intensity and pure competitive heart."
+    },
+    {
+        id: "pin_tactical_maestro",
+        name: "Tactical Maestro Crest",
+        rarity: "Uncommon",
+        color: "#10b981",
+        icon: "🧭",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><circle cx="50" cy="50" r="46" fill="#064e3b" stroke="#34d399" stroke-width="3"/><text x="50" y="50" font-size="20" text-anchor="middle">🧭</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#6ee7b7" letter-spacing="0.5">MAESTRO</text></svg>`,
+        desc: "Emblem of visionary midfield orchestrators and playmakers."
+    },
+    {
+        id: "pin_iron_defense",
+        name: "Iron Defense Shield Pin",
+        rarity: "Common",
+        color: "#64748b",
+        icon: "🛡️",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><circle cx="50" cy="50" r="46" fill="#1e293b" stroke="#94a3b8" stroke-width="3"/><text x="50" y="50" font-size="20" text-anchor="middle">🛡️</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#cbd5e1" letter-spacing="0.5">DEFENDER</text></svg>`,
+        desc: "Solid steel shield badge earned by immovable defensive backlines."
+    },
+    {
+        id: "pin_diamond_loyalty",
+        name: "Diamond Loyalty Pin",
+        rarity: "Mythic",
+        color: "#ec4899",
+        icon: "💎",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinDiaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f472b6"/><stop offset="50%" stop-color="#db2777"/><stop offset="100%" stop-color="#500724"/></linearGradient></defs><polygon points="50,6 92,30 92,70 50,94 8,70 8,30" fill="url(#pinDiaGrad)" stroke="#fbcfe8" stroke-width="3"/><text x="50" y="54" font-size="22" text-anchor="middle">💎</text><text x="50" y="76" font-size="8" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">LOYALTY</text></svg>`,
+        desc: "Faceted diamond badge honoring legendary club loyalty and supreme collecting mastery."
+    },
+    {
+        id: "pin_10yr_titanium",
+        name: "10-Year Veteran Coin",
+        rarity: "Secret",
+        color: "#f59e0b",
+        icon: "🎖️",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad)" stroke="#ffffff" stroke-width="4"/><circle cx="50" cy="50" r="34" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2.5"/><text x="50" y="45" font-size="13" font-weight="900" text-anchor="middle" fill="#38bdf8" letter-spacing="0.5">CS:GO</text><text x="50" y="65" font-size="11" font-weight="900" text-anchor="middle" fill="#ffd700">10 YR</text></svg>`,
+        desc: "A full decade of battlefield supremacy. Forged from aerospace titanium."
+    }
+];
+
+let currentPinsPage = 0;
+const PINS_PER_PAGE = 5;
+
+function renderProfilePins() {
+    try {
+        const track = document.getElementById("profileMedalsTrack");
+        const featuredBadge = document.getElementById("profileFeaturedPinBadge");
+        
+        // Ensure state arrays
+        if (!Array.isArray(state.ownedPins) || state.ownedPins.length === 0) {
+            state.ownedPins = ["pin_iron_defense"];
+        }
+        if (!Array.isArray(state.showcasePins)) {
+            state.showcasePins = [state.ownedPins[0]];
+        }
+        if (!state.featuredPin) {
+            state.featuredPin = state.ownedPins[0];
+        }
+
+        // Render Featured Pin on Avatar Top-Left Corner (CS2 Style)
+        if (featuredBadge) {
+            const featPin = PINS_DEF.find(p => p.id === state.featuredPin) || PINS_DEF.find(p => p.id === state.ownedPins[0]);
+            if (featPin) {
+                featuredBadge.innerHTML = featPin.badgeSvg;
+                featuredBadge.style.display = "flex";
+                featuredBadge.title = `Featured Pin: ${featPin.name} (${featPin.rarity})`;
+                featuredBadge.onclick = (e) => { e.stopPropagation(); inspectPin(featPin.id); };
+            } else {
+                featuredBadge.style.display = "none";
+            }
+        }
+
+        // Render CS2 Showcase Track
+        if (track) {
+            const showcaseList = (state.showcasePins && state.showcasePins.length) ? state.showcasePins : state.ownedPins;
+            const totalPages = Math.max(1, Math.ceil(showcaseList.length / PINS_PER_PAGE));
+            if (currentPinsPage >= totalPages) currentPinsPage = totalPages - 1;
+            if (currentPinsPage < 0) currentPinsPage = 0;
+
+            const start = currentPinsPage * PINS_PER_PAGE;
+            const visiblePins = showcaseList.slice(start, start + PINS_PER_PAGE);
+
+            let html = "";
+            for (let i = 0; i < PINS_PER_PAGE; i++) {
+                const pinId = visiblePins[i];
+                if (pinId) {
+                    const pin = PINS_DEF.find(p => p.id === pinId);
+                    if (pin) {
+                        const isFeatured = state.featuredPin === pin.id;
+                        html += `
+                            <div class="cs2-medal-slot filled ${isFeatured ? 'is-featured' : ''}" onclick="inspectPin('${pin.id}')" title="${pin.name} (${pin.rarity})">
+                                ${pin.badgeSvg}
+                                ${isFeatured ? '<span class="featured-star-indicator">★</span>' : ''}
+                            </div>
+                        `;
+                    } else {
+                        html += `<div class="cs2-medal-slot empty" onclick="openPinsManager()" title="Equip Pin"><span>+</span></div>`;
+                    }
+                } else {
+                    html += `<div class="cs2-medal-slot empty" onclick="openPinsManager()" title="Equip Pin"><span>+</span></div>`;
+                }
+            }
+            track.innerHTML = html;
+        }
+
+        renderPinsCollectionGrid();
+    } catch(e) {
+        console.error("renderProfilePins error", e);
+    }
+}
+
+function navigateProfilePins(direction) {
+    const showcaseList = (state.showcasePins && state.showcasePins.length) ? state.showcasePins : (state.ownedPins || []);
+    const totalPages = Math.max(1, Math.ceil(showcaseList.length / PINS_PER_PAGE));
+    currentPinsPage = (currentPinsPage + direction + totalPages) % totalPages;
+    renderProfilePins();
+    if (window.SoundFx && SoundFx.click) SoundFx.click();
+}
+
+function inspectPin(pinId) {
+    const pin = PINS_DEF.find(p => p.id === pinId);
+    if (!pin) return;
+
+    const modal = document.getElementById("pinInspectModal");
+    if (!modal) return;
+
+    const isOwned = (state.ownedPins || []).includes(pin.id);
+    const isFeatured = state.featuredPin === pin.id;
+    const isShowcased = (state.showcasePins || []).includes(pin.id);
+
+    document.getElementById("inspectPinBadgeSlot").innerHTML = pin.badgeSvg;
+    document.getElementById("inspectPinName").textContent = pin.name;
+    document.getElementById("inspectPinRarity").textContent = pin.rarity.toUpperCase();
+    document.getElementById("inspectPinRarity").style.color = pin.color;
+    document.getElementById("inspectPinDesc").textContent = pin.desc;
+
+    const actionsWrap = document.getElementById("inspectPinActions");
+    if (actionsWrap) {
+        if (isOwned) {
+            actionsWrap.innerHTML = `
+                <button class="primary-btn" onclick="setFeaturedPin('${pin.id}')">${isFeatured ? '★ ACTIVE FEATURED PIN' : '⭐ Set as Featured Pin (Avatar)'}</button>
+                <button class="ghost-btn" onclick="toggleShowcasePin('${pin.id}')">${isShowcased ? '✖ Remove from Showcase' : '📌 Add to Showcase Row'}</button>
+                <button class="ghost-btn" onclick="closePinModal()">Close</button>
+            `;
+        } else {
+            actionsWrap.innerHTML = `
+                <div style="color:var(--muted);font-size:13px;margin-bottom:8px;">🔒 Pin locked. Open <b>Pins Capsules</b> in Shop to collect!</div>
+                <button class="primary-btn" onclick="closePinModal(); openPinsCapsule(1);">🎁 Open Pins Capsule (500 🪙)</button>
+                <button class="ghost-btn" onclick="closePinModal()">Close</button>
+            `;
+        }
+    }
+
+    modal.classList.remove("hidden");
+    if (window.SoundFx && SoundFx.click) SoundFx.click();
+}
+
+function setFeaturedPin(pinId) {
+    state.featuredPin = pinId;
+    saveGame();
+    renderProfile();
+    renderProfilePins();
+    toast(`⭐ Featured Pin set to ${PINS_DEF.find(p => p.id === pinId)?.name || 'Pin'}!`);
+    closePinModal();
+}
+
+function toggleShowcasePin(pinId) {
+    if (!Array.isArray(state.showcasePins)) state.showcasePins = [];
+    const idx = state.showcasePins.indexOf(pinId);
+    if (idx >= 0) {
+        state.showcasePins.splice(idx, 1);
+        toast("Removed from Showcase row.");
+    } else {
+        if (state.showcasePins.length >= 10) {
+            toast("Showcase is full (max 10 pins). Remove one first!");
+            return;
+        }
+        state.showcasePins.push(pinId);
+        toast("Pinned to Showcase row!");
+    }
+    saveGame();
+    renderProfilePins();
+    closePinModal();
+}
+
+function closePinModal() {
+    const modal = document.getElementById("pinInspectModal");
+    if (modal) modal.classList.add("hidden");
+    const reveal = document.getElementById("pinRevealModal");
+    if (reveal) reveal.classList.add("hidden");
+}
+
+function openPinsManager() {
+    const section = document.getElementById("pinsCollectionPanel");
+    if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+    } else {
+        toast("View your Pins Collection in the Profile panel below!");
+    }
+}
+
+function renderPinsCollectionGrid() {
+    const grid = document.getElementById("pinsCollectionGrid");
+    if (!grid) return;
+
+    grid.innerHTML = PINS_DEF.map(pin => {
+        const isOwned = (state.ownedPins || []).includes(pin.id);
+        const isFeatured = state.featuredPin === pin.id;
+        const isShowcased = (state.showcasePins || []).includes(pin.id);
+
+        return `
+            <div class="pin-collection-card ${isOwned ? 'owned' : 'locked'}" onclick="inspectPin('${pin.id}')">
+                <div class="pin-card-badge-wrap">
+                    ${pin.badgeSvg}
+                    ${isFeatured ? '<span class="pin-status-tag featured">★ FEATURED</span>' : ''}
+                    ${!isFeatured && isShowcased ? '<span class="pin-status-tag showcased">SHOWCASED</span>' : ''}
+                </div>
+                <div class="pin-card-info">
+                    <span class="pin-card-name">${pin.name}</span>
+                    <span class="pin-card-rarity" style="color:${pin.color}">${pin.rarity}</span>
+                </div>
+                ${!isOwned ? '<div class="pin-locked-overlay">🔒 LOCKED</div>' : ''}
+            </div>
+        `;
+    }).join("");
+}
+
+function openPinsCapsule(count = 1) {
+    const costEach = 500;
+    const pullCount = Math.max(1, Math.min(5, Number(count) || 1));
+    const totalCost = costEach * pullCount;
+
+    if (Number(state.coins || 0) < totalCost) {
+        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
+        if (window.SoundFx && SoundFx.click) SoundFx.click();
+        return;
+    }
+
+    if (!spendCoins(totalCost, _INTERNAL_TX_KEY)) return;
+
+    if (!Array.isArray(state.ownedPins)) state.ownedPins = ["pin_iron_defense"];
+    if (!Array.isArray(state.showcasePins)) state.showcasePins = ["pin_iron_defense"];
+
+    const rolled = [];
+    for (let i = 0; i < pullCount; i++) {
+        const roll = Math.random() * 100;
+        let selectedRarity = "Common";
+        if (roll < 0.3) selectedRarity = "Secret";
+        else if (roll < 2.0) selectedRarity = "Mythic";
+        else if (roll < 8.0) selectedRarity = "Legendary";
+        else if (roll < 20.0) selectedRarity = "Epic";
+        else if (roll < 45.0) selectedRarity = "Rare";
+        else if (roll < 70.0) selectedRarity = "Uncommon";
+        else selectedRarity = "Common";
+
+        const pool = PINS_DEF.filter(p => p.rarity === selectedRarity);
+        const pin = pool[Math.floor(Math.random() * pool.length)] || PINS_DEF[0];
+
+        const isDupe = state.ownedPins.includes(pin.id);
+        if (!isDupe) {
+            state.ownedPins.push(pin.id);
+            if (state.showcasePins.length < 5) state.showcasePins.push(pin.id);
+            if (!state.featuredPin) state.featuredPin = pin.id;
+        } else {
+            addCoins(200, _INTERNAL_TX_KEY);
+        }
+        rolled.push({ pin, isDupe });
+    }
+
+    saveGame();
+    renderProfilePins();
+    showPinRevealModal(rolled);
+}
+
+function showPinRevealModal(results) {
+    const modal = document.getElementById("pinRevealModal");
+    const container = document.getElementById("pinRevealCards");
+    if (!modal || !container) return;
+
+    container.innerHTML = results.map(r => `
+        <div class="pin-reveal-item" style="border-color:${r.pin.color};">
+            <div class="pin-reveal-badge">${r.pin.badgeSvg}</div>
+            <h3 style="color:#fff;margin:8px 0 4px;font-size:17px;">${r.pin.name}</h3>
+            <span style="color:${r.pin.color};font-weight:900;font-size:12px;">${r.pin.rarity.toUpperCase()}</span>
+            <p style="color:var(--muted);font-size:11.5px;margin:6px 0;">${r.pin.desc}</p>
+            ${r.isDupe ? '<div class="dupe-refund-badge">Duplicate! +200 🪙 Cashback</div>' : '<div class="new-pin-badge">✨ NEW PIN UNLOCKED! ✨</div>'}
+        </div>
+    `).join("");
+
+    modal.classList.remove("hidden");
+    if (window.SoundFx && SoundFx.reveal) SoundFx.reveal();
+}
+
+/* =========================================================
+   ANIME VANGUARDS BATTLE SOUNDTRACK ENGINE (PROCEDURAL SYNTH)
+   ========================================================= */
+
+const ANIME_SOUNDTRACKS = [
+    { id: "vanguards_ignition", name: "⚡ Vanguards Ignition", bpm: 142, rootFreq: 130.81, scale: [0, 3, 5, 7, 10, 12, 15] },
+    { id: "shinjuku_showdown", name: "🔥 Shinjuku Showdown", bpm: 148, rootFreq: 146.83, scale: [0, 2, 3, 7, 8, 12, 14] },
+    { id: "domain_synth", name: "🌌 Domain Expansion Synth", bpm: 136, rootFreq: 110.00, scale: [0, 3, 7, 10, 12, 15, 19] },
+    { id: "monarchs_wrath", name: "⚔️ Monarch's Wrath", bpm: 140, rootFreq: 123.47, scale: [0, 2, 5, 7, 9, 12, 14] },
+    { id: "king_of_curses", name: "👑 King of Curses", bpm: 150, rootFreq: 98.00, scale: [0, 1, 5, 7, 8, 12, 13] }
+];
+
+let animeAudioCtx = null;
+let currentBgmTrackIdx = 0;
+let isBgmPlaying = false;
+let bgmStepInterval = null;
+let currentBgmStep = 0;
+let bgmVolume = 0.35;
+
+function initAnimeAudio() {
+    if (!animeAudioCtx) {
+        animeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function playAnimeSynthTone(freq, duration, type = "sawtooth", gainVal = 0.15) {
+    if (!isBgmPlaying || !animeAudioCtx) return;
+    try {
+        const osc = animeAudioCtx.createOscillator();
+        const gain = animeAudioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, animeAudioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal * bgmVolume, animeAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, animeAudioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(animeAudioCtx.destination);
+        osc.start();
+        osc.stop(animeAudioCtx.currentTime + duration);
+    } catch(e) {}
+}
+
+function playKickDrum() {
+    if (!isBgmPlaying || !animeAudioCtx) return;
+    try {
+        const osc = animeAudioCtx.createOscillator();
+        const gain = animeAudioCtx.createGain();
+        osc.frequency.setValueAtTime(140, animeAudioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(32, animeAudioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.4 * bgmVolume, animeAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, animeAudioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(animeAudioCtx.destination);
+        osc.start();
+        osc.stop(animeAudioCtx.currentTime + 0.12);
+    } catch(e) {}
+}
+
+function stepBgmSequencer() {
+    if (!isBgmPlaying) return;
+    const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
+    if (!track) return;
+
+    const step = currentBgmStep % 16;
+    currentBgmStep++;
+
+    // Kick on beats 0, 4, 8, 12
+    if (step % 4 === 0) playKickDrum();
+
+    // Bassline
+    const bassNoteIdx = [0, 0, 3, 5, 0, 0, 7, 5][Math.floor(step / 2) % 8];
+    const bassFreq = track.rootFreq * Math.pow(2, (track.scale[bassNoteIdx % track.scale.length] || 0) / 12);
+    playAnimeSynthTone(bassFreq * 0.5, 0.14, "triangle", 0.3);
+
+    // High energy lead arpeggiator
+    const arpIdx = (step * 2) % track.scale.length;
+    const arpFreq = track.rootFreq * 2 * Math.pow(2, (track.scale[arpIdx] || 0) / 12);
+    if (step % 2 === 0) {
+        playAnimeSynthTone(arpFreq, 0.12, "sawtooth", 0.12);
+    } else if (step % 4 === 3) {
+        playAnimeSynthTone(arpFreq * 1.5, 0.18, "square", 0.09);
+    }
+}
+
+function toggleAnimeBgm() {
+    initAnimeAudio();
+    if (animeAudioCtx && animeAudioCtx.state === "suspended") {
+        animeAudioCtx.resume();
+    }
+
+    isBgmPlaying = !isBgmPlaying;
+    const btn = document.getElementById("animeBgmToggleBtn");
+    const trackLabel = document.getElementById("animeBgmTrackName");
+
+    if (isBgmPlaying) {
+        if (bgmStepInterval) clearInterval(bgmStepInterval);
+        const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
+        const stepMs = (60 / track.bpm) * 250; // 16th notes
+        bgmStepInterval = setInterval(stepBgmSequencer, stepMs);
+        if (btn) btn.textContent = "⏸️ Pause OST";
+        if (trackLabel) trackLabel.textContent = track.name;
+        toast(`🎵 Playing: ${track.name}`);
+    } else {
+        if (bgmStepInterval) clearInterval(bgmStepInterval);
+        if (btn) btn.textContent = "▶️ Play Anime OST";
+        toast("🔇 Music Paused");
+    }
+}
+
+function nextAnimeBgmTrack() {
+    currentBgmTrackIdx = (currentBgmTrackIdx + 1) % ANIME_SOUNDTRACKS.length;
+    currentBgmStep = 0;
+    const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
+    const trackLabel = document.getElementById("animeBgmTrackName");
+    if (trackLabel) trackLabel.textContent = track.name;
+
+    if (isBgmPlaying) {
+        if (bgmStepInterval) clearInterval(bgmStepInterval);
+        const stepMs = (60 / track.bpm) * 250;
+        bgmStepInterval = setInterval(stepBgmSequencer, stepMs);
+        toast(`🎵 Next Track: ${track.name}`);
+    }
+}
+
+function shuffleAnimeBgm() {
+    currentBgmTrackIdx = Math.floor(Math.random() * ANIME_SOUNDTRACKS.length);
+    currentBgmStep = 0;
+    const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
+    const trackLabel = document.getElementById("animeBgmTrackName");
+    if (trackLabel) trackLabel.textContent = track.name;
+
+    if (isBgmPlaying) {
+        if (bgmStepInterval) clearInterval(bgmStepInterval);
+        const stepMs = (60 / track.bpm) * 250;
+        bgmStepInterval = setInterval(stepBgmSequencer, stepMs);
+        toast(`🔀 Shuffled: ${track.name}`);
+    }
+}
+
+function setAnimeBgmVolume(val) {
+    bgmVolume = Math.max(0, Math.min(1, Number(val)));
+}
+
+try { window.PINS_DEF = PINS_DEF; } catch(e) {}
+try { window.renderProfilePins = renderProfilePins; } catch(e) {}
+try { window.navigateProfilePins = navigateProfilePins; } catch(e) {}
+try { window.inspectPin = inspectPin; } catch(e) {}
+try { window.setFeaturedPin = setFeaturedPin; } catch(e) {}
+try { window.toggleShowcasePin = toggleShowcasePin; } catch(e) {}
+try { window.closePinModal = closePinModal; } catch(e) {}
+try { window.openPinsManager = openPinsManager; } catch(e) {}
+try { window.openPinsCapsule = openPinsCapsule; } catch(e) {}
+try { window.toggleAnimeBgm = toggleAnimeBgm; } catch(e) {}
+try { window.nextAnimeBgmTrack = nextAnimeBgmTrack; } catch(e) {}
+try { window.shuffleAnimeBgm = shuffleAnimeBgm; } catch(e) {}
+try { window.setAnimeBgmVolume = setAnimeBgmVolume; } catch(e) {}
