@@ -686,6 +686,7 @@
     </div>
 
     <div id="cardsGrid" class="cards-grid"></div>
+    <div id="soundtracksGrid" class="cards-grid" style="display:none;"></div>
 
 </section>
 
@@ -716,6 +717,14 @@
     </div>
 
     <!-- INDEX PROGRESS SUMMARY & CLAIM ALL ACTION -->
+    
+        <!-- INDEX CATEGORY TABS -->
+        <div class="index-category-tabs" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+            <button id="indexTabBtnPlayers" class="collection-tab-btn active" onclick="switchIndexTab('players')">🎴 Player Cards</button>
+            <button id="indexTabBtnMedals" class="collection-tab-btn" onclick="switchIndexTab('medals')">🎖️ Medals &amp; Pins</button>
+            <button id="indexTabBtnOst" class="collection-tab-btn" onclick="switchIndexTab('soundtracks')">💿 Soundtracks</button>
+        </div>
+
     <div class="panel index-summary-panel">
         <div class="index-summary-content" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
             <div style="flex:1;min-width:240px;">
