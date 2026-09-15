@@ -668,77 +668,108 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
     40%, 100% { transform: translate(130%, 130%) rotate(-15deg); }
 }
 
-/* Card Rarity Animated Theme Gradients & Reflections */
+/* Card Rarity Animated Theme Gradients & Reflections (Prism Glowing Holographic Shaders) */
 .card.theme-common,
-.card-3d-wrapper.theme-common {
-    background: linear-gradient(145deg, #1c2732 0%, #2b3945 50%, #0d1720 100%);
-    background-size: 200% 200%;
-    animation: bgGradientShift 8s ease infinite;
-    border-color: rgba(160, 174, 192, 0.35);
-    box-shadow: 0 0 12px rgba(160, 174, 192, 0.15);
+.card-3d-wrapper.theme-common,
+.card-3d-front.theme-common,
+.card-3d-item.theme-common {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 25%, #374151 50%, #4b5563 75%, #1f2937 100%) !important;
+    background-size: 250% 250% !important;
+    animation: commonPrismShift 6s ease infinite alternate !important;
+    border: 1.5px solid rgba(156, 163, 175, 0.6) !important;
+    box-shadow: 0 0 14px rgba(156, 163, 175, 0.4), 0 0 24px rgba(75, 85, 99, 0.25) !important;
 }
 
 .card.theme-uncommon,
-.card-3d-wrapper.theme-uncommon {
-    background: radial-gradient(circle at 50% 0%, rgba(0, 255, 135, 0.25), transparent 70%), linear-gradient(145deg, #0f2d1f 0%, #17422d 50%, #071911 100%);
-    background-size: 200% 200%;
-    animation: bgGradientShift 6s ease infinite;
-    border-color: rgba(80, 215, 138, 0.45);
-    box-shadow: 0 0 16px rgba(80, 215, 138, 0.25);
+.card-3d-wrapper.theme-uncommon,
+.card-3d-front.theme-uncommon,
+.card-3d-item.theme-uncommon {
+    background: linear-gradient(135deg, #022c22 0%, #064e3b 25%, #059669 50%, #10b981 75%, #34d399 100%) !important;
+    background-size: 300% 300% !important;
+    animation: uncommonPrismShift 4s ease infinite alternate !important;
+    border: 2px solid #10b981 !important;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.7), 0 0 38px rgba(5, 150, 105, 0.45) !important;
 }
 
 .card.theme-rare,
-.card-3d-wrapper.theme-rare {
-    background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.3), transparent 70%), linear-gradient(145deg, #0b253a 0%, #133a5c 50%, #051421 100%);
-    background-size: 200% 200%;
-    animation: bgGradientShift 5s ease infinite;
-    border-color: rgba(74, 168, 255, 0.55);
-    box-shadow: 0 0 20px rgba(74, 168, 255, 0.3);
+.card-3d-wrapper.theme-rare,
+.card-3d-front.theme-rare,
+.card-3d-item.theme-rare {
+    background: linear-gradient(135deg, #021a36 0%, #0052d4 25%, #0072ff 50%, #00c6ff 75%, #00f2fe 100%) !important;
+    background-size: 300% 300% !important;
+    animation: rarePrismShift 3.5s ease infinite alternate !important;
+    border: 2px solid #00f2fe !important;
+    box-shadow: 0 0 28px rgba(0, 242, 254, 0.8), 0 0 52px rgba(0, 114, 255, 0.55) !important;
 }
 
 .card.theme-epic,
-.card-3d-wrapper.theme-epic {
-    background: radial-gradient(circle at 50% 0%, rgba(182, 108, 255, 0.35), transparent 70%), linear-gradient(145deg, #261138 0%, #441a66 50%, #11071c 100%);
-    background-size: 200% 200%;
-    animation: bgGradientShift 4.5s ease infinite;
-    border-color: rgba(166, 92, 255, 0.65);
-    box-shadow: 0 0 24px rgba(166, 92, 255, 0.4);
+.card-3d-wrapper.theme-epic,
+.card-3d-front.theme-epic,
+.card-3d-item.theme-epic {
+    background: linear-gradient(135deg, #1b0033 0%, #4a00e0 25%, #8e2de2 50%, #b66cff 75%, #d946ef 100%) !important;
+    background-size: 300% 300% !important;
+    animation: epicPrismShift 3.5s ease infinite alternate !important;
+    border: 2px solid #b66cff !important;
+    box-shadow: 0 0 30px rgba(182, 108, 255, 0.85), 0 0 58px rgba(74, 0, 224, 0.6) !important;
 }
 
 .card.theme-legendary,
-.card-3d-wrapper.theme-legendary {
-    background: radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.4), transparent 70%), linear-gradient(145deg, #382907 0%, #61460c 50%, #1c1403 100%);
-    background-size: 200% 200%;
-    animation: bgGradientShift 4s ease infinite;
-    border-color: rgba(244, 196, 78, 0.75);
-    box-shadow: 0 0 28px rgba(244, 196, 78, 0.45);
+.card-3d-wrapper.theme-legendary,
+.card-3d-front.theme-legendary,
+.card-3d-item.theme-legendary {
+    background: linear-gradient(135deg, #381a00 0%, #d4af37 25%, #ff9900 50%, #ffd700 75%, #fff176 100%) !important;
+    background-size: 300% 300% !important;
+    animation: legendaryPrismShift 3.5s ease infinite alternate !important;
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 32px rgba(255, 215, 0, 0.9), 0 0 62px rgba(255, 153, 0, 0.65) !important;
 }
 
 .card.theme-exclusive,
-.card-3d-wrapper.theme-exclusive {
-    background: radial-gradient(circle at 50% 0%, rgba(182, 108, 255, 0.45), transparent 70%), linear-gradient(135deg, #2b0e3f 0%, #632091 50%, #12051d 100%);
-    background-size: 200% 200%;
-    animation: bgGradientShift 3.5s ease infinite;
-    border-color: rgba(182, 108, 255, 0.85);
-    box-shadow: 0 0 32px rgba(182, 108, 255, 0.55);
+.card-3d-wrapper.theme-exclusive,
+.card-3d-front.theme-exclusive,
+.card-3d-item.theme-exclusive {
+    background: linear-gradient(135deg, #1e0038 0%, #7928ca 25%, #00f2fe 50%, #a855f7 75%, #e0e7ff 100%) !important;
+    background-size: 300% 300% !important;
+    animation: exclusivePrismShift 3.2s ease infinite alternate !important;
+    border: 2px solid #00f2fe !important;
+    box-shadow: 0 0 34px rgba(0, 242, 254, 0.88), 0 0 65px rgba(168, 85, 247, 0.68) !important;
 }
 
 .card.theme-mythic,
-.card-3d-wrapper.theme-mythic {
-    background: radial-gradient(circle at 50% 0%, rgba(255, 23, 68, 0.5), transparent 70%), linear-gradient(135deg, #3d0c15 0%, #701323 50%, #1c050a 100%);
-    background-size: 200% 200%;
-    animation: bgGradientShift 3.5s ease infinite;
-    border-color: rgba(255, 23, 68, 0.85);
-    box-shadow: 0 0 32px rgba(255, 23, 68, 0.6);
+.card-3d-wrapper.theme-mythic,
+.card-3d-front.theme-mythic,
+.card-3d-item.theme-mythic {
+    background: linear-gradient(135deg, #3a0007 0%, #ff0844 25%, #ff4e50 50%, #f857a6 75%, #ff0055 100%) !important;
+    background-size: 300% 300% !important;
+    animation: mythicPrismShift 3s ease infinite alternate !important;
+    border: 2px solid #ff0844 !important;
+    box-shadow: 0 0 38px rgba(255, 8, 68, 0.92), 0 0 72px rgba(255, 78, 80, 0.72) !important;
 }
 
 .card.theme-secret,
-.card-3d-wrapper.theme-secret {
-    background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.4), transparent 70%), linear-gradient(135deg, #181818 0%, #2c2c2c 40%, #050505 80%, #00f2fe 100%);
-    background-size: 250% 250%;
-    animation: bgGradientShift 3s ease infinite;
-    border-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 0 35px rgba(0, 242, 254, 0.5), 0 0 20px rgba(255, 255, 255, 0.35);
+.card-3d-wrapper.theme-secret,
+.card-3d-front.theme-secret,
+.card-3d-item.theme-secret {
+    background: linear-gradient(135deg, #050510 0%, #2b1055 25%, #7597de 50%, #ff007f 75%, #00f2fe 100%) !important;
+    background-size: 300% 300% !important;
+    animation: secretPrismShift 2.8s ease infinite alternate !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 0 40px rgba(0, 242, 254, 0.9), 0 0 75px rgba(255, 0, 127, 0.7) !important;
+}
+
+.card.theme-worldclass,
+.card-3d-wrapper.theme-worldclass,
+.card-3d-front.theme-worldclass,
+.card.theme-world-class,
+.card-3d-wrapper.theme-world-class,
+.card-3d-front.theme-world-class,
+.card-3d-item.theme-worldclass,
+.card-3d-item.theme-world-class {
+    background: linear-gradient(135deg, #1f1400 0%, #ffd700 25%, #43e97b 50%, #00f2fe 75%, #fff9c4 100%) !important;
+    background-size: 300% 300% !important;
+    animation: worldClassPrismShift 3s ease infinite alternate !important;
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 44px rgba(255, 215, 0, 0.95), 0 0 82px rgba(0, 242, 254, 0.75) !important;
 }
 
 /* SHINY PRISMATIC RAINBOW HOLOGRAPHIC FOIL (SHINY EMANUEL & SHINY CARDS) */
@@ -747,12 +778,13 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card-3d-front.is-shiny,
 .card.theme-shiny-emanuel,
 .card-3d-wrapper.theme-shiny-emanuel,
-.card-3d-front.theme-shiny-emanuel {
+.card-3d-front.theme-shiny-emanuel,
+.card-3d-item.theme-shiny-emanuel {
     background: linear-gradient(135deg, #ff007f 0%, #7928ca 20%, #00f2fe 40%, #43e97b 60%, #fa709a 80%, #ffd700 100%) !important;
     background-size: 300% 300% !important;
     animation: shinyPrismShift 3.5s ease infinite alternate !important;
     border: 2px solid #00f2fe !important;
-    box-shadow: 0 0 35px rgba(0, 242, 254, 0.75), 0 0 60px rgba(255, 0, 128, 0.5) !important;
+    box-shadow: 0 0 38px rgba(0, 242, 254, 0.85), 0 0 65px rgba(255, 0, 128, 0.6) !important;
 }
 
 @keyframes shinyPrismShift {
@@ -779,7 +811,7 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
-/* Messi World Class: Signature Golden Solar / Albiceleste Cyan Animated Gradient */
+/* Messi World Class: Signature Albiceleste Sky Blue & Sun-Gold Animated Prism Gradient */
 .card.theme-messi,
 .card-3d-wrapper.theme-messi,
 .card-3d-front.theme-messi,
@@ -787,14 +819,14 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-messi.is-serialized,
 .card-3d-wrapper.theme-messi.is-serialized,
 .card-3d-front.theme-messi.is-serialized {
-    background: linear-gradient(135deg, #451a03 0%, #f97316 35%, #fde047 70%, #38bdf8 100%) !important;
-    background-size: 200% 200% !important;
-    animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
+    background: linear-gradient(135deg, #001a33 0%, #75aadb 25%, #ffffff 50%, #ffd700 75%, #0052d4 100%) !important;
+    background-size: 300% 300% !important;
+    animation: messiPrismShift 3s ease-in-out infinite alternate !important;
     border-color: #ffd700 !important;
-    box-shadow: 0 0 35px rgba(255, 215, 0, 0.6) !important;
+    box-shadow: 0 0 44px rgba(117, 170, 219, 0.95), 0 0 82px rgba(255, 215, 0, 0.75) !important;
 }
 
-/* Ronaldo World Class: Signature Royal Purple & Indigo Crimson Animated Gradient */
+/* Ronaldo World Class: Signature CR7 Crimson Fire & Gold Lightning Animated Prism Gradient */
 .card.theme-ronaldo,
 .card-3d-wrapper.theme-ronaldo,
 .card-3d-front.theme-ronaldo,
@@ -802,14 +834,14 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-ronaldo.is-serialized,
 .card-3d-wrapper.theme-ronaldo.is-serialized,
 .card-3d-front.theme-ronaldo.is-serialized {
-    background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 35%, #c084fc 70%, #ffffff 100%) !important;
-    background-size: 200% 200% !important;
-    animation: serializedHoloShift 4s ease-in-out infinite alternate !important;
-    border-color: #c084fc !important;
-    box-shadow: 0 0 35px rgba(192, 132, 252, 0.6) !important;
+    background: linear-gradient(135deg, #2b0000 0%, #e50914 25%, #ffd700 50%, #ff4500 75%, #fff5c0 100%) !important;
+    background-size: 300% 300% !important;
+    animation: ronaldoPrismShift 3s ease-in-out infinite alternate !important;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 44px rgba(229, 9, 20, 0.95), 0 0 82px rgba(255, 215, 0, 0.75) !important;
 }
 
-/* Emanuel Tournament Card: Animated Cosmic Gold & Cyan Gradient */
+/* Emanuel Tournament Card: Animated Emerald & Golden Cyan Gradient */
 .card.theme-tournament,
 .card-3d-wrapper.theme-tournament,
 .card-3d-front.theme-tournament,
@@ -817,14 +849,14 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-tournament.is-serialized,
 .card-3d-wrapper.theme-tournament.is-serialized,
 .card-3d-front.theme-tournament.is-serialized {
-    background: linear-gradient(135deg, #785206 0%, #ffd700 30%, #00f2fe 60%, #7928ca 85%, #785206 100%) !important;
-    background-size: 250% 250% !important;
-    animation: bgGradientShift 3.5s ease infinite !important;
-    border-color: #ffd700 !important;
-    box-shadow: 0 0 35px rgba(255, 215, 0, 0.5) !important;
+    background: linear-gradient(135deg, #022c22 0%, #10b981 25%, #ffd700 50%, #059669 75%, #a7f3d0 100%) !important;
+    background-size: 300% 300% !important;
+    animation: tournamentPrismShift 3.2s ease infinite alternate !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.9), 0 0 72px rgba(255, 215, 0, 0.65) !important;
 }
 
-/* Monkey King Developer Card: Animated Golden Solar Magma & Dragon Gold Gradient */
+/* Monkey King Developer Card: Animated Golden Solar Magma & Mythical Jade Gradient */
 .card.theme-developer,
 .card-3d-wrapper.theme-developer,
 .card-3d-front.theme-developer,
@@ -832,12 +864,27 @@ select:focus, input:not([type="checkbox"]):not([type="radio"]):focus {
 .card.theme-developer.is-serialized,
 .card-3d-wrapper.theme-developer.is-serialized,
 .card-3d-front.theme-developer.is-serialized {
-    background: linear-gradient(135deg, #3d1400 0%, #d97706 25%, #ffd700 50%, #ff3b30 75%, #3d1400 100%) !important;
-    background-size: 250% 250% !important;
-    animation: bgGradientShift 3s ease infinite !important;
+    background: linear-gradient(135deg, #1c002b 0%, #8b0000 25%, #ffd700 50%, #9900ef 75%, #ff0055 100%) !important;
+    background-size: 300% 300% !important;
+    animation: developerPrismShift 2.8s ease infinite alternate !important;
     border-color: #ffd700 !important;
-    box-shadow: 0 0 35px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 140, 0, 0.5) !important;
+    box-shadow: 0 0 46px rgba(255, 215, 0, 0.95), 0 0 88px rgba(153, 0, 239, 0.75) !important;
 }
+
+/* PRISMATIC KEYFRAME SHIFTS ACROSS ALL RARITIES */
+@keyframes commonPrismShift { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+@keyframes uncommonPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.0); } 50% { background-position: 100% 100%; filter: brightness(1.15); } 100% { background-position: 0% 100%; filter: brightness(1.05); } }
+@keyframes rarePrismShift { 0% { background-position: 0% 0%; filter: brightness(1.05) saturate(1.1); } 50% { background-position: 100% 100%; filter: brightness(1.25) saturate(1.3); } 100% { background-position: 0% 100%; filter: brightness(1.15) saturate(1.2); } }
+@keyframes epicPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.05) saturate(1.1); } 50% { background-position: 100% 100%; filter: brightness(1.25) saturate(1.3); } 100% { background-position: 0% 100%; filter: brightness(1.15) saturate(1.2); } }
+@keyframes legendaryPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.1) saturate(1.15); } 50% { background-position: 100% 100%; filter: brightness(1.3) saturate(1.35); } 100% { background-position: 0% 100%; filter: brightness(1.2) saturate(1.25); } }
+@keyframes exclusivePrismShift { 0% { background-position: 0% 0%; filter: brightness(1.1); } 50% { background-position: 100% 100%; filter: brightness(1.3); } 100% { background-position: 0% 100%; filter: brightness(1.2); } }
+@keyframes mythicPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.1); } 50% { background-position: 100% 100%; filter: brightness(1.35); } 100% { background-position: 0% 100%; filter: brightness(1.2); } }
+@keyframes secretPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.1) hue-rotate(0deg); } 50% { background-position: 100% 100%; filter: brightness(1.35) hue-rotate(45deg); } 100% { background-position: 0% 100%; filter: brightness(1.2) hue-rotate(90deg); } }
+@keyframes worldClassPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.12); } 50% { background-position: 100% 100%; filter: brightness(1.38); } 100% { background-position: 0% 100%; filter: brightness(1.22); } }
+@keyframes messiPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.15); } 50% { background-position: 100% 100%; filter: brightness(1.4); } 100% { background-position: 0% 100%; filter: brightness(1.25); } }
+@keyframes ronaldoPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.15); } 50% { background-position: 100% 100%; filter: brightness(1.4); } 100% { background-position: 0% 100%; filter: brightness(1.25); } }
+@keyframes tournamentPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.1); } 50% { background-position: 100% 100%; filter: brightness(1.35); } 100% { background-position: 0% 100%; filter: brightness(1.2); } }
+@keyframes developerPrismShift { 0% { background-position: 0% 0%; filter: brightness(1.15); } 50% { background-position: 100% 100%; filter: brightness(1.45); } 100% { background-position: 0% 100%; filter: brightness(1.25); } }
 
 @keyframes bgGradientShift {
     0% { background-position: 0% 50%; }
