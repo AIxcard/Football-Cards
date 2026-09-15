@@ -7838,21 +7838,7 @@ html, body {
 }
 
 /* Anime OST Floating Widget */
-.anime-bgm-floating-bar {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid var(--purple);
-    box-shadow: 0 0 25px var(--purple-glow);
-    border-radius: 30px;
-    padding: 6px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 999;
-    backdrop-filter: blur(10px);
-}
+
 
 .bgm-ctrl-btn {
     background: rgba(255, 255, 255, 0.08);
@@ -8001,4 +7987,65 @@ html, body {
     font-weight: 900 !important;
     letter-spacing: 1px !important;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.7) !important;
+}
+
+
+
+/* STRICT UNIFORM PLAYER CARD ALIGNMENT & HEIGHT NORMALIZATION */
+.card, .index-card {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    min-height: 385px !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.card h3, .card .card-player-name, .index-card h3 {
+    min-height: 40px !important;
+    height: 40px !important;
+    max-height: 40px !important;
+    line-height: 1.25 !important;
+    font-size: 15px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    margin: 6px 0 4px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: break-word !important;
+}
+
+.card .card-image-wrap, .index-card .card-image-wrap {
+    height: 150px !important;
+    min-height: 150px !important;
+    max-height: 150px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-bottom: 8px !important;
+}
+
+.card-meta-wrap, .card .card-meta-row, .card-meta-grid {
+    min-height: 52px !important;
+    margin: 4px 0 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+}
+
+.card .card-actions, .card-bottom-actions {
+    margin-top: auto !important;
+    display: flex !important;
+    gap: 6px !important;
+    width: 100% !important;
+    padding-top: 6px !important;
+}
+
+.anime-bgm-floating-bar {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
