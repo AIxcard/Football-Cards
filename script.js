@@ -873,11 +873,42 @@ tournament: {
    ========================================================= */
 
 const BACKGROUNDS = [
-{ id: "campnou", name: "Camp Nou Night", cost: 0, css: "url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
-{ id: "bernabeu", name: "Santiago Bernabéu", cost: 50, css: "url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
-{ id: "wembley", name: "Wembley Stadium", cost: 100, css: "url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
-{ id: "sansiro", name: "San Siro Arena", cost: 175, css: "url('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" },
-{ id: "maracana", name: "Maracanã Pitch", cost: 500, css: "url('https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80') center/cover no-repeat" }
+    { 
+        id: "campnou", 
+        name: "Camp Nou Cyber Night", 
+        cost: 0, 
+        css: "radial-gradient(circle at 50% 15%, rgba(30, 58, 138, 0.7) 0%, rgba(15, 23, 42, 0.95) 75%), linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #030712 100%)" 
+    },
+    { 
+        id: "bernabeu", 
+        name: "Santiago Bernabéu Royal Gold", 
+        cost: 50, 
+        css: "radial-gradient(circle at 50% 10%, rgba(234, 179, 8, 0.5) 0%, rgba(15, 23, 42, 0.95) 70%), linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #000000 100%)" 
+    },
+    { 
+        id: "wembley", 
+        name: "Wembley Stadium Spotlight", 
+        cost: 100, 
+        css: "radial-gradient(circle at 50% 10%, rgba(6, 182, 212, 0.5) 0%, rgba(15, 23, 42, 0.95) 70%), linear-gradient(135deg, #083344 0%, #0c1824 60%, #020617 100%)" 
+    },
+    { 
+        id: "sansiro", 
+        name: "San Siro Electric Crimson", 
+        cost: 175, 
+        css: "radial-gradient(circle at 50% 10%, rgba(239, 68, 68, 0.45) 0%, rgba(15, 23, 42, 0.95) 70%), linear-gradient(135deg, #450a0a 0%, #18090f 50%, #050104 100%)" 
+    },
+    { 
+        id: "allianz", 
+        name: "Allianz Diamond Nebula", 
+        cost: 300, 
+        css: "radial-gradient(circle at 50% 10%, rgba(168, 85, 247, 0.5) 0%, rgba(15, 23, 42, 0.95) 70%), linear-gradient(135deg, #3b0764 0%, #0f172a 60%, #020617 100%)" 
+    },
+    { 
+        id: "maracana", 
+        name: "Maracanã Golden Horizon", 
+        cost: 500, 
+        css: "radial-gradient(circle at 50% 10%, rgba(16, 185, 129, 0.45) 0%, rgba(15, 23, 42, 0.95) 70%), linear-gradient(135deg, #064e3b 0%, #022c22 50%, #020617 100%)" 
+    }
 ];
 
 /* =========================================================
@@ -3791,22 +3822,39 @@ function showCardResult(card, duplicate, isFirstDiscovery, packNum = 1, totalPac
     const collectBtn = document.getElementById("revealCollectBtn");
 
     if (overlay && revealCard) {
-        revealCard.className = "card reveal-card-body";
-        const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
-        revealCard.classList.add(frame.css);
+        // Build exact matching theme class like Collection view
+        let themeClass = `theme-${rarityClassName(card.rarity)}`;
+        const isShiny = !!card.shiny || card.player === "Shiny Emanuel" || (card.name === "Shiny Emanuel");
+        if (isShiny) {
+            themeClass = "theme-shiny-emanuel is-shiny";
+        } else if (card.rarity === "World Class") {
+            if (card.player === "Lionel Messi") themeClass = "theme-messi";
+            else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
+            else themeClass = "theme-worldclass";
+        } else if (card.rarity === "Tournament") {
+            themeClass = "theme-tournament";
+        } else if (card.rarity === "Developer" || card.player === "Monkey King") {
+            themeClass = "theme-developer";
+        }
 
         const rClass = rarityClassName(card.rarity);
-        revealCard.classList.add(`glow-${rClass}`);
+        const frame = FRAMES.find(f => f.id === card.frame) || FRAMES[0];
+
+        revealCard.className = `card reveal-card-body ${themeClass} ${frame.css} glow-${rClass}`;
 
         if (card.serialGradient) {
-            revealCard.style.background = card.serialGradient;
+            revealCard.style.background = `${card.serialGradient} !important`;
+            revealCard.style.backgroundSize = "200% 200%";
+            revealCard.style.animation = "serializedHoloShift 4s ease-in-out infinite alternate";
         } else {
             revealCard.style.background = "";
+            revealCard.style.backgroundSize = "";
+            revealCard.style.animation = "";
         }
 
         if (revealBadge) {
-            revealBadge.textContent = card.serialNumber ? `★ SERIALIZED #${card.serialNumber}/10 ★` : duplicate ? "DUPLICATE CARD" : "NEW CARD";
-            revealBadge.classList.toggle("duplicate", !!duplicate && !card.serialNumber);
+            revealBadge.textContent = card.serialNumber ? `★ SERIALIZED #${card.serialNumber}/10 ★` : isShiny ? "✨ SHINY SPECIAL EDITION ✨" : duplicate ? "DUPLICATE CARD" : "NEW CARD";
+            revealBadge.classList.toggle("duplicate", !!duplicate && !card.serialNumber && !isShiny);
         }
 
         if (revealRarity) {
@@ -10648,117 +10696,129 @@ function checkBanStatus() {
 
 
 /* =========================================================
-   CS2-STYLE PROFILE MEDALS & PINS CAPSULE SYSTEM
+   FOOTBALL SHOWCASE MEDALS & PINS CAPSULE SYSTEM
    ========================================================= */
 
 const PINS_DEF = [
-    {
-        id: "pin_star_service",
-        name: "Service Star Medal",
-        rarity: "Legendary",
-        color: "#ffd700",
-        icon: "⭐",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fff8db"/><stop offset="50%" stop-color="#ffd700"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="url(#pinGoldGrad)" stroke="#ffffff" stroke-width="2.5"/><circle cx="50" cy="50" r="22" fill="#0c1a2e" stroke="#ffd700" stroke-width="3"/><text x="50" y="57" font-size="18" font-weight="900" text-anchor="middle" fill="#ffd700">★</text></svg>`,
-        desc: "Awarded for exceptional dedication and veteran prestige across countless competitive match seasons."
-    },
-    {
-        id: "pin_hydra",
-        name: "Operation Hydra Pin",
-        rarity: "Epic",
-        color: "#22c55e",
-        icon: "🐉",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#86efac"/><stop offset="50%" stop-color="#22c55e"/><stop offset="100%" stop-color="#052e16"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinGreenGrad)" stroke="#86efac" stroke-width="3"/><path d="M28,68 Q50,16 72,68 Q50,48 28,68 Z" fill="#052e16" stroke="#4ade80" stroke-width="2.5"/><circle cx="50" cy="42" r="6" fill="#86efac"/><text x="50" y="84" font-size="10.5" font-weight="900" text-anchor="middle" fill="#4ade80" letter-spacing="1">HYDRA</text></svg>`,
-        desc: "Commemorates legendary tactical operations and venomous finishing strikes on the pitch."
-    },
-    {
-        id: "pin_csgo_veteran",
-        name: "5-Year Veteran Coin",
-        rarity: "Legendary",
-        color: "#38bdf8",
-        icon: "🛡️",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinSilverGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="50%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#334155"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinSilverGrad)" stroke="#38bdf8" stroke-width="4"/><circle cx="50" cy="50" r="34" fill="#0f172a" stroke="#60a5fa" stroke-width="2.5"/><text x="50" y="46" font-size="13" font-weight="900" text-anchor="middle" fill="#38bdf8" letter-spacing="0.5">CS:GO</text><text x="50" y="65" font-size="11" font-weight="900" text-anchor="middle" fill="#ffd700">5 YR</text></svg>`,
-        desc: "Prestigious coin recognizing five continuous years of dedicated membership in elite football ranks."
-    },
     {
         id: "pin_worldcup_gold",
         name: "World Cup 2026 Gold Medal",
         rarity: "Secret",
         color: "#f59e0b",
         icon: "🏆",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinGoldGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a"/><stop offset="40%" stop-color="#eab308"/><stop offset="100%" stop-color="#713f12"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad2)" stroke="#ffffff" stroke-width="4"/><circle cx="50" cy="50" r="36" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2.5"/><text x="50" y="46" font-size="18" text-anchor="middle">🏆</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">WORLD CUP</text></svg>`,
-        desc: "The ultimate crown of global football dominance. Awarded only to world champions."
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinGoldGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a"/><stop offset="40%" stop-color="#eab308"/><stop offset="100%" stop-color="#713f12"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad2)" stroke="#ffffff" stroke-width="4"/><circle cx="50" cy="50" r="36" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2.5"/><text x="50" y="46" font-size="18" text-anchor="middle">🏆</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">WORLD CUP</text></svg>`,
+        desc: "The ultimate crown of global football dominance. Awarded to world tournament champions.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (0.3% Secret Drop Rate) or claim Rank #1 World Cup Tournament."
+    },
+    {
+        id: "pin_treble_winner",
+        name: "Treble Winner Medallion",
+        rarity: "Secret",
+        color: "#00f2fe",
+        icon: "👑",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#cffafe"/><stop offset="40%" stop-color="#00f2fe"/><stop offset="100%" stop-color="#0e7490"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinCyanGrad)" stroke="#ffffff" stroke-width="3.5"/><circle cx="50" cy="50" r="34" fill="#082f49" stroke="#38bdf8" stroke-width="2"/><text x="50" y="46" font-size="18" text-anchor="middle">👑</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#38bdf8" letter-spacing="0.5">TREBLE</text></svg>`,
+        desc: "Commemorates legendary clubs lifting the League, National Cup, and European Championship in one season.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (0.3% Secret Drop Rate)."
     },
     {
         id: "pin_ballondor",
-        name: "Ballon d'Or Crest Pin",
+        name: "Ballon d'Or Golden Crest",
         rarity: "Mythic",
         color: "#ec4899",
         icon: "✨",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinRubyGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fbcfe8"/><stop offset="40%" stop-color="#ec4899"/><stop offset="100%" stop-color="#831843"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinRubyGrad)" stroke="#f472b6" stroke-width="3"/><circle cx="50" cy="50" r="32" fill="#4a044e" stroke="#fbbf24" stroke-width="2.5"/><text x="50" y="48" font-size="16" text-anchor="middle">⚽</text><text x="50" y="66" font-size="7.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">BALLON D'OR</text></svg>`,
-        desc: "Shining ruby-gold medallion celebrating generational individual brilliance and mastery."
-    },
-    {
-        id: "pin_champions_star",
-        name: "Champions Star Pin",
-        rarity: "Epic",
-        color: "#a855f7",
-        icon: "🌟",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinPurpleGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e9d5ff"/><stop offset="50%" stop-color="#a855f7"/><stop offset="100%" stop-color="#3b0764"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinPurpleGrad)" stroke="#c084fc" stroke-width="3"/><polygon points="50,20 58,38 78,38 62,50 68,68 50,56 32,68 38,50 22,38 42,38" fill="#ffd700" stroke="#ffffff" stroke-width="1.2"/><text x="50" y="82" font-size="8" font-weight="900" text-anchor="middle" fill="#e9d5ff" letter-spacing="1">CHAMPIONS</text></svg>`,
-        desc: "Inspired by legendary European championship nights under dazzling stadium lights."
-    },
-    {
-        id: "pin_golden_boot",
-        name: "Golden Boot Pin",
-        rarity: "Rare",
-        color: "#3b82f6",
-        icon: "👟",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad)" stroke="#60a5fa" stroke-width="3"/><text x="50" y="50" font-size="22" text-anchor="middle">👟</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#93c5fd" letter-spacing="0.5">TOP SCORER</text></svg>`,
-        desc: "Bestowed upon clinical tournament strikers with flawless finishing accuracy."
-    },
-    {
-        id: "pin_premier_lion",
-        name: "Premier Lion Crest",
-        rarity: "Rare",
-        color: "#3b82f6",
-        icon: "🦁",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinBlueGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#bfdbfe"/><stop offset="50%" stop-color="#2563eb"/><stop offset="100%" stop-color="#172554"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad2)" stroke="#93c5fd" stroke-width="3"/><text x="50" y="48" font-size="22" text-anchor="middle">🦁</text><text x="50" y="72" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffffff" letter-spacing="0.5">PREMIER</text></svg>`,
-        desc: "The crowned lion badge representing relentless intensity and pure competitive heart."
-    },
-    {
-        id: "pin_tactical_maestro",
-        name: "Tactical Maestro Crest",
-        rarity: "Uncommon",
-        color: "#10b981",
-        icon: "🧭",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><circle cx="50" cy="50" r="46" fill="#064e3b" stroke="#34d399" stroke-width="3"/><text x="50" y="50" font-size="20" text-anchor="middle">🧭</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#6ee7b7" letter-spacing="0.5">MAESTRO</text></svg>`,
-        desc: "Emblem of visionary midfield orchestrators and playmakers."
-    },
-    {
-        id: "pin_iron_defense",
-        name: "Iron Defense Shield Pin",
-        rarity: "Common",
-        color: "#64748b",
-        icon: "🛡️",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><circle cx="50" cy="50" r="46" fill="#1e293b" stroke="#94a3b8" stroke-width="3"/><text x="50" y="50" font-size="20" text-anchor="middle">🛡️</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#cbd5e1" letter-spacing="0.5">DEFENDER</text></svg>`,
-        desc: "Solid steel shield badge earned by immovable defensive backlines."
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinRubyGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fbcfe8"/><stop offset="40%" stop-color="#ec4899"/><stop offset="100%" stop-color="#831843"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinRubyGrad)" stroke="#f472b6" stroke-width="3"/><circle cx="50" cy="50" r="32" fill="#4a044e" stroke="#fbbf24" stroke-width="2.5"/><text x="50" y="48" font-size="16" text-anchor="middle">⚽</text><text x="50" y="66" font-size="7.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">BALLON D'OR</text></svg>`,
+        desc: "Shining ruby-gold medallion celebrating generational football mastery and individual supremacy.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (1.5% Mythic Drop Rate)."
     },
     {
         id: "pin_diamond_loyalty",
-        name: "Diamond Loyalty Pin",
+        name: "Diamond Loyalty Crest",
         rarity: "Mythic",
         color: "#ec4899",
         icon: "💎",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><defs><linearGradient id="pinDiaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f472b6"/><stop offset="50%" stop-color="#db2777"/><stop offset="100%" stop-color="#500724"/></linearGradient></defs><polygon points="50,6 92,30 92,70 50,94 8,70 8,30" fill="url(#pinDiaGrad)" stroke="#fbcfe8" stroke-width="3"/><text x="50" y="54" font-size="22" text-anchor="middle">💎</text><text x="50" y="76" font-size="8" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">LOYALTY</text></svg>`,
-        desc: "Faceted diamond badge honoring legendary club loyalty and supreme collecting mastery."
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinDiaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f472b6"/><stop offset="50%" stop-color="#db2777"/><stop offset="100%" stop-color="#500724"/></linearGradient></defs><polygon points="50,6 92,30 92,70 50,94 8,70 8,30" fill="url(#pinDiaGrad)" stroke="#fbcfe8" stroke-width="3"/><text x="50" y="54" font-size="22" text-anchor="middle">💎</text><text x="50" y="76" font-size="8" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">LOYALTY</text></svg>`,
+        desc: "Faceted diamond badge honoring legendary club loyalty and supreme collecting mastery.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (1.5% Mythic Drop Rate)."
     },
     {
-        id: "pin_10yr_titanium",
-        name: "10-Year Veteran Coin",
-        rarity: "Secret",
-        color: "#f59e0b",
-        icon: "🎖️",
-        badgeSvg: `<svg viewBox="0 0 100 100" class="cs2-pin-svg"><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad)" stroke="#ffffff" stroke-width="4"/><circle cx="50" cy="50" r="34" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2.5"/><text x="50" y="45" font-size="13" font-weight="900" text-anchor="middle" fill="#38bdf8" letter-spacing="0.5">CS:GO</text><text x="50" y="65" font-size="11" font-weight="900" text-anchor="middle" fill="#ffd700">10 YR</text></svg>`,
-        desc: "A full decade of battlefield supremacy. Forged from aerospace titanium."
+        id: "pin_puskas_wonder",
+        name: "Puskás Wonder-Goal Pin",
+        rarity: "Legendary",
+        color: "#ffd700",
+        icon: "🚀",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fff8db"/><stop offset="50%" stop-color="#ffd700"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="url(#pinGoldGrad)" stroke="#ffffff" stroke-width="2.5"/><circle cx="50" cy="50" r="22" fill="#0c1a2e" stroke="#ffd700" stroke-width="3"/><text x="50" y="56" font-size="16" font-weight="900" text-anchor="middle" fill="#ffd700">PUSKÁS</text></svg>`,
+        desc: "Awarded for scoring physics-defying, jaw-dropping long-range and acrobatic wonder strikes.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (6.0% Legendary Drop Rate)."
+    },
+    {
+        id: "pin_world_class_maestro",
+        name: "World Class Maestro Pin",
+        rarity: "Legendary",
+        color: "#ffd700",
+        icon: "⭐",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad)" stroke="#ffd700" stroke-width="3.5"/><circle cx="50" cy="50" r="34" fill="#0f172a" stroke="#ffd700" stroke-width="2"/><text x="50" y="47" font-size="16" text-anchor="middle">⭐</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700">MAESTRO</text></svg>`,
+        desc: "Bestowed upon visionary midfield generals with supreme pitch vision and match control.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (6.0% Legendary Drop Rate)."
+    },
+    {
+        id: "pin_champions_star",
+        name: "Champions League Star Medallion",
+        rarity: "Epic",
+        color: "#a855f7",
+        icon: "🌟",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinPurpleGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e9d5ff"/><stop offset="50%" stop-color="#a855f7"/><stop offset="100%" stop-color="#3b0764"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinPurpleGrad)" stroke="#c084fc" stroke-width="3"/><polygon points="50,20 58,38 78,38 62,50 68,68 50,56 32,68 38,50 22,38 42,38" fill="#ffd700" stroke="#ffffff" stroke-width="1.2"/><text x="50" y="82" font-size="8" font-weight="900" text-anchor="middle" fill="#e9d5ff" letter-spacing="1">CHAMPIONS</text></svg>`,
+        desc: "Inspired by legendary European championship nights under dazzling stadium floodlights.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (12.0% Epic Drop Rate)."
+    },
+    {
+        id: "pin_golden_glove",
+        name: "Golden Glove Shield",
+        rarity: "Epic",
+        color: "#a855f7",
+        icon: "🧤",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="url(#pinPurpleGrad)" stroke="#c084fc" stroke-width="3"/><text x="50" y="50" font-size="22" text-anchor="middle">🧤</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#e9d5ff" letter-spacing="0.5">CLEAN SHEET</text></svg>`,
+        desc: "Golden shield recognizing world-class goalkeepers who guard their net with heroic saves.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (12.0% Epic Drop Rate)."
+    },
+    {
+        id: "pin_golden_boot",
+        name: "Golden Boot Striker Pin",
+        rarity: "Rare",
+        color: "#3b82f6",
+        icon: "👟",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad)" stroke="#60a5fa" stroke-width="3"/><text x="50" y="50" font-size="22" text-anchor="middle">👟</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#93c5fd" letter-spacing="0.5">TOP SCORER</text></svg>`,
+        desc: "Bestowed upon clinical tournament goalscorers with ruthless finishing accuracy.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (20.0% Rare Drop Rate)."
+    },
+    {
+        id: "pin_premier_lion",
+        name: "Premier League Crown Crest",
+        rarity: "Rare",
+        color: "#3b82f6",
+        icon: "🦁",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinBlueGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#bfdbfe"/><stop offset="50%" stop-color="#2563eb"/><stop offset="100%" stop-color="#172554"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad2)" stroke="#93c5fd" stroke-width="3"/><text x="50" y="48" font-size="22" text-anchor="middle">🦁</text><text x="50" y="72" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffffff" letter-spacing="0.5">PREMIER</text></svg>`,
+        desc: "The crowned lion badge representing relentless intensity, physical grit, and football heart.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (20.0% Rare Drop Rate)."
+    },
+    {
+        id: "pin_captain_armband",
+        name: "Club Captain Crest",
+        rarity: "Uncommon",
+        color: "#10b981",
+        icon: "©️",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="#064e3b" stroke="#34d399" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="#022c22" stroke="#6ee7b7" stroke-width="2"/><text x="50" y="58" font-size="28" font-weight="900" text-anchor="middle" fill="#34d399">©</text></svg>`,
+        desc: "Emblem of inspiring locker-room leadership and on-pitch determination.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (25.0% Uncommon Drop Rate)."
+    },
+    {
+        id: "pin_iron_defense",
+        name: "Iron Defense Wall Pin",
+        rarity: "Common",
+        color: "#64748b",
+        icon: "🛡️",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="#1e293b" stroke="#94a3b8" stroke-width="3"/><text x="50" y="50" font-size="20" text-anchor="middle">🛡️</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#cbd5e1" letter-spacing="0.5">DEFENDER</text></svg>`,
+        desc: "Solid steel shield badge earned by immovable defensive center-backs.",
+        obtainMethod: "Starter reward or unbox from Pins & Medals Capsule in Pack Store (35.0% Common Drop Rate)."
     }
 ];
 
@@ -10770,7 +10830,6 @@ function renderProfilePins() {
         const track = document.getElementById("profileMedalsTrack");
         const featuredBadge = document.getElementById("profileFeaturedPinBadge");
         
-        // Ensure state arrays
         if (!Array.isArray(state.ownedPins) || state.ownedPins.length === 0) {
             state.ownedPins = ["pin_iron_defense"];
         }
@@ -10781,7 +10840,7 @@ function renderProfilePins() {
             state.featuredPin = state.ownedPins[0];
         }
 
-        // Render Featured Pin on Avatar Top-Left Corner (CS2 Style)
+        // Render Featured Pin on Avatar Top-Left Corner
         if (featuredBadge) {
             const featPin = PINS_DEF.find(p => p.id === state.featuredPin) || PINS_DEF.find(p => p.id === state.ownedPins[0]);
             if (featPin) {
@@ -10794,7 +10853,7 @@ function renderProfilePins() {
             }
         }
 
-        // Render CS2 Showcase Track
+        // Render Showcase Track with Hover Tooltips
         if (track) {
             const showcaseList = (state.showcasePins && state.showcasePins.length) ? state.showcasePins : state.ownedPins;
             const totalPages = Math.max(1, Math.ceil(showcaseList.length / PINS_PER_PAGE));
@@ -10812,16 +10871,17 @@ function renderProfilePins() {
                     if (pin) {
                         const isFeatured = state.featuredPin === pin.id;
                         html += `
-                            <div class="cs2-medal-slot filled ${isFeatured ? 'is-featured' : ''}" onclick="inspectPin('${pin.id}')" title="${pin.name} (${pin.rarity})">
+                            <div class="football-medal-slot filled ${isFeatured ? 'is-featured' : ''}" onclick="inspectPin('${pin.id}')" title="${pin.name} (${pin.rarity})">
                                 ${pin.badgeSvg}
                                 ${isFeatured ? '<span class="featured-star-indicator">★</span>' : ''}
+                                <span class="medal-hover-tooltip">${pin.name}</span>
                             </div>
                         `;
                     } else {
-                        html += `<div class="cs2-medal-slot empty" onclick="openPinsManager()" title="Equip Pin"><span>+</span></div>`;
+                        html += `<div class="football-medal-slot empty" onclick="openPinsManager()" title="Equip Medal"><span>+</span></div>`;
                     }
                 } else {
-                    html += `<div class="cs2-medal-slot empty" onclick="openPinsManager()" title="Equip Pin"><span>+</span></div>`;
+                    html += `<div class="football-medal-slot empty" onclick="openPinsManager()" title="Equip Medal"><span>+</span></div>`;
                 }
             }
             track.innerHTML = html;
@@ -10852,30 +10912,39 @@ function inspectPin(pinId) {
     const isFeatured = state.featuredPin === pin.id;
     const isShowcased = (state.showcasePins || []).includes(pin.id);
 
-    document.getElementById("inspectPinBadgeSlot").innerHTML = pin.badgeSvg;
-    document.getElementById("inspectPinName").textContent = pin.name;
-    document.getElementById("inspectPinRarity").textContent = pin.rarity.toUpperCase();
-    document.getElementById("inspectPinRarity").style.color = pin.color;
-    document.getElementById("inspectPinDesc").textContent = pin.desc;
+    const badgeSlot = document.getElementById("inspectPinBadgeSlot");
+    const nameEl = document.getElementById("inspectPinName");
+    const rarityEl = document.getElementById("inspectPinRarity");
+    const descEl = document.getElementById("inspectPinDesc");
+    const obtainTextEl = document.getElementById("inspectPinObtainText");
+
+    if (badgeSlot) badgeSlot.innerHTML = pin.badgeSvg;
+    if (nameEl) nameEl.textContent = pin.name;
+    if (rarityEl) {
+        rarityEl.textContent = pin.rarity.toUpperCase();
+        rarityEl.style.color = pin.color;
+    }
+    if (descEl) descEl.textContent = pin.desc;
+    if (obtainTextEl) obtainTextEl.textContent = pin.obtainMethod || "Unbox from Pins & Medals Capsule in Pack Store.";
 
     const actionsWrap = document.getElementById("inspectPinActions");
     if (actionsWrap) {
         if (isOwned) {
             actionsWrap.innerHTML = `
                 <button class="primary-btn" onclick="setFeaturedPin('${pin.id}')">${isFeatured ? '★ ACTIVE FEATURED PIN' : '⭐ Set as Featured Pin (Avatar)'}</button>
-                <button class="ghost-btn" onclick="toggleShowcasePin('${pin.id}')">${isShowcased ? '✖ Remove from Showcase' : '📌 Add to Showcase Row'}</button>
+                <button class="ghost-btn" onclick="toggleShowcasePin('${pin.id}')">${isShowcased ? '✖ Remove from Showcase Row' : '📌 Add to Showcase Row'}</button>
                 <button class="ghost-btn" onclick="closePinModal()">Close</button>
             `;
         } else {
             actionsWrap.innerHTML = `
-                <div style="color:var(--muted);font-size:13px;margin-bottom:8px;">🔒 Pin locked. Open <b>Pins Capsules</b> in Shop to collect!</div>
-                <button class="primary-btn" onclick="closePinModal(); openPinsCapsule(1);">🎁 Open Pins Capsule (500 🪙)</button>
+                <div style="color:var(--muted);font-size:13px;margin-bottom:8px;">🔒 Pin locked. Buy <b>Pins Capsules</b> in Pack Store!</div>
                 <button class="ghost-btn" onclick="closePinModal()">Close</button>
             `;
         }
     }
 
     modal.classList.remove("hidden");
+    modal.style.display = "flex";
     if (window.SoundFx && SoundFx.click) SoundFx.click();
 }
 
@@ -10909,18 +10978,20 @@ function toggleShowcasePin(pinId) {
 
 function closePinModal() {
     const modal = document.getElementById("pinInspectModal");
-    if (modal) modal.classList.add("hidden");
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+    }
     const reveal = document.getElementById("pinRevealModal");
-    if (reveal) reveal.classList.add("hidden");
+    if (reveal) {
+        reveal.classList.add("hidden");
+        reveal.style.display = "none";
+    }
 }
 
 function openPinsManager() {
     const section = document.getElementById("pinsCollectionPanel");
-    if (section) {
-        section.scrollIntoView({ behavior: "smooth" });
-    } else {
-        toast("View your Pins Collection in the Profile panel below!");
-    }
+    if (section) section.scrollIntoView({ behavior: "smooth" });
 }
 
 function renderPinsCollectionGrid() {
@@ -10969,10 +11040,10 @@ function openPinsCapsule(count = 1) {
     for (let i = 0; i < pullCount; i++) {
         const roll = Math.random() * 100;
         let selectedRarity = "Common";
-        if (roll < 0.3) selectedRarity = "Secret";
-        else if (roll < 2.0) selectedRarity = "Mythic";
-        else if (roll < 8.0) selectedRarity = "Legendary";
-        else if (roll < 20.0) selectedRarity = "Epic";
+        if (roll < 0.6) selectedRarity = "Secret";
+        else if (roll < 3.0) selectedRarity = "Mythic";
+        else if (roll < 9.0) selectedRarity = "Legendary";
+        else if (roll < 21.0) selectedRarity = "Epic";
         else if (roll < 45.0) selectedRarity = "Rare";
         else if (roll < 70.0) selectedRarity = "Uncommon";
         else selectedRarity = "Common";
@@ -11170,3 +11241,127 @@ try { window.toggleAnimeBgm = toggleAnimeBgm; } catch(e) {}
 try { window.nextAnimeBgmTrack = nextAnimeBgmTrack; } catch(e) {}
 try { window.shuffleAnimeBgm = shuffleAnimeBgm; } catch(e) {}
 try { window.setAnimeBgmVolume = setAnimeBgmVolume; } catch(e) {}
+
+
+/* =========================================================
+   ANIME VANGUARDS SOUNDTRACK PACK & JUKEBOX ENGINE
+   ========================================================= */
+
+const SOUNDTRACK_DISCS = [
+    { 
+        id: "ost_vanguards_main", 
+        name: "Anime Vanguards — Main Theme", 
+        rarity: "Legendary", 
+        color: "#ffd700",
+        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+OST+Main+Theme",
+        spotify: "https://open.spotify.com/search/Anime%20Vanguards%20OST",
+        desc: "Official high-octane battle anthem inspired by Anime Vanguards."
+    },
+    { 
+        id: "ost_shinjuku_battle", 
+        name: "Anime Vanguards — Shinjuku Showdown", 
+        rarity: "Mythic", 
+        color: "#ec4899",
+        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Shinjuku+OST",
+        spotify: "https://open.spotify.com/search/Anime%20Vanguards%20Battle",
+        desc: "Intense synth battle track featuring relentless arpeggios and heavy bass."
+    },
+    { 
+        id: "ost_domain_expansion", 
+        name: "Anime Vanguards — Domain Expansion", 
+        rarity: "Secret", 
+        color: "#00f2fe",
+        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Domain+OST",
+        spotify: "https://open.spotify.com/search/Anime%20Vanguards%20OST",
+        desc: "Mystical dimensional electronic track with cosmic resonant sweeps."
+    },
+    { 
+        id: "ost_monarch_wrath", 
+        name: "Anime Vanguards — Monarch Awakening", 
+        rarity: "Epic", 
+        color: "#a855f7",
+        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Monarch+OST",
+        spotify: "https://open.spotify.com/search/Anime%20Vanguards",
+        desc: "Heroic ascending melody celebrating supreme shadow army monarchs."
+    },
+    { 
+        id: "ost_king_curses", 
+        name: "Anime Vanguards — King of Curses", 
+        rarity: "Secret", 
+        color: "#ff0844",
+        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Sukuna+OST",
+        spotify: "https://open.spotify.com/search/Anime%20Vanguards",
+        desc: "Dark apocalyptic battle march with lightning-fast sixteenth note synthesizers."
+    }
+];
+
+function openSoundtrackPack(count = 1) {
+    const costEach = 150;
+    const totalCost = costEach * count;
+    if (Number(state.coins || 0) < totalCost) {
+        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 for ${count}x Soundtrack Pack.`);
+        if (window.SoundFx && SoundFx.click) SoundFx.click();
+        return;
+    }
+
+    if (!spendCoins(totalCost, _INTERNAL_TX_KEY)) return;
+    if (!Array.isArray(state.ownedTracks)) state.ownedTracks = ["vanguards_ignition"];
+
+    const rolled = [];
+    for (let i = 0; i < count; i++) {
+        const disc = SOUNDTRACK_DISCS[Math.floor(Math.random() * SOUNDTRACK_DISCS.length)];
+        const isDupe = state.ownedTracks.includes(disc.id);
+        if (!isDupe) {
+            state.ownedTracks.push(disc.id);
+        } else {
+            addCoins(75, _INTERNAL_TX_KEY);
+        }
+        rolled.push({ disc, isDupe });
+    }
+
+    saveGame();
+    showSoundtrackRevealModal(rolled);
+}
+
+function showSoundtrackRevealModal(results) {
+    const modal = document.getElementById("pinRevealModal");
+    const container = document.getElementById("pinRevealCards");
+    if (!modal || !container) return;
+
+    container.innerHTML = results.map(r => `
+        <div class="pin-reveal-item" style="border-color:${r.disc.color};">
+            <div style="font-size:42px;margin:8px 0;">💿</div>
+            <h3 style="color:#fff;margin:6px 0 4px;font-size:16px;">${r.disc.name}</h3>
+            <span style="color:${r.disc.color};font-weight:900;font-size:12px;">${r.disc.rarity.toUpperCase()}</span>
+            <p style="color:var(--muted);font-size:11.5px;margin:6px 0;">${r.disc.desc}</p>
+            <div style="display:flex;gap:6px;justify-content:center;margin-top:8px;">
+                <a href="${r.disc.youtube}" target="_blank" class="ghost-btn" style="padding:4px 10px;font-size:11px;text-decoration:none;display:inline-block;">▶️ YouTube</a>
+                <a href="${r.disc.spotify}" target="_blank" class="ghost-btn" style="padding:4px 10px;font-size:11px;text-decoration:none;display:inline-block;">🎧 Spotify</a>
+            </div>
+            ${r.isDupe ? '<div class="dupe-refund-badge">Duplicate! +75 🪙 Cashback</div>' : '<div class="new-pin-badge">✨ NEW SOUNDTRACK UNLOCKED! ✨</div>'}
+        </div>
+    `).join("");
+
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+    if (window.SoundFx && SoundFx.reveal) SoundFx.reveal();
+}
+
+
+
+try {
+    window.PINS_DEF = PINS_DEF;
+    window.renderProfilePins = renderProfilePins;
+    window.navigateProfilePins = navigateProfilePins;
+    window.inspectPin = inspectPin;
+    window.setFeaturedPin = setFeaturedPin;
+    window.toggleShowcasePin = toggleShowcasePin;
+    window.closePinModal = closePinModal;
+    window.openPinsManager = openPinsManager;
+    window.openPinsCapsule = openPinsCapsule;
+    window.openSoundtrackPack = openSoundtrackPack;
+    window.toggleAnimeBgm = toggleAnimeBgm;
+    window.nextAnimeBgmTrack = nextAnimeBgmTrack;
+    window.shuffleAnimeBgm = shuffleAnimeBgm;
+    window.setAnimeBgmVolume = setAnimeBgmVolume;
+} catch(e) {}
