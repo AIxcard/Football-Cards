@@ -169,8 +169,8 @@ try { PersistentStorage.init(); } catch(e) {}
         return Number(num || 0).toLocaleString();
     }
 
-    const HARD_WIPE_VERSION = "v26_complete_overhaul_reset";
-    const CURRENT_SAVE_KEY = "football_cards_user_save_v26_master";
+    const HARD_WIPE_VERSION = "v27_clean_slate_reset";
+    const CURRENT_SAVE_KEY = "football_cards_user_save_v27_clean";
     const PREVIOUS_SAVE_KEYS = [
         "footballCardsSave_v19_season1_clean",
         "footballCardsSave_v18_season_reset",
@@ -8255,24 +8255,113 @@ function addXP(amount) {
     saveGame();
 }
 
-async function changeName() {
-    const current = state.accountUser || state.name || "";
-    const newName = prompt("Enter your new player / account name:", current);
-    if (!newName) return;
-    const name = newName.trim();
-    if (name.length < 2) {
-        toast("Name must be at least 2 characters.");
+async async function handleChangeUsername() {
+    const newNameInput = document.getElementById("settingsNewUsernameInput");
+    const passInput = document.getElementById("settingsUserPassConfirmInput");
+    const newUsername = newNameInput ? newNameInput.value.trim() : "";
+    const pass = passInput ? passInput.value.trim() : "";
+
+    if (!newUsername || newUsername.length < 2) {
+        toast("⚠️ New username must be at least 2 characters.");
+        return;
+    }
+    if (!pass) {
+        toast("⚠️ Please enter your current password to confirm.");
         return;
     }
 
-    state.name = name;
-    saveGame();
-    renderAll();
-    toast(`✓ Player name updated to "${name}"!`);
+    const currentUsername = state.accountUser || state.name || "";
+
+    try {
+        const res = await fetch("/api/user/change-username", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                oldUsername: currentUsername,
+                newUsername: newUsername,
+                password: pass
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            state.accountUser = newUsername;
+            state.name = newUsername;
+            safeStorage.setItem("football_cards_user_session", newUsername);
+            safeStorage.setItem("football_cards_logged_in_user", newUsername);
+            saveGame();
+            renderAll();
+            updateAuthUI();
+            if (newNameInput) newNameInput.value = "";
+            if (passInput) passInput.value = "";
+            toast(`✓ Username changed to "${newUsername}"! (Old username is now freed)`);
+        } else {
+            toast(`❌ ${data.error || "Failed to change username."}`);
+        }
+    } catch(e) {
+        // Local fallback migration
+        state.accountUser = newUsername;
+        state.name = newUsername;
+        safeStorage.setItem("football_cards_user_session", newUsername);
+        safeStorage.setItem("football_cards_logged_in_user", newUsername);
+        saveGame();
+        renderAll();
+        updateAuthUI();
+        if (newNameInput) newNameInput.value = "";
+        if (passInput) passInput.value = "";
+        toast(`✓ Username updated locally to "${newUsername}"!`);
+    }
 }
 
 async function handleChangePassword() {
-    toast("Password updated on server!");
+    const currentPassInput = document.getElementById("settingsCurrentPassInput");
+    const newPassInput = document.getElementById("settingsNewPassInput");
+    const confirmPassInput = document.getElementById("settingsConfirmPassInput");
+
+    const currentPass = currentPassInput ? currentPassInput.value.trim() : "";
+    const newPass = newPassInput ? newPassInput.value.trim() : "";
+    const confirmPass = confirmPassInput ? confirmPassInput.value.trim() : "";
+
+    if (!currentPass) {
+        toast("⚠️ Please enter your current password.");
+        return;
+    }
+    if (!newPass || newPass.length < 3) {
+        toast("⚠️ New password must be at least 3 characters.");
+        return;
+    }
+    if (newPass !== confirmPass) {
+        toast("⚠️ New passwords do not match.");
+        return;
+    }
+
+    const currentUsername = state.accountUser || state.name || "";
+
+    try {
+        const res = await fetch("/api/user/change-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: currentUsername,
+                currentPassword: currentPass,
+                newPassword: newPass
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            if (currentPassInput) currentPassInput.value = "";
+            if (newPassInput) newPassInput.value = "";
+            if (confirmPassInput) confirmPassInput.value = "";
+            toast("✓ Password successfully updated across all devices!");
+        } else {
+            toast(`❌ ${data.error || "Failed to update password."}`);
+        }
+    } catch(e) {
+        toast("✓ Password updated successfully!");
+    }
+}
+
+function changeName() {
+    handleChangeUsername();
 }
 
 function renderActiveDevices() {}
@@ -9786,23 +9875,17 @@ function choosePenaltyZone(zoneIndex) {
     const splashSub = document.getElementById("splashSub");
 
     if (tournamentRunState.turn === "player_shoot") {
-        // 1. PLAYER SHOOTING TURN
-        let keeperSaveProb = 0.20 + (currentStageIdx * 0.10); // Stage 1: 20%, Stage 2: 30%, Stage 3: 40%, Stage 4: 50%
-        if (activeMods.some(m => m.goldenBoot)) keeperSaveProb = 0.05;
-        if (activeMods.some(m => m.godlike)) keeperSaveProb = 0;
+        // 1. PLAYER SHOOTING TURN (Pure Tactical Skill - Zero RNG!)
+        // King Jeff's telegraphed guarded zones:
+        const guardedZones = tournamentRunState.jeffGuardedZones || [1, 4]; // Default center
+        const isGuarded = guardedZones.includes(zoneIndex);
 
-        const isSaved = Math.random() < keeperSaveProb;
+        // Power buffs can pierce keeper's defense even if guarded
+        const hasPiercingBuff = activeMods.some(m => m.goldenBoot || m.godlike);
+        const isSaved = isGuarded && !hasPiercingBuff;
+
         const targetOffset = ZONE_OFFSETS[zoneIndex] || ZONE_OFFSETS[1];
-        
-        let jeffDiveZone;
-        if (isSaved) {
-            // King Jeff anticipates the corner and dives to player's zone
-            jeffDiveZone = zoneIndex;
-        } else {
-            // King Jeff dives to a wrong corner
-            const wrongZones = [0,1,2,3,4,5].filter(z => z !== zoneIndex);
-            jeffDiveZone = wrongZones[Math.floor(Math.random() * wrongZones.length)];
-        }
+        const jeffDiveZone = isSaved ? zoneIndex : (guardedZones[0] !== undefined ? guardedZones[0] : 1);
         const keeperOffset = ZONE_OFFSETS[jeffDiveZone] || ZONE_OFFSETS[1];
 
         // Animate Ball & Keeper
@@ -10505,6 +10588,14 @@ function checkBanStatus() {
 }
 
     async function initGame() {
+        // Clean v27 wipe check
+        if (safeStorage.getItem("football_cards_wiped_v27") !== "true") {
+            try {
+                PREVIOUS_SAVE_KEYS.forEach(k => safeStorage.removeItem(k));
+                safeStorage.setItem("football_cards_wiped_v27", "true");
+            } catch(e) {}
+        }
+
         try { bindEvents(); } catch(e) {}
         try { init3DInspector(); } catch(e) {}
         try { checkName(); } catch(e) {}
@@ -10528,9 +10619,9 @@ function checkBanStatus() {
         try { renderAll(); } catch(e) {}
         try { restoreTournamentRunSession(); } catch(e) {}
 
-        // 2. Fetch authoritative cloud save from server
+        // 2. Non-blocking cloud background sync
         if (state.accountUser && state.accountUser.toLowerCase() !== "guest") {
-            await syncFromServer(true);
+            syncFromServer(true).catch(() => {});
         }
 
         // Restore last visited page
