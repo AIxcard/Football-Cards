@@ -11,7 +11,7 @@ if (!fs.existsSync(DATA_DIR)) {
     try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
 }
 
-const HARD_WIPE_VERSION = "v27_clean_slate_reset";
+const HARD_WIPE_VERSION = "v30_clean_reset";
 
 let database = {
     wipeVersion: HARD_WIPE_VERSION,
