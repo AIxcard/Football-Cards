@@ -852,7 +852,7 @@ pins_capsule: {
     rates: { Specialized: 100 }
 },
 soundtrack_pack: {
-    name: "Anime Vanguards Soundtrack Pack",
+    name: "Soundtracks Pack",
     cost: 500,
     rates: { Rare: 70.0, Epic: 24.4, Legendary: 5.0, Mythic: 0.5, Secret: 0.1 }
 },
@@ -3232,25 +3232,83 @@ function updateRarityStats(rarity, player) {
    ========================================================= */
 
 function openPackOdds(packType) {
+    const modal = document.getElementById("packOddsModal");
+    const titleEl = document.getElementById("oddsPackTitle");
+    const costEl = document.getElementById("oddsPackCost");
+    const ratesList = document.getElementById("oddsRatesList");
+    if (!modal) return;
+
+    if (packType === "pins_capsule") {
+        if (titleEl) titleEl.textContent = "Pins & Medals Capsule Probabilities";
+        if (costEl) costEl.textContent = "Cost: 1,000 🪙 (Duplicate refund: +500 🪙)";
+        if (ratesList) {
+            ratesList.innerHTML = `
+                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <span class="rarity specialized-gold" style="font-weight:900;color:#ffd700;">SPECIALIZED (All 12 Medals)</span>
+                    <b style="color:#ffd700;">100% (8.33% Each)</b>
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;">
+                    Contains: World Cup 2026 Gold Medal, Treble Winner, Ballon d'Or Crest, Diamond Loyalty, Puskás Wonder-Goal, World Class Maestro, Champions League Star, Golden Glove, Golden Boot, Premier League Crown, Club Captain, and Iron Defense.
+                </div>
+            `;
+        }
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+        return;
+    }
+
+    if (packType === "soundtrack_pack") {
+        if (titleEl) titleEl.textContent = "Soundtracks Pack Probabilities";
+        if (costEl) costEl.textContent = "Cost: 500 🪙";
+        if (ratesList) {
+            ratesList.innerHTML = `
+                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <span class="rarity secret" style="font-weight:900;">SECRET (Wall of Resolve)</span>
+                    <b style="color:var(--cyan);">0.10% (1 in 1,000)</b>
+                </div>
+                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <span class="rarity mythic" style="font-weight:900;">MYTHIC (Crown of the Sun)</span>
+                    <b style="color:var(--purple);">0.50% (1 in 200)</b>
+                </div>
+                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <span class="rarity legendary" style="font-weight:900;">LEGENDARY (Petals Beneath the Ice)</span>
+                    <b style="color:var(--gold);">5.00% (1 in 20)</b>
+                </div>
+                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <span class="rarity epic" style="font-weight:900;">EPIC (False Heaven)</span>
+                    <b style="color:#a855f7;">24.40%</b>
+                </div>
+                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;">
+                    <span class="rarity rare" style="font-weight:900;">RARE (Nah I'd Win)</span>
+                    <b style="color:var(--blue);">70.00%</b>
+                </div>
+            `;
+        }
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+        return;
+    }
+
     const pack = PACKS[packType];
     if (!pack) return;
 
-    setText("oddsPackTitle", `Odds: ${pack.name}`);
-    setText("oddsPackCost", `Scouting Cost: ${pack.cost} 🪙`);
+    if (titleEl) titleEl.textContent = `${pack.name} Scouting Probabilities`;
+    if (costEl) costEl.textContent = `Cost: ${pack.cost.toLocaleString()} 🪙`;
 
-    const list = document.getElementById("oddsRatesList");
-    if (list) {
-        list.innerHTML = Object.keys(pack.rates).map(r => `
-            <div class="odds-rate-row">
-                <span class="rarity ${rarityClassName(r)}">${escapeHTML(r)}</span>
-                <b>${pack.rates[r]}%</b>
-            </div>
-        `).join("");
+    if (ratesList && pack.rates) {
+        ratesList.innerHTML = Object.entries(pack.rates).map(([rarity, rate]) => {
+            const rClass = rarityClassName(rarity);
+            return `
+                <div class="odds-rate-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <span class="rarity ${rClass}" style="font-weight:800;">${rarity.toUpperCase()}</span>
+                    <b>${rate}%</b>
+                </div>
+            `;
+        }).join("");
     }
 
-    const modal = document.getElementById("packOddsModal");
-    if (modal) modal.classList.remove("hidden");
-    SoundFx.click();
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
 }
 
 function closePackOddsModal() {
@@ -8192,42 +8250,87 @@ function claimMission(index, missionType = currentMissionType) {
 
 function renderMissions() {
     const list = document.getElementById("missionList");
-    if (!list) return;
+    const homeList = document.getElementById("homeMissionList");
 
-    const missions = MISSION_TEMPLATES[currentMissionType] || [];
-    const progress = (state.missionProgress && state.missionProgress[currentMissionType]) || [];
-    const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType]) || [];
+    const missions = MISSION_TEMPLATES[currentMissionType || "daily"] || [];
+    const progress = (state.missionProgress && state.missionProgress[currentMissionType || "daily"]) || [];
+    const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType || "daily"]) || [];
 
-    list.innerHTML = missions.map((m, i) => {
+    const missionHtml = missions.map((m, i) => {
         const title = m[0];
         const max = m[1];
         const reward = m[2];
         const amount = Math.min(max, Number(progress[i]) || 0);
         const percent = Math.min(100, Math.round((amount / max) * 100));
-        const isDone = amount >= max;
         const isClaimed = !!claimed[i];
+        const isReady = amount >= max && !isClaimed;
 
         return `
-            <div class="panel" style="padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
-                <div style="flex:1;min-width:200px;">
-                    <strong style="color:#fff;font-size:14.5px;">${escapeHTML(title)}</strong>
-                    <div style="font-size:12.5px;color:var(--gold);font-weight:800;margin:4px 0 8px;">Reward: +${reward.toLocaleString()} 🪙</div>
-                    <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;max-width:320px;">
-                        <div style="background:var(--green);height:100%;width:${percent}%;"></div>
+            <div class="mission-item ${isReady ? 'ready' : ''} ${isClaimed ? 'completed' : ''}" style="background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.1);padding:14px;border-radius:12px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <div>
+                        <strong style="color:#fff;font-size:14px;">${escapeHTML(title)}</strong>
+                        <div style="font-size:12px;color:var(--muted);">${amount} / ${max}</div>
                     </div>
-                    <small style="color:var(--muted);font-size:11.5px;margin-top:4px;display:inline-block;">${amount} / ${max}</small>
+                    <span style="color:var(--gold);font-weight:900;font-size:13px;">+${reward} 🪙</span>
+                </div>
+                <div class="xp-bar" style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:10px;">
+                    <i style="width:${percent}%;display:block;height:100%;background:linear-gradient(90deg,#00f2fe,#4facfe);border-radius:3px;"></i>
                 </div>
                 <div>
-                    <button class="${isClaimed ? 'ghost-btn' : isDone ? 'primary-btn' : 'ghost-btn'}" 
-                            style="${isDone && !isClaimed ? 'background:linear-gradient(135deg, #22c55e, #15803d);font-weight:900;' : ''}"
-                            ${(!isDone || isClaimed) ? 'disabled' : ''} 
-                            onclick="claimMission(${i})">
-                        ${isClaimed ? '✓ Claimed' : isDone ? '🎁 Claim' : 'In Progress'}
-                    </button>
+                    ${isClaimed 
+                        ? `<button class="ghost-btn" disabled style="width:100%;padding:6px;font-size:12px;">✓ Completed</button>`
+                        : (isReady 
+                            ? `<button class="primary-btn" style="width:100%;padding:6px;font-size:12px;" onclick="claimMission('${currentMissionType || "daily"}', ${i})">🎁 Claim +${reward} 🪙</button>`
+                            : `<button class="ghost-btn" disabled style="width:100%;padding:6px;font-size:12px;">In Progress (${percent}%)</button>`
+                          )
+                    }
                 </div>
             </div>
         `;
     }).join("");
+
+    if (list) list.innerHTML = missionHtml;
+    if (homeList) {
+        // Daily preview on home page
+        const dailyMissions = MISSION_TEMPLATES["daily"] || [];
+        const dailyProg = (state.missionProgress && state.missionProgress["daily"]) || [];
+        const dailyClaimed = (state.missionClaimed && state.missionClaimed["daily"]) || [];
+
+        homeList.innerHTML = dailyMissions.map((m, i) => {
+            const title = m[0];
+            const max = m[1];
+            const reward = m[2];
+            const amount = Math.min(max, Number(dailyProg[i]) || 0);
+            const percent = Math.min(100, Math.round((amount / max) * 100));
+            const isClaimed = !!dailyClaimed[i];
+            const isReady = amount >= max && !isClaimed;
+
+            return `
+                <div class="mission-item ${isReady ? 'ready' : ''} ${isClaimed ? 'completed' : ''}" style="background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.1);padding:14px;border-radius:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <div>
+                            <strong style="color:#fff;font-size:13.5px;">${escapeHTML(title)}</strong>
+                            <div style="font-size:11.5px;color:var(--muted);">${amount} / ${max}</div>
+                        </div>
+                        <span style="color:var(--gold);font-weight:900;font-size:12.5px;">+${reward} 🪙</span>
+                    </div>
+                    <div class="xp-bar" style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:10px;">
+                        <i style="width:${percent}%;display:block;height:100%;background:linear-gradient(90deg,#00f2fe,#4facfe);border-radius:3px;"></i>
+                    </div>
+                    <div>
+                        ${isClaimed 
+                            ? `<button class="ghost-btn" disabled style="width:100%;padding:6px;font-size:11.5px;">✓ Completed</button>`
+                            : (isReady 
+                                ? `<button class="primary-btn" style="width:100%;padding:6px;font-size:11.5px;" onclick="claimMission('daily', ${i})">🎁 Claim +${reward} 🪙</button>`
+                                : `<button class="ghost-btn" disabled style="width:100%;padding:6px;font-size:11.5px;">In Progress (${percent}%)</button>`
+                              )
+                        }
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
 }
 
 
@@ -11077,27 +11180,25 @@ function renderPinsCollectionGrid() {
 
         if (!isOwned) {
             return `
-                <div class="pin-collection-card locked" style="border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);padding:14px;border-radius:12px;text-align:center;cursor:pointer;" onclick="inspectPin('${pin.id}')">
-                    <div class="pin-card-badge-wrap" style="width:65px;height:65px;margin:6px auto;opacity:0.25;filter:grayscale(1);">
+                <div class="pin-collection-card locked" style="border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);padding:10px 8px;border-radius:10px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;" onclick="inspectPin('${pin.id}')">
+                    <div class="pin-card-badge-wrap" style="width:44px;height:44px;margin:2px auto 6px;opacity:0.25;filter:grayscale(1);">
                         ${pin.badgeSvg}
                     </div>
-                    <div class="card-rarity-badge specialized" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:900;background:rgba(255,255,255,0.1);color:var(--muted);">LOCKED</div>
-                    <h3 style="font-size:13.5px;color:var(--muted);margin:6px 0 2px;">${pin.name}</h3>
-                    <p style="font-size:10.5px;color:#64748b;margin:4px 0 8px;min-height:28px;">${pin.obtainMethod}</p>
-                    <div style="font-size:11px;color:var(--muted);font-weight:800;">🔒 Not Owned</div>
+                    <div style="font-size:9.5px;font-weight:900;color:var(--muted);background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px;margin-bottom:4px;">SPECIALIZED</div>
+                    <h4 style="font-size:12px;color:var(--muted);margin:2px 0;line-height:1.2;min-height:26px;display:flex;align-items:center;justify-content:center;">${pin.name}</h4>
+                    <span style="font-size:10px;color:var(--muted);font-weight:700;margin-top:auto;">🔒 Locked</span>
                 </div>
             `;
         }
 
         return `
-            <div class="pin-collection-card owned" style="border:1.5px solid #ffd700;background:rgba(255,215,0,0.05);padding:14px;border-radius:12px;text-align:center;cursor:pointer;box-shadow:0 0 15px rgba(255,215,0,0.15);" onclick="inspectPin('${pin.id}')">
-                <div class="pin-card-badge-wrap" style="width:65px;height:65px;margin:6px auto;filter:drop-shadow(0 0 10px rgba(255,215,0,0.5));">
+            <div class="pin-collection-card owned" style="border:1.5px solid #ffd700;background:rgba(255,215,0,0.06);padding:10px 8px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 0 10px rgba(255,215,0,0.2);display:flex;flex-direction:column;align-items:center;" onclick="inspectPin('${pin.id}')">
+                <div class="pin-card-badge-wrap" style="width:44px;height:44px;margin:2px auto 6px;filter:drop-shadow(0 0 6px rgba(255,215,0,0.6));">
                     ${pin.badgeSvg}
                 </div>
-                <div class="card-rarity-badge specialized" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:900;background:linear-gradient(90deg,#ffd700,#ff9900);color:#000;">SPECIALIZED</div>
-                <h3 style="font-size:13.5px;color:#fff;margin:6px 0 2px;">${pin.name}</h3>
-                <p style="font-size:10.5px;color:var(--muted);margin:4px 0 8px;min-height:28px;">${pin.desc}</p>
-                <div style="font-size:11px;color:var(--gold);font-weight:800;">${isFeatured ? '★ FEATURED PIN' : isShowcased ? '📌 SHOWCASED' : '✓ UNLOCKED'}</div>
+                <div style="font-size:9.5px;font-weight:900;color:#000;background:linear-gradient(90deg,#ffd700,#ff9900);padding:1px 6px;border-radius:4px;margin-bottom:4px;">SPECIALIZED</div>
+                <h4 style="font-size:12px;color:#fff;margin:2px 0;line-height:1.2;min-height:26px;display:flex;align-items:center;justify-content:center;">${pin.name}</h4>
+                <span style="font-size:10px;color:var(--gold);font-weight:900;margin-top:auto;">${isFeatured ? '★ FEATURED' : isShowcased ? '📌 SHOWCASE' : '✓ UNLOCKED'}</span>
             </div>
         `;
     }).join("");
@@ -11163,7 +11264,7 @@ function showPinRevealModal(results) {
 
 
 /* =========================================================
-   OFFICIAL ANIME VANGUARDS SOUNDTRACK ENGINE & VAULT
+   OFFICIAL Battle SOUNDTRACK ENGINE & VAULT
    ========================================================= */
 
 const SOUNDTRACK_VALUES = {
@@ -11177,7 +11278,7 @@ const SOUNDTRACK_VALUES = {
 const SOUNDTRACK_DISCS = [
     {
         discId: "track_4",
-        name: "Wall of Resolve (Anime Vanguards OST)",
+        name: "Wall of Resolve ",
         uploader: "Erick Aleixo",
         rarity: "Secret",
         rate: "0.1%",
@@ -11188,7 +11289,7 @@ const SOUNDTRACK_DISCS = [
     },
     {
         discId: "track_5",
-        name: "Crown of the Sun (Anime Vanguards OST)",
+        name: "Crown of the Sun ",
         uploader: "Erick Aleixo",
         rarity: "Mythic",
         rate: "0.5%",
@@ -11199,7 +11300,7 @@ const SOUNDTRACK_DISCS = [
     },
     {
         discId: "track_1",
-        name: "Petals Beneath the Ice (Anime Vanguards OST)",
+        name: "Petals Beneath the Ice ",
         uploader: "Erick Aleixo",
         rarity: "Legendary",
         rate: "5.0%",
@@ -11210,7 +11311,7 @@ const SOUNDTRACK_DISCS = [
     },
     {
         discId: "track_2",
-        name: "False Heaven (Anime Vanguards OST)",
+        name: "False Heaven ",
         uploader: "Erick Aleixo",
         rarity: "Epic",
         rate: "24.4%",
@@ -11221,7 +11322,7 @@ const SOUNDTRACK_DISCS = [
     },
     {
         discId: "track_3",
-        name: "Nah I'd Win (Anime Vanguards OST)",
+        name: "Nah I'd Win ",
         uploader: "Erick Aleixo",
         rarity: "Rare",
         rate: "70.0%",
@@ -11365,8 +11466,6 @@ function openSoundtrackPack(count = 1) {
         const roll = Math.random() * 100;
         let selectedDisc = SOUNDTRACK_DISCS[4]; // Default rare 70%
         
-        // Exact 100% Probability Sum:
-        // Secret (0.1%), Mythic (0.5%), Legendary (5.0%), Epic (24.4%), Rare (70.0%)
         if (roll < 0.1) {
             selectedDisc = SOUNDTRACK_DISCS[0]; // Secret (0.1%)
         } else if (roll < 0.6) {
@@ -11396,10 +11495,7 @@ function openSoundtrackPack(count = 1) {
         };
 
         state.soundtracks.push(newInstance);
-        if (!state.equippedSoundtrack) {
-            state.equippedSoundtrack = newInstance.id;
-            activePlayingTrackId = newInstance.id;
-        }
+        // NOTE: Do NOT auto-equip or auto-play! Player equips manually from Soundtracks Vault.
 
         rolled.push({ disc: newInstance });
     }
@@ -11490,7 +11586,7 @@ function renderCollectionSoundtracks() {
             <div class="empty-state" style="grid-column:1/-1;text-align:center;padding:40px;">
                 <div style="font-size:48px;margin-bottom:12px;">💿</div>
                 <h3>Soundtracks Vault Empty</h3>
-                <p style="color:var(--muted);margin-bottom:16px;">You don't own any soundtrack discs yet. Unbox official Anime Vanguards battle music in the Pack Store!</p>
+                <p style="color:var(--muted);margin-bottom:16px;">You don't own any soundtrack discs yet. Unbox official Battle battle music in the Pack Store!</p>
                 <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="showPage('packs')">🎁 Open Soundtrack Packs (500 🪙)</button>
             </div>
         `;
@@ -11636,3 +11732,22 @@ try {
     window.switchIndexTab = switchIndexTab;
     window.renderCollectionSoundtracks = renderCollectionSoundtracks;
 } catch(e) {}
+
+
+
+function setSoundtrackVolume(val) {
+    const num = Math.max(0, Math.min(1, parseFloat(val) || 0.45));
+    bgmVolume = num;
+    if (globalAudioPlayer) {
+        globalAudioPlayer.volume = num;
+    }
+    const textEl = document.getElementById("soundtrackVolumeText");
+    if (textEl) {
+        textEl.textContent = `${Math.round(num * 100)}%`;
+    }
+    try {
+        safeStorage.setItem("football_tcg_bgm_volume", num.toString());
+    } catch(e) {}
+}
+
+window.setSoundtrackVolume = setSoundtrackVolume;
