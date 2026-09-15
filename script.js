@@ -8021,37 +8021,6 @@ async function renderLeaderboard(fetchCloud = true) {
     }
 }
 
-const MISSION_TEMPLATES = {
-    hourly: [
-        ["Open 2 scouting packs", 2, 40, "packs"],
-        ["Open 5 booster packs", 5, 100, "packs"],
-        ["Open 10 booster packs", 10, 220, "packs"],
-        ["Pull 1 Rare or better card", 1, 80, "rare"],
-        ["Pull 3 Rare or better cards", 3, 200, "rare"],
-        ["Pull 1 Epic or better card", 1, 250, "epic"],
-        ["Sell 3 duplicate cards", 3, 100, "sell"]
-    ],
-    daily: [
-        ["Open 15 booster packs", 15, 250, "packs"],
-        ["Pull 5 Rare or better cards", 5, 400, "rare"],
-        ["Pull 2 Epic or better cards", 2, 500, "epic"],
-        ["Pull 1 Legendary or better card", 1, 750, "legendary"],
-        ["Sell 10 duplicate cards", 10, 300, "sell"]
-    ],
-    weekly: [
-        ["Open 75 booster packs", 75, 2500, "packs"],
-        ["Pull 15 Epic or better cards", 15, 3500, "epic"],
-        ["Pull 6 Legendary or better cards", 6, 5000, "legendary"],
-        ["Pull 2 Mythic or Secret cards", 2, 7500, "mythic"]
-    ],
-    monthly: [
-        ["Open 350 booster packs", 350, 15000, "packs"],
-        ["Pull 30 Legendary or better cards", 30, 25000, "legendary"],
-        ["Pull 8 Mythic or Secret cards", 8, 35000, "mythic"],
-        ["Pull or Own a World Class / Secret Icon", 1, 50000, "worldclass"]
-    ]
-};
-
 function setMissionType(type) {
     currentMissionType = type;
     document.querySelectorAll(".mission-tab").forEach(tab => {
@@ -8255,7 +8224,7 @@ function addXP(amount) {
     saveGame();
 }
 
-async async function handleChangeUsername() {
+async function handleChangeUsername() {
     const newNameInput = document.getElementById("settingsNewUsernameInput");
     const passInput = document.getElementById("settingsUserPassConfirmInput");
     const newUsername = newNameInput ? newNameInput.value.trim() : "";
