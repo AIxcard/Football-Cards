@@ -808,6 +808,23 @@
         </div>
     </div>
 
+
+        <!-- 5. PINS & MEDALS CAPSULE -->
+        <article class="pack pins-capsule-pack">
+            <button class="pack-info-btn" onclick="openPackOdds('pins_capsule')" title="View Probabilities">?</button>
+            <div class="pack-ball">🎖️</div>
+            <p class="rarity legendary">CS2 PRESTIGE</p>
+            <h2>Pins &amp; Medals Capsule</h2>
+            <p>Collectible CS2 &amp; Football Medals. Common (35%) → Secret 2026 World Cup Gold Medal (0.3%).</p>
+            <div class="pack-rate">Common (35%) → Secret (0.3%)</div>
+            <div class="pack-multibuttons">
+                <button onclick="openPinsCapsule(1)">1x · 500 🪙</button>
+                <button onclick="openPinsCapsule(3)">3x · 1,500 🪙</button>
+                <button onclick="openPinsCapsule(5)">5x · 2,500 🪙</button>
+            </div>
+        </article>
+
+    </div>
 </section>
 
 
@@ -990,6 +1007,23 @@
         <!-- Dynamically populated every 5 levels -->
     </div>
 
+
+        <!-- 5. PINS & MEDALS CAPSULE -->
+        <article class="pack pins-capsule-pack">
+            <button class="pack-info-btn" onclick="openPackOdds('pins_capsule')" title="View Probabilities">?</button>
+            <div class="pack-ball">🎖️</div>
+            <p class="rarity legendary">CS2 PRESTIGE</p>
+            <h2>Pins &amp; Medals Capsule</h2>
+            <p>Collectible CS2 &amp; Football Medals. Common (35%) → Secret 2026 World Cup Gold Medal (0.3%).</p>
+            <div class="pack-rate">Common (35%) → Secret (0.3%)</div>
+            <div class="pack-multibuttons">
+                <button onclick="openPinsCapsule(1)">1x · 500 🪙</button>
+                <button onclick="openPinsCapsule(3)">3x · 1,500 🪙</button>
+                <button onclick="openPinsCapsule(5)">5x · 2,500 🪙</button>
+            </div>
+        </article>
+
+    </div>
 </section>
 
 
@@ -1065,6 +1099,7 @@
     <div id="profileHero" class="profile-hero">
         <div class="profile-glass-card">
             <div id="profileAvatarWrap" class="profile-avatar-wrapper">
+                <div id="profileFeaturedPinBadge" class="avatar-featured-pin-badge" style="display:none;" title="Featured Pin"></div>
                 <img id="profileAvatarImg" class="profile-avatar-photo" src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80" alt="Avatar" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=200&auto=format&fit=crop&q=80';">
             </div>
             <div class="profile-title-block">
@@ -1075,6 +1110,17 @@
                     <div id="profileWorldCupTrophyBadge" class="world-cup-trophy-badge" style="display:none;" title="World Cup (Season 1)">
                         <span class="wc-trophy-icon">🏆</span>
                         <span class="wc-trophy-tooltip">World Cup (Season 1)</span>
+                    </div>
+
+                    <!-- CS2 PROFILE MEDALS / PINS DISPLAY ROW -->
+                    <div class="cs2-medals-display-bar" id="profileMedalsDisplayBar">
+                        <button class="cs2-medal-nav-btn prev" id="medalsNavPrev" onclick="navigateProfilePins(-1)" title="Previous Pins">‹</button>
+                        <div class="cs2-medals-scroll-viewport" id="profileMedalsScrollViewport">
+                            <div class="cs2-medals-track" id="profileMedalsTrack">
+                                <!-- 5 Pin slots populated dynamically -->
+                            </div>
+                        </div>
+                        <button class="cs2-medal-nav-btn next" id="medalsNavNext" onclick="navigateProfilePins(1)" title="Next Pins">›</button>
                     </div>
                 </div>
                 <p style="margin-top:4px;color:#e1f0ff;font-weight:700;">Level <b id="profileLevel" style="color:var(--gold);">1</b></p>
@@ -1114,6 +1160,22 @@
             </div>
         </div>
         <div id="titleList" class="title-list"></div>
+    </div>
+
+    
+    <!-- CS2 PINS & MEDALS COLLECTION PANEL -->
+    <div class="panel" id="pinsCollectionPanel">
+        <div class="section-head" style="margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div>
+                <p class="eyebrow">PRESTIGE SHOWCASE</p>
+                <h2>🎖️ Collectible Medals &amp; Pins</h2>
+                <p>Equip medals to your CS2 showcase row &amp; pin your favorite badge directly to your avatar.</p>
+            </div>
+            <button class="primary-btn" style="width:auto;padding:10px 20px;" onclick="openPinsCapsule(1)">🎁 Open Pins Capsule (500 🪙)</button>
+        </div>
+        <div id="pinsCollectionGrid" class="pins-collection-grid">
+            <!-- Rendered dynamically -->
+        </div>
     </div>
 
     <!-- CUSTOMIZATION CONTROLS -->
@@ -2399,5 +2461,38 @@
 </div>
 
 <script src="script.js?v=4001.0"></script>
+
+<!-- PIN INSPECT MODAL -->
+<div id="pinInspectModal" class="modal-backdrop hidden" onclick="if(event.target===this)closePinModal()">
+    <div class="pin-inspect-modal-box">
+        <div class="pin-inspect-badge-large" id="inspectPinBadgeSlot"></div>
+        <h2 id="inspectPinName" style="color:#ffffff;margin:10px 0 4px;font-size:24px;">Medal Name</h2>
+        <span id="inspectPinRarity" style="font-weight:900;font-size:13px;letter-spacing:1px;">LEGENDARY</span>
+        <p id="inspectPinDesc" style="color:var(--muted);margin:14px 0 20px;font-size:13.5px;line-height:1.5;"></p>
+        <div id="inspectPinActions" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+</div>
+
+<!-- PIN REVEAL MODAL -->
+<div id="pinRevealModal" class="modal-backdrop hidden" onclick="if(event.target===this)closePinModal()">
+    <div class="pin-reveal-modal-box">
+        <span class="draft-badge" style="background:var(--gold);color:#000;">🎖️ PINS CAPSULE UNBOXED!</span>
+        <h2 style="color:var(--gold);margin:12px 0 16px;font-size:24px;">COLLECTIBLE PINS REVEALED</h2>
+        <div id="pinRevealCards" class="pin-reveal-grid"></div>
+        <button class="primary-btn" style="margin-top:20px;width:100%;max-width:280px;" onclick="closePinModal()">DONE</button>
+    </div>
+</div>
+
+<!-- ANIME VANGUARDS BGM WIDGET -->
+<div class="anime-bgm-floating-bar" id="animeBgmBar">
+    <button class="bgm-ctrl-btn" id="animeBgmToggleBtn" onclick="toggleAnimeBgm()">🎵 Anime OST</button>
+    <div class="bgm-track-info" onclick="nextAnimeBgmTrack()" title="Click to Skip Track">
+        <span class="bgm-pulse-dot"></span>
+        <span id="animeBgmTrackName">⚡ Vanguards Ignition</span>
+    </div>
+    <button class="bgm-ctrl-btn" onclick="nextAnimeBgmTrack()" title="Next Track">⏭️</button>
+    <button class="bgm-ctrl-btn" onclick="shuffleAnimeBgm()" title="Shuffle">🔀</button>
+</div>
+
 </body>
 </html>
