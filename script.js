@@ -1274,6 +1274,13 @@ function freshState() {
         dailyRewardClaimed: 0,
         freeKickClaimed: 0,
         worldClassPending: null,
+        soundtracks: [],
+        equippedSoundtrack: null,
+        soundtrackShuffle: false,
+        ownedPins: [],
+        showcasePins: [],
+        featuredPin: null,
+        tournamentAttempts: 5,
         redeemedCodes: [],
         blockedUsers: [],
         lastSave: Date.now()
@@ -1341,6 +1348,13 @@ function loadGame() {
             equippedTitle: finalTitle,
             showcase: Array.isArray(saved.showcase) && saved.showcase.length === 6 ? saved.showcase : [null, null, null, null, null, null],
             cards: loadedCards,
+            soundtracks: Array.isArray(saved.soundtracks) ? saved.soundtracks : [],
+            equippedSoundtrack: saved.equippedSoundtrack || null,
+            soundtrackShuffle: !!saved.soundtrackShuffle,
+            ownedPins: Array.isArray(saved.ownedPins) ? saved.ownedPins : [],
+            showcasePins: Array.isArray(saved.showcasePins) ? saved.showcasePins : [],
+            featuredPin: saved.featuredPin || null,
+            tournamentAttempts: saved.tournamentAttempts !== undefined ? Number(saved.tournamentAttempts) : (saved.stats && saved.stats.tournamentAttempts !== undefined ? Number(saved.stats.tournamentAttempts) : 5),
             unlockedCardNames: Array.isArray(saved.unlockedCardNames) ? saved.unlockedCardNames : [],
             claimedIndexRewards: Array.isArray(saved.claimedIndexRewards) ? saved.claimedIndexRewards : [],
             autoSellDuplicates: !!saved.autoSellDuplicates,
@@ -10885,6 +10899,17 @@ const PINS_DEF = [
         icon: "🏆",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinGoldGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a"/><stop offset="40%" stop-color="#eab308"/><stop offset="100%" stop-color="#713f12"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad2)" stroke="#ffffff" stroke-width="4"/><circle cx="50" cy="50" r="36" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2.5"/><text x="50" y="46" font-size="18" text-anchor="middle">🏆</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">WORLD CUP</text></svg>`,
         desc: "The ultimate crown of global football dominance. Awarded to world tournament champions.",
+        obtainMethod: "Awarded exclusively to the #1 Champion of the Tournament Arena.",
+        isTournamentExclusive: true
+    },
+    {
+        id: "pin_golden_whistle",
+        name: "Golden Whistle Referee Crest",
+        rarity: "Specialized",
+        color: "#ffd700",
+        icon: "🎖️",
+        badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinWhistleGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fff8db"/><stop offset="50%" stop-color="#ffd700"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinWhistleGrad)" stroke="#ffffff" stroke-width="3.5"/><circle cx="50" cy="50" r="34" fill="#0f172a" stroke="#ffd700" stroke-width="2"/><text x="50" y="48" font-size="20" text-anchor="middle">🎖️</text><text x="50" y="68" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">WHISTLE</text></svg>`,
+        desc: "Iconic golden whistle recognizing absolute pitch authority, fairness, and football dominance.",
         obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
@@ -11017,7 +11042,7 @@ function renderProfilePins() {
             state.featuredPin = state.ownedPins[0];
         }
 
-        // 1. Render Featured Pin on Profile Avatar
+        // 1. Featured Pin on Profile Avatar
         if (featuredBadge) {
             const featPin = PINS_DEF.find(p => p.id === state.featuredPin);
             if (featPin && state.ownedPins.includes(featPin.id)) {
@@ -11029,32 +11054,28 @@ function renderProfilePins() {
             }
         }
 
-        // 2. Render ALL 12 Medals in the Profile Showcase / Track
+        // 2. Top Profile Showcase Track (ONLY OWNED MEDALS, COMPACT)
         if (track) {
-            track.innerHTML = PINS_DEF.map(pin => {
-                const isOwned = state.ownedPins.includes(pin.id);
-                const isFeatured = state.featuredPin === pin.id;
-
-                if (!isOwned) {
-                    return `
-                        <div class="medal-slot locked" onclick="inspectPin('${pin.id}')" title="${pin.name} (🔒 Locked - Unbox from Pins Capsule)">
-                            <div class="medal-svg-wrap" style="opacity:0.25;filter:grayscale(1);transform:scale(0.85);">
-                                ${pin.badgeSvg}
-                            </div>
-                            <span class="medal-lock-tag" style="font-size:9px;color:var(--muted);margin-top:2px;">🔒 Locked</span>
-                        </div>
-                    `;
-                }
-
-                return `
-                    <div class="medal-slot ${isFeatured ? 'featured' : ''}" onclick="inspectPin('${pin.id}')" title="${pin.name} (Specialized Medal)">
-                        <div class="medal-svg-wrap">
-                            ${pin.badgeSvg}
-                        </div>
-                        ${isFeatured ? '<span class="featured-indicator">★</span>' : ''}
+            const owned = PINS_DEF.filter(p => state.ownedPins.includes(p.id));
+            if (owned.length === 0) {
+                track.innerHTML = `
+                    <div style="color:var(--muted);font-size:12px;padding:8px 12px;display:flex;align-items:center;gap:6px;">
+                        <span>🔒</span> No medals equipped yet · Unbox from Pins &amp; Medals Capsule
                     </div>
                 `;
-            }).join("");
+            } else {
+                track.innerHTML = owned.map(pin => {
+                    const isFeatured = state.featuredPin === pin.id;
+                    return `
+                        <div class="medal-slot ${isFeatured ? 'featured' : ''}" onclick="inspectPin('${pin.id}')" title="${pin.name}" style="width:42px;height:42px;min-width:42px;cursor:pointer;">
+                            <div class="medal-svg-wrap" style="width:100%;height:100%;">
+                                ${pin.badgeSvg}
+                            </div>
+                            ${isFeatured ? '<span class="featured-indicator" style="font-size:10px;">★</span>' : ''}
+                        </div>
+                    `;
+                }).join("");
+            }
         }
 
         renderPinsCollectionGrid();
@@ -11220,10 +11241,12 @@ function openPinsCapsule(count = 1) {
     if (!Array.isArray(state.ownedPins)) state.ownedPins = [];
     if (!Array.isArray(state.showcasePins)) state.showcasePins = [];
 
+    // Filter capsule pool to the 12 non-tournament medals
+    const capsulePool = PINS_DEF.filter(p => !p.isTournamentExclusive);
+
     const rolled = [];
     for (let i = 0; i < pullCount; i++) {
-        // Equal chance across all 12 pins (1 / 12 = 8.33% each)
-        const pin = PINS_DEF[Math.floor(Math.random() * PINS_DEF.length)];
+        const pin = capsulePool[Math.floor(Math.random() * capsulePool.length)];
         const isDupe = state.ownedPins.includes(pin.id);
 
         if (!isDupe) {
@@ -11239,7 +11262,11 @@ function openPinsCapsule(count = 1) {
 
     saveGame();
     renderProfilePins();
-    showPinRevealModal(rolled);
+
+    // Show 3D Gachapon Capsule in Opening Stage
+    showCustomItemOpeningStage("capsule", pullCount, () => {
+        showPinRevealModal(rolled);
+    });
 }
 
 function showPinRevealModal(results) {
@@ -11495,14 +11522,16 @@ function openSoundtrackPack(count = 1) {
         };
 
         state.soundtracks.push(newInstance);
-        // NOTE: Do NOT auto-equip or auto-play! Player equips manually from Soundtracks Vault.
-
         rolled.push({ disc: newInstance });
     }
 
     saveGame();
     renderCollectionSoundtracks();
-    showSoundtrackRevealModal(rolled);
+
+    // Show 3D Spinning Iridescent Disc in Opening Stage
+    showCustomItemOpeningStage("soundtrack", pullCount, () => {
+        showSoundtrackRevealModal(rolled);
+    });
 }
 
 function showSoundtrackRevealModal(results) {
@@ -11751,3 +11780,74 @@ function setSoundtrackVolume(val) {
 }
 
 window.setSoundtrackVolume = setSoundtrackVolume;
+
+
+
+function showCustomItemOpeningStage(type, count, onComplete) {
+    const overlay = document.getElementById("packOpeningOverlay");
+    const stage = document.getElementById("packsDisplayStage");
+    if (!overlay || !stage) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    packTornExecuted = false;
+
+    if (type === "soundtrack") {
+        stage.innerHTML = `
+            <div class="soundtrack-opening-stage" id="customOpeningItem" onclick="executeCustomItemCrack()">
+                <div class="soundtrack-3d-disc">
+                    <div class="disc-spindle-outer">
+                        <div class="disc-spindle-inner"></div>
+                    </div>
+                </div>
+                <div style="margin-top:24px;text-align:center;">
+                    <span class="draft-badge" style="background:#00f2fe;color:#000;font-weight:900;font-size:12px;">💿 SOUNDTRACK DISC</span>
+                    <p style="color:#fff;font-weight:800;font-size:14px;margin:8px 0 0;">👉 TAP DISC TO PLAY &amp; UNBOX (${count}x)</p>
+                </div>
+            </div>
+        `;
+    } else {
+        stage.innerHTML = `
+            <div class="capsule-opening-stage" id="customOpeningItem" onclick="executeCustomItemCrack()">
+                <div class="gachapon-3d-capsule">
+                    <div class="capsule-top-dome">
+                        <div class="capsule-inside-glow">🎖️</div>
+                    </div>
+                    <div class="capsule-bottom-cup">
+                        <div class="capsule-rim"></div>
+                        <div class="capsule-keyhole"></div>
+                    </div>
+                </div>
+                <div style="margin-top:20px;text-align:center;">
+                    <span class="draft-badge" style="background:#ffd700;color:#000;font-weight:900;font-size:12px;">🎖️ SPECIALIZED CAPSULE</span>
+                    <p style="color:#fff;font-weight:800;font-size:14px;margin:8px 0 0;">👉 TAP CAPSULE TO CRACK OPEN (${count}x)</p>
+                </div>
+            </div>
+        `;
+    }
+
+    overlay.classList.remove("hidden");
+    overlay.style.display = "flex";
+
+    window.executeCustomItemCrack = function() {
+        if (packTornExecuted) return;
+        packTornExecuted = true;
+
+        const item = document.getElementById("customOpeningItem");
+        if (item) {
+            item.classList.add("item-cracking");
+        }
+
+        if (window.SoundFx && SoundFx.packTear) SoundFx.packTear();
+        if (typeof createConfetti === "function") createConfetti();
+
+        setTimeout(() => {
+            overlay.classList.add("hidden");
+            overlay.style.display = "none";
+            if (onComplete) onComplete();
+        }, 550);
+    };
+}
+
+window.showCustomItemOpeningStage = showCustomItemOpeningStage;
