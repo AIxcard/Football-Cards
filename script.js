@@ -990,7 +990,7 @@ const TITLES = [
     id: "top10",
     name: "World Cup Finalist",
     cssClass: "title-top10",
-    requirement: "Awarded to Top 5 / Top 10 World Cup Tournament Finishers",
+    requirement: "Awarded to Top 5 World Cup Tournament Finishers",
     unlock: () => {
         try {
             return (state.grantedTitles || []).includes("World Cup Finalist") || (state.grantedTitles || []).includes("Tournament Top 10");
@@ -8020,67 +8020,79 @@ async function renderLeaderboard(fetchCloud = true) {
     }
 }
 
-const MISSIONS_DEF = {
+const MISSION_TEMPLATES = {
     hourly: [
-        { desc: "Open 3 Scouting Packs", target: 3, type: "packs", reward: 250 },
-        { desc: "Earn 1,000 Coins", target: 1000, type: "coins", reward: 300 },
-        { desc: "Sell 2 Duplicate Cards", target: 2, type: "sell", reward: 200 }
+        ["Open 2 scouting packs", 2, 40, "packs"],
+        ["Open 5 booster packs", 5, 100, "packs"],
+        ["Open 10 booster packs", 10, 220, "packs"],
+        ["Pull 1 Rare or better card", 1, 80, "rare"],
+        ["Pull 3 Rare or better cards", 3, 200, "rare"],
+        ["Pull 1 Epic or better card", 1, 250, "epic"],
+        ["Sell 3 duplicate cards", 3, 100, "sell"]
     ],
     daily: [
-        { desc: "Open 15 Scouting Packs", target: 15, type: "packs", reward: 1500 },
-        { desc: "Pull a Rare or higher card", target: 1, type: "rare_pull", reward: 2000 },
-        { desc: "Win 2 Tournament Clashes", target: 2, type: "tournament_win", reward: 2500 }
+        ["Open 15 booster packs", 15, 250, "packs"],
+        ["Pull 5 Rare or better cards", 5, 400, "rare"],
+        ["Pull 2 Epic or better cards", 2, 500, "epic"],
+        ["Pull 1 Legendary or better card", 1, 750, "legendary"],
+        ["Sell 10 duplicate cards", 10, 300, "sell"]
     ],
     weekly: [
-        { desc: "Open 50 Scouting Packs", target: 50, type: "packs", reward: 7500 },
-        { desc: "Pull an Exclusive or higher card", target: 1, type: "exclusive_pull", reward: 10000 },
-        { desc: "Reach Tournament Stage 3", target: 1, type: "stage_3", reward: 12000 }
+        ["Open 75 booster packs", 75, 2500, "packs"],
+        ["Pull 15 Epic or better cards", 15, 3500, "epic"],
+        ["Pull 6 Legendary or better cards", 6, 5000, "legendary"],
+        ["Pull 2 Mythic or Secret cards", 2, 7500, "mythic"]
     ],
     monthly: [
-        { desc: "Open 200 Scouting Packs", target: 200, type: "packs", reward: 35000 },
-        { desc: "Obtain a Mythic or Secret card", target: 1, type: "mythic_pull", reward: 50000 },
-        { desc: "Conquer the Grand Final vs King Jeff", target: 1, type: "conquer_jeff", reward: 75000 }
+        ["Open 350 booster packs", 350, 15000, "packs"],
+        ["Pull 30 Legendary or better cards", 30, 25000, "legendary"],
+        ["Pull 8 Mythic or Secret cards", 8, 35000, "mythic"],
+        ["Pull or Own a World Class / Secret Icon", 1, 50000, "worldclass"]
     ]
 };
 
 function setMissionType(type) {
     currentMissionType = type;
-    document.querySelectorAll(".mission-tab").forEach(tab => tab.classList.remove("active"));
-    const activeTab = document.querySelector(`.mission-tab[onclick*="${type}"]`);
-    if (activeTab) activeTab.classList.add("active");
+    document.querySelectorAll(".mission-tab").forEach(tab => {
+        const onclickAttr = tab.getAttribute("onclick") || "";
+        tab.classList.toggle("active", onclickAttr.includes(type));
+    });
     renderMissions();
 }
 
 function progressMission(type, amt = 1) {
     if (!state || !state.missionProgress) return;
     ["hourly", "daily", "weekly", "monthly"].forEach(mType => {
-        const defs = MISSIONS_DEF[mType] || [];
+        const defs = MISSION_TEMPLATES[mType] || [];
         defs.forEach((def, idx) => {
-            if (def.type === type) {
-                state.missionProgress[mType] = state.missionProgress[mType] || [0, 0, 0];
+            const mTag = def[3];
+            if (mTag === type || (mTag === "cards" && (type === "packs" || type === "cards"))) {
+                state.missionProgress[mType] = state.missionProgress[mType] || [];
                 state.missionProgress[mType][idx] = (Number(state.missionProgress[mType][idx]) || 0) + amt;
             }
         });
     });
 }
 
-function claimMission(index) {
-    const defs = MISSIONS_DEF[currentMissionType] || [];
+function claimMission(index, missionType = currentMissionType) {
+    const defs = MISSION_TEMPLATES[missionType] || [];
     const mission = defs[index];
     if (!mission) return;
 
-    state.missionProgress[currentMissionType] = state.missionProgress[currentMissionType] || [0, 0, 0];
-    state.missionClaimed[currentMissionType] = state.missionClaimed[currentMissionType] || [false, false, false];
+    state.missionProgress[missionType] = state.missionProgress[missionType] || [];
+    state.missionClaimed[missionType] = state.missionClaimed[missionType] || [];
 
-    const currentProg = Number(state.missionProgress[currentMissionType][index]) || 0;
-    const isClaimed = !!state.missionClaimed[currentMissionType][index];
+    const currentProg = Number(state.missionProgress[missionType][index]) || 0;
+    const target = mission[1];
+    const reward = mission[2];
+    const isClaimed = !!state.missionClaimed[missionType][index];
 
-    if (currentProg >= mission.target && !isClaimed) {
-        state.missionClaimed[currentMissionType][index] = true;
-        addCoins(mission.reward);
-        logPlayerAudit("MISSION_CLAIM", { missionType: currentMissionType, reward: mission.reward, desc: mission.desc });
+    if (currentProg >= target && !isClaimed) {
+        state.missionClaimed[missionType][index] = true;
+        addCoins(reward);
+        logPlayerAudit("MISSION_CLAIM", { missionType, reward, desc: mission[0] });
         SoundFx.coin();
-        toast(`🎁 Claimed Mission: +${mission.reward.toLocaleString()} 🪙!`);
+        toast(`🎁 Claimed Mission: +${reward.toLocaleString()} 🪙!`);
         renderMissions();
         saveGame();
     }
@@ -8090,31 +8102,34 @@ function renderMissions() {
     const list = document.getElementById("missionList");
     if (!list) return;
 
-    const defs = MISSIONS_DEF[currentMissionType] || [];
-    const prog = (state.missionProgress && state.missionProgress[currentMissionType]) || [0, 0, 0];
-    const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType]) || [false, false, false];
+    const missions = MISSION_TEMPLATES[currentMissionType] || [];
+    const progress = (state.missionProgress && state.missionProgress[currentMissionType]) || [];
+    const claimed = (state.missionClaimed && state.missionClaimed[currentMissionType]) || [];
 
-    list.innerHTML = defs.map((m, idx) => {
-        const current = Math.min(m.target, Number(prog[idx]) || 0);
-        const isDone = current >= m.target;
-        const isClaimed = !!claimed[idx];
-        const pct = Math.min(100, Math.round((current / m.target) * 100));
+    list.innerHTML = missions.map((m, i) => {
+        const title = m[0];
+        const max = m[1];
+        const reward = m[2];
+        const amount = Math.min(max, Number(progress[i]) || 0);
+        const percent = Math.min(100, Math.round((amount / max) * 100));
+        const isDone = amount >= max;
+        const isClaimed = !!claimed[i];
 
         return `
-            <div class="panel" style="padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div class="panel" style="padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
                 <div style="flex:1;min-width:200px;">
-                    <strong style="color:#fff;font-size:14px;">${escapeHTML(m.desc)}</strong>
-                    <div style="font-size:12px;color:var(--gold);font-weight:800;margin:4px 0 8px;">Reward: ${m.reward.toLocaleString()} 🪙</div>
-                    <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;max-width:300px;">
-                        <div style="background:var(--green);height:100%;width:${pct}%;"></div>
+                    <strong style="color:#fff;font-size:14.5px;">${escapeHTML(title)}</strong>
+                    <div style="font-size:12.5px;color:var(--gold);font-weight:800;margin:4px 0 8px;">Reward: +${reward.toLocaleString()} 🪙</div>
+                    <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;max-width:320px;">
+                        <div style="background:var(--green);height:100%;width:${percent}%;"></div>
                     </div>
-                    <small style="color:var(--muted);font-size:11px;">${current} / ${m.target}</small>
+                    <small style="color:var(--muted);font-size:11.5px;margin-top:4px;display:inline-block;">${amount} / ${max}</small>
                 </div>
                 <div>
                     <button class="${isClaimed ? 'ghost-btn' : isDone ? 'primary-btn' : 'ghost-btn'}" 
                             style="${isDone && !isClaimed ? 'background:linear-gradient(135deg, #22c55e, #15803d);font-weight:900;' : ''}"
                             ${(!isDone || isClaimed) ? 'disabled' : ''} 
-                            onclick="claimMission(${idx})">
+                            onclick="claimMission(${i})">
                         ${isClaimed ? '✓ Claimed' : isDone ? '🎁 Claim' : 'In Progress'}
                     </button>
                 </div>
