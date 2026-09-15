@@ -169,8 +169,8 @@ try { PersistentStorage.init(); } catch(e) {}
         return Number(num || 0).toLocaleString();
     }
 
-    const HARD_WIPE_VERSION = "v27_clean_slate_reset";
-    const CURRENT_SAVE_KEY = "football_cards_user_save_v27_clean";
+    const HARD_WIPE_VERSION = "v30_clean_reset";
+    const CURRENT_SAVE_KEY = "football_cards_user_save_v30_clean";
     const PREVIOUS_SAVE_KEYS = [
         "footballCardsSave_v19_season1_clean",
         "footballCardsSave_v18_season_reset",
@@ -10557,11 +10557,30 @@ function checkBanStatus() {
 }
 
     async function initGame() {
-        // Clean v27 wipe check
-        if (safeStorage.getItem("football_cards_wiped_v27") !== "true") {
+        // Authoritative Global Hard Wipe v30 (Guarantees immediate 100% fresh reset on all player devices)
+        const FORCE_GLOBAL_HARD_WIPE_KEY = "football_cards_hard_reset_v30_clean";
+        if (safeStorage.getItem(FORCE_GLOBAL_HARD_WIPE_KEY) !== "true") {
             try {
+                const keysToClear = [
+                    "football_cards_user_save_master",
+                    "football_cards_user_save_v27_clean",
+                    "football_cards_user_save_v26_master",
+                    "football_cards_user_session",
+                    "football_cards_logged_in_user",
+                    "football_tcg_active_page",
+                    "football_cards_cloud_accounts",
+                    "football_cards_cloud_trades",
+                    "football_cards_wiped_v27"
+                ];
+                keysToClear.forEach(k => safeStorage.removeItem(k));
                 PREVIOUS_SAVE_KEYS.forEach(k => safeStorage.removeItem(k));
-                safeStorage.setItem("football_cards_wiped_v27", "true");
+                state = freshState();
+                state.coins = 100;
+                state.level = 1;
+                state.cards = [];
+                state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+                saveGame();
+                safeStorage.setItem(FORCE_GLOBAL_HARD_WIPE_KEY, "true");
             } catch(e) {}
         }
 
