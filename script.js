@@ -988,12 +988,12 @@ const TITLES = [
 },
 {
     id: "top10",
-    name: "Tournament Top 10",
+    name: "World Cup Finalist",
     cssClass: "title-top10",
-    requirement: "Awarded to Top 10 Tournament Finishers (Coming Soon)",
+    requirement: "Awarded to Top 5 / Top 10 World Cup Tournament Finishers",
     unlock: () => {
         try {
-            return (state.grantedTitles || []).includes("Tournament Top 10");
+            return (state.grantedTitles || []).includes("World Cup Finalist") || (state.grantedTitles || []).includes("Tournament Top 10");
         } catch (e) { return false; }
     }
 },
@@ -1523,32 +1523,25 @@ async function syncFromServer(silent = true, force = false) {
         if (serverSave && typeof serverSave === "object") {
             const serverLastSave = Number(serverSave.lastSave || 0);
             const localLastSave = Number(state.lastSave || 0);
-            const isAlucard = state.accountUser.toLowerCase() === "alucard";
-            const serverCardsCount = Array.isArray(serverSave.cards) ? serverSave.cards.length : 0;
-            const localCardsCount = Array.isArray(state.cards) ? state.cards.length : 0;
 
-            const shouldAdoptServer = force || 
-                isAlucard || 
-                serverLastSave >= localLastSave || 
-                !state.initialized || 
-                (serverCardsCount > 0 && localCardsCount === 0) ||
-                (serverCardsCount >= localCardsCount && Number(serverSave.coins || 0) >= Number(state.coins || 0));
+            // Only adopt server save if server has a genuinely newer timestamp (e.g. from another device) or forced
+            const shouldAdoptServer = force || (serverLastSave > localLastSave);
 
             if (shouldAdoptServer) {
-                const isAdmin = isAlucard || !!serverSave.isGrantedAdmin;
+                const isAdmin = (state.accountUser.toLowerCase() === "alucard") || !!serverSave.isGrantedAdmin;
                 state = {
                     ...freshState(),
                     ...serverSave,
                     accountUser: state.accountUser,
-                    name: serverSave.name || state.accountUser,
-                    coins: Number(serverSave.coins !== undefined ? serverSave.coins : 100),
-                    level: Number(serverSave.level || 1),
-                    cards: Array.isArray(serverSave.cards) ? serverSave.cards : [],
-                    equippedTitle: serverSave.equippedTitle || (isAdmin ? "UNIQUE" : "Collector"),
-                    grantedTitles: isAdmin ? (Array.isArray(serverSave.grantedTitles) && serverSave.grantedTitles.length ? serverSave.grantedTitles : ["UNIQUE", "Owner", "Admin", "Season 1 Champion"]) : (Array.isArray(serverSave.grantedTitles) ? serverSave.grantedTitles : []),
+                    name: serverSave.name || state.name || state.accountUser,
+                    coins: Number(serverSave.coins !== undefined ? serverSave.coins : (state.coins || 100)),
+                    level: Number(serverSave.level || state.level || 1),
+                    cards: Array.isArray(serverSave.cards) ? serverSave.cards : (state.cards || []),
+                    equippedTitle: serverSave.equippedTitle || state.equippedTitle || "Collector",
+                    grantedTitles: Array.isArray(serverSave.grantedTitles) && serverSave.grantedTitles.length ? serverSave.grantedTitles : (state.grantedTitles || []),
                     isGrantedAdmin: isAdmin,
-                    profileFrame: serverSave.profileFrame || "default",
-                    profileBackground: serverSave.profileBackground || "campnou",
+                    profileFrame: serverSave.profileFrame || state.profileFrame || "default",
+                    profileBackground: serverSave.profileBackground || state.profileBackground || "campnou",
                     lastSave: Math.max(serverLastSave, localLastSave, Date.now()),
                     initialized: true
                 };
@@ -1560,6 +1553,9 @@ async function syncFromServer(silent = true, force = false) {
                 updateAuthUI();
                 checkAdminStatus();
                 if (!silent) toast("☁️ Synced latest progress from server cloud!");
+            } else if (localLastSave >= serverLastSave && state.accountUser && state.accountUser.toLowerCase() !== "guest") {
+                // Local state is up to date or newer -> ensure server database is synced with local state
+                ServerAPI.saveGame(state.accountUser, state);
             }
         }
     } catch(e) {
@@ -4004,9 +4000,12 @@ function open3DCard(identifier, isFromIndex = false) {
     const rBadge = document.getElementById("card3DRarity");
     const badgeWrap = document.getElementById("card3DBadgeWrap");
 
+    const isShiny = !!player.shiny || (player.player === "Shiny Emanuel") || (player.name === "Shiny Emanuel") || (cardObj && cardObj.shiny);
     if (badgeWrap) {
         if (!isFromIndex && cardObj && cardObj.serialNumber) {
             badgeWrap.innerHTML = `<span class="serial-badge" style="background:${cardObj.serialGradient}">★ SERIAL #${cardObj.serialNumber}/10 ★</span>`;
+        } else if (isShiny) {
+            badgeWrap.innerHTML = `<span class="shiny-badge">✨ SHINY ✨</span>`;
         } else {
             badgeWrap.innerHTML = "";
         }
@@ -4015,7 +4014,9 @@ function open3DCard(identifier, isFromIndex = false) {
     const rClass = rarityClassName(player.rarity);
     let themeClass = `theme-${rClass}`;
     const pName = player.player || player.name;
-    if (player.rarity === "World Class") {
+    if (isShiny) {
+        themeClass = "theme-shiny-emanuel is-shiny";
+    } else if (player.rarity === "World Class") {
         if (pName === "Lionel Messi") themeClass = "theme-messi";
         else if (pName === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
         else themeClass = "theme-worldclass";
@@ -4030,12 +4031,12 @@ function open3DCard(identifier, isFromIndex = false) {
         const hasCustomGrad = !isFromIndex && cardObj && cardObj.serialGradient && !["Lionel Messi", "Cristiano Ronaldo", "Monkey King", "Emanuel", "Shiny Emanuel"].includes(pName);
 
         if (hasCustomGrad) {
-            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass} ${isSerializedCard ? 'is-serialized' : ''}`;
+            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass} ${isSerializedCard ? 'is-serialized' : ''} ${isShiny ? 'is-shiny' : ''}`;
             cardEl.style.background = cardObj.serialGradient;
             cardEl.style.backgroundSize = "200% 200%";
             cardEl.style.animation = "serializedHoloShift 4s ease-in-out infinite alternate";
         } else {
-            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass} ${isSerializedCard ? 'is-serialized' : ''}`;
+            cardEl.className = `card-3d-wrapper card-3d-front glow-${rClass} ${themeClass} ${isSerializedCard ? 'is-serialized' : ''} ${isShiny ? 'is-shiny' : ''}`;
             cardEl.style.background = "";
             cardEl.style.backgroundSize = "";
             cardEl.style.animation = "";
@@ -4570,7 +4571,10 @@ function renderCards() {
         }
 
         let themeClass = `theme-${rarityClassName(card.rarity)}`;
-        if (card.rarity === "World Class") {
+        const isShiny = !!card.shiny || card.player === "Shiny Emanuel" || (card.name === "Shiny Emanuel");
+        if (isShiny) {
+            themeClass = "theme-shiny-emanuel is-shiny";
+        } else if (card.rarity === "World Class") {
             if (card.player === "Lionel Messi") themeClass = "theme-messi";
             else if (card.player === "Cristiano Ronaldo") themeClass = "theme-ronaldo";
             else themeClass = "theme-worldclass";
@@ -4588,8 +4592,15 @@ function renderCards() {
         const cardPos = card.pos || card.position || (PLAYERS.find(p => p.name === card.player)?.pos) || "ST";
         const customStyle = card.serialGradient ? `style="background:${card.serialGradient} !important; background-size:200% 200% !important; animation:serializedHoloShift 4s ease-in-out infinite alternate !important;"` : "";
 
+        let serialOrShinySlot = `<span class="serial-placeholder"></span>`;
+        if (card.serialNumber) {
+            serialOrShinySlot = `<span class="serial-badge">★ SERIAL #${card.serialNumber}/10 ★</span>`;
+        } else if (isShiny) {
+            serialOrShinySlot = `<span class="shiny-badge">✨ SHINY ✨</span>`;
+        }
+
         return `
-        <article class="card ${frame.css} ${themeClass} ${card.serialNumber ? 'is-serialized' : ''} ${isSelected ? 'selected-for-bulk' : ''}" ${customStyle} onclick="handleCardClick('${card.id}', event)">
+        <article class="card ${frame.css} ${themeClass} ${card.serialNumber ? 'is-serialized' : ''} ${isShiny ? 'is-shiny' : ''} ${isSelected ? 'selected-for-bulk' : ''}" ${customStyle} onclick="handleCardClick('${card.id}', event)">
             ${multiSellMode ? `<input type="checkbox" class="card-select-checkbox" ${isSelected ? 'checked' : ''} onclick="toggleCardSelection('${card.id}', event)">` : ""}
 
             <div class="card-top-row">
@@ -4599,7 +4610,7 @@ function renderCards() {
             </div>
 
             <div class="card-serial-slot">
-                ${card.serialNumber ? `<span class="serial-badge">★ SERIAL #${card.serialNumber}/10 ★</span>` : `<span class="serial-placeholder"></span>`}
+                ${serialOrShinySlot}
             </div>
 
             <div class="card-image-wrap">
@@ -10282,28 +10293,18 @@ function checkBanStatus() {
         try { init3DInspector(); } catch(e) {}
         try { checkName(); } catch(e) {}
 
-        // Global Clean Season 1 Launch Reset
-        const GLOBAL_SEASON_RESET_KEY = "football_cards_official_season1_launch_v25";
-        if (safeStorage.getItem(GLOBAL_SEASON_RESET_KEY) !== "true") {
-            safeStorage.setItem(GLOBAL_SEASON_RESET_KEY, "true");
-            const savedUser = safeStorage.getItem("football_cards_user_session") || safeStorage.getItem("football_cards_logged_in_user") || state.accountUser;
-            if (savedUser && savedUser.toLowerCase() === "alucard") {
-                state.accountUser = "Alucard";
-                state.name = "Alucard";
-                state.isGrantedAdmin = true;
-                state.equippedTitle = "UNIQUE";
-            }
-        }
-
         // 1. Instant Multi-Store Session Restore
-        const rememberedUser = safeStorage.getItem("football_cards_user_session") || safeStorage.getItem("football_cards_logged_in_user") || state.accountUser || "Alucard";
+        const rememberedUser = safeStorage.getItem("football_cards_user_session") || safeStorage.getItem("football_cards_logged_in_user") || state.accountUser;
         if (rememberedUser && rememberedUser.toLowerCase() !== "guest") {
             state.accountUser = rememberedUser;
-            state.name = rememberedUser;
+            if (!state.name || state.name === "Guest" || state.name === "Football Player") {
+                state.name = rememberedUser;
+            }
             if (rememberedUser.toLowerCase() === "alucard") {
                 state.isGrantedAdmin = true;
-                state.grantedTitles = ["UNIQUE", "Owner", "Admin", "Season 1 Champion"];
-                if (!state.equippedTitle || state.equippedTitle === "Collector") state.equippedTitle = "UNIQUE";
+                if (!state.grantedTitles || !state.grantedTitles.includes("UNIQUE")) {
+                    state.grantedTitles = Array.from(new Set([...(state.grantedTitles || []), "UNIQUE", "Owner", "Admin"]));
+                }
             }
         }
 
