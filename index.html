@@ -809,20 +809,37 @@
     </div>
 
 
+        
         <!-- 5. PINS & MEDALS CAPSULE -->
         <article class="pack pins-capsule-pack">
             <button class="pack-info-btn" onclick="openPackOdds('pins_capsule')" title="View Probabilities">?</button>
             <div class="pack-ball">🎖️</div>
-            <p class="rarity legendary">CS2 PRESTIGE</p>
+            <p class="rarity legendary">TROPHY COLLECTION</p>
             <h2>Pins &amp; Medals Capsule</h2>
-            <p>Collectible CS2 &amp; Football Medals. Common (35%) → Secret 2026 World Cup Gold Medal (0.3%).</p>
-            <div class="pack-rate">Common (35%) → Secret (0.3%)</div>
+            <p>Collectible World Cup, Champions &amp; Ballon d'Or Medals. Equip directly to your Profile showcase.</p>
+            <div class="pack-rate">Common (35%) → Secret World Cup (0.6%)</div>
             <div class="pack-multibuttons">
                 <button onclick="openPinsCapsule(1)">1x · 500 🪙</button>
                 <button onclick="openPinsCapsule(3)">3x · 1,500 🪙</button>
                 <button onclick="openPinsCapsule(5)">5x · 2,500 🪙</button>
             </div>
         </article>
+
+        <!-- 6. ANIME VANGUARDS SOUNDTRACK PACK -->
+        <article class="pack soundtrack-disc-pack">
+            <button class="pack-info-btn" onclick="toast('Soundtrack Discs: Collect Official Anime Vanguards Battle OSTs with direct Spotify & YouTube links!')" title="View Info">?</button>
+            <div class="pack-ball">💿</div>
+            <p class="rarity mythic">ANIME VANGUARDS OST</p>
+            <h2>Battle Soundtrack Pack</h2>
+            <p>Unlock official Anime Vanguards battle music discs with high-energy in-game synth audio + Spotify / YouTube links.</p>
+            <div class="pack-rate">Epic (40%) → Secret King of Curses (10%)</div>
+            <div class="pack-multibuttons">
+                <button onclick="openSoundtrackPack(1)">1x · 150 🪙</button>
+                <button onclick="openSoundtrackPack(3)">3x · 450 🪙</button>
+                <button onclick="openSoundtrackPack(5)">5x · 750 🪙</button>
+            </div>
+        </article>
+
 
     </div>
 </section>
@@ -1112,15 +1129,15 @@
                         <span class="wc-trophy-tooltip">World Cup (Season 1)</span>
                     </div>
 
-                    <!-- CS2 PROFILE MEDALS / PINS DISPLAY ROW -->
-                    <div class="cs2-medals-display-bar" id="profileMedalsDisplayBar">
-                        <button class="cs2-medal-nav-btn prev" id="medalsNavPrev" onclick="navigateProfilePins(-1)" title="Previous Pins">‹</button>
-                        <div class="cs2-medals-scroll-viewport" id="profileMedalsScrollViewport">
-                            <div class="cs2-medals-track" id="profileMedalsTrack">
+                    <!-- FOOTBALL PROFILE MEDALS DISPLAY ROW -->
+                    <div class="football-medals-display-bar" id="profileMedalsDisplayBar">
+                        <button class="football-medal-nav-btn prev" id="medalsNavPrev" onclick="navigateProfilePins(-1)" title="Previous Pins">‹</button>
+                        <div class="football-medals-scroll-viewport" id="profileMedalsScrollViewport">
+                            <div class="football-medals-track" id="profileMedalsTrack">
                                 <!-- 5 Pin slots populated dynamically -->
                             </div>
                         </div>
-                        <button class="cs2-medal-nav-btn next" id="medalsNavNext" onclick="navigateProfilePins(1)" title="Next Pins">›</button>
+                        <button class="football-medal-nav-btn next" id="medalsNavNext" onclick="navigateProfilePins(1)" title="Next Pins">›</button>
                     </div>
                 </div>
                 <p style="margin-top:4px;color:#e1f0ff;font-weight:700;">Level <b id="profileLevel" style="color:var(--gold);">1</b></p>
@@ -1171,7 +1188,7 @@
                 <h2>🎖️ Collectible Medals &amp; Pins</h2>
                 <p>Equip medals to your CS2 showcase row &amp; pin your favorite badge directly to your avatar.</p>
             </div>
-            <button class="primary-btn" style="width:auto;padding:10px 20px;" onclick="openPinsCapsule(1)">🎁 Open Pins Capsule (500 🪙)</button>
+            
         </div>
         <div id="pinsCollectionGrid" class="pins-collection-grid">
             <!-- Rendered dynamically -->
@@ -2462,15 +2479,25 @@
 
 <script src="script.js?v=4001.0"></script>
 
+
 <!-- PIN INSPECT MODAL -->
-<div id="pinInspectModal" class="modal-backdrop hidden" onclick="if(event.target===this)closePinModal()">
+<div id="pinInspectModal" class="modal-backdrop hidden" style="display:none; z-index:9999999 !important;" onclick="if(event.target===this)closePinModal()">
     <div class="pin-inspect-modal-box">
         <div class="pin-inspect-badge-large" id="inspectPinBadgeSlot"></div>
         <h2 id="inspectPinName" style="color:#ffffff;margin:10px 0 4px;font-size:24px;">Medal Name</h2>
         <span id="inspectPinRarity" style="font-weight:900;font-size:13px;letter-spacing:1px;">LEGENDARY</span>
-        <p id="inspectPinDesc" style="color:var(--muted);margin:14px 0 20px;font-size:13.5px;line-height:1.5;"></p>
+        <p id="inspectPinDesc" style="color:var(--muted);margin:12px 0 16px;font-size:13px;line-height:1.5;"></p>
+        
+        <!-- HOW TO OBTAIN BOX -->
+        <div class="pin-obtain-box" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.3);border-radius:12px;padding:10px 14px;margin-bottom:16px;text-align:left;">
+            <span style="font-size:10px;font-weight:900;color:var(--gold);letter-spacing:1px;display:block;margin-bottom:3px;">🏆 HOW TO OBTAIN:</span>
+            <span id="inspectPinObtainText" style="font-size:12px;color:#ffffff;font-weight:600;line-height:1.4;">Unbox from Pins & Medals Capsule in Pack Store.</span>
+        </div>
+
         <div id="inspectPinActions" style="display:flex;flex-direction:column;gap:10px;"></div>
     </div>
+</div>
+
 </div>
 
 <!-- PIN REVEAL MODAL -->
