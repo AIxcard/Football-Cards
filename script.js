@@ -11086,237 +11086,190 @@ function showPinRevealModal(results) {
     if (window.SoundFx && SoundFx.reveal) SoundFx.reveal();
 }
 
+
 /* =========================================================
-   ANIME VANGUARDS BATTLE SOUNDTRACK ENGINE (PROCEDURAL SYNTH)
+   OFFICIAL ANIME VANGUARDS SOUNDTRACK AUDIO PLAYER ENGINE
    ========================================================= */
 
-const ANIME_SOUNDTRACKS = [
-    { id: "vanguards_ignition", name: "⚡ Vanguards Ignition", bpm: 142, rootFreq: 130.81, scale: [0, 3, 5, 7, 10, 12, 15] },
-    { id: "shinjuku_showdown", name: "🔥 Shinjuku Showdown", bpm: 148, rootFreq: 146.83, scale: [0, 2, 3, 7, 8, 12, 14] },
-    { id: "domain_synth", name: "🌌 Domain Expansion Synth", bpm: 136, rootFreq: 110.00, scale: [0, 3, 7, 10, 12, 15, 19] },
-    { id: "monarchs_wrath", name: "⚔️ Monarch's Wrath", bpm: 140, rootFreq: 123.47, scale: [0, 2, 5, 7, 9, 12, 14] },
-    { id: "king_of_curses", name: "👑 King of Curses", bpm: 150, rootFreq: 98.00, scale: [0, 1, 5, 7, 8, 12, 13] }
+const SOUNDTRACK_DISCS = [
+    {
+        id: "track_4",
+        name: "Wall of Resolve (Anime Vanguards OST)",
+        uploader: "Erick Aleixo",
+        rarity: "Secret",
+        rate: "0.1%",
+        color: "#00f2fe",
+        audioSrc: "audio/track_4.mp3",
+        youtube: "https://www.youtube.com/watch?v=MVYJ9wRukVA",
+        desc: "★ SECRET 0.1% DROP ★ Epic orchestral battle anthem featuring thunderous percussion & heroic choir."
+    },
+    {
+        id: "track_5",
+        name: "Crown of the Sun (Anime Vanguards OST)",
+        uploader: "Erick Aleixo",
+        rarity: "Mythic",
+        rate: "0.5%",
+        color: "#ec4899",
+        audioSrc: "audio/track_5.mp3",
+        youtube: "https://www.youtube.com/watch?v=msSU1OVaLoM",
+        desc: "★ MYTHIC 0.5% DROP ★ Blistering high-energy boss battle theme with blazing synth leads."
+    },
+    {
+        id: "track_1",
+        name: "Petals Beneath the Ice (Anime Vanguards OST)",
+        uploader: "Erick Aleixo",
+        rarity: "Legendary",
+        rate: "5.0%",
+        color: "#ffd700",
+        audioSrc: "audio/track_1.mp3",
+        youtube: "https://www.youtube.com/watch?v=j1m6DVXV-as",
+        desc: "Emotional fast-paced melodic battle theme with driving rhythm."
+    },
+    {
+        id: "track_2",
+        name: "False Heaven (Anime Vanguards OST)",
+        uploader: "Erick Aleixo",
+        rarity: "Epic",
+        rate: "15.0%",
+        color: "#a855f7",
+        audioSrc: "audio/track_2.mp3",
+        youtube: "https://www.youtube.com/watch?v=yDXm4Eg6GNw",
+        desc: "Dark intense clash theme featuring cybernetic bass & syncopated synth rhythms."
+    },
+    {
+        id: "track_3",
+        name: "Nah I'd Win (Anime Vanguards OST)",
+        uploader: "Erick Aleixo",
+        rarity: "Rare",
+        rate: "30.0%",
+        color: "#3b82f6",
+        audioSrc: "audio/track_3.mp3",
+        youtube: "https://www.youtube.com/watch?v=9BmeZrWgZFk",
+        desc: "Legendary hype theme inspired by Gojo vs Sukuna showdown."
+    }
 ];
 
-let animeAudioCtx = null;
+let globalAudioPlayer = null;
 let currentBgmTrackIdx = 0;
 let isBgmPlaying = false;
-let bgmStepInterval = null;
-let currentBgmStep = 0;
-let bgmVolume = 0.35;
+let bgmVolume = 0.45;
 
-function initAnimeAudio() {
-    if (!animeAudioCtx) {
-        animeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function initAudioPlayer() {
+    if (!globalAudioPlayer) {
+        globalAudioPlayer = new Audio();
+        globalAudioPlayer.volume = bgmVolume;
+        globalAudioPlayer.addEventListener("ended", () => {
+            nextAnimeBgmTrack();
+        });
+        globalAudioPlayer.addEventListener("error", (e) => {
+            console.warn("Audio file load warning, fallback to synth", e);
+        });
     }
 }
 
-function playAnimeSynthTone(freq, duration, type = "sawtooth", gainVal = 0.15) {
-    if (!isBgmPlaying || !animeAudioCtx) return;
-    try {
-        const osc = animeAudioCtx.createOscillator();
-        const gain = animeAudioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, animeAudioCtx.currentTime);
-        gain.gain.setValueAtTime(gainVal * bgmVolume, animeAudioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, animeAudioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(animeAudioCtx.destination);
-        osc.start();
-        osc.stop(animeAudioCtx.currentTime + duration);
-    } catch(e) {}
-}
-
-function playKickDrum() {
-    if (!isBgmPlaying || !animeAudioCtx) return;
-    try {
-        const osc = animeAudioCtx.createOscillator();
-        const gain = animeAudioCtx.createGain();
-        osc.frequency.setValueAtTime(140, animeAudioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(32, animeAudioCtx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.4 * bgmVolume, animeAudioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, animeAudioCtx.currentTime + 0.12);
-        osc.connect(gain);
-        gain.connect(animeAudioCtx.destination);
-        osc.start();
-        osc.stop(animeAudioCtx.currentTime + 0.12);
-    } catch(e) {}
-}
-
-function stepBgmSequencer() {
-    if (!isBgmPlaying) return;
-    const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
-    if (!track) return;
-
-    const step = currentBgmStep % 16;
-    currentBgmStep++;
-
-    // Kick on beats 0, 4, 8, 12
-    if (step % 4 === 0) playKickDrum();
-
-    // Bassline
-    const bassNoteIdx = [0, 0, 3, 5, 0, 0, 7, 5][Math.floor(step / 2) % 8];
-    const bassFreq = track.rootFreq * Math.pow(2, (track.scale[bassNoteIdx % track.scale.length] || 0) / 12);
-    playAnimeSynthTone(bassFreq * 0.5, 0.14, "triangle", 0.3);
-
-    // High energy lead arpeggiator
-    const arpIdx = (step * 2) % track.scale.length;
-    const arpFreq = track.rootFreq * 2 * Math.pow(2, (track.scale[arpIdx] || 0) / 12);
-    if (step % 2 === 0) {
-        playAnimeSynthTone(arpFreq, 0.12, "sawtooth", 0.12);
-    } else if (step % 4 === 3) {
-        playAnimeSynthTone(arpFreq * 1.5, 0.18, "square", 0.09);
-    }
+function playTrackAtIndex(idx) {
+    initAudioPlayer();
+    currentBgmTrackIdx = idx % SOUNDTRACK_DISCS.length;
+    const track = SOUNDTRACK_DISCS[currentBgmTrackIdx];
+    
+    globalAudioPlayer.src = track.audioSrc;
+    globalAudioPlayer.volume = bgmVolume;
+    globalAudioPlayer.play().then(() => {
+        isBgmPlaying = true;
+        updateBgmUI();
+        toast(`🎵 Now Playing: ${track.name}`);
+    }).catch(err => {
+        console.log("Audio autoplay prevented, awaiting user gesture", err);
+    });
 }
 
 function toggleAnimeBgm() {
-    initAnimeAudio();
-    if (animeAudioCtx && animeAudioCtx.state === "suspended") {
-        animeAudioCtx.resume();
-    }
+    initAudioPlayer();
+    const track = SOUNDTRACK_DISCS[currentBgmTrackIdx];
 
-    isBgmPlaying = !isBgmPlaying;
-    const btn = document.getElementById("animeBgmToggleBtn");
-    const trackLabel = document.getElementById("animeBgmTrackName");
-
-    if (isBgmPlaying) {
-        if (bgmStepInterval) clearInterval(bgmStepInterval);
-        const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
-        const stepMs = (60 / track.bpm) * 250; // 16th notes
-        bgmStepInterval = setInterval(stepBgmSequencer, stepMs);
-        if (btn) btn.textContent = "⏸️ Pause OST";
-        if (trackLabel) trackLabel.textContent = track.name;
-        toast(`🎵 Playing: ${track.name}`);
+    if (!isBgmPlaying) {
+        if (!globalAudioPlayer.src || globalAudioPlayer.src === "") {
+            globalAudioPlayer.src = track.audioSrc;
+        }
+        globalAudioPlayer.play().then(() => {
+            isBgmPlaying = true;
+            updateBgmUI();
+            toast(`🎵 Playing: ${track.name}`);
+        }).catch(() => {
+            // Autoplay policy fallback
+            isBgmPlaying = true;
+            updateBgmUI();
+        });
     } else {
-        if (bgmStepInterval) clearInterval(bgmStepInterval);
-        if (btn) btn.textContent = "▶️ Play Anime OST";
+        globalAudioPlayer.pause();
+        isBgmPlaying = false;
+        updateBgmUI();
         toast("🔇 Music Paused");
     }
 }
 
 function nextAnimeBgmTrack() {
-    currentBgmTrackIdx = (currentBgmTrackIdx + 1) % ANIME_SOUNDTRACKS.length;
-    currentBgmStep = 0;
-    const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
-    const trackLabel = document.getElementById("animeBgmTrackName");
-    if (trackLabel) trackLabel.textContent = track.name;
-
-    if (isBgmPlaying) {
-        if (bgmStepInterval) clearInterval(bgmStepInterval);
-        const stepMs = (60 / track.bpm) * 250;
-        bgmStepInterval = setInterval(stepBgmSequencer, stepMs);
-        toast(`🎵 Next Track: ${track.name}`);
-    }
+    currentBgmTrackIdx = (currentBgmTrackIdx + 1) % SOUNDTRACK_DISCS.length;
+    playTrackAtIndex(currentBgmTrackIdx);
 }
 
 function shuffleAnimeBgm() {
-    currentBgmTrackIdx = Math.floor(Math.random() * ANIME_SOUNDTRACKS.length);
-    currentBgmStep = 0;
-    const track = ANIME_SOUNDTRACKS[currentBgmTrackIdx];
-    const trackLabel = document.getElementById("animeBgmTrackName");
-    if (trackLabel) trackLabel.textContent = track.name;
-
-    if (isBgmPlaying) {
-        if (bgmStepInterval) clearInterval(bgmStepInterval);
-        const stepMs = (60 / track.bpm) * 250;
-        bgmStepInterval = setInterval(stepBgmSequencer, stepMs);
-        toast(`🔀 Shuffled: ${track.name}`);
-    }
+    currentBgmTrackIdx = Math.floor(Math.random() * SOUNDTRACK_DISCS.length);
+    playTrackAtIndex(currentBgmTrackIdx);
 }
 
 function setAnimeBgmVolume(val) {
     bgmVolume = Math.max(0, Math.min(1, Number(val)));
+    if (globalAudioPlayer) globalAudioPlayer.volume = bgmVolume;
 }
 
-try { window.PINS_DEF = PINS_DEF; } catch(e) {}
-try { window.renderProfilePins = renderProfilePins; } catch(e) {}
-try { window.navigateProfilePins = navigateProfilePins; } catch(e) {}
-try { window.inspectPin = inspectPin; } catch(e) {}
-try { window.setFeaturedPin = setFeaturedPin; } catch(e) {}
-try { window.toggleShowcasePin = toggleShowcasePin; } catch(e) {}
-try { window.closePinModal = closePinModal; } catch(e) {}
-try { window.openPinsManager = openPinsManager; } catch(e) {}
-try { window.openPinsCapsule = openPinsCapsule; } catch(e) {}
-try { window.toggleAnimeBgm = toggleAnimeBgm; } catch(e) {}
-try { window.nextAnimeBgmTrack = nextAnimeBgmTrack; } catch(e) {}
-try { window.shuffleAnimeBgm = shuffleAnimeBgm; } catch(e) {}
-try { window.setAnimeBgmVolume = setAnimeBgmVolume; } catch(e) {}
+function updateBgmUI() {
+    const btn = document.getElementById("animeBgmToggleBtn");
+    const trackLabel = document.getElementById("animeBgmTrackName");
+    const track = SOUNDTRACK_DISCS[currentBgmTrackIdx];
 
-
-/* =========================================================
-   ANIME VANGUARDS SOUNDTRACK PACK & JUKEBOX ENGINE
-   ========================================================= */
-
-const SOUNDTRACK_DISCS = [
-    { 
-        id: "ost_vanguards_main", 
-        name: "Anime Vanguards — Main Theme", 
-        rarity: "Legendary", 
-        color: "#ffd700",
-        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+OST+Main+Theme",
-        spotify: "https://open.spotify.com/search/Anime%20Vanguards%20OST",
-        desc: "Official high-octane battle anthem inspired by Anime Vanguards."
-    },
-    { 
-        id: "ost_shinjuku_battle", 
-        name: "Anime Vanguards — Shinjuku Showdown", 
-        rarity: "Mythic", 
-        color: "#ec4899",
-        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Shinjuku+OST",
-        spotify: "https://open.spotify.com/search/Anime%20Vanguards%20Battle",
-        desc: "Intense synth battle track featuring relentless arpeggios and heavy bass."
-    },
-    { 
-        id: "ost_domain_expansion", 
-        name: "Anime Vanguards — Domain Expansion", 
-        rarity: "Secret", 
-        color: "#00f2fe",
-        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Domain+OST",
-        spotify: "https://open.spotify.com/search/Anime%20Vanguards%20OST",
-        desc: "Mystical dimensional electronic track with cosmic resonant sweeps."
-    },
-    { 
-        id: "ost_monarch_wrath", 
-        name: "Anime Vanguards — Monarch Awakening", 
-        rarity: "Epic", 
-        color: "#a855f7",
-        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Monarch+OST",
-        spotify: "https://open.spotify.com/search/Anime%20Vanguards",
-        desc: "Heroic ascending melody celebrating supreme shadow army monarchs."
-    },
-    { 
-        id: "ost_king_curses", 
-        name: "Anime Vanguards — King of Curses", 
-        rarity: "Secret", 
-        color: "#ff0844",
-        youtube: "https://www.youtube.com/results?search_query=Anime+Vanguards+Sukuna+OST",
-        spotify: "https://open.spotify.com/search/Anime%20Vanguards",
-        desc: "Dark apocalyptic battle march with lightning-fast sixteenth note synthesizers."
-    }
-];
+    if (btn) btn.textContent = isBgmPlaying ? "⏸️ Pause OST" : "▶️ Anime OST";
+    if (trackLabel && track) trackLabel.textContent = track.name;
+}
 
 function openSoundtrackPack(count = 1) {
     const costEach = 150;
-    const totalCost = costEach * count;
+    const pullCount = Math.max(1, Math.min(5, Number(count) || 1));
+    const totalCost = costEach * pullCount;
+
     if (Number(state.coins || 0) < totalCost) {
-        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 for ${count}x Soundtrack Pack.`);
+        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
         if (window.SoundFx && SoundFx.click) SoundFx.click();
         return;
     }
 
     if (!spendCoins(totalCost, _INTERNAL_TX_KEY)) return;
-    if (!Array.isArray(state.ownedTracks)) state.ownedTracks = ["vanguards_ignition"];
+    if (!Array.isArray(state.ownedTracks)) state.ownedTracks = ["track_3"];
 
     const rolled = [];
-    for (let i = 0; i < count; i++) {
-        const disc = SOUNDTRACK_DISCS[Math.floor(Math.random() * SOUNDTRACK_DISCS.length)];
-        const isDupe = state.ownedTracks.includes(disc.id);
-        if (!isDupe) {
-            state.ownedTracks.push(disc.id);
+    for (let i = 0; i < pullCount; i++) {
+        const roll = Math.random() * 100;
+        let selectedDisc = SOUNDTRACK_DISCS[4]; // Default rare (Nah I'd win)
+        
+        if (roll < 0.1) {
+            selectedDisc = SOUNDTRACK_DISCS[0]; // Secret: Wall of Resolve (0.1%)
+        } else if (roll < 0.6) {
+            selectedDisc = SOUNDTRACK_DISCS[1]; // Mythic: Crown of the Sun (0.5%)
+        } else if (roll < 5.6) {
+            selectedDisc = SOUNDTRACK_DISCS[2]; // Legendary: Petals Beneath the Ice (5.0%)
+        } else if (roll < 20.6) {
+            selectedDisc = SOUNDTRACK_DISCS[3]; // Epic: False Heaven (15.0%)
         } else {
-            addCoins(75, _INTERNAL_TX_KEY);
+            selectedDisc = SOUNDTRACK_DISCS[4]; // Rare: Nah I'd Win (30.0%)
         }
-        rolled.push({ disc, isDupe });
+
+        const isDupe = state.ownedTracks.includes(selectedDisc.id);
+        if (!isDupe) {
+            state.ownedTracks.push(selectedDisc.id);
+        } else {
+            addCoins(100, _INTERNAL_TX_KEY);
+        }
+        rolled.push({ disc: selectedDisc, isDupe });
     }
 
     saveGame();
@@ -11329,16 +11282,16 @@ function showSoundtrackRevealModal(results) {
     if (!modal || !container) return;
 
     container.innerHTML = results.map(r => `
-        <div class="pin-reveal-item" style="border-color:${r.disc.color};">
-            <div style="font-size:42px;margin:8px 0;">💿</div>
+        <div class="pin-reveal-item" style="border-color:${r.disc.color}; min-width:220px;">
+            <div style="font-size:44px;margin:8px 0;filter:drop-shadow(0 0 15px ${r.disc.color});">💿</div>
             <h3 style="color:#fff;margin:6px 0 4px;font-size:16px;">${r.disc.name}</h3>
-            <span style="color:${r.disc.color};font-weight:900;font-size:12px;">${r.disc.rarity.toUpperCase()}</span>
-            <p style="color:var(--muted);font-size:11.5px;margin:6px 0;">${r.disc.desc}</p>
-            <div style="display:flex;gap:6px;justify-content:center;margin-top:8px;">
-                <a href="${r.disc.youtube}" target="_blank" class="ghost-btn" style="padding:4px 10px;font-size:11px;text-decoration:none;display:inline-block;">▶️ YouTube</a>
-                <a href="${r.disc.spotify}" target="_blank" class="ghost-btn" style="padding:4px 10px;font-size:11px;text-decoration:none;display:inline-block;">🎧 Spotify</a>
+            <span style="color:${r.disc.color};font-weight:900;font-size:12px;letter-spacing:1px;">${r.disc.rarity.toUpperCase()} (${r.disc.rate})</span>
+            <p style="color:var(--muted);font-size:11.5px;margin:6px 0;line-height:1.4;">${r.disc.desc}</p>
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
+                <button class="primary-btn" style="padding:6px 12px;font-size:11px;" onclick="playTrackAtIndex(${SOUNDTRACK_DISCS.findIndex(d => d.id === r.disc.id)})">▶ Play Track</button>
+                <a href="${r.disc.youtube}" target="_blank" class="ghost-btn" style="padding:6px 12px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;">▶ YouTube</a>
             </div>
-            ${r.isDupe ? '<div class="dupe-refund-badge">Duplicate! +75 🪙 Cashback</div>' : '<div class="new-pin-badge">✨ NEW SOUNDTRACK UNLOCKED! ✨</div>'}
+            ${r.isDupe ? '<div class="dupe-refund-badge">Duplicate! +100 🪙 Cashback</div>' : '<div class="new-pin-badge">✨ NEW SOUNDTRACK DISC UNLOCKED! ✨</div>'}
         </div>
     `).join("");
 
@@ -11346,22 +11299,3 @@ function showSoundtrackRevealModal(results) {
     modal.style.display = "flex";
     if (window.SoundFx && SoundFx.reveal) SoundFx.reveal();
 }
-
-
-
-try {
-    window.PINS_DEF = PINS_DEF;
-    window.renderProfilePins = renderProfilePins;
-    window.navigateProfilePins = navigateProfilePins;
-    window.inspectPin = inspectPin;
-    window.setFeaturedPin = setFeaturedPin;
-    window.toggleShowcasePin = toggleShowcasePin;
-    window.closePinModal = closePinModal;
-    window.openPinsManager = openPinsManager;
-    window.openPinsCapsule = openPinsCapsule;
-    window.openSoundtrackPack = openSoundtrackPack;
-    window.toggleAnimeBgm = toggleAnimeBgm;
-    window.nextAnimeBgmTrack = nextAnimeBgmTrack;
-    window.shuffleAnimeBgm = shuffleAnimeBgm;
-    window.setAnimeBgmVolume = setAnimeBgmVolume;
-} catch(e) {}
