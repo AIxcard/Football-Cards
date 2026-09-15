@@ -4150,54 +4150,6 @@ function renderIndex() {
 
     state.claimedIndexRewards = state.claimedIndexRewards || [];
 
-    if (currentIndexTab === "medals") {
-        if (filter) filter.style.display = "none";
-        if (claimAllWrap) claimAllWrap.style.display = "none";
-
-        const discoveredPins = (state.ownedPins || []).length;
-        const totalPins = PINS_DEF.length;
-        const pct = Math.round((discoveredPins / totalPins) * 100);
-
-        setText("indexProgressText", `${discoveredPins} / ${totalPins} Medals & Pins Discovered (${pct}%)`);
-        const pBar = document.getElementById("indexProgressBar");
-        if (pBar) pBar.style.width = `${pct}%`;
-
-        grid.innerHTML = PINS_DEF.map(pin => {
-            const isOwned = (state.ownedPins || []).includes(pin.id);
-            if (!isOwned) {
-                return `
-                <article class="card index-card locked" onclick="inspectPin('${pin.id}')">
-                    <div class="card-image-wrap" style="display:flex;align-items:center;justify-content:center;padding:12px;opacity:0.25;filter:grayscale(1);">
-                        <div style="width:70px;height:70px;">${pin.badgeSvg}</div>
-                    </div>
-                    <div class="card-rating">🏅</div>
-                    <div class="card-position">PIN</div>
-                    <h3>???</h3>
-                    <small>🔒 Locked Medal</small>
-                </article>
-                `;
-            }
-
-            return `
-            <article class="card index-card glow-specialized" onclick="inspectPin('${pin.id}')" style="border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,0.25);">
-                <div class="card-image-wrap" style="display:flex;align-items:center;justify-content:center;padding:12px;">
-                    <div style="width:70px;height:70px;filter:drop-shadow(0 0 8px rgba(255,215,0,0.5));">${pin.badgeSvg}</div>
-                </div>
-                <div class="card-rating" style="color:#ffd700;">★</div>
-                <div class="card-position" style="color:#ffd700;">MEDAL</div>
-                <h3 style="color:#ffd700;">${escapeHTML(pin.name)}</h3>
-                <div style="margin-top:4px;">
-                    <span style="color:var(--green);font-weight:800;font-size:11px;">✓ Discovered</span>
-                </div>
-                <div style="margin-top:6px;">
-                    <button class="ghost-btn" style="padding:4px 10px;font-size:10px;border-color:rgba(255,215,0,0.4);color:#ffd700;" onclick="event.stopPropagation();inspectPin('${pin.id}')">🔍 Inspect</button>
-                </div>
-            </article>
-            `;
-        }).join("");
-        return;
-    }
-
     if (currentIndexTab === "soundtracks") {
         if (filter) filter.style.display = "none";
         if (claimAllWrap) claimAllWrap.style.display = "none";
@@ -10952,66 +10904,59 @@ function renderProfilePins() {
         const track = document.getElementById("profileMedalsTrack");
         const featuredBadge = document.getElementById("profileFeaturedPinBadge");
         
-        if (!Array.isArray(state.ownedPins) || state.ownedPins.length === 0) {
-            state.ownedPins = ["pin_iron_defense"];
+        if (!Array.isArray(state.ownedPins)) {
+            state.ownedPins = [];
         }
         if (!Array.isArray(state.showcasePins)) {
-            state.showcasePins = [state.ownedPins[0]];
+            state.showcasePins = [];
         }
-        if (!state.featuredPin) {
+        if (!state.featuredPin && state.ownedPins.length > 0) {
             state.featuredPin = state.ownedPins[0];
         }
 
-        // Render Featured Pin on Avatar Top-Left Corner
+        // 1. Render Featured Pin on Profile Avatar
         if (featuredBadge) {
-            const featPin = PINS_DEF.find(p => p.id === state.featuredPin) || PINS_DEF.find(p => p.id === state.ownedPins[0]);
-            if (featPin) {
+            const featPin = PINS_DEF.find(p => p.id === state.featuredPin);
+            if (featPin && state.ownedPins.includes(featPin.id)) {
                 featuredBadge.innerHTML = featPin.badgeSvg;
-                featuredBadge.style.display = "flex";
-                featuredBadge.title = `Featured Pin: ${featPin.name} (${featPin.rarity})`;
-                featuredBadge.onclick = (e) => { e.stopPropagation(); inspectPin(featPin.id); };
+                featuredBadge.title = `Featured: ${featPin.name}`;
+                featuredBadge.style.display = "block";
             } else {
                 featuredBadge.style.display = "none";
             }
         }
 
-        // Render Showcase Track with Hover Tooltips
+        // 2. Render ALL 12 Medals in the Profile Showcase / Track
         if (track) {
-            const showcaseList = (state.showcasePins && state.showcasePins.length) ? state.showcasePins : state.ownedPins;
-            const totalPages = Math.max(1, Math.ceil(showcaseList.length / PINS_PER_PAGE));
-            if (currentPinsPage >= totalPages) currentPinsPage = totalPages - 1;
-            if (currentPinsPage < 0) currentPinsPage = 0;
+            track.innerHTML = PINS_DEF.map(pin => {
+                const isOwned = state.ownedPins.includes(pin.id);
+                const isFeatured = state.featuredPin === pin.id;
 
-            const start = currentPinsPage * PINS_PER_PAGE;
-            const visiblePins = showcaseList.slice(start, start + PINS_PER_PAGE);
-
-            let html = "";
-            for (let i = 0; i < PINS_PER_PAGE; i++) {
-                const pinId = visiblePins[i];
-                if (pinId) {
-                    const pin = PINS_DEF.find(p => p.id === pinId);
-                    if (pin) {
-                        const isFeatured = state.featuredPin === pin.id;
-                        html += `
-                            <div class="football-medal-slot filled ${isFeatured ? 'is-featured' : ''}" onclick="inspectPin('${pin.id}')" title="${pin.name} (${pin.rarity})">
+                if (!isOwned) {
+                    return `
+                        <div class="medal-slot locked" onclick="inspectPin('${pin.id}')" title="${pin.name} (🔒 Locked - Unbox from Pins Capsule)">
+                            <div class="medal-svg-wrap" style="opacity:0.25;filter:grayscale(1);transform:scale(0.85);">
                                 ${pin.badgeSvg}
-                                ${isFeatured ? '<span class="featured-star-indicator">★</span>' : ''}
-                                <span class="medal-hover-tooltip">${pin.name}</span>
                             </div>
-                        `;
-                    } else {
-                        html += `<div class="football-medal-slot empty" onclick="openPinsManager()" title="Equip Medal"><span>+</span></div>`;
-                    }
-                } else {
-                    html += `<div class="football-medal-slot empty" onclick="openPinsManager()" title="Equip Medal"><span>+</span></div>`;
+                            <span class="medal-lock-tag" style="font-size:9px;color:var(--muted);margin-top:2px;">🔒 Locked</span>
+                        </div>
+                    `;
                 }
-            }
-            track.innerHTML = html;
+
+                return `
+                    <div class="medal-slot ${isFeatured ? 'featured' : ''}" onclick="inspectPin('${pin.id}')" title="${pin.name} (Specialized Medal)">
+                        <div class="medal-svg-wrap">
+                            ${pin.badgeSvg}
+                        </div>
+                        ${isFeatured ? '<span class="featured-indicator">★</span>' : ''}
+                    </div>
+                `;
+            }).join("");
         }
 
         renderPinsCollectionGrid();
     } catch(e) {
-        console.error("renderProfilePins error", e);
+        console.warn("renderProfilePins error", e);
     }
 }
 
@@ -11038,28 +10983,34 @@ function inspectPin(pinId) {
     const nameEl = document.getElementById("inspectPinName");
     const rarityEl = document.getElementById("inspectPinRarity");
     const descEl = document.getElementById("inspectPinDesc");
-    const obtainTextEl = document.getElementById("inspectPinObtainText");
+    const obtainEl = document.getElementById("inspectPinObtain");
+    const actionsEl = document.getElementById("inspectPinActions");
 
-    if (badgeSlot) badgeSlot.innerHTML = pin.badgeSvg;
+    if (badgeSlot) {
+        badgeSlot.innerHTML = pin.badgeSvg;
+        badgeSlot.style.filter = isOwned ? "drop-shadow(0 0 20px rgba(255,215,0,0.6))" : "grayscale(1) opacity(0.35)";
+    }
     if (nameEl) nameEl.textContent = pin.name;
     if (rarityEl) {
-        rarityEl.textContent = pin.rarity.toUpperCase();
-        rarityEl.style.color = pin.color;
+        rarityEl.textContent = "SPECIALIZED (8.33% DROP RATE)";
+        rarityEl.className = "rarity-badge specialized";
     }
     if (descEl) descEl.textContent = pin.desc;
-    if (obtainTextEl) obtainTextEl.textContent = pin.obtainMethod || "Unbox from Pins & Medals Capsule in Pack Store.";
+    if (obtainEl) {
+        obtainEl.textContent = isOwned ? "Status: ✓ Unlocked in your Collection" : `How to Obtain: ${pin.obtainMethod}`;
+        obtainEl.style.color = isOwned ? "var(--green)" : "var(--gold)";
+    }
 
-    const actionsWrap = document.getElementById("inspectPinActions");
-    if (actionsWrap) {
+    if (actionsEl) {
         if (isOwned) {
-            actionsWrap.innerHTML = `
-                <button class="primary-btn" onclick="setFeaturedPin('${pin.id}')">${isFeatured ? '★ ACTIVE FEATURED PIN' : '⭐ Set as Featured Pin (Avatar)'}</button>
-                <button class="ghost-btn" onclick="toggleShowcasePin('${pin.id}')">${isShowcased ? '✖ Remove from Showcase Row' : '📌 Add to Showcase Row'}</button>
+            actionsEl.innerHTML = `
+                <button class="primary-btn" onclick="setFeaturedPin('${pin.id}')">${isFeatured ? '★ Currently Featured' : '⭐ Set as Featured Pin'}</button>
+                <button class="ghost-btn" onclick="toggleShowcasePin('${pin.id}')">${isShowcased ? '✕ Remove from Showcase' : '📌 Add to Showcase'}</button>
                 <button class="ghost-btn" onclick="closePinModal()">Close</button>
             `;
         } else {
-            actionsWrap.innerHTML = `
-                <div style="color:var(--muted);font-size:13px;margin-bottom:8px;">🔒 Pin locked. Buy <b>Pins Capsules</b> in Pack Store!</div>
+            actionsEl.innerHTML = `
+                <button class="primary-btn" onclick="closePinModal();showPage('packs');">🎁 Go to Pack Store</button>
                 <button class="ghost-btn" onclick="closePinModal()">Close</button>
             `;
         }
@@ -11067,7 +11018,6 @@ function inspectPin(pinId) {
 
     modal.classList.remove("hidden");
     modal.style.display = "flex";
-    if (window.SoundFx && SoundFx.click) SoundFx.click();
 }
 
 function setFeaturedPin(pinId) {
@@ -11125,18 +11075,29 @@ function renderPinsCollectionGrid() {
         const isFeatured = state.featuredPin === pin.id;
         const isShowcased = (state.showcasePins || []).includes(pin.id);
 
+        if (!isOwned) {
+            return `
+                <div class="pin-collection-card locked" style="border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);padding:14px;border-radius:12px;text-align:center;cursor:pointer;" onclick="inspectPin('${pin.id}')">
+                    <div class="pin-card-badge-wrap" style="width:65px;height:65px;margin:6px auto;opacity:0.25;filter:grayscale(1);">
+                        ${pin.badgeSvg}
+                    </div>
+                    <div class="card-rarity-badge specialized" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:900;background:rgba(255,255,255,0.1);color:var(--muted);">LOCKED</div>
+                    <h3 style="font-size:13.5px;color:var(--muted);margin:6px 0 2px;">${pin.name}</h3>
+                    <p style="font-size:10.5px;color:#64748b;margin:4px 0 8px;min-height:28px;">${pin.obtainMethod}</p>
+                    <div style="font-size:11px;color:var(--muted);font-weight:800;">🔒 Not Owned</div>
+                </div>
+            `;
+        }
+
         return `
-            <div class="pin-collection-card ${isOwned ? 'owned' : 'locked'}" onclick="inspectPin('${pin.id}')">
-                <div class="pin-card-badge-wrap">
+            <div class="pin-collection-card owned" style="border:1.5px solid #ffd700;background:rgba(255,215,0,0.05);padding:14px;border-radius:12px;text-align:center;cursor:pointer;box-shadow:0 0 15px rgba(255,215,0,0.15);" onclick="inspectPin('${pin.id}')">
+                <div class="pin-card-badge-wrap" style="width:65px;height:65px;margin:6px auto;filter:drop-shadow(0 0 10px rgba(255,215,0,0.5));">
                     ${pin.badgeSvg}
-                    ${isFeatured ? '<span class="pin-status-tag featured">★ FEATURED</span>' : ''}
-                    ${!isFeatured && isShowcased ? '<span class="pin-status-tag showcased">SHOWCASED</span>' : ''}
                 </div>
-                <div class="pin-card-info">
-                    <span class="pin-card-name">${pin.name}</span>
-                    <span class="pin-card-rarity" style="color:${pin.color}">${pin.rarity}</span>
-                </div>
-                ${!isOwned ? '<div class="pin-locked-overlay">🔒 LOCKED</div>' : ''}
+                <div class="card-rarity-badge specialized" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:900;background:linear-gradient(90deg,#ffd700,#ff9900);color:#000;">SPECIALIZED</div>
+                <h3 style="font-size:13.5px;color:#fff;margin:6px 0 2px;">${pin.name}</h3>
+                <p style="font-size:10.5px;color:var(--muted);margin:4px 0 8px;min-height:28px;">${pin.desc}</p>
+                <div style="font-size:11px;color:var(--gold);font-weight:800;">${isFeatured ? '★ FEATURED PIN' : isShowcased ? '📌 SHOWCASED' : '✓ UNLOCKED'}</div>
             </div>
         `;
     }).join("");
@@ -11611,18 +11572,16 @@ function sellSoundtrack(instanceId) {
 }
 
 function switchIndexTab(category) {
-    currentIndexTab = category;
+    currentIndexTab = category === "soundtracks" ? "soundtracks" : "players";
     const tabPlayers = document.getElementById("indexTabBtnPlayers");
-    const tabMedals = document.getElementById("indexTabBtnMedals");
     const tabOst = document.getElementById("indexTabBtnOst");
     const indexFilter = document.getElementById("indexFilter");
 
-    if (tabPlayers) tabPlayers.classList.toggle("active", category === "players");
-    if (tabMedals) tabMedals.classList.toggle("active", category === "medals");
-    if (tabOst) tabOst.classList.toggle("active", category === "soundtracks");
+    if (tabPlayers) tabPlayers.classList.toggle("active", currentIndexTab === "players");
+    if (tabOst) tabOst.classList.toggle("active", currentIndexTab === "soundtracks");
 
     if (indexFilter) {
-        indexFilter.style.display = category === "players" ? "block" : "none";
+        indexFilter.style.display = currentIndexTab === "players" ? "block" : "none";
     }
 
     renderIndex();
