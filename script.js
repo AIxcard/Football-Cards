@@ -169,7 +169,8 @@ try { PersistentStorage.init(); } catch(e) {}
         return Number(num || 0).toLocaleString();
     }
 
-    const CURRENT_SAVE_KEY = "football_cards_user_save_master";
+    const HARD_WIPE_VERSION = "v26_complete_overhaul_reset";
+    const CURRENT_SAVE_KEY = "football_cards_user_save_v26_master";
     const PREVIOUS_SAVE_KEYS = [
         "footballCardsSave_v19_season1_clean",
         "footballCardsSave_v18_season_reset",
@@ -690,7 +691,7 @@ function getCardImage(card) {
     }
     const isCristiano = nameLower === "cristiano ronaldo" || nameLower === "cr7" || (nameLower.includes("cristiano") && nameLower.includes("ronaldo"));
     if (isCristiano) {
-        return "ronaldo_custom.png";
+        return "player_temp.png";
     }
     // Strict safeguard: Ronaldo Nazario, Ronaldinho, or any other player ALWAYS returns player_temp.png
     return "player_temp.png";
@@ -710,7 +711,7 @@ const PLAYERS = [
 
 // --- WORLD CLASS (GOATS) ---
 { name: "Lionel Messi", rating: 97, pos: "RW", rarity: "World Class", image: "player_temp.png" },
-{ name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "ronaldo_custom.png" },
+{ name: "Cristiano Ronaldo", rating: 97, pos: "ST", rarity: "World Class", image: "player_temp.png" },
 
 // --- SECRET ---
 { name: "Lamine Yamal", rating: 96, pos: "RW", rarity: "Secret", image: "player_temp.png" },
@@ -8433,6 +8434,206 @@ function closeUpdateLogModal() {
     try { SoundFx.click(); } catch(e) {}
 }
 
+
+/* =========================================================
+   ADMIN POTIONS, BUFFS & MASTER CONTROLS
+   ========================================================= */
+
+async function adminGrantPotion(potionType) {
+    if (!checkIsAdmin()) return;
+    const targetInput = document.getElementById("adminPotionTarget");
+    const target = targetInput ? targetInput.value.trim() : "";
+    const durSel = document.getElementById("adminPotionDuration");
+    const durVal = durSel ? durSel.value : "permanent";
+    const durationMs = durVal === "permanent" ? (999 * 24 * 60 * 60 * 1000) : (Number(durVal) * 1000);
+    const expireTime = Date.now() + durationMs;
+
+    const applyToState = (st) => {
+        if (!st.activePotions) st.activePotions = {};
+        if (potionType === "luck") st.activePotions.luckUntil = expireTime;
+        else if (potionType === "gold") st.activePotions.goldUntil = expireTime;
+        else if (potionType === "speed") st.activePotions.speedUntil = expireTime;
+        else if (potionType === "xp") {
+            st.xp = (Number(st.xp) || 0) + 5000;
+            if (typeof checkLevelUp === "function") checkLevelUp(st);
+        }
+        else if (potionType === "godluck") {
+            st.activePotions.godUntil = expireTime;
+            st.activePotions.luckUntil = expireTime;
+        }
+        else if (potionType === "packs") {
+            st.freeChampionPacks3x = (Number(st.freeChampionPacks3x) || 0) + 999;
+            st.activePotions.unlimitedPacks = true;
+        }
+    };
+
+    if (!target || target.toLowerCase() === (state.accountUser || state.name || "").toLowerCase()) {
+        applyToState(state);
+        saveGame();
+        renderAll();
+        toast(`✨ Admin: Activated ${potionType.toUpperCase()} Buff (${durVal === "permanent" ? "Permanent" : (Number(durVal)/60) + " mins"})!`);
+    } else {
+        try {
+            await adminModifyTargetUser(target, (targetSave) => {
+                applyToState(targetSave);
+                return `Granted ${potionType.toUpperCase()} buff to ${target}`;
+            });
+            toast(`✨ Admin: Granted ${potionType.toUpperCase()} Buff to ${target}!`);
+        } catch(e) {
+            toast(`❌ Error: ${e.message}`);
+        }
+    }
+}
+
+function adminActivateAllGodBuffs() {
+    if (!checkIsAdmin()) return;
+    const expireTime = Date.now() + (999 * 24 * 60 * 60 * 1000);
+    if (!state.activePotions) state.activePotions = {};
+    state.activePotions.luckUntil = expireTime;
+    state.activePotions.goldUntil = expireTime;
+    state.activePotions.speedUntil = expireTime;
+    state.activePotions.godUntil = expireTime;
+    state.activePotions.unlimitedPacks = true;
+    state.freeChampionPacks3x = (Number(state.freeChampionPacks3x) || 0) + 999;
+    state.xp = (Number(state.xp) || 0) + 10000;
+    saveGame();
+    renderAll();
+    toast("👑 GOD-MODE ACTIVATED: All Luck, Gold, Speed, XP & Infinite Packs are 100% Active!");
+}
+
+function adminClearAllBuffs() {
+    if (!checkIsAdmin()) return;
+    state.activePotions = {
+        luckUntil: 0,
+        goldUntil: 0,
+        speedUntil: 0,
+        godUntil: 0,
+        unlimitedPacks: false
+    };
+    saveGame();
+    renderAll();
+    toast("🧹 All active buffs cleared.");
+}
+
+async function adminGrantAllTitles() {
+    if (!checkIsAdmin()) return;
+    const allTitleNames = Object.keys(TITLES || {});
+    state.grantedTitles = Array.from(new Set([...(state.grantedTitles || []), ...allTitleNames, "UNIQUE", "Owner", "Admin", "Season 1 Champion", "World Cup Finalist"]));
+    saveGame();
+    renderAll();
+    toast("🎖️ Admin: Unlocked ALL Titles!");
+}
+
+async function adminUnlockAllFrames() {
+    if (!checkIsAdmin()) return;
+    const allFrames = ["default", "gold", "neon", "fire", "diamond", "cosmic", "champions", "dragon"];
+    state.ownedFrames = Array.from(new Set([...(state.ownedFrames || []), ...allFrames]));
+    saveGame();
+    renderAll();
+    toast("🛡️ Admin: Unlocked ALL 8 Luxury Avatar Frames!");
+}
+
+async function adminGrantRank1Trophy() {
+    if (!checkIsAdmin()) return;
+    state.tournamentRank = 1;
+    state.isTournamentChampion = true;
+    state.tournamentScore = Math.max(Number(state.tournamentScore) || 0, 25000);
+    state.tournamentWins = Math.max(Number(state.tournamentWins) || 0, 15);
+    state.grantedTitles = Array.from(new Set([...(state.grantedTitles || []), "Season 1 Champion", "World Cup Finalist", "UNIQUE", "Owner", "Admin"]));
+    saveGame();
+    renderAll();
+    toast("🏆 Admin: Granted Rank #1 World Cup Trophy & Champion Status!");
+}
+
+async function adminSpawnSerialMessi() {
+    if (!checkIsAdmin()) return;
+    const messiCard = {
+        id: "serial_messi_" + Date.now(),
+        player: "Lionel Messi",
+        position: "RW",
+        rarity: "World Class",
+        rating: 99,
+        serialNumber: 1,
+        maxSerial: 10,
+        serialized: true,
+        image: "player_temp.png",
+        obtained: Date.now(),
+        locked: true
+    };
+    state.cards = [messiCard, ...(state.cards || [])];
+    saveGame();
+    renderAll();
+    toast("🐐 Admin: Spawned Serial #1/10 Lionel Messi (99 OVR World Class)!");
+}
+
+async function adminSpawnSerialRonaldo() {
+    if (!checkIsAdmin()) return;
+    const ronaldoCard = {
+        id: "serial_ronaldo_" + Date.now(),
+        player: "Cristiano Ronaldo",
+        position: "ST",
+        rarity: "World Class",
+        rating: 99,
+        serialNumber: 1,
+        maxSerial: 10,
+        serialized: true,
+        image: "player_temp.png",
+        obtained: Date.now(),
+        locked: true
+    };
+    state.cards = [ronaldoCard, ...(state.cards || [])];
+    saveGame();
+    renderAll();
+    toast("🐐 Admin: Spawned Serial #1/10 Cristiano Ronaldo (99 OVR World Class)!");
+}
+
+async function adminSpawnAllTopCards() {
+    if (!checkIsAdmin()) return;
+    const topCards = [
+        { player: "Shiny Emanuel", position: "CAM", rarity: "Tournament", rating: 99, isShiny: true, image: "player_temp.png" },
+        { player: "Monkey King", position: "ST", rarity: "Developer", rating: 99, devCard: true, image: "monkey_king.png" },
+        { player: "Lionel Messi", position: "RW", rarity: "World Class", rating: 99, serialNumber: 1, maxSerial: 10, serialized: true, image: "player_temp.png" },
+        { player: "Cristiano Ronaldo", position: "ST", rarity: "World Class", rating: 99, serialNumber: 1, maxSerial: 10, serialized: true, image: "player_temp.png" },
+        { player: "Erling Haaland", position: "ST", rarity: "Secret", rating: 98, image: "player_temp.png" },
+        { player: "Kylian Mbappé", position: "ST", rarity: "Secret", rating: 97, image: "player_temp.png" },
+        { player: "Vinícius Júnior", position: "LW", rarity: "Mythic", rating: 95, image: "player_temp.png" },
+        { player: "Jude Bellingham", position: "CAM", rarity: "Mythic", rating: 94, image: "player_temp.png" }
+    ];
+    topCards.forEach(c => {
+        state.cards.unshift({
+            id: "admin_top_" + Math.random().toString(36).substr(2, 9),
+            ...c,
+            obtained: Date.now(),
+            locked: true
+        });
+    });
+    saveGame();
+    renderAll();
+    toast("💎 Admin: Spawned All World Class, Secret & Mythic Cards!");
+}
+
+function adminGlobalCleanWipe() {
+    if (!checkIsAdmin()) return;
+    if (!confirm("⚠️ CAUTION: Are you sure you want to perform a complete clean reset of all local player data & serials?")) return;
+    try {
+        localStorage.clear();
+        sessionStorage.clear();
+    } catch(e) {}
+    state = freshState();
+    state.accountUser = "Alucard";
+    state.name = "Alucard";
+    state.isGrantedAdmin = true;
+    state.grantedTitles = ["UNIQUE", "Owner", "Admin"];
+    state.coins = 100;
+    state.level = 1;
+    state.cards = [];
+    state.serializedCounts = { "Lionel Messi": 0, "Cristiano Ronaldo": 0 };
+    saveGame();
+    renderAll();
+    toast("💥 Complete Clean Wipe Executed! Everything reset to fresh state.");
+}
+
+
 function openAdminPanel() {
     if (!checkIsAdmin()) {
         toast("Access restricted: Administrator privileges required.");
@@ -8454,7 +8655,7 @@ function closeAdminPanel() {
 }
 
 function setAdminTab(tab) {
-    const tabs = ["currency", "cards", "level", "titles", "tournament", "moderation", "accounts", "audit", "delete"];
+    const tabs = ["currency", "cards", "potions", "level", "titles", "tournament", "moderation", "accounts", "audit", "delete"];
     tabs.forEach(t => {
         const btnId = "adminTabBtn" + t.charAt(0).toUpperCase() + t.slice(1);
         const contentId = "adminTab" + t.charAt(0).toUpperCase() + t.slice(1);
