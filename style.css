@@ -8017,15 +8017,7 @@ html, body {
     word-break: break-word !important;
 }
 
-.card .card-image-wrap, .index-card .card-image-wrap {
-    height: 150px !important;
-    min-height: 150px !important;
-    max-height: 150px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin-bottom: 8px !important;
-}
+
 
 .card-meta-wrap, .card .card-meta-row, .card-meta-grid {
     min-height: 52px !important;
@@ -8048,4 +8040,43 @@ html, body {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
+}
+
+
+
+/* RESTORE ORIGINAL CARD MODEL & REVEAL MODAL DIMENSIONS */
+#revealCard, .reveal-card-body {
+    width: 320px !important;
+    max-width: 90vw !important;
+    min-height: 480px !important;
+    border-radius: 18px !important;
+    padding: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+}
+
+#revealCard .card-image-wrap, .reveal-card-body .card-image-wrap {
+    width: 100% !important;
+    height: 240px !important;
+    min-height: 220px !important;
+    max-height: 260px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 10px auto !important;
+}
+
+#revealCard .card-photo, .reveal-card-body .card-photo {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+}
+
+/* COMPACT PROFILE MEDALS GRID */
+#pinsCollectionGrid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+    gap: 10px !important;
 }
