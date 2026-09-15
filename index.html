@@ -10,7 +10,7 @@
         window.location.replace("https://football-cards-yrry.onrender.com" + window.location.search);
     }
 </script>
-<link rel="stylesheet" href="style.css?v=2001.0">
+<link rel="stylesheet" href="style.css?v=3001.0">
 </head>
 
 <body>
@@ -460,12 +460,18 @@
         </div>
     </div>
 
-    <div class="daily-box">
-        <div>
-            <h2>🎁 Daily Training Reward</h2>
-            <p id="dailyRewardText">Your daily reward resets at 7:00 AM (ICT).</p>
+    <div class="daily-box luxury-daily-card" style="display:flex;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(135deg,rgba(15,23,42,0.92) 0%,rgba(30,41,59,0.85) 100%);border:1px solid rgba(255,215,0,0.3);border-radius:18px;padding:20px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.45),0 0 20px rgba(255,215,0,0.15);margin-bottom:24px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:16px;flex:1;min-width:240px;">
+            <div style="font-size:36px;width:56px;height:56px;border-radius:14px;background:radial-gradient(circle,rgba(255,215,0,0.2),transparent);border:1px solid rgba(255,215,0,0.3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(255,215,0,0.2);">🎁</div>
+            <div>
+                <h2 style="margin:0;font-size:22px;color:var(--gold);font-weight:900;letter-spacing:0.5px;text-shadow:0 0 12px rgba(255,215,0,0.35);">Daily Reward</h2>
+                <p id="dailyRewardText" style="margin:4px 0 0 0;font-size:13.5px;color:var(--muted);">Claim your daily gold coins and booster reward!</p>
+            </div>
         </div>
-        <button id="dailyRewardBtn" onclick="claimDailyReward()">Claim</button>
+        <button id="dailyRewardBtn" class="daily-claim-btn" onclick="claimDailyReward()" style="padding:14px 32px;font-size:15px;font-weight:900;border-radius:12px;background:linear-gradient(135deg,#ffd700 0%,#ff9900 100%);color:#0f172a;border:none;cursor:pointer;box-shadow:0 0 24px rgba(255,215,0,0.6);transition:all 0.25s ease;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;">
+            <span>✨</span>
+            <span id="dailyRewardBtnText">Claim Reward</span>
+        </button>
     </div>
 
     <div class="mission-panel">
@@ -1802,10 +1808,45 @@
         </div>
     </div>
 
-    <div class="panel">
-        <h2>Name</h2>
-        <p>Current name: <b id="settingsCurrentName">Player</b></p>
-        <button class="primary-btn" onclick="changeName()">Change Name</button>
+        <!-- 👤 CHANGE USERNAME PANEL -->
+    <div class="panel" style="background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.75));border:1px solid rgba(105,199,255,0.25);border-radius:16px;padding:22px;margin-bottom:20px;">
+        <h2 style="color:var(--cyan);margin-top:0;">👤 Change Username / Account Name</h2>
+        <p style="color:var(--muted);font-size:13.5px;margin-bottom:16px;">
+            Current Account: <b id="settingsCurrentUsername" style="color:white;font-size:15px;">Guest</b><br>
+            <span style="font-size:12px;color:rgba(255,255,255,0.5);">Note: When you change your username, your previous username is immediately freed and can be re-registered anytime.</span>
+        </p>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:440px;">
+            <div>
+                <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">New Username</label>
+                <input id="settingsNewUsernameInput" type="text" placeholder="Enter new username..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;">
+            </div>
+            <div>
+                <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Current Password (Confirmation)</label>
+                <input id="settingsUserPassConfirmInput" type="password" placeholder="Enter current password..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;">
+            </div>
+            <button class="primary-btn" style="padding:12px 20px;font-weight:900;margin-top:4px;" onclick="handleChangeUsername()">✓ Update Username</button>
+        </div>
+    </div>
+
+    <!-- 🔐 CHANGE PASSWORD PANEL -->
+    <div class="panel" style="background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.75));border:1px solid rgba(182,108,255,0.25);border-radius:16px;padding:22px;margin-bottom:20px;">
+        <h2 style="color:#d8b4fe;margin-top:0;">🔐 Change Account Password</h2>
+        <p style="color:var(--muted);font-size:13.5px;margin-bottom:16px;">Update your password securely across all your devices.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:440px;">
+            <div>
+                <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Current Password</label>
+                <input id="settingsCurrentPassInput" type="password" placeholder="Enter current password..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;">
+            </div>
+            <div>
+                <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">New Password</label>
+                <input id="settingsNewPassInput" type="password" placeholder="Enter new password (min 3 chars)..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;">
+            </div>
+            <div>
+                <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Confirm New Password</label>
+                <input id="settingsConfirmPassInput" type="password" placeholder="Confirm new password..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#0c1722;color:white;">
+            </div>
+            <button class="primary-btn" style="background:linear-gradient(135deg,#7928ca,#b66cff);padding:12px 20px;font-weight:900;margin-top:4px;" onclick="handleChangePassword()">🔐 Update Password</button>
+        </div>
     </div>
 
 
@@ -2357,6 +2398,6 @@
     <!-- Dynamically populated live active potion badges & timers -->
 </div>
 
-<script src="script.js?v=2001.0"></script>
+<script src="script.js?v=3001.0"></script>
 </body>
 </html>
