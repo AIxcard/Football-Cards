@@ -608,14 +608,108 @@
                 <button onclick="openPack('worldclass', 5)">5x · 500 🪙</button>
             </div>
         </article>
+        <!-- 5. PINS & MEDALS CAPSULE -->
+        <article class="pack pins-capsule-pack" style="border-color:rgba(255,215,0,0.4);background:radial-gradient(circle at 50% 0%, rgba(255,215,0,0.15) 0%, rgba(15,23,42,0.9) 70%);">
+            <button class="pack-info-btn" onclick="toast('Pins Capsule: 100% Specialized Rarity! Equal 8.33% chance across all 12 football medals. Duplicates refund 500 🪙!')" title="View Probabilities">?</button>
+            <div class="pack-ball">🎖️</div>
+            <p class="rarity specialized-gold" style="background:linear-gradient(90deg,#ffd700,#ff9900);color:#000;font-weight:900;">SPECIALIZED</p>
+            <h2>Pins &amp; Medals Capsule</h2>
+            <p>12 Collectible Football Medals &amp; Trophies. Equal 8.33% chance for each! Duplicate refund: +500 🪙 Cashback.</p>
+            <div class="pack-rate">Equal 8.33% Drop Chance · 1,000 🪙</div>
+            <div class="pack-multibuttons">
+                <button onclick="openPinsCapsule(1)">1x · 1,000 🪙</button>
+                <button onclick="openPinsCapsule(3)">3x · 3,000 🪙</button>
+                <button onclick="openPinsCapsule(5)">5x · 5,000 🪙</button>
+            </div>
+        </article>
 
+        <!-- 6. ANIME VANGUARDS SOUNDTRACK PACK -->
+        <article class="pack soundtrack-disc-pack" style="border-color:rgba(0,242,254,0.4);background:radial-gradient(circle at 50% 0%, rgba(0,242,254,0.15) 0%, rgba(15,23,42,0.9) 70%);">
+            <button class="pack-info-btn" onclick="toast('Soundtrack Pack: Unbox official Anime Vanguards battle music discs! 0.1% Secret Wall of Resolve · 0.5% Mythic Crown of the Sun · 5% Legendary Petals · 24.4% Epic False Heaven · 70% Rare Nah Id Win!')" title="View Info">?</button>
+            <div class="pack-ball">💿</div>
+            <p class="rarity mythic">ANIME VANGUARDS OST</p>
+            <h2>Battle Soundtrack Pack</h2>
+            <p>Official Anime Vanguards battle discs with in-game streaming. 0.1% Secret Wall of Resolve · 0.5% Mythic.</p>
+            <div class="pack-rate">Rare (70%) → Secret (0.1%) · 500 🪙</div>
+            <div class="pack-multibuttons">
+                <button onclick="openSoundtrackPack(1)">1x · 500 🪙</button>
+                <button onclick="openSoundtrackPack(3)">3x · 1,500 🪙</button>
+                <button onclick="openSoundtrackPack(5)">5x · 2,500 🪙</button>
+            </div>
+        </article>
+        <!-- 5. PINS & MEDALS CAPSULE -->
+        <article class="pack pins-capsule-pack" style="border-color:rgba(255,215,0,0.4);background:radial-gradient(circle at 50% 0%, rgba(255,215,0,0.15) 0%, rgba(15,23,42,0.9) 70%);">
+            <button class="pack-info-btn" onclick="toast('Pins Capsule: 100% Specialized Rarity! Equal 8.33% chance across all 12 football medals. Duplicates refund 500 🪙!')" title="View Probabilities">?</button>
+            <div class="pack-ball">🎖️</div>
+            <p class="rarity specialized-gold" style="background:linear-gradient(90deg,#ffd700,#ff9900);color:#000;font-weight:900;">SPECIALIZED</p>
+            <h2>Pins &amp; Medals Capsule</h2>
+            <p>12 Collectible Football Medals &amp; Trophies. Equal 8.33% chance for each! Duplicate refund: +500 🪙 Cashback.</p>
+            <div class="pack-rate">Equal 8.33% Drop Chance · 1,000 🪙</div>
+            <div class="pack-multibuttons">
+                <button onclick="openPinsCapsule(1)">1x · 1,000 🪙</button>
+                <button onclick="openPinsCapsule(3)">3x · 3,000 🪙</button>
+                <button onclick="openPinsCapsule(5)">5x · 5,000 🪙</button>
+            </div>
+        </article>
+
+        <!-- 6. ANIME VANGUARDS SOUNDTRACK PACK -->
+        <article class="pack soundtrack-disc-pack" style="border-color:rgba(0,242,254,0.4);background:radial-gradient(circle at 50% 0%, rgba(0,242,254,0.15) 0%, rgba(15,23,42,0.9) 70%);">
+            <button class="pack-info-btn" onclick="toast('Soundtrack Pack: Unbox official Anime Vanguards battle music discs! 0.1% Secret Wall of Resolve · 0.5% Mythic Crown of the Sun · 5% Legendary Petals · 24.4% Epic False Heaven · 70% Rare Nah Id Win!')" title="View Info">?</button>
+            <div class="pack-ball">💿</div>
+            <p class="rarity mythic">ANIME VANGUARDS OST</p>
+            <h2>Battle Soundtrack Pack</h2>
+            <p>Official Anime Vanguards battle discs with in-game streaming. 0.1% Secret Wall of Resolve · 0.5% Mythic.</p>
+            <div class="pack-rate">Rare (70%) → Secret (0.1%) · 500 🪙</div>
+            <div class="pack-multibuttons">
+                <button onclick="openSoundtrackPack(1)">1x · 500 🪙</button>
+                <button onclick="openSoundtrackPack(3)">3x · 1,500 🪙</button>
+                <button onclick="openSoundtrackPack(5)">5x · 2,500 🪙</button>
+            </div>
+        </article>
     </div>
-
 </section>
 
 
 <!-- ==================== COLLECTION ==================== -->
 <section id="cards" class="page">
+
+    <!-- COLLECTION VIEW TABS -->
+    <div class="collection-category-tabs" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+        <button id="tabBtnCards" class="collection-tab-btn active" onclick="switchCollectionTab('cards')">🎴 Player Cards Collection</button>
+        <button id="tabBtnSoundtracks" class="collection-tab-btn" onclick="switchCollectionTab('soundtracks')">💿 Soundtracks Vault</button>
+    </div>
+
+    <!-- SOUNDTRACKS ACTION TOOLBAR -->
+    <div id="soundtracksFilterWrap" class="collection-filter-bar" style="display:none;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.12);padding:14px 20px;border-radius:16px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button class="primary-btn" style="width:auto;padding:10px 18px;" onclick="toggleAnimeBgm()">🎵 Play / Pause OST</button>
+            <button class="ghost-btn" style="width:auto;padding:10px 18px;" onclick="nextAnimeBgmTrack()">⏭️ Next Song</button>
+            <button class="ghost-btn" style="width:auto;padding:10px 18px;" onclick="shuffleAnimeBgm()">🔀 Shuffle Owned Tracks</button>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <span id="soundtracksCountLabel" style="color:var(--muted);font-weight:700;font-size:13px;">0 Discs in Vault</span>
+            <div id="soundtracksRAPValue" class="collection-rap-badge" style="background:rgba(0,242,254,0.12);border:1px solid var(--cyan);color:var(--cyan);padding:6px 14px;border-radius:20px;font-weight:900;font-size:13px;">💎 Total Soundtracks: 0 RAP</div>
+        </div>
+    </div>
+
+    <!-- COLLECTION VIEW TABS -->
+    <div class="collection-category-tabs" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+        <button id="tabBtnCards" class="collection-tab-btn active" onclick="switchCollectionTab('cards')">🎴 Player Cards Collection</button>
+        <button id="tabBtnSoundtracks" class="collection-tab-btn" onclick="switchCollectionTab('soundtracks')">💿 Soundtracks Vault</button>
+    </div>
+
+    <!-- SOUNDTRACKS ACTION TOOLBAR -->
+    <div id="soundtracksFilterWrap" class="collection-filter-bar" style="display:none;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;background:rgba(15,23,42,0.85);border:1px solid rgba(255,255,255,0.12);padding:14px 20px;border-radius:16px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button class="primary-btn" style="width:auto;padding:10px 18px;" onclick="toggleAnimeBgm()">🎵 Play / Pause OST</button>
+            <button class="ghost-btn" style="width:auto;padding:10px 18px;" onclick="nextAnimeBgmTrack()">⏭️ Next Song</button>
+            <button class="ghost-btn" style="width:auto;padding:10px 18px;" onclick="shuffleAnimeBgm()">🔀 Shuffle Owned Tracks</button>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <span id="soundtracksCountLabel" style="color:var(--muted);font-weight:700;font-size:13px;">0 Discs in Vault</span>
+            <div id="soundtracksRAPValue" class="collection-rap-badge" style="background:rgba(0,242,254,0.12);border:1px solid var(--cyan);color:var(--cyan);padding:6px 14px;border-radius:20px;font-weight:900;font-size:13px;">💎 Total Soundtracks: 0 RAP</div>
+        </div>
+    </div>
 
     <div class="section-head">
         <div>
@@ -694,11 +788,18 @@
 <!-- ==================== INDEX / CATALOG ==================== -->
 <section id="index" class="page">
 
-    <div class="section-head">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
         <div>
             <p class="eyebrow">ENCYCLOPEDIA</p>
-            <h1>Player Card Index</h1>
-            <p>Complete catalog of all footballers. Click any discovered card to inspect in 3D!</p>
+            <h1>Player Card &amp; Item Index</h1>
+            <p>Complete catalog of all footballers, medals &amp; soundtracks. Click any item to inspect!</p>
+            
+            <!-- INDEX CATEGORY TABS -->
+            <div class="index-category-tabs" style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+                <button id="indexTabBtnPlayers" class="collection-tab-btn active" onclick="switchIndexTab('players')">🎴 Player Cards (52)</button>
+                <button id="indexTabBtnMedals" class="collection-tab-btn" onclick="switchIndexTab('medals')">🎖️ Medals &amp; Pins (12)</button>
+                <button id="indexTabBtnOst" class="collection-tab-btn" onclick="switchIndexTab('soundtracks')">💿 Soundtracks (5)</button>
+            </div>
         </div>
 
         <select id="indexFilter" onchange="renderIndex()">
@@ -717,14 +818,6 @@
     </div>
 
     <!-- INDEX PROGRESS SUMMARY & CLAIM ALL ACTION -->
-    
-        <!-- INDEX CATEGORY TABS -->
-        <div class="index-category-tabs" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
-            <button id="indexTabBtnPlayers" class="collection-tab-btn active" onclick="switchIndexTab('players')">🎴 Player Cards</button>
-            <button id="indexTabBtnMedals" class="collection-tab-btn" onclick="switchIndexTab('medals')">🎖️ Medals &amp; Pins</button>
-            <button id="indexTabBtnOst" class="collection-tab-btn" onclick="switchIndexTab('soundtracks')">💿 Soundtracks</button>
-        </div>
-
     <div class="panel index-summary-panel">
         <div class="index-summary-content" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
             <div style="flex:1;min-width:240px;">
@@ -2520,12 +2613,7 @@
 </div>
 
 <!-- ANIME VANGUARDS BGM WIDGET -->
-<div class="anime-bgm-floating-bar" id="animeBgmBar">
-    <button class="bgm-ctrl-btn" id="animeBgmToggleBtn" onclick="toggleAnimeBgm()">🎵 Anime OST</button>
-    <div class="bgm-track-info" onclick="nextAnimeBgmTrack()" title="Click to Skip Track">
-        <span class="bgm-pulse-dot"></span>
-        <span id="animeBgmTrackName">⚡ Vanguards Ignition</span>
-    </div>
+
     <button class="bgm-ctrl-btn" onclick="nextAnimeBgmTrack()" title="Next Track">⏭️</button>
     <button class="bgm-ctrl-btn" onclick="shuffleAnimeBgm()" title="Shuffle">🔀</button>
 </div>
