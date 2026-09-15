@@ -846,6 +846,16 @@ exclusive: {
     cost: 1000,
     rates: { Exclusive: 100 }
 },
+pins_capsule: {
+    name: "Pins & Medals Capsule",
+    cost: 1000,
+    rates: { Specialized: 100 }
+},
+soundtrack_pack: {
+    name: "Anime Vanguards Soundtrack Pack",
+    cost: 500,
+    rates: { Rare: 70.0, Epic: 24.4, Legendary: 5.0, Mythic: 0.5, Secret: 0.1 }
+},
 mythic: {
     name: "Mythic Stars Pack",
     cost: 80,
@@ -10703,122 +10713,122 @@ const PINS_DEF = [
     {
         id: "pin_worldcup_gold",
         name: "World Cup 2026 Gold Medal",
-        rarity: "Secret",
-        color: "#f59e0b",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "🏆",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinGoldGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a"/><stop offset="40%" stop-color="#eab308"/><stop offset="100%" stop-color="#713f12"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad2)" stroke="#ffffff" stroke-width="4"/><circle cx="50" cy="50" r="36" fill="#1e1b4b" stroke="#f59e0b" stroke-width="2.5"/><text x="50" y="46" font-size="18" text-anchor="middle">🏆</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">WORLD CUP</text></svg>`,
         desc: "The ultimate crown of global football dominance. Awarded to world tournament champions.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (0.3% Secret Drop Rate) or claim Rank #1 World Cup Tournament."
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_treble_winner",
         name: "Treble Winner Medallion",
-        rarity: "Secret",
-        color: "#00f2fe",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "👑",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#cffafe"/><stop offset="40%" stop-color="#00f2fe"/><stop offset="100%" stop-color="#0e7490"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinCyanGrad)" stroke="#ffffff" stroke-width="3.5"/><circle cx="50" cy="50" r="34" fill="#082f49" stroke="#38bdf8" stroke-width="2"/><text x="50" y="46" font-size="18" text-anchor="middle">👑</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#38bdf8" letter-spacing="0.5">TREBLE</text></svg>`,
-        desc: "Commemorates legendary clubs lifting the League, National Cup, and European Championship in one season.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (0.3% Secret Drop Rate)."
+        desc: "Commemorates lifting the League, National Cup, and European Championship in one season.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_ballondor",
         name: "Ballon d'Or Golden Crest",
-        rarity: "Mythic",
-        color: "#ec4899",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "✨",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinRubyGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fbcfe8"/><stop offset="40%" stop-color="#ec4899"/><stop offset="100%" stop-color="#831843"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinRubyGrad)" stroke="#f472b6" stroke-width="3"/><circle cx="50" cy="50" r="32" fill="#4a044e" stroke="#fbbf24" stroke-width="2.5"/><text x="50" y="48" font-size="16" text-anchor="middle">⚽</text><text x="50" y="66" font-size="7.5" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">BALLON D'OR</text></svg>`,
         desc: "Shining ruby-gold medallion celebrating generational football mastery and individual supremacy.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (1.5% Mythic Drop Rate)."
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_diamond_loyalty",
         name: "Diamond Loyalty Crest",
-        rarity: "Mythic",
-        color: "#ec4899",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "💎",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinDiaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f472b6"/><stop offset="50%" stop-color="#db2777"/><stop offset="100%" stop-color="#500724"/></linearGradient></defs><polygon points="50,6 92,30 92,70 50,94 8,70 8,30" fill="url(#pinDiaGrad)" stroke="#fbcfe8" stroke-width="3"/><text x="50" y="54" font-size="22" text-anchor="middle">💎</text><text x="50" y="76" font-size="8" font-weight="900" text-anchor="middle" fill="#ffd700" letter-spacing="0.5">LOYALTY</text></svg>`,
         desc: "Faceted diamond badge honoring legendary club loyalty and supreme collecting mastery.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (1.5% Mythic Drop Rate)."
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_puskas_wonder",
         name: "Puskás Wonder-Goal Pin",
-        rarity: "Legendary",
+        rarity: "Specialized",
         color: "#ffd700",
         icon: "🚀",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fff8db"/><stop offset="50%" stop-color="#ffd700"/><stop offset="100%" stop-color="#b45309"/></linearGradient></defs><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="url(#pinGoldGrad)" stroke="#ffffff" stroke-width="2.5"/><circle cx="50" cy="50" r="22" fill="#0c1a2e" stroke="#ffd700" stroke-width="3"/><text x="50" y="56" font-size="16" font-weight="900" text-anchor="middle" fill="#ffd700">PUSKÁS</text></svg>`,
-        desc: "Awarded for scoring physics-defying, jaw-dropping long-range and acrobatic wonder strikes.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (6.0% Legendary Drop Rate)."
+        desc: "Awarded for scoring physics-defying, jaw-dropping long-range wonder strikes.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_world_class_maestro",
         name: "World Class Maestro Pin",
-        rarity: "Legendary",
+        rarity: "Specialized",
         color: "#ffd700",
         icon: "⭐",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="url(#pinGoldGrad)" stroke="#ffd700" stroke-width="3.5"/><circle cx="50" cy="50" r="34" fill="#0f172a" stroke="#ffd700" stroke-width="2"/><text x="50" y="47" font-size="16" text-anchor="middle">⭐</text><text x="50" y="66" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffd700">MAESTRO</text></svg>`,
-        desc: "Bestowed upon visionary midfield generals with supreme pitch vision and match control.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (6.0% Legendary Drop Rate)."
+        desc: "Bestowed upon visionary midfield generals with supreme pitch vision.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_champions_star",
         name: "Champions League Star Medallion",
-        rarity: "Epic",
-        color: "#a855f7",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "🌟",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinPurpleGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e9d5ff"/><stop offset="50%" stop-color="#a855f7"/><stop offset="100%" stop-color="#3b0764"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinPurpleGrad)" stroke="#c084fc" stroke-width="3"/><polygon points="50,20 58,38 78,38 62,50 68,68 50,56 32,68 38,50 22,38 42,38" fill="#ffd700" stroke="#ffffff" stroke-width="1.2"/><text x="50" y="82" font-size="8" font-weight="900" text-anchor="middle" fill="#e9d5ff" letter-spacing="1">CHAMPIONS</text></svg>`,
-        desc: "Inspired by legendary European championship nights under dazzling stadium floodlights.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (12.0% Epic Drop Rate)."
+        desc: "Inspired by legendary European championship nights under stadium floodlights.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_golden_glove",
         name: "Golden Glove Shield",
-        rarity: "Epic",
-        color: "#a855f7",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "🧤",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="url(#pinPurpleGrad)" stroke="#c084fc" stroke-width="3"/><text x="50" y="50" font-size="22" text-anchor="middle">🧤</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#e9d5ff" letter-spacing="0.5">CLEAN SHEET</text></svg>`,
         desc: "Golden shield recognizing world-class goalkeepers who guard their net with heroic saves.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (12.0% Epic Drop Rate)."
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_golden_boot",
         name: "Golden Boot Striker Pin",
-        rarity: "Rare",
-        color: "#3b82f6",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "👟",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad)" stroke="#60a5fa" stroke-width="3"/><text x="50" y="50" font-size="22" text-anchor="middle">👟</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#93c5fd" letter-spacing="0.5">TOP SCORER</text></svg>`,
         desc: "Bestowed upon clinical tournament goalscorers with ruthless finishing accuracy.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (20.0% Rare Drop Rate)."
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_premier_lion",
         name: "Premier League Crown Crest",
-        rarity: "Rare",
-        color: "#3b82f6",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "🦁",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><defs><linearGradient id="pinBlueGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#bfdbfe"/><stop offset="50%" stop-color="#2563eb"/><stop offset="100%" stop-color="#172554"/></linearGradient></defs><circle cx="50" cy="50" r="46" fill="url(#pinBlueGrad2)" stroke="#93c5fd" stroke-width="3"/><text x="50" y="48" font-size="22" text-anchor="middle">🦁</text><text x="50" y="72" font-size="8.5" font-weight="900" text-anchor="middle" fill="#ffffff" letter-spacing="0.5">PREMIER</text></svg>`,
-        desc: "The crowned lion badge representing relentless intensity, physical grit, and football heart.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (20.0% Rare Drop Rate)."
+        desc: "The crowned lion badge representing relentless intensity, grit, and football heart.",
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_captain_armband",
         name: "Club Captain Crest",
-        rarity: "Uncommon",
-        color: "#10b981",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "©️",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="#064e3b" stroke="#34d399" stroke-width="3"/><circle cx="50" cy="50" r="34" fill="#022c22" stroke="#6ee7b7" stroke-width="2"/><text x="50" y="58" font-size="28" font-weight="900" text-anchor="middle" fill="#34d399">©</text></svg>`,
         desc: "Emblem of inspiring locker-room leadership and on-pitch determination.",
-        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (25.0% Uncommon Drop Rate)."
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     },
     {
         id: "pin_iron_defense",
         name: "Iron Defense Wall Pin",
-        rarity: "Common",
-        color: "#64748b",
+        rarity: "Specialized",
+        color: "#ffd700",
         icon: "🛡️",
         badgeSvg: `<svg viewBox="0 0 100 100" class="football-pin-svg"><circle cx="50" cy="50" r="46" fill="#1e293b" stroke="#94a3b8" stroke-width="3"/><text x="50" y="50" font-size="20" text-anchor="middle">🛡️</text><text x="50" y="74" font-size="8.5" font-weight="900" text-anchor="middle" fill="#cbd5e1" letter-spacing="0.5">DEFENDER</text></svg>`,
         desc: "Solid steel shield badge earned by immovable defensive center-backs.",
-        obtainMethod: "Starter reward or unbox from Pins & Medals Capsule in Pack Store (35.0% Common Drop Rate)."
+        obtainMethod: "Unbox from Pins & Medals Capsule in Pack Store (Equal 8.33% Drop Chance)."
     }
 ];
 
@@ -11021,43 +11031,34 @@ function renderPinsCollectionGrid() {
 }
 
 function openPinsCapsule(count = 1) {
-    const costEach = 500;
+    const costEach = 1000;
     const pullCount = Math.max(1, Math.min(5, Number(count) || 1));
     const totalCost = costEach * pullCount;
 
     if (Number(state.coins || 0) < totalCost) {
-        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
+        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 for ${pullCount}x Pins Capsule.`);
         if (window.SoundFx && SoundFx.click) SoundFx.click();
         return;
     }
 
     if (!spendCoins(totalCost, _INTERNAL_TX_KEY)) return;
 
-    if (!Array.isArray(state.ownedPins)) state.ownedPins = ["pin_iron_defense"];
-    if (!Array.isArray(state.showcasePins)) state.showcasePins = ["pin_iron_defense"];
+    if (!Array.isArray(state.ownedPins)) state.ownedPins = [];
+    if (!Array.isArray(state.showcasePins)) state.showcasePins = [];
 
     const rolled = [];
     for (let i = 0; i < pullCount; i++) {
-        const roll = Math.random() * 100;
-        let selectedRarity = "Common";
-        if (roll < 0.6) selectedRarity = "Secret";
-        else if (roll < 3.0) selectedRarity = "Mythic";
-        else if (roll < 9.0) selectedRarity = "Legendary";
-        else if (roll < 21.0) selectedRarity = "Epic";
-        else if (roll < 45.0) selectedRarity = "Rare";
-        else if (roll < 70.0) selectedRarity = "Uncommon";
-        else selectedRarity = "Common";
-
-        const pool = PINS_DEF.filter(p => p.rarity === selectedRarity);
-        const pin = pool[Math.floor(Math.random() * pool.length)] || PINS_DEF[0];
-
+        // Equal chance across all 12 pins (1 / 12 = 8.33% each)
+        const pin = PINS_DEF[Math.floor(Math.random() * PINS_DEF.length)];
         const isDupe = state.ownedPins.includes(pin.id);
+
         if (!isDupe) {
             state.ownedPins.push(pin.id);
             if (state.showcasePins.length < 5) state.showcasePins.push(pin.id);
             if (!state.featuredPin) state.featuredPin = pin.id;
         } else {
-            addCoins(200, _INTERNAL_TX_KEY);
+            // 50% refund on duplicate pin = +500 Gold
+            addCoins(500, _INTERNAL_TX_KEY);
         }
         rolled.push({ pin, isDupe });
     }
@@ -11087,13 +11088,22 @@ function showPinRevealModal(results) {
 }
 
 
+
 /* =========================================================
-   OFFICIAL ANIME VANGUARDS SOUNDTRACK AUDIO PLAYER ENGINE
+   OFFICIAL ANIME VANGUARDS SOUNDTRACK ENGINE & VAULT
    ========================================================= */
+
+const SOUNDTRACK_VALUES = {
+    Rare: { sell: 150, rap: 400 },
+    Epic: { sell: 350, rap: 1200 },
+    Legendary: { sell: 1200, rap: 4000 },
+    Mythic: { sell: 5000, rap: 15000 },
+    Secret: { sell: 25000, rap: 80000 }
+};
 
 const SOUNDTRACK_DISCS = [
     {
-        id: "track_4",
+        discId: "track_4",
         name: "Wall of Resolve (Anime Vanguards OST)",
         uploader: "Erick Aleixo",
         rarity: "Secret",
@@ -11101,10 +11111,10 @@ const SOUNDTRACK_DISCS = [
         color: "#00f2fe",
         audioSrc: "audio/track_4.mp3",
         youtube: "https://www.youtube.com/watch?v=MVYJ9wRukVA",
-        desc: "★ SECRET 0.1% DROP ★ Epic orchestral battle anthem featuring thunderous percussion & heroic choir."
+        desc: "★ SECRET 0.1% DROP ★ Epic orchestral battle anthem featuring thunderous percussion & choir."
     },
     {
-        id: "track_5",
+        discId: "track_5",
         name: "Crown of the Sun (Anime Vanguards OST)",
         uploader: "Erick Aleixo",
         rarity: "Mythic",
@@ -11112,10 +11122,10 @@ const SOUNDTRACK_DISCS = [
         color: "#ec4899",
         audioSrc: "audio/track_5.mp3",
         youtube: "https://www.youtube.com/watch?v=msSU1OVaLoM",
-        desc: "★ MYTHIC 0.5% DROP ★ Blistering high-energy boss battle theme with blazing synth leads."
+        desc: "★ MYTHIC 0.5% DROP ★ Blistering boss battle theme with blazing synth leads."
     },
     {
-        id: "track_1",
+        discId: "track_1",
         name: "Petals Beneath the Ice (Anime Vanguards OST)",
         uploader: "Erick Aleixo",
         rarity: "Legendary",
@@ -11126,22 +11136,22 @@ const SOUNDTRACK_DISCS = [
         desc: "Emotional fast-paced melodic battle theme with driving rhythm."
     },
     {
-        id: "track_2",
+        discId: "track_2",
         name: "False Heaven (Anime Vanguards OST)",
         uploader: "Erick Aleixo",
         rarity: "Epic",
-        rate: "15.0%",
+        rate: "24.4%",
         color: "#a855f7",
         audioSrc: "audio/track_2.mp3",
         youtube: "https://www.youtube.com/watch?v=yDXm4Eg6GNw",
         desc: "Dark intense clash theme featuring cybernetic bass & syncopated synth rhythms."
     },
     {
-        id: "track_3",
+        discId: "track_3",
         name: "Nah I'd Win (Anime Vanguards OST)",
         uploader: "Erick Aleixo",
         rarity: "Rare",
-        rate: "30.0%",
+        rate: "70.0%",
         color: "#3b82f6",
         audioSrc: "audio/track_3.mp3",
         youtube: "https://www.youtube.com/watch?v=9BmeZrWgZFk",
@@ -11150,129 +11160,179 @@ const SOUNDTRACK_DISCS = [
 ];
 
 let globalAudioPlayer = null;
-let currentBgmTrackIdx = 0;
+let activePlayingTrackId = null;
 let isBgmPlaying = false;
 let bgmVolume = 0.45;
+let currentCollectionTab = "cards"; // "cards" or "soundtracks"
+let currentIndexTab = "players"; // "players", "medals", "soundtracks"
+let currentTradeTab = "all"; // "all", "cards", "soundtracks"
 
 function initAudioPlayer() {
     if (!globalAudioPlayer) {
         globalAudioPlayer = new Audio();
         globalAudioPlayer.volume = bgmVolume;
         globalAudioPlayer.addEventListener("ended", () => {
-            nextAnimeBgmTrack();
+            onTrackEnded();
         });
         globalAudioPlayer.addEventListener("error", (e) => {
-            console.warn("Audio file load warning, fallback to synth", e);
+            console.warn("Audio file load warning", e);
         });
     }
 }
 
-function playTrackAtIndex(idx) {
+function onTrackEnded() {
+    if (state.soundtrackShuffle && state.soundtracks && state.soundtracks.length > 1) {
+        playRandomOwnedSoundtrack();
+    } else if (state.equippedSoundtrack) {
+        const item = (state.soundtracks || []).find(s => s.id === state.equippedSoundtrack);
+        if (item) playSoundtrackInstance(item.id);
+    }
+}
+
+function playSoundtrackInstance(instanceId) {
     initAudioPlayer();
-    currentBgmTrackIdx = idx % SOUNDTRACK_DISCS.length;
-    const track = SOUNDTRACK_DISCS[currentBgmTrackIdx];
-    
-    globalAudioPlayer.src = track.audioSrc;
+    const item = (state.soundtracks || []).find(s => s.id === instanceId);
+    if (!item) return;
+
+    activePlayingTrackId = item.id;
+    state.equippedSoundtrack = item.id;
+    saveGame();
+
+    globalAudioPlayer.src = item.audioSrc;
     globalAudioPlayer.volume = bgmVolume;
     globalAudioPlayer.play().then(() => {
         isBgmPlaying = true;
         updateBgmUI();
-        toast(`🎵 Now Playing: ${track.name}`);
+        renderCollectionSoundtracks();
+        toast(`🎵 Now Playing: ${item.name}`);
     }).catch(err => {
-        console.log("Audio autoplay prevented, awaiting user gesture", err);
+        console.log("Audio autoplay prevented", err);
     });
+}
+
+function playRandomOwnedSoundtrack() {
+    if (!state.soundtracks || state.soundtracks.length === 0) return;
+    const pool = state.soundtracks;
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    playSoundtrackInstance(chosen.id);
 }
 
 function toggleAnimeBgm() {
     initAudioPlayer();
-    const track = SOUNDTRACK_DISCS[currentBgmTrackIdx];
+    if (!state.soundtracks || state.soundtracks.length === 0) {
+        toast("🔒 No Soundtracks owned! Open Soundtrack Packs in the Pack Store to collect music.");
+        return;
+    }
 
     if (!isBgmPlaying) {
-        if (!globalAudioPlayer.src || globalAudioPlayer.src === "") {
-            globalAudioPlayer.src = track.audioSrc;
+        if (!activePlayingTrackId) {
+            const first = state.equippedSoundtrack ? state.soundtracks.find(s => s.id === state.equippedSoundtrack) : state.soundtracks[0];
+            if (first) playSoundtrackInstance(first.id);
+        } else {
+            globalAudioPlayer.play().then(() => {
+                isBgmPlaying = true;
+                updateBgmUI();
+                renderCollectionSoundtracks();
+            });
         }
-        globalAudioPlayer.play().then(() => {
-            isBgmPlaying = true;
-            updateBgmUI();
-            toast(`🎵 Playing: ${track.name}`);
-        }).catch(() => {
-            // Autoplay policy fallback
-            isBgmPlaying = true;
-            updateBgmUI();
-        });
     } else {
         globalAudioPlayer.pause();
         isBgmPlaying = false;
         updateBgmUI();
+        renderCollectionSoundtracks();
         toast("🔇 Music Paused");
     }
 }
 
 function nextAnimeBgmTrack() {
-    currentBgmTrackIdx = (currentBgmTrackIdx + 1) % SOUNDTRACK_DISCS.length;
-    playTrackAtIndex(currentBgmTrackIdx);
+    if (!state.soundtracks || state.soundtracks.length === 0) {
+        toast("🔒 No Soundtracks owned! Open Soundtrack Packs in Pack Store.");
+        return;
+    }
+    const idx = state.soundtracks.findIndex(s => s.id === activePlayingTrackId);
+    const nextIdx = (idx + 1) % state.soundtracks.length;
+    playSoundtrackInstance(state.soundtracks[nextIdx].id);
 }
 
 function shuffleAnimeBgm() {
-    currentBgmTrackIdx = Math.floor(Math.random() * SOUNDTRACK_DISCS.length);
-    playTrackAtIndex(currentBgmTrackIdx);
-}
-
-function setAnimeBgmVolume(val) {
-    bgmVolume = Math.max(0, Math.min(1, Number(val)));
-    if (globalAudioPlayer) globalAudioPlayer.volume = bgmVolume;
+    state.soundtrackShuffle = !state.soundtrackShuffle;
+    saveGame();
+    toast(state.soundtrackShuffle ? "🔀 Shuffle Mode Enabled (Owned Songs)" : "🔁 Shuffle Mode Disabled");
+    if (state.soundtrackShuffle) playRandomOwnedSoundtrack();
+    renderCollectionSoundtracks();
 }
 
 function updateBgmUI() {
     const btn = document.getElementById("animeBgmToggleBtn");
     const trackLabel = document.getElementById("animeBgmTrackName");
-    const track = SOUNDTRACK_DISCS[currentBgmTrackIdx];
+    const activeItem = (state.soundtracks || []).find(s => s.id === activePlayingTrackId);
 
     if (btn) btn.textContent = isBgmPlaying ? "⏸️ Pause OST" : "▶️ Anime OST";
-    if (trackLabel && track) trackLabel.textContent = track.name;
+    if (trackLabel) {
+        trackLabel.textContent = activeItem ? activeItem.name : (state.soundtracks && state.soundtracks.length ? "Select Track in Collection" : "No Soundtracks Owned");
+    }
 }
 
 function openSoundtrackPack(count = 1) {
-    const costEach = 150;
+    const costEach = 500;
     const pullCount = Math.max(1, Math.min(5, Number(count) || 1));
     const totalCost = costEach * pullCount;
 
     if (Number(state.coins || 0) < totalCost) {
-        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 (You have ${Number(state.coins || 0).toLocaleString()} 🪙).`);
+        toast(`Not enough coins! Need ${totalCost.toLocaleString()} 🪙 for ${pullCount}x Soundtrack Pack.`);
         if (window.SoundFx && SoundFx.click) SoundFx.click();
         return;
     }
 
     if (!spendCoins(totalCost, _INTERNAL_TX_KEY)) return;
-    if (!Array.isArray(state.ownedTracks)) state.ownedTracks = ["track_3"];
+    if (!Array.isArray(state.soundtracks)) state.soundtracks = [];
 
     const rolled = [];
     for (let i = 0; i < pullCount; i++) {
         const roll = Math.random() * 100;
-        let selectedDisc = SOUNDTRACK_DISCS[4]; // Default rare (Nah I'd win)
+        let selectedDisc = SOUNDTRACK_DISCS[4]; // Default rare 70%
         
+        // Exact 100% Probability Sum:
+        // Secret (0.1%), Mythic (0.5%), Legendary (5.0%), Epic (24.4%), Rare (70.0%)
         if (roll < 0.1) {
-            selectedDisc = SOUNDTRACK_DISCS[0]; // Secret: Wall of Resolve (0.1%)
+            selectedDisc = SOUNDTRACK_DISCS[0]; // Secret (0.1%)
         } else if (roll < 0.6) {
-            selectedDisc = SOUNDTRACK_DISCS[1]; // Mythic: Crown of the Sun (0.5%)
+            selectedDisc = SOUNDTRACK_DISCS[1]; // Mythic (0.5%)
         } else if (roll < 5.6) {
-            selectedDisc = SOUNDTRACK_DISCS[2]; // Legendary: Petals Beneath the Ice (5.0%)
-        } else if (roll < 20.6) {
-            selectedDisc = SOUNDTRACK_DISCS[3]; // Epic: False Heaven (15.0%)
+            selectedDisc = SOUNDTRACK_DISCS[2]; // Legendary (5.0%)
+        } else if (roll < 30.0) {
+            selectedDisc = SOUNDTRACK_DISCS[3]; // Epic (24.4%)
         } else {
-            selectedDisc = SOUNDTRACK_DISCS[4]; // Rare: Nah I'd Win (30.0%)
+            selectedDisc = SOUNDTRACK_DISCS[4]; // Rare (70.0%)
         }
 
-        const isDupe = state.ownedTracks.includes(selectedDisc.id);
-        if (!isDupe) {
-            state.ownedTracks.push(selectedDisc.id);
-        } else {
-            addCoins(100, _INTERNAL_TX_KEY);
+        const newInstance = {
+            id: "ost_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+            discId: selectedDisc.discId,
+            name: selectedDisc.name,
+            uploader: selectedDisc.uploader,
+            rarity: selectedDisc.rarity,
+            rate: selectedDisc.rate,
+            color: selectedDisc.color,
+            audioSrc: selectedDisc.audioSrc,
+            youtube: selectedDisc.youtube,
+            desc: selectedDisc.desc,
+            obtained: Date.now(),
+            locked: false,
+            isSoundtrack: true
+        };
+
+        state.soundtracks.push(newInstance);
+        if (!state.equippedSoundtrack) {
+            state.equippedSoundtrack = newInstance.id;
+            activePlayingTrackId = newInstance.id;
         }
-        rolled.push({ disc: selectedDisc, isDupe });
+
+        rolled.push({ disc: newInstance });
     }
 
     saveGame();
+    renderCollectionSoundtracks();
     showSoundtrackRevealModal(rolled);
 }
 
@@ -11281,21 +11341,202 @@ function showSoundtrackRevealModal(results) {
     const container = document.getElementById("pinRevealCards");
     if (!modal || !container) return;
 
-    container.innerHTML = results.map(r => `
-        <div class="pin-reveal-item" style="border-color:${r.disc.color}; min-width:220px;">
-            <div style="font-size:44px;margin:8px 0;filter:drop-shadow(0 0 15px ${r.disc.color});">💿</div>
-            <h3 style="color:#fff;margin:6px 0 4px;font-size:16px;">${r.disc.name}</h3>
-            <span style="color:${r.disc.color};font-weight:900;font-size:12px;letter-spacing:1px;">${r.disc.rarity.toUpperCase()} (${r.disc.rate})</span>
-            <p style="color:var(--muted);font-size:11.5px;margin:6px 0;line-height:1.4;">${r.disc.desc}</p>
-            <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
-                <button class="primary-btn" style="padding:6px 12px;font-size:11px;" onclick="playTrackAtIndex(${SOUNDTRACK_DISCS.findIndex(d => d.id === r.disc.id)})">▶ Play Track</button>
-                <a href="${r.disc.youtube}" target="_blank" class="ghost-btn" style="padding:6px 12px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;">▶ YouTube</a>
+    container.innerHTML = results.map(r => {
+        const rap = (SOUNDTRACK_VALUES[r.disc.rarity] || {}).rap || 500;
+        const sellVal = (SOUNDTRACK_VALUES[r.disc.rarity] || {}).sell || 150;
+        return `
+            <div class="pin-reveal-item" style="border-color:${r.disc.color}; min-width:220px;">
+                <div class="soundtrack-disc-wrap" style="margin:10px auto;">
+                    <div class="soundtrack-vinyl-disc spinning theme-${r.disc.rarity.toLowerCase()}">
+                        <div class="disc-spindle-outer"></div>
+                        <div class="disc-spindle-inner"></div>
+                        <div class="disc-label-center">
+                            <span class="disc-icon">💿</span>
+                        </div>
+                    </div>
+                </div>
+                <h3 style="color:#fff;margin:6px 0 4px;font-size:16px;">${r.disc.name}</h3>
+                <span class="rarity-badge ${r.disc.rarity.toLowerCase()}" style="font-weight:900;font-size:11px;">${r.disc.rarity.toUpperCase()} (${r.disc.rate})</span>
+                <div style="font-size:11.5px;color:var(--gold);margin:6px 0;font-weight:800;">💎 ${rap.toLocaleString()} RAP · 💰 Sell: +${sellVal.toLocaleString()} 🪙</div>
+                <p style="color:var(--muted);font-size:11px;margin:4px 0 10px;line-height:1.4;">${r.disc.desc}</p>
+                <button class="primary-btn" style="padding:6px 14px;font-size:11.5px;" onclick="playSoundtrackInstance('${r.disc.id}')">▶ Play Now</button>
             </div>
-            ${r.isDupe ? '<div class="dupe-refund-badge">Duplicate! +100 🪙 Cashback</div>' : '<div class="new-pin-badge">✨ NEW SOUNDTRACK DISC UNLOCKED! ✨</div>'}
-        </div>
-    `).join("");
+        `;
+    }).join("");
 
     modal.classList.remove("hidden");
     modal.style.display = "flex";
     if (window.SoundFx && SoundFx.reveal) SoundFx.reveal();
 }
+
+function switchCollectionTab(tab) {
+    currentCollectionTab = tab;
+    const cardsGrid = document.getElementById("cardsGrid");
+    const ostGrid = document.getElementById("soundtracksGrid");
+    const cardsFilterWrap = document.getElementById("cardsFilterWrap");
+    const ostFilterWrap = document.getElementById("soundtracksFilterWrap");
+    const tabCards = document.getElementById("tabBtnCards");
+    const tabOst = document.getElementById("tabBtnSoundtracks");
+
+    if (tab === "cards") {
+        if (cardsGrid) cardsGrid.style.display = "grid";
+        if (ostGrid) ostGrid.style.display = "none";
+        if (cardsFilterWrap) cardsFilterWrap.style.display = "flex";
+        if (ostFilterWrap) ostFilterWrap.style.display = "none";
+        if (tabCards) tabCards.classList.add("active");
+        if (tabOst) tabOst.classList.remove("active");
+        renderCards();
+    } else {
+        if (cardsGrid) cardsGrid.style.display = "none";
+        if (ostGrid) ostGrid.style.display = "grid";
+        if (cardsFilterWrap) cardsFilterWrap.style.display = "none";
+        if (ostFilterWrap) ostFilterWrap.style.display = "flex";
+        if (tabCards) tabCards.classList.remove("active");
+        if (tabOst) tabOst.classList.add("active");
+        renderCollectionSoundtracks();
+    }
+}
+
+function renderCollectionSoundtracks() {
+    const grid = document.getElementById("soundtracksGrid");
+    if (!grid) return;
+
+    const tracks = state.soundtracks || [];
+    const totalRAP = tracks.reduce((acc, t) => acc + ((SOUNDTRACK_VALUES[t.rarity] || {}).rap || 500), 0);
+
+    const rapLabel = document.getElementById("soundtracksRAPValue");
+    if (rapLabel) rapLabel.textContent = `💎 Total Soundtracks: ${totalRAP.toLocaleString()} RAP`;
+    const countLabel = document.getElementById("soundtracksCountLabel");
+    if (countLabel) countLabel.textContent = `${tracks.length} Discs in Vault`;
+
+    if (tracks.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;text-align:center;padding:40px;">
+                <div style="font-size:48px;margin-bottom:12px;">💿</div>
+                <h3>Soundtracks Vault Empty</h3>
+                <p style="color:var(--muted);margin-bottom:16px;">You don't own any soundtrack discs yet. Unbox official Anime Vanguards battle music in the Pack Store!</p>
+                <button class="primary-btn" style="width:auto;padding:12px 24px;" onclick="showPage('packs')">🎁 Open Soundtrack Packs (500 🪙)</button>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = tracks.map(t => {
+        const isPlaying = isBgmPlaying && activePlayingTrackId === t.id;
+        const isEquipped = state.equippedSoundtrack === t.id;
+        const rap = (SOUNDTRACK_VALUES[t.rarity] || {}).rap || 500;
+        const sellPrice = (SOUNDTRACK_VALUES[t.rarity] || {}).sell || 150;
+        const dateStr = new Date(t.obtained || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        const existCount = (state.soundtracks || []).filter(item => item.discId === t.discId).length;
+
+        return `
+            <div class="card soundtrack-disc-card theme-${t.rarity.toLowerCase()} glow-${t.rarity.toLowerCase()} ${t.locked ? 'is-locked' : ''}">
+                <div class="soundtrack-disc-wrap">
+                    <div class="soundtrack-vinyl-disc ${isPlaying ? 'spinning' : ''} theme-${t.rarity.toLowerCase()}">
+                        <div class="disc-spindle-outer"></div>
+                        <div class="disc-spindle-inner"></div>
+                        <div class="disc-label-center">
+                            <span class="disc-icon">💿</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-rarity-badge ${t.rarity.toLowerCase()}">${t.rarity.toUpperCase()}</div>
+                <h3 class="card-player-name" style="font-size:15px;margin:8px 0 2px;">${t.name}</h3>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Artist: ${t.uploader}</div>
+                
+                <div class="card-meta-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;margin-bottom:10px;">
+                    <div style="background:rgba(255,255,255,0.04);padding:4px 6px;border-radius:6px;">📅 ${dateStr}</div>
+                    <div style="background:rgba(255,255,255,0.04);padding:4px 6px;border-radius:6px;">⚡ ${existCount} Exist</div>
+                    <div style="background:rgba(255,255,255,0.04);padding:4px 6px;border-radius:6px;color:var(--cyan);grid-column:1/-1;">💎 ${rap.toLocaleString()} RAP · 💰 Sell: +${sellPrice.toLocaleString()} 🪙</div>
+                </div>
+
+                <div style="display:flex;gap:6px;width:100%;">
+                    <button class="primary-btn" style="padding:8px;font-size:11px;flex:1;" onclick="playSoundtrackInstance('${t.id}')">${isPlaying ? '🔊 Playing' : isEquipped ? '★ Equipped' : '▶ Play / Equip'}</button>
+                    <button class="ghost-btn" style="padding:8px;font-size:11px;width:38px;" onclick="toggleLockSoundtrack('${t.id}')" title="${t.locked ? 'Unlock' : 'Lock'}">${t.locked ? '🔒' : '🔓'}</button>
+                    <button class="danger-btn" style="padding:8px;font-size:11px;width:auto;" onclick="sellSoundtrack('${t.id}')" title="Sell Disc">💰 Sell</button>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function toggleLockSoundtrack(instanceId) {
+    const item = (state.soundtracks || []).find(s => s.id === instanceId);
+    if (!item) return;
+    item.locked = !item.locked;
+    saveGame();
+    renderCollectionSoundtracks();
+    toast(item.locked ? `🔒 Locked ${item.name}` : `🔓 Unlocked ${item.name}`);
+}
+
+function sellSoundtrack(instanceId) {
+    const idx = (state.soundtracks || []).findIndex(s => s.id === instanceId);
+    if (idx < 0) return;
+    const item = state.soundtracks[idx];
+
+    if (item.locked) {
+        toast("🔒 This soundtrack disc is locked! Unlock it first before selling.");
+        return;
+    }
+
+    const price = (SOUNDTRACK_VALUES[item.rarity] || {}).sell || 150;
+    state.soundtracks.splice(idx, 1);
+    addCoins(price, _INTERNAL_TX_KEY);
+
+    if (state.equippedSoundtrack === item.id) {
+        state.equippedSoundtrack = state.soundtracks.length ? state.soundtracks[0].id : null;
+    }
+    if (activePlayingTrackId === item.id) {
+        if (isBgmPlaying) globalAudioPlayer.pause();
+        isBgmPlaying = false;
+        activePlayingTrackId = null;
+    }
+
+    saveGame();
+    renderCollectionSoundtracks();
+    updateBgmUI();
+    toast(`💰 Sold ${item.name} for +${price.toLocaleString()} 🪙!`);
+}
+
+function switchIndexTab(category) {
+    currentIndexTab = category;
+    const tabPlayers = document.getElementById("indexTabBtnPlayers");
+    const tabMedals = document.getElementById("indexTabBtnMedals");
+    const tabOst = document.getElementById("indexTabBtnOst");
+    const indexFilter = document.getElementById("indexFilter");
+
+    if (tabPlayers) tabPlayers.classList.toggle("active", category === "players");
+    if (tabMedals) tabMedals.classList.toggle("active", category === "medals");
+    if (tabOst) tabOst.classList.toggle("active", category === "soundtracks");
+
+    if (indexFilter) {
+        indexFilter.style.display = category === "players" ? "block" : "none";
+    }
+
+    renderIndex();
+}
+
+
+
+try {
+    window.PINS_DEF = PINS_DEF;
+    window.SOUNDTRACK_DISCS = SOUNDTRACK_DISCS;
+    window.renderProfilePins = renderProfilePins;
+    window.navigateProfilePins = navigateProfilePins;
+    window.inspectPin = inspectPin;
+    window.setFeaturedPin = setFeaturedPin;
+    window.toggleShowcasePin = toggleShowcasePin;
+    window.closePinModal = closePinModal;
+    window.openPinsManager = openPinsManager;
+    window.openPinsCapsule = openPinsCapsule;
+    window.openSoundtrackPack = openSoundtrackPack;
+    window.toggleAnimeBgm = toggleAnimeBgm;
+    window.nextAnimeBgmTrack = nextAnimeBgmTrack;
+    window.shuffleAnimeBgm = shuffleAnimeBgm;
+    window.playSoundtrackInstance = playSoundtrackInstance;
+    window.sellSoundtrack = sellSoundtrack;
+    window.toggleLockSoundtrack = toggleLockSoundtrack;
+    window.switchCollectionTab = switchCollectionTab;
+    window.switchIndexTab = switchIndexTab;
+    window.renderCollectionSoundtracks = renderCollectionSoundtracks;
+} catch(e) {}
